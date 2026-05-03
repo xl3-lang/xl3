@@ -130,8 +130,13 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   },
 
   TODAY: () => {
+    // ADR-0001: TODAY() returns the UTC date at render time, never host local TZ.
+    // Construct the Date so its local Y/M/D match the UTC date — this lets
+    // existing date formatters (which read local accessors, consistent with
+    // how source Excel dates flow through toDate) produce the UTC calendar
+    // date in any host timezone.
     const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
   },
 
   eq: (a, b) => String(a) === String(b),
