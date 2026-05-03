@@ -1,0 +1,154 @@
+import JSZip from 'jszip';
+import { parseTemplate, populateColumnRefs } from './parser.js';
+import { readSource, columnSet } from './reader.js';
+import type { SourceData } from './reader.js';
+import { groupRows } from './grouper.js';
+import { Renderer } from './renderer.js';
+import { applyDirectives } from './data-transform.js';
+import { toTemplateModel } from './template-model.js';
+import type {
+  OutputFile,
+  PreviewResult,
+  ParsedTemplate,
+  TemplateModel,
+} from './types.js';
+
+export type { TemplateMeta, TemplateModel, ParsedTemplate, OutputFile, PreviewResult } from './types.js';
+export { readConfigSheet, writeConfigSheet } from './parser.js';
+export { batchMatch } from './matcher.js';
+export { toTemplateModel } from './template-model.js';
+
+interface PreparedConversion {
+  parsed: ParsedTemplate;
+  source: SourceData;
+  columns: Set<string>;
+  grouped: ReturnType<typeof groupRows>;
+  renderer: Renderer;
+}
+
+function prepareConversionFromSourceData(
+  parsed: ParsedTemplate,
+  source: SourceData,
+): PreparedConversion {
+  const columns = columnSet(source.headers);
+  populateColumnRefs(parsed, columns);
+
+  const grouped = groupRows(source.rows, parsed.fileGroupKeys, parsed.sheetTemplates);
+  const renderer = new Renderer(parsed, columns);
+
+  return { parsed, source, columns, grouped, renderer };
+}
+
+/** Shared first stage: parse template + read source + resolve columns + group. */
+async function prepareConversion(templateBuffer: ArrayBuffer, sourceBuffer: ArrayBuffer) {
+  const parsed = await parseTemplate(templateBuffer);
+  const source = await readSource(
+    sourceBuffer,
+    parsed.meta.source_sheet,
+    parsed.meta.header_row,
+    parsed.meta.source_range,
+  );
+
+  return prepareConversionFromSourceData(parsed, source);
+}
+
+async function renderPreparedConversion(prepared: PreparedConversion): Promise<OutputFile[]> {
+  const files: OutputFile[] = [];
+  for (const fg of prepared.grouped.fileGroups) {
+    const outFile = await prepared.renderer.renderFile(fg);
+    files.push(outFile);
+  }
+
+  return files;
+}
+
+function buildPreviewWarnings(parsed: TemplateModel, columns: Set<string>): string[] {
+  const warnings: string[] = [...parsed.warnings];
+  for (const v of parsed.variables) {
+    for (const col of v.columns) {
+      if (!columns.has(col)) {
+        warnings.push(`Source column "${col}" is missing (used at ${v.location})`);
+      }
+    }
+  }
+  return warnings;
+}
+
+function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
+  const { parsed, columns, grouped, renderer } = prepared;
+  const warnings = buildPreviewWarnings(parsed, columns);
+
+  const files = grouped.fileGroups.map((fg) => {
+    const sheets: { name: string; rowCount: number }[] = [];
+
+    for (const st of parsed.sheetTemplates) {
+      if (st.groupKeys.length === 0) {
+        const sg = fg.sheetGroups.find((g) => Object.keys(g.key.values).length === 0);
+        if (!sg) continue;
+        const dataDirectives = st.directives.filter((d) => d.kind !== 'repeat');
+        const filteredRows = dataDirectives.length
+          ? applyDirectives(sg.rows, dataDirectives, parsed.listSheets)
+          : sg.rows;
+        sheets.push({ name: st.originalName, rowCount: filteredRows.length });
+      } else {
+        const matchingGroups = fg.sheetGroups.filter((g) => {
+          if (Object.keys(g.key.values).length === 0) return false;
+          return st.groupKeys.every((k) => k in g.key.values);
+        });
+        for (const sg of matchingGroups) {
+          const sheetName = renderer.previewSheetName([st], sg.key);
+          const dataDirectives = st.directives.filter((d) => d.kind !== 'repeat');
+          const filteredRows = dataDirectives.length
+            ? applyDirectives(sg.rows, dataDirectives, parsed.listSheets)
+            : sg.rows;
+          sheets.push({ name: sheetName, rowCount: filteredRows.length });
+        }
+      }
+    }
+
+    return { filename: renderer.previewFilename(fg), sheets };
+  });
+
+  return { files, warnings };
+}
+
+/** Run full conversion: template + source → output files. */
+export async function convert(
+  templateBuffer: ArrayBuffer,
+  sourceBuffer: ArrayBuffer,
+): Promise<OutputFile[]> {
+  const prepared = await prepareConversion(templateBuffer, sourceBuffer);
+  return renderPreparedConversion(prepared);
+}
+
+/** Preview what conversion will produce without generating full files. */
+export async function preview(
+  templateBuffer: ArrayBuffer,
+  sourceBuffer: ArrayBuffer,
+): Promise<PreviewResult> {
+  const prepared = await prepareConversion(templateBuffer, sourceBuffer);
+  return buildPreviewFromPrepared(prepared);
+}
+
+/** Analyze a template file and return its parsed metadata. */
+export async function analyze(
+  templateBuffer: ArrayBuffer,
+): Promise<ParsedTemplate> {
+  return parseTemplate(templateBuffer);
+}
+
+export async function analyzeModel(
+  templateBuffer: ArrayBuffer,
+): Promise<TemplateModel> {
+  const parsed = await parseTemplate(templateBuffer);
+  return toTemplateModel(parsed);
+}
+
+/** Package multiple output files into a ZIP. */
+export async function packageZip(files: OutputFile[]): Promise<Blob> {
+  const zip = new JSZip();
+  for (const f of files) {
+    zip.file(f.filename, f.data);
+  }
+  return zip.generateAsync({ type: 'blob' });
+}

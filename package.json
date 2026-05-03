@@ -1,0 +1,56 @@
+{
+  "name": "xl3",
+  "version": "0.1.0-alpha.0",
+  "description": "Excel-to-Excel templates where the spreadsheet itself is the template.",
+  "keywords": [
+    "excel",
+    "xlsx",
+    "template",
+    "transform",
+    "spreadsheet",
+    "report",
+    "automation",
+    "xtl"
+  ],
+  "license": "MIT",
+  "homepage": "https://xl3.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jinyoung4478/xl3.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jinyoung4478/xl3/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run typecheck",
+    "prepublishOnly": "npm run typecheck && npm run build"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "jszip": "^3.10.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
