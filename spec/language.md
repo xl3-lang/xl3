@@ -111,7 +111,7 @@ Aggregates operate on the current rendered row set.
 {{ ABS([delta]) }}
 ```
 
-`ROUND(value, places)` rounds to the given number of decimal places.
+`ROUND(value, places)` rounds to the given number of decimal places. Rounding uses half-away-from-zero, matching Excel's `ROUND()` (e.g., `ROUND(2.5, 0)` is `3` and `ROUND(-2.5, 0)` is `-3`).
 
 ### Text Formatting
 
@@ -130,7 +130,7 @@ Aggregates operate on the current rendered row set.
 {{ TEXT(TODAY(), "YYYY-MM-DD") }}
 ```
 
-`ROW()` returns the 1-based row index inside the current repeat block. `TODAY()` returns the current local date at render time.
+`ROW()` returns the 1-based row index inside the current repeat block. Calling `ROW()` outside a repeat block is an error. `TODAY()` returns the current local date at render time.
 
 ## Directives
 
@@ -192,7 +192,7 @@ Keeps the first N rows after filters and sorts.
 @repeat right 3
 ```
 
-Repeats the detected data block horizontally. The optional number is the column span per repeated record.
+Repeats the detected data block horizontally. The optional number is the column span per repeated record; when omitted, the column span is `1`.
 
 ## Group Keys
 

@@ -150,5 +150,6 @@ The following conditions are errors:
 - Using an invalid `source_range`.
 - Failing to coerce a single-expression cell value to its template cell format.
 - Producing an invalid output filename after sanitization rules are applied.
+- Calling `ROW()` outside a repeat block.
 
 Implementations MAY provide warnings for non-fatal portability issues, but warnings MUST NOT change output semantics.
