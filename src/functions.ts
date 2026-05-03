@@ -108,8 +108,15 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   },
 
   ROUND: (v, places) => {
+    // Half-away-from-zero, matching Excel ROUND(): ROUND(2.5, 0)=3, ROUND(-2.5, 0)=-3.
+    // JS Math.round is half-to-+Infinity, so it cannot be used for negative .5 cases.
+    const n = toNumber(v);
     const p = Math.pow(10, toNumber(places));
-    return Math.round(toNumber(v) * p) / p;
+    const scaled = n * p;
+    const rounded = scaled >= 0
+      ? Math.floor(scaled + 0.5)
+      : -Math.floor(-scaled + 0.5);
+    return rounded / p;
   },
 
   ABS: (v) => Math.abs(toNumber(v)),

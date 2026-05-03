@@ -174,7 +174,7 @@ function normalizeFunctionCall(
 ): string {
   const upper = name.toUpperCase();
   if (upper === 'ROW' && args.length === 0) {
-    return 'index . "__rownum"';
+    return '__ROW__';
   }
   if (upper === 'TODAY' && args.length === 0) {
     return 'TODAY';

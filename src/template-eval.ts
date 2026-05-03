@@ -21,6 +21,15 @@ export function evalExpression(
     return ctx[bracketMatch[1]!.trim()] ?? '';
   }
 
+  // ROW() — error when called outside a repeat block (no __rownum in ctx).
+  if (trimmed === '__ROW__') {
+    const r = ctx['__rownum'];
+    if (r === undefined) {
+      throw new Error('ROW() called outside a repeat block');
+    }
+    return r;
+  }
+
   // index . "fieldName"
   const indexMatch = trimmed.match(/^index\s+\.\s+"([^"]+)"$/);
   if (indexMatch) {
