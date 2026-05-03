@@ -1,0 +1,5 @@
+description: '@filter [field] in _ListSheet keeps matching rows; list sheet is removed from output.'
+spec_section: language.md "Directives / Filter"; evaluation.md "List Sheets"
+spec_version: "0.1"
+tags: [directive, filter, list-sheet]
+verified_by: [manual-script]

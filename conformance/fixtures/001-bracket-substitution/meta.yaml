@@ -1,0 +1,5 @@
+description: Per-row substitution of a single bracketed source column reference.
+spec_section: language.md "Source Columns"; evaluation.md "Render Phases"
+spec_version: "0.1"
+tags: [substitution, basic]
+verified_by: [manual-script]

@@ -1,0 +1,5 @@
+description: IF(condition, then, else) with a comparison operator inside a data row.
+spec_section: language.md "Functions / IF" and "Operators"
+spec_version: "0.1"
+tags: [function, if, comparison]
+verified_by: [manual-script]
