@@ -1,0 +1,5 @@
+description: A sanitized basename matching a Windows reserved device name gets a single `_` appended.
+spec_section: evaluation.md "Output Filenames"; ADR-0002
+spec_version: "0.1"
+tags: [filename, sanitization, reserved-name]
+verified_by: [manual-script]

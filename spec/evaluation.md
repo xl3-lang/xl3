@@ -127,6 +127,23 @@ Mixed text cells render as strings. Template number/date formats do not coerce m
 
 `TEXT(value, format)` always returns a string. It is intended for filenames and explicit display strings, not for cells that should remain numeric/date values.
 
+## Output Filenames
+
+Each output filename produced by `output_file_pattern` evaluation MUST be sanitized in this order:
+
+1. **Replace forbidden characters** with `_`:
+   - The set `< > : " / \ | ? *`
+   - ASCII control characters in the range `0x00`-`0x1F`.
+2. **Trim** leading and trailing whitespace and trailing `.` characters.
+3. **Reserved name guard:** if the resulting basename (before the `.xlsx` extension), case-insensitive, equals one of `CON`, `PRN`, `AUX`, `NUL`, `COM1`-`COM9`, `LPT1`-`LPT9`, append a single `_` to the basename.
+4. If steps 1-3 yield an empty filename or empty basename, this is an error.
+5. If the UTF-8 byte length of the resulting filename exceeds 255, this is an error. Implementations MUST NOT silently truncate.
+6. Implementations SHOULD emit a warning when any of steps 1-3 changed the rendered string, including the original and the sanitized filename. Warnings MUST NOT change output semantics.
+
+These rules apply to filenames only. Sheet names follow Excel's own forbidden set and 31-character length limit, defined separately by the implementation.
+
+Unicode characters (e.g., CJK, accented letters, emoji) are not restricted: any code point outside the explicitly forbidden set is preserved.
+
 ## Styles and Workbook Structure
 
 Implementations SHOULD preserve template workbook structure and formatting, including:

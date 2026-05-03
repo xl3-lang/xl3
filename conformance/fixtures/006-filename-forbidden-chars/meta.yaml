@@ -1,0 +1,5 @@
+description: Forbidden characters in rendered output filename are replaced with `_`.
+spec_section: evaluation.md "Output Filenames"; ADR-0002
+spec_version: "0.1"
+tags: [filename, sanitization, forbidden-chars]
+verified_by: [manual-script]

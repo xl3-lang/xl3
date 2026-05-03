@@ -320,9 +320,104 @@ async function build005() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 006 - filename-forbidden-chars
+//
+// Concept: characters in `< > : " / \ | ? *` and ASCII control chars in the
+// rendered output filename are replaced with `_` per ADR-0002.
+// Spec section: evaluation.md "Output Filenames".
+// ---------------------------------------------------------------------------
+async function build006() {
+  const dir = join(FIXTURES, '006-filename-forbidden-chars');
+  await import('node:fs/promises').then((fs) => fs.mkdir(join(dir, 'expected'), { recursive: true }));
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'filename-forbidden-chars'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', '{{ [Department] }}_report.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ Department }}';
+    sh.getCell('A2').value = '{{ [Item] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Department contains "/" which is forbidden in filenames.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Department';
+    sh.getCell('B1').value = 'Item';
+    sh.getCell('A2').value = 'R&D/Sales';
+    sh.getCell('B2').value = 'Widget';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected/ — pattern resolves to "R&D/Sales_report.xlsx"; sanitization
+  // replaces `/` with `_` -> "R&D_Sales_report.xlsx". The file content
+  // itself is the rendered Report sheet.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'R&D/Sales';
+    sh.getCell('A2').value = 'Widget';
+    await writeBook(wb, join(dir, 'expected', 'R&D_Sales_report.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 007 - filename-reserved-name
+//
+// Concept: a sanitized basename equal to a Windows reserved device name
+// (CON, PRN, ..., COM1-9, LPT1-9) gets a single `_` appended per ADR-0002.
+// Spec section: evaluation.md "Output Filenames".
+// ---------------------------------------------------------------------------
+async function build007() {
+  const dir = join(FIXTURES, '007-filename-reserved-name');
+  await import('node:fs/promises').then((fs) => fs.mkdir(join(dir, 'expected'), { recursive: true }));
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'filename-reserved-name'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', '{{ [Customer] }}.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ Customer }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Customer = "CON", a Windows reserved device name.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'CON';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected/ — basename "CON" matches a reserved name; sanitization appends
+  // a single "_" -> "CON_.xlsx".
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'CON';
+    await writeBook(wb, join(dir, 'expected', 'CON_.xlsx'));
+  }
+}
+
 await build001();
 await build002();
 await build003();
 await build004();
 await build005();
-console.log('built fixtures 001-005');
+await build006();
+await build007();
+console.log('built fixtures 001-007');

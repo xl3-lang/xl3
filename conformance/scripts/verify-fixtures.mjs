@@ -8,7 +8,7 @@
 // expected, do NOT change the expected. Investigate.
 
 import ExcelJS from 'exceljs';
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { convert } from '../../dist/index.js';
@@ -50,24 +50,80 @@ async function loadCells(buf) {
   return sheets;
 }
 
+async function loadExpected(dir) {
+  // expected.xlsx (single-output) or expected/*.xlsx (multi-output).
+  try {
+    const buf = await readFile(join(dir, 'expected.xlsx'));
+    return [{ filename: 'expected.xlsx', buf }];
+  } catch {}
+  const expDir = join(dir, 'expected');
+  try {
+    const st = await stat(expDir);
+    if (!st.isDirectory()) throw new Error('expected/ is not a directory');
+  } catch {
+    return null;
+  }
+  const files = await readdir(expDir);
+  const xlsxs = files.filter((f) => f.endsWith('.xlsx')).sort();
+  return await Promise.all(xlsxs.map(async (f) => ({
+    filename: f,
+    buf: await readFile(join(expDir, f)),
+  })));
+}
+
 let pass = 0, fail = 0;
 for (const name of cases) {
   const dir = join(FIXTURES, name);
   const tmpl = await readFile(join(dir, 'template.xlsx'));
   const data = await readFile(join(dir, 'data.xlsx'));
-  const expected = await readFile(join(dir, 'expected.xlsx'));
-
-  const out = await convert(tmpl.buffer, data.buffer);
-  if (out.length !== 1) {
-    console.error(`${name}: expected single output, got ${out.length}`);
+  const expectedFiles = await loadExpected(dir);
+  if (!expectedFiles) {
+    console.error(`${name}: no expected.xlsx or expected/ dir`);
     fail++;
     continue;
   }
 
-  const actualCells = await loadCells(out[0].data);
-  const expectedCells = await loadCells(expected);
+  const out = await convert(tmpl.buffer, data.buffer);
+
+  // Single-file fixture (expected.xlsx) ignores filename, compares content only.
+  // Multi-file fixture (expected/) checks both filenames and content.
+  const isMultiFile = expectedFiles[0].filename !== 'expected.xlsx';
 
   const diffs = [];
+
+  if (isMultiFile) {
+    const actualByName = Object.fromEntries(out.map((f) => [f.filename, f.data]));
+    const expectedByName = Object.fromEntries(expectedFiles.map((f) => [f.filename, f.buf]));
+    const allFilenames = new Set([...Object.keys(actualByName), ...Object.keys(expectedByName)]);
+    for (const fn of allFilenames) {
+      if (!actualByName[fn]) { diffs.push(`missing output file: ${fn}`); continue; }
+      if (!expectedByName[fn]) { diffs.push(`unexpected output file: ${fn}`); continue; }
+      const aCells = await loadCells(actualByName[fn]);
+      const eCells = await loadCells(expectedByName[fn]);
+      diffCellMaps(aCells, eCells, diffs, fn);
+    }
+  } else {
+    if (out.length !== 1) {
+      console.error(`${name}: expected single output, got ${out.length}`);
+      fail++;
+      continue;
+    }
+    const aCells = await loadCells(out[0].data);
+    const eCells = await loadCells(expectedFiles[0].buf);
+    diffCellMaps(aCells, eCells, diffs);
+  }
+
+  if (diffs.length === 0) {
+    console.log(`PASS  ${name}`);
+    pass++;
+  } else {
+    console.log(`FAIL  ${name}`);
+    for (const d of diffs) console.log('       ' + d);
+    fail++;
+  }
+}
+
+function diffCellMaps(actualCells, expectedCells, diffs, fnPrefix) {
   const allKeys = new Set([
     ...Object.keys(actualCells),
     ...Object.keys(expectedCells),
@@ -78,18 +134,10 @@ for (const name of cases) {
     const cellKeys = new Set([...Object.keys(a), ...Object.keys(e)]);
     for (const k of cellKeys) {
       if (a[k] !== e[k]) {
-        diffs.push(`${k}: actual=${JSON.stringify(a[k])}, expected=${JSON.stringify(e[k])}`);
+        const where = fnPrefix ? `[${fnPrefix}] ${k}` : k;
+        diffs.push(`${where}: actual=${JSON.stringify(a[k])}, expected=${JSON.stringify(e[k])}`);
       }
     }
-  }
-
-  if (diffs.length === 0) {
-    console.log(`PASS  ${name}`);
-    pass++;
-  } else {
-    console.log(`FAIL  ${name}`);
-    for (const d of diffs) console.log('       ' + d);
-    fail++;
   }
 }
 

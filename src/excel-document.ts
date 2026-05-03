@@ -65,6 +65,64 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
   }
 }
 
+// ADR-0002: Output filename sanitization.
+//
+// The rules are spec-normative (see spec/evaluation.md "Output Filenames" and
+// spec/decisions/0002-filename-sanitization.md). Steps 1-3 transform the
+// filename; steps 4-5 are error conditions.
+const FORBIDDEN_FILENAME_CHARS = /[<>:"/\\|?*\x00-\x1f]/g;
+const RESERVED_DEVICE_NAMES = new Set([
+  'CON', 'PRN', 'AUX', 'NUL',
+  'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+  'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9',
+]);
+
+export interface SanitizedFilename {
+  filename: string;
+  changed: boolean;
+}
+
+export function sanitizeFilename(rendered: string): SanitizedFilename {
+  // 1. Replace forbidden characters with `_`.
+  let s = rendered.replace(FORBIDDEN_FILENAME_CHARS, '_');
+
+  // 2. Trim leading/trailing whitespace and trailing dots.
+  s = s.replace(/^\s+/, '').replace(/[\s.]+$/, '');
+
+  // Split into basename + extension. A leading "." with no other dot means
+  // the basename is empty (e.g., ".xlsx" — invalid output filename).
+  const splitFilename = (input: string): { base: string; ext: string } => {
+    const lastDot = input.lastIndexOf('.');
+    if (lastDot > 0) return { base: input.slice(0, lastDot), ext: input.slice(lastDot) };
+    if (lastDot === 0) return { base: '', ext: input };
+    return { base: input, ext: '' };
+  };
+
+  // 3. Reserved name guard on the basename.
+  const { base, ext } = splitFilename(s);
+  if (RESERVED_DEVICE_NAMES.has(base.toUpperCase())) {
+    s = base + '_' + ext;
+  }
+
+  // 4. Empty filename or empty basename → error.
+  const finalParts = splitFilename(s);
+  if (s === '' || finalParts.base === '') {
+    throw new Error(
+      `Output filename "${rendered}" sanitized to an empty string and is invalid.`,
+    );
+  }
+
+  // 5. Length cap (UTF-8 bytes).
+  const byteLen = new TextEncoder().encode(s).length;
+  if (byteLen > 255) {
+    throw new Error(
+      `Output filename "${s}" is ${byteLen} bytes; exceeds the 255-byte limit.`,
+    );
+  }
+
+  return { filename: s, changed: s !== rendered };
+}
+
 export function sanitizeSheetName(name: string): string {
   // Excel forbids ` : \ / ? * [ ] ` in sheet names. Map brackets to parens so
   // labels like "[SNF]SOOP_xxx" render as "(SNF)SOOP_xxx" instead of being

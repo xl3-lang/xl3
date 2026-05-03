@@ -12,7 +12,7 @@ import { normalizeTemplate } from './normalizer.js';
 import { evalCell } from './template-eval.js';
 import { applyDirectives } from './data-transform.js';
 import type { FileGroup } from './grouper.js';
-import { ExcelJsWorkbookDocument, sanitizeSheetName } from './excel-document.js';
+import { ExcelJsWorkbookDocument, sanitizeFilename, sanitizeSheetName } from './excel-document.js';
 
 const VAR_PATTERN = /\{\{.*?\}\}/;
 
@@ -449,6 +449,12 @@ export class Renderer {
 
   private renderFilename(key: GroupKey, fileGroup: FileGroup): string {
     const pattern = this.parsed.meta.output_file_pattern;
+    const rendered = this.renderRawFilename(pattern, key, fileGroup);
+    // ADR-0002: Output filenames MUST be sanitized.
+    return sanitizeFilename(rendered).filename;
+  }
+
+  private renderRawFilename(pattern: string, key: GroupKey, fileGroup: FileGroup): string {
     if (!pattern) return 'output.xlsx';
     if (!VAR_PATTERN.test(pattern)) return pattern;
 
