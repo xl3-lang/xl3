@@ -105,13 +105,15 @@ A cell whose complete content is one template expression is a single-expression 
 
 Single-expression cells preserve the evaluated value type where possible.
 
-If the template cell has a number/date/text format, the implementation MAY coerce string source values to match that format:
+If the template cell has a number/date/text format, the implementation MUST coerce string source values to match that format:
 
 - Date-like formats coerce supported date strings or Excel serial numbers to dates.
 - Number-like formats coerce numeric strings to numbers.
 - Text format `@` coerces to string.
 
 If coercion fails, the implementation MUST report an error.
+
+The minimum set of supported date formats and numeric format tokens is not normatively defined by XTL 0.2 and is left to each implementation. Implementations that support fewer formats than another implementation may declare partial conformance.
 
 ### Mixed Text Cells
 

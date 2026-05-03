@@ -413,6 +413,142 @@ async function build007() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 008 - numfmt-numeric-string-coercion
+//
+// Concept: a single-expression cell with a numeric numFmt MUST coerce a
+// numeric string source value to a number (ADR-0003).
+// Spec section: evaluation.md "Single-Expression Cells".
+// ---------------------------------------------------------------------------
+async function build008() {
+  const dir = join(FIXTURES, '008-numfmt-numeric-string-coercion');
+
+  // template.xlsx — A2 has a numeric numFmt "0.00" and a single-expression cell.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'numfmt-numeric-string-coercion'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = '{{ [Amount] }}';
+    sh.getCell('A2').numFmt = '0.00';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Amount is a STRING "30.5".
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = '30.5';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — A2 is a number 30.5 (string was coerced per template numFmt).
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = 30.5;
+    sh.getCell('A2').numFmt = '0.00';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 009 - numfmt-date-string-coercion
+//
+// Concept: a single-expression cell with a date numFmt MUST coerce a date-like
+// string source value to a Date (ADR-0003).
+// ---------------------------------------------------------------------------
+async function build009() {
+  const dir = join(FIXTURES, '009-numfmt-date-string-coercion');
+
+  // template.xlsx — A2 has a date numFmt and a single-expression cell.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'numfmt-date-string-coercion'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'OrderDate';
+    sh.getCell('A2').value = '{{ [OrderDate] }}';
+    sh.getCell('A2').numFmt = 'yyyy-mm-dd';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — OrderDate is a STRING "2026-05-03".
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'OrderDate';
+    sh.getCell('A2').value = '2026-05-03';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — A2 is the Date 2026-05-03 (string was coerced).
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'OrderDate';
+    sh.getCell('A2').value = new Date(2026, 4, 3);
+    sh.getCell('A2').numFmt = 'yyyy-mm-dd';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 010 - numfmt-text-format-coercion
+//
+// Concept: a single-expression cell with the text format `@` MUST coerce
+// the value to a string, even if the source value is a number (ADR-0003).
+// ---------------------------------------------------------------------------
+async function build010() {
+  const dir = join(FIXTURES, '010-numfmt-text-format-coercion');
+
+  // template.xlsx — A2 has numFmt "@" and a single-expression cell.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'numfmt-text-format-coercion'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Code';
+    sh.getCell('A2').value = '{{ [Code] }}';
+    sh.getCell('A2').numFmt = '@';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Code is a NUMBER 12345 (preserves leading zeros etc. is the use case).
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Code';
+    sh.getCell('A2').value = 12345;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — A2 is the string "12345" (number was coerced via @).
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Code';
+    sh.getCell('A2').value = '12345';
+    sh.getCell('A2').numFmt = '@';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 await build001();
 await build002();
 await build003();
@@ -420,4 +556,7 @@ await build004();
 await build005();
 await build006();
 await build007();
-console.log('built fixtures 001-007');
+await build008();
+await build009();
+await build010();
+console.log('built fixtures 001-010');

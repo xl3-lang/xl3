@@ -1,0 +1,5 @@
+description: Single-expression cell with numeric numFmt coerces a numeric string to a number.
+spec_section: evaluation.md "Single-Expression Cells"; ADR-0003
+spec_version: "0.1"
+tags: [coercion, numfmt, numeric]
+verified_by: [manual-script]

@@ -1,0 +1,5 @@
+description: Single-expression cell with date numFmt coerces a date-like string to a Date.
+spec_section: evaluation.md "Single-Expression Cells"; ADR-0003
+spec_version: "0.1"
+tags: [coercion, numfmt, date]
+verified_by: [manual-script]

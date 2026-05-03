@@ -1,0 +1,5 @@
+description: Single-expression cell with the text format `@` coerces a numeric source value to string.
+spec_section: evaluation.md "Single-Expression Cells"; ADR-0003
+spec_version: "0.1"
+tags: [coercion, numfmt, text]
+verified_by: [manual-script]
