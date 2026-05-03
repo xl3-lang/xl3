@@ -1,0 +1,5 @@
+description: '@repeat right with no explicit count uses colSpan = 1.'
+spec_section: language.md "Repeat Right"
+spec_version: "0.1"
+tags: [directive, repeat, default]
+verified_by: [manual-script]

@@ -8,7 +8,7 @@
 // expected, do NOT change the expected. Investigate.
 
 import ExcelJS from 'exceljs';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { convert } from '../../dist/index.js';
@@ -16,11 +16,11 @@ import { convert } from '../../dist/index.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURES = join(__dirname, '..', 'fixtures');
 
-const cases = [
-  '001-bracket-substitution',
-  '002-if-function',
-  '003-list-sheet-filter',
-];
+const entries = await readdir(FIXTURES, { withFileTypes: true });
+const cases = entries
+  .filter((e) => e.isDirectory())
+  .map((e) => e.name)
+  .sort();
 
 function cellValToComparable(v) {
   if (v === null || v === undefined) return null;

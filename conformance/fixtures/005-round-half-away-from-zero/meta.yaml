@@ -1,0 +1,5 @@
+description: ROUND uses half-away-from-zero rounding, matching Excel ROUND().
+spec_section: language.md "Numeric Functions / ROUND"
+spec_version: "0.1"
+tags: [function, round, rounding-mode]
+verified_by: [manual-script]

@@ -210,7 +210,119 @@ async function build003() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 004 - repeat-right-default
+//
+// Concept: `@repeat right` without an explicit count uses colSpan = 1.
+// Spec section: language.md "Repeat Right" — "when omitted, the column
+// span is `1`."
+// ---------------------------------------------------------------------------
+async function build004() {
+  const dir = join(FIXTURES, '004-repeat-right-default');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'repeat-right-default'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ @repeat right }}';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('A4').value = 'Gamma';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  // Reasoning: 3 source rows; @repeat right with no number => colSpan=1;
+  // the single template column A is repeated rightward into A,B,C.
+  // The directive row is removed.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Acme';
+    sh.getCell('B1').value = 'Beta';
+    sh.getCell('C1').value = 'Gamma';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 005 - round-half-away-from-zero
+//
+// Concept: ROUND uses half-away-from-zero rounding, matching Excel's
+// ROUND(). Distinguishes the spec from JS Math.round (half-to-+Inf) and
+// from banker's rounding (IEEE 754 default).
+// Spec section: language.md "Numeric Functions / ROUND".
+// ---------------------------------------------------------------------------
+async function build005() {
+  const dir = join(FIXTURES, '005-round-half-away-from-zero');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'round-half-away-from-zero'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Input';
+    sh.getCell('B1').value = 'Rounded';
+    sh.getCell('A2').value = '{{ [Value] }}';
+    sh.getCell('B2').value = '{{ ROUND([Value], 0) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — exercise positive and negative .5 boundaries
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Value';
+    sh.getCell('A2').value = 2.5;
+    sh.getCell('A3').value = -2.5;
+    sh.getCell('A4').value = 1.4;
+    sh.getCell('A5').value = -1.4;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  // Per spec: half-away-from-zero. ROUND(2.5,0)=3, ROUND(-2.5,0)=-3,
+  // ROUND(1.4,0)=1, ROUND(-1.4,0)=-1.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Input';
+    sh.getCell('B1').value = 'Rounded';
+    sh.getCell('A2').value = 2.5;
+    sh.getCell('B2').value = 3;
+    sh.getCell('A3').value = -2.5;
+    sh.getCell('B3').value = -3;
+    sh.getCell('A4').value = 1.4;
+    sh.getCell('B4').value = 1;
+    sh.getCell('A5').value = -1.4;
+    sh.getCell('B5').value = -1;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 await build001();
 await build002();
 await build003();
-console.log('built fixtures 001, 002, 003');
+await build004();
+await build005();
+console.log('built fixtures 001-005');
