@@ -25,10 +25,17 @@
   "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "xl3-conformance": "./dist/bin/conformance.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./conformance-runner": {
+      "types": "./dist/conformance-runner.d.ts",
+      "import": "./dist/conformance-runner.js"
     }
   },
   "files": [
@@ -41,6 +48,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "conformance": "node dist/bin/conformance.js --fixture-dir=conformance/fixtures",
     "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
