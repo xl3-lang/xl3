@@ -17,6 +17,7 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   `TEXT()`, rich-text cells, cached formula results, and `source_sheet` prefix
   matching, including negative half-away numeric rounding.
 - `expected_error` conformance fixture mode for required failure cases.
+- Source formula cells without cached results now report an error.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 

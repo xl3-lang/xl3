@@ -106,8 +106,8 @@ effective text/value:
 - Plain string, number, boolean, and date cells are read as their cell values.
 - Rich-text cells are read as the concatenation of their text runs, in order.
 - Formula cells are not recalculated by XTL. If the workbook contains a cached
-  formula result, that cached result is used. If no cached result is available,
-  behavior is implementation-defined.
+  formula result, that cached result is used. If a formula cell is read as a
+  source data value and no cached result is available, this is an error.
 
 ## Cell Evaluation
 

@@ -133,10 +133,22 @@ function parseCellValue(cell: ExcelJS.Cell): unknown {
 
   // Formula result
   if (typeof v === 'object' && 'result' in v) {
-    return (v as { result: unknown }).result;
+    const result = (v as { result: unknown }).result;
+    if (result === undefined && isFormulaValue(v)) {
+      throw new Error(`Formula cell ${cell.address} has no cached result`);
+    }
+    return result;
+  }
+
+  if (typeof v === 'object' && isFormulaValue(v)) {
+    throw new Error(`Formula cell ${cell.address} has no cached result`);
   }
 
   return v;
+}
+
+function isFormulaValue(v: object): boolean {
+  return 'formula' in v || 'sharedFormula' in v;
 }
 
 export function columnSet(headers: string[]): Set<string> {

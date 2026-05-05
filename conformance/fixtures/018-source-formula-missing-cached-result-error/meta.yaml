@@ -1,0 +1,6 @@
+description: Source formula cells without cached results report an error.
+spec_section: evaluation.md "Cell Text Extraction"
+spec_version: "0.1"
+tags: [cell-text, formula, source, error]
+verified_by: [manual-script]
+expected_error: "Formula cell A2 has no cached result"

@@ -876,6 +876,45 @@ async function build017() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 018 - source-formula-missing-cached-result-error
+//
+// Concept: XTL does not recalculate source formulas; a source formula cell with
+// no cached result is an error.
+// Spec section: evaluation.md "Cell Text Extraction".
+// ---------------------------------------------------------------------------
+async function build018() {
+  const dir = join(FIXTURES, '018-source-formula-missing-cached-result-error');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-formula-missing-cached-result-error'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Total';
+    sh.getCell('A2').value = '{{ [Total] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Total is a formula cell with no cached result.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Total';
+    sh.getCell('B1').value = 'Left';
+    sh.getCell('C1').value = 'Right';
+    sh.getCell('A2').value = { formula: 'B2+C2' };
+    sh.getCell('B2').value = 20;
+    sh.getCell('C2').value = 22;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
 await build001();
 await build002();
 await build003();
@@ -893,4 +932,5 @@ await build014();
 await build015();
 await build016();
 await build017();
-console.log('built fixtures 001-017');
+await build018();
+console.log('built fixtures 001-018');
