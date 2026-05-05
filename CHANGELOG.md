@@ -28,6 +28,12 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   metadata.
 - Stage 2 merged-range and style/numFmt preservation fixtures plus canonical
   diff/report refinements.
+- Stage 2 canonicalizer now normalizes attribute quote style, drops
+  insignificant whitespace inside closing tags, and collapses empty-element
+  forms (`<x></x>` ↔ `<x/>`) per ADR-0006 rule 3.
+- AUTHORING.md flags the Stage 2 ExcelJS round-trip caveat and points cross-
+  writer canonicalizer coverage at the unit tests until an Excel-authored
+  Stage 2 fixture lands.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 
