@@ -1,21 +1,21 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>xl3 - A conformance-tested standard for Excel templates</title>
+    <title>xl3 - Excel 변환을 위한 검증 가능한 표준</title>
     <meta
       name="description"
-      content="xl3 defines a small, conformance-tested language for Excel-to-Excel transformation. Templates are workbooks, data is a workbook, and output is a workbook."
+      content="xl3는 Excel-to-Excel 변환을 위한 작고 conformance로 검증되는 템플릿 언어를 정의합니다."
     >
     <meta property="og:title" content="xl3 - Excel-to-Excel transformation, specified">
     <meta
       property="og:description"
-      content="A small, conformance-tested language for Excel workbook templates."
+      content="Excel workbook 템플릿을 위한 작고 검증 가능한 언어입니다."
     >
     <meta property="og:type" content="website">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23217846'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='24' font-weight='700' fill='white'%3Exl3%3C/text%3E%3C/svg%3E">
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="../styles.css">
   </head>
   <body>
     <header class="site-header">
@@ -28,7 +28,7 @@
         <a href="#standard">Standard</a>
         <a href="#conformance">Conformance</a>
         <a href="#use">Use</a>
-        <a href="./ko/">한국어</a>
+        <a href="../">English</a>
       </nav>
     </header>
 
@@ -36,14 +36,14 @@
       <section class="hero">
         <div class="hero-copy">
           <p class="kicker">XTL 0.1 draft · TypeScript reference implementation</p>
-          <h1>Excel-to-Excel transformation, specified.</h1>
+          <h1>Excel-to-Excel 변환, 명세로 정의합니다.</h1>
           <p class="lead">
-            xl3 defines a small, conformance-tested language for using Excel
-            workbooks as templates. Templates are workbooks. Data is a workbook.
-            The output is still a workbook.
+            xl3는 Excel workbook을 템플릿으로 사용하기 위한 작고
+            conformance로 검증되는 언어를 정의합니다. 템플릿도 workbook이고,
+            데이터도 workbook이며, 결과도 여전히 workbook입니다.
           </p>
           <div class="hero-links">
-            <a class="button primary" href="#walkthrough">Read the model</a>
+            <a class="button primary" href="#walkthrough">모델 보기</a>
             <a class="button" href="https://github.com/jinyoung4478/xl3">GitHub</a>
             <a class="button" href="https://www.npmjs.com/package/xl3">npm</a>
           </div>
@@ -59,11 +59,11 @@
       <section id="walkthrough" class="walkthrough-section" aria-labelledby="walkthrough-title">
         <div class="section-intro">
           <p class="kicker">Interactive walkthrough</p>
-          <h2 id="walkthrough-title">The workbook is the unit of transformation.</h2>
+          <h2 id="walkthrough-title">변환의 단위는 workbook입니다.</h2>
           <p>
-            Scroll through the model. The example workbook on the right changes
-            as each rule becomes active. The Excel visual stays familiar, but
-            the behavior is defined by XTL and checked by conformance fixtures.
+            모델을 순서대로 따라가 보세요. 각 규칙이 활성화될 때 오른쪽 Excel
+            예시가 바뀝니다. 화면은 익숙한 Excel 형태를 유지하지만, 동작은 XTL과
+            conformance fixture로 정의됩니다.
           </p>
         </div>
 
@@ -71,34 +71,34 @@
           <div class="steps" aria-label="xl3 model steps">
             <article class="step is-active" data-step="data" tabindex="0">
               <span class="step-index">01</span>
-              <h3>Data is a workbook</h3>
-              <p>Source rows come from a normal `.xlsx` file. The first row names the fields.</p>
+              <h3>데이터는 workbook입니다</h3>
+              <p>원본 row는 일반 `.xlsx` 파일에서 옵니다. 첫 row는 field 이름이 됩니다.</p>
             </article>
             <article class="step" data-step="template" tabindex="0">
               <span class="step-index">02</span>
-              <h3>Templates are workbooks</h3>
-              <p>Cells contain ordinary layout plus XTL expressions such as `{{ [Customer] }}`.</p>
+              <h3>템플릿도 workbook입니다</h3>
+              <p>셀에는 일반 레이아웃과 `{{ [Customer] }}` 같은 XTL 표현식이 함께 들어갑니다.</p>
             </article>
             <article class="step" data-step="render" tabindex="0">
               <span class="step-index">03</span>
-              <h3>Rendering preserves Excel</h3>
-              <p>The result workbook keeps the sheet structure, number formats, styles, and merged cells.</p>
+              <h3>렌더링은 Excel을 보존합니다</h3>
+              <p>결과 workbook은 sheet 구조, 숫자 형식, 스타일, 병합 셀을 보존합니다.</p>
             </article>
             <article class="step" data-step="conformance" tabindex="0">
               <span class="step-index">04</span>
-              <h3>Behavior is testable</h3>
-              <p>Stage 1 checks cell values. Stage 2 compares canonical OOXML for formatting and structure.</p>
+              <h3>동작은 테스트 가능합니다</h3>
+              <p>Stage 1은 셀 값을 확인하고, Stage 2는 서식과 구조를 위해 canonical OOXML을 비교합니다.</p>
             </article>
           </div>
 
           <div class="preview-column">
             <div class="preview-caption">
               <span id="previewKind">data.xlsx</span>
-              <strong id="previewTitle">A workbook supplies source rows.</strong>
+              <strong id="previewTitle">workbook이 원본 row를 제공합니다.</strong>
             </div>
             <div id="excelPreview" class="excel-window" aria-live="polite"></div>
             <div class="preview-notes" id="previewNotes">
-              Header row fields become XTL source columns.
+              Header row의 field가 XTL source column이 됩니다.
             </div>
           </div>
         </div>
@@ -107,20 +107,19 @@
       <section id="standard" class="text-section">
         <div class="text-grid">
           <div>
-            <p class="kicker">Why a standard?</p>
-            <h2>Excel automation should not be defined by one implementation.</h2>
+            <p class="kicker">왜 표준인가요?</p>
+            <h2>Excel 자동화의 동작은 하나의 구현체로 정의되면 안 됩니다.</h2>
           </div>
           <div class="prose">
             <p>
-              Many Excel automation tools are useful, but their behavior is often
-              whatever a single library happens to do. That makes ports difficult
-              and makes edge cases hard to discuss.
+              많은 Excel 자동화 도구는 유용하지만, 동작이 특정 라이브러리가 우연히
+              하는 일로 정의되는 경우가 많습니다. 그러면 다른 언어로 포팅하기 어렵고,
+              edge case를 논의하기도 어렵습니다.
             </p>
             <p>
-              xl3 takes the opposite route: prose specification first, executable
-              fixtures second, reference implementation third. The JavaScript
-              package is useful, but the intended contract is XTL plus the
-              conformance corpus.
+              xl3는 반대로 갑니다. 먼저 prose specification을 두고, 그 다음 실행 가능한
+              fixture를 두며, reference implementation은 그 뒤에 둡니다. JavaScript
+              package는 유용하지만, 의도된 계약은 XTL과 conformance corpus입니다.
             </p>
           </div>
         </div>
@@ -129,26 +128,26 @@
       <section id="conformance" class="conformance-section" aria-labelledby="conformance-title">
         <div class="section-intro">
           <p class="kicker">Conformance</p>
-          <h2 id="conformance-title">Formatting is part of the result.</h2>
+          <h2 id="conformance-title">서식도 결과의 일부입니다.</h2>
           <p>
-            A value-only comparison is not enough for Excel. xl3 separates the
-            bootstrap cell-value stage from canonical OOXML comparison.
+            Excel에서는 값만 비교하는 것으로 충분하지 않습니다. xl3는 cell-value
+            bootstrap stage와 canonical OOXML 비교를 분리합니다.
           </p>
         </div>
         <div class="stage-grid">
           <article>
             <h3>Stage 1</h3>
-            <p>Compares worksheet names and observable cell values. Useful for language semantics.</p>
+            <p>worksheet 이름과 관찰 가능한 셀 값을 비교합니다. 언어 의미론 검증에 유용합니다.</p>
             <code>npm run conformance</code>
           </article>
           <article>
             <h3>Stage 2</h3>
-            <p>Compares canonical workbook packages, including styles, number formats, merges, and structure.</p>
+            <p>스타일, 숫자 형식, 병합, 구조를 포함한 canonical workbook package를 비교합니다.</p>
             <code>xl3-conformance --comparison-stage=2</code>
           </article>
           <article>
             <h3>Current corpus</h3>
-            <p>The TypeScript reference implementation currently passes the XTL 0.1 fixture corpus.</p>
+            <p>TypeScript reference implementation은 현재 XTL 0.1 fixture corpus를 통과합니다.</p>
             <code>27 / 27 fixtures</code>
           </article>
         </div>
@@ -157,7 +156,7 @@
       <section id="use" class="use-section" aria-labelledby="use-title">
         <div class="section-intro">
           <p class="kicker">Use it</p>
-          <h2 id="use-title">Small API, explicit contract.</h2>
+          <h2 id="use-title">작은 API, 명시적인 계약.</h2>
         </div>
         <div class="code-pair">
           <pre><code>npm install xl3</code></pre>
@@ -170,13 +169,13 @@ const outputs = await convert(templateBuffer, dataBuffer);
     </main>
 
     <footer class="site-footer">
-      <span>xl3 is not affiliated with Microsoft.</span>
+      <span>xl3는 Microsoft와 관련이 없습니다.</span>
       <a href="https://github.com/jinyoung4478/xl3">GitHub</a>
       <a href="https://github.com/jinyoung4478/xl3/tree/main/spec">Spec</a>
       <a href="https://github.com/jinyoung4478/xl3/tree/main/conformance">Conformance</a>
-      <a href="./ko/">한국어</a>
+      <a href="../">English</a>
     </footer>
 
-    <script src="./script.js"></script>
+    <script src="../script.js"></script>
   </body>
 </html>
