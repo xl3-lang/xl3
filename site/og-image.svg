@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1f15"/>
+      <stop offset="1" stop-color="#06120b"/>
+    </linearGradient>
+    <linearGradient id="excel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#28a85c"/>
+      <stop offset="1" stop-color="#185c37"/>
+    </linearGradient>
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#1f3a2a" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#grid)" opacity="0.45"/>
+
+  <!-- Soft Excel-green glow -->
+  <circle cx="980" cy="120" r="260" fill="#28a85c" opacity="0.08"/>
+  <circle cx="180" cy="540" r="220" fill="#79c0ff" opacity="0.05"/>
+
+  <!-- Brand mark -->
+  <g transform="translate(80,90)">
+    <rect width="96" height="96" rx="22" fill="url(#excel)"/>
+    <text x="48" y="66" text-anchor="middle"
+          font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+          font-size="42" font-weight="800" fill="#ffffff" letter-spacing="-1">xl3</text>
+  </g>
+  <text x="200" y="158"
+        font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+        font-size="22" fill="#7ee787" letter-spacing="2">XTL 0.1 · TYPESCRIPT REFERENCE</text>
+
+  <!-- Title -->
+  <text x="80" y="290"
+        font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+        font-size="84" font-weight="800" fill="#f6f8f7" letter-spacing="-2">Excel-to-Excel</text>
+  <text x="80" y="378"
+        font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+        font-size="84" font-weight="800" fill="#f6f8f7" letter-spacing="-2">transformation,</text>
+  <text x="80" y="466"
+        font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+        font-size="84" font-weight="800" fill="#7ee787" letter-spacing="-2">specified.</text>
+
+  <!-- Subtitle row -->
+  <g transform="translate(80,540)">
+    <rect width="14" height="14" rx="3" fill="#28a85c"/>
+    <text x="28" y="13"
+          font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+          font-size="22" fill="#c9d1d9">Templates are workbooks. Data is a workbook. Output is still a workbook.</text>
+  </g>
+
+  <!-- Footer line -->
+  <text x="80" y="595"
+        font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+        font-size="18" fill="#8b949e" letter-spacing="1">xl3.io · github.com/jinyoung4478/xl3</text>
+</svg>
