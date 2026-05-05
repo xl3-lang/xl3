@@ -36,7 +36,10 @@ to:
 ## Consequences
 
 - The reference implementation (`src/functions.ts`) currently constructs a local-midnight `Date` and must be changed to a UTC-midnight `Date`.
-- A `TODAY()` conformance fixture is **deferred**: the current fixture model assumes a static `expected.xlsx`, but `TODAY()` is render-time-dependent. A future runner-protocol amendment (or a dedicated "structural" fixture category) must add support for assertions of the form "this cell matches the UTC date computed at runner-start time, formatted as `YYYY-MM-DD`." Until that lands, `TODAY()` is covered only by reference-impl unit tests.
+- A `TODAY()` conformance fixture requires a dynamic assertion because the
+  expected value is render-time-dependent. ADR-0005 defines the runner-protocol
+  mechanism; a follow-up fixture can assert that a cell matches the UTC date
+  computed at runner-start time, formatted as `YYYY-MM-DD`.
 - This decision does not introduce a `_config.timezone` knob. A future ADR may revisit if locale-aware date stamping becomes a frequent enough user need.
 - The earlier "current local date at render time" wording is retired; existing templates that depended on local timezone behavior will see a one-day shift in the worst case.
 

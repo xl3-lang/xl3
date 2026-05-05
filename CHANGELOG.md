@@ -21,6 +21,8 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 - Clarified that `TEXT()` formats outside the XTL 0.1 core table are
   implementation-defined extensions, not portable conformance requirements.
 - Error fixtures for output filename sanitization and numFmt coercion failures.
+- ADR-0005 dynamic conformance assertion protocol for render-time values such
+  as `TODAY()`.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 

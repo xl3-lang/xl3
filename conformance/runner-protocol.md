@@ -28,6 +28,12 @@ Error fixtures omit `expected.xlsx` and `expected/`. They declare
 `expected_error` in `meta.yaml`; the expected result is that the implementation
 reports an error whose message contains the declared text.
 
+Dynamic fixtures omit `expected.xlsx` and `expected/`. They declare
+`expected_dynamic` in `meta.yaml`; the expected result is computed by the runner
+from the runner-start timestamp and the declared assertion rules. Dynamic
+fixtures are reserved for behavior that is explicitly time-dependent in the
+spec, such as `TODAY()`.
+
 ## Required `meta.yaml` fields
 
 ```yaml
@@ -43,6 +49,7 @@ Optional fields:
 verified_by: [hand | excel-formulas | manual-script | reference-impl]
 expected_warnings: [string, ...]   # warnings the impl should emit
 expected_error: string             # expected error message substring; no expected output is required
+expected_dynamic: string           # dynamic assertion kind; no expected output is required
 skip_reason: string                # if fixture is currently broken
 ```
 
@@ -51,6 +58,40 @@ A runner MUST mark an `expected_error` fixture as:
 - `pass` when the implementation reports an error containing `expected_error`
 - `fail` when the implementation succeeds
 - `fail` when the implementation reports a different error
+
+`expected_error` and `expected_dynamic` are mutually exclusive.
+
+## Dynamic assertions
+
+Dynamic assertions make render-time behavior testable without committing a
+stale `expected.xlsx`. A runner MUST capture a single runner-start timestamp
+before executing the first fixture and use that timestamp for every dynamic
+fixture in the run. This avoids midnight-boundary differences between fixtures
+within the same report.
+
+XTL 0.1 defines one dynamic assertion kind:
+
+```yaml
+expected_dynamic: utc_today
+dynamic_cells:
+  - sheet: Report
+    cell: A2
+    format: YYYY-MM-DD
+```
+
+For `utc_today`, the expected value for each listed cell is the UTC calendar
+date from the runner-start timestamp, formatted with the listed XTL `TEXT()`
+date format. The implementation output MUST contain the expected string value
+at each listed sheet/cell coordinate.
+
+A runner MUST mark an `expected_dynamic` fixture as:
+
+- `pass` when the implementation succeeds and every listed dynamic cell matches
+- `fail` when the implementation reports an error
+- `fail` when any listed dynamic cell differs from the computed expected value
+
+Runners that do not implement a declared `expected_dynamic` kind MUST mark the
+fixture as `skip` and include a reason. They MUST NOT report it as passed.
 
 ## Output comparison
 

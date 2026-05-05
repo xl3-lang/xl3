@@ -49,6 +49,18 @@ part of the expected diagnostic:
 expected_error: "Source sheet"
 ```
 
+For dynamic fixtures, omit `expected.xlsx` and `expected/`, declare the dynamic
+assertion kind, and list the cells whose expected values are computed by the
+runner:
+
+```yaml
+expected_dynamic: utc_today
+dynamic_cells:
+  - sheet: Report
+    cell: A2
+    format: YYYY-MM-DD
+```
+
 ## Hard rules
 
 - **Expected outputs are authored, not generated.** If you can't hand-verify, you must independently verify. Treat `expected.xlsx` as part of the spec, not as test output.
@@ -58,6 +70,8 @@ expected_error: "Source sheet"
 - **Templates must be human-readable.** Avoid binary-only Excel features (custom XML, macros) in fixtures unless explicitly testing them.
 - **Error fixtures assert stable diagnostics only.** Match a short substring that
   describes the contract, not volatile details such as absolute paths.
+- **Dynamic fixtures assert only spec-defined dynamic values.** Do not use them
+  to avoid authoring an expected workbook for static behavior.
 
 ## When the spec and a fixture disagree
 

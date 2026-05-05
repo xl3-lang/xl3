@@ -17,6 +17,7 @@ conformance/
         ├── expected/            ← OR a directory of files (multi-file group case)
         │   └── *.xlsx
         ├── no expected output   ← for expected_error fixtures
+        ├── no static expected   ← for expected_dynamic fixtures
         └── meta.yaml            ← description, spec section refs, tags
 ```
 
@@ -34,6 +35,10 @@ A fixture passes if the implementation, given `template.xlsx` and `data.xlsx`, p
 An error fixture passes when the implementation reports an error containing the
 fixture's `expected_error` text. Error fixtures do not include `expected.xlsx`
 or an `expected/` directory.
+
+A dynamic fixture passes when the implementation's output matches the dynamic
+assertions declared by `expected_dynamic` in `meta.yaml`. Dynamic fixtures do
+not include `expected.xlsx` or an `expected/` directory.
 
 ## Versioning
 
