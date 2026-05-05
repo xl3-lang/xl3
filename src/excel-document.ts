@@ -6,6 +6,12 @@ export interface WorkbookDocument {
   hasWorksheet(name: string): boolean;
   removeWorksheet(name: string): void;
   cloneWorksheet(sourceName: string, targetName: string): ExcelJS.Worksheet | undefined;
+  spliceRowsPreservingMerges(
+    sheet: ExcelJS.Worksheet,
+    start: number,
+    deleteCount: number,
+    ...rows: unknown[][]
+  ): void;
   writeBuffer(): Promise<ArrayBuffer>;
 }
 
@@ -60,9 +66,72 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
     return newSheet;
   }
 
+  spliceRowsPreservingMerges(
+    sheet: ExcelJS.Worksheet,
+    start: number,
+    deleteCount: number,
+    ...rows: unknown[][]
+  ) {
+    const rowDelta = rows.length - deleteCount;
+    const preserveFromRow = deleteCount > 0 ? start + deleteCount : start;
+    const saved = saveMergesFromRow(sheet, preserveFromRow);
+    for (const merge of saved) {
+      try { sheet.unMergeCells(merge.top, merge.left, merge.bottom, merge.right); } catch { /* ok */ }
+    }
+
+    sheet.spliceRows(start, deleteCount, ...rows);
+
+    for (const merge of saved) {
+      try {
+        sheet.mergeCells(
+          merge.top + rowDelta,
+          merge.left,
+          merge.bottom + rowDelta,
+          merge.right,
+        );
+      } catch { /* overlap guard */ }
+    }
+  }
+
   async writeBuffer(): Promise<ArrayBuffer> {
     return await this.workbook.xlsx.writeBuffer() as ArrayBuffer;
   }
+}
+
+interface MergeRect { top: number; left: number; bottom: number; right: number }
+
+function saveMergesFromRow(sheet: ExcelJS.Worksheet, fromRow: number): MergeRect[] {
+  const result: MergeRect[] = [];
+  const merges = sheet.model.merges ?? [];
+  for (const merge of merges) {
+    const decoded = decodeMerge(merge as string);
+    if (decoded && decoded.top >= fromRow) result.push(decoded);
+  }
+  return result;
+}
+
+function decodeMerge(ref: string): MergeRect | null {
+  const parts = ref.split(':');
+  if (parts.length !== 2) return null;
+  const topLeft = decodeCell(parts[0]!);
+  const bottomRight = decodeCell(parts[1]!);
+  if (!topLeft || !bottomRight) return null;
+  return {
+    top: topLeft.row,
+    left: topLeft.col,
+    bottom: bottomRight.row,
+    right: bottomRight.col,
+  };
+}
+
+function decodeCell(ref: string): { row: number; col: number } | null {
+  const match = ref.match(/^([A-Z]+)(\d+)$/);
+  if (!match) return null;
+  let col = 0;
+  for (const ch of match[1]!) {
+    col = col * 26 + (ch.charCodeAt(0) - 64);
+  }
+  return { row: Number(match[2]), col };
 }
 
 // ADR-0002: Output filename sanitization.

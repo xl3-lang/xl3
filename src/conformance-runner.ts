@@ -8,9 +8,18 @@
 // ports targeting cell-equivalent conformance.
 
 import ExcelJS from 'exceljs';
+import JSZip from 'jszip';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { convert } from './index.js';
+
+export type ComparisonStage = 1 | 2;
+
+export interface DynamicCellAssertion {
+  sheet: string;
+  cell: string;
+  format: string;
+}
 
 export interface FixtureMeta {
   description: string;
@@ -20,6 +29,9 @@ export interface FixtureMeta {
   verified_by: string[];
   expected_warnings: string[];
   expected_error?: string;
+  expected_dynamic?: string;
+  dynamic_cells: DynamicCellAssertion[];
+  comparison_stage: ComparisonStage;
   skip_reason?: string;
 }
 
@@ -38,6 +50,7 @@ export interface ConformanceReport {
   implementation: string;
   version: string;
   spec_version: string;
+  comparison_stage: ComparisonStage;
   results: FixtureResult[];
   summary: {
     total: number;
@@ -54,6 +67,8 @@ export interface RunOptions {
   filter?: string;
   /** Restrict to fixtures whose declared spec_version matches. */
   specVersion?: string;
+  /** Compare static output fixtures using Stage 1 cell values or Stage 2 OOXML. */
+  comparisonStage?: ComparisonStage;
 }
 
 export async function runConformance(opts: RunOptions): Promise<ConformanceReport> {
@@ -64,9 +79,11 @@ export async function runConformance(opts: RunOptions): Promise<ConformanceRepor
     .sort();
 
   const results: FixtureResult[] = [];
+  const runnerStart = new Date();
+  const comparisonStage = opts.comparisonStage ?? 1;
   for (const name of fixtures) {
     const dir = join(opts.fixtureDir, name);
-    results.push(await runOne(name, dir, opts));
+    results.push(await runOne(name, dir, { ...opts, comparisonStage }, runnerStart));
   }
 
   const summary = {
@@ -81,12 +98,18 @@ export async function runConformance(opts: RunOptions): Promise<ConformanceRepor
     implementation: 'xl3-js',
     version: pkgVersion(),
     spec_version: opts.specVersion ?? '0.1',
+    comparison_stage: comparisonStage,
     results,
     summary,
   };
 }
 
-async function runOne(name: string, dir: string, opts: RunOptions): Promise<FixtureResult> {
+async function runOne(
+  name: string,
+  dir: string,
+  opts: RunOptions & { comparisonStage: ComparisonStage },
+  runnerStart: Date,
+): Promise<FixtureResult> {
   const start = Date.now();
   let meta: FixtureMeta;
   try {
@@ -130,8 +153,27 @@ async function runOne(name: string, dir: string, opts: RunOptions): Promise<Fixt
   try {
     const tmpl = await readFile(join(dir, 'template.xlsx'));
     const data = await readFile(join(dir, 'data.xlsx'));
+    if (meta.expected_error && meta.expected_dynamic) {
+      return {
+        fixture: name,
+        status: 'error',
+        duration_ms: Date.now() - start,
+        error: 'meta.yaml: expected_error and expected_dynamic are mutually exclusive',
+      };
+    }
     if (meta.expected_error) {
       return await runExpectedErrorFixture(name, start, tmpl, data, meta.expected_error);
+    }
+    if (meta.expected_dynamic) {
+      return await runDynamicFixture(name, start, tmpl, data, meta, runnerStart);
+    }
+    if (meta.comparison_stage > opts.comparisonStage) {
+      return {
+        fixture: name,
+        status: 'skip',
+        duration_ms: Date.now() - start,
+        skip_reason: `requires comparison_stage ${meta.comparison_stage}; runner is stage ${opts.comparisonStage}`,
+      };
     }
 
     const expected = await loadExpected(dir);
@@ -145,7 +187,7 @@ async function runOne(name: string, dir: string, opts: RunOptions): Promise<Fixt
     }
 
     const out = await convert(toArrayBuffer(tmpl), toArrayBuffer(data));
-    const diffs = await diffOutput(out, expected);
+    const diffs = await diffOutput(out, expected, meta.comparison_stage);
 
     if (diffs.length === 0) {
       return { fixture: name, status: 'pass', duration_ms: Date.now() - start };
@@ -162,6 +204,78 @@ async function runOne(name: string, dir: string, opts: RunOptions): Promise<Fixt
       status: 'error',
       duration_ms: Date.now() - start,
       error: (e as Error).message,
+    };
+  }
+}
+
+async function runDynamicFixture(
+  name: string,
+  start: number,
+  tmpl: Buffer,
+  data: Buffer,
+  meta: FixtureMeta,
+  runnerStart: Date,
+): Promise<FixtureResult> {
+  if (meta.expected_dynamic !== 'utc_today') {
+    return {
+      fixture: name,
+      status: 'skip',
+      duration_ms: Date.now() - start,
+      skip_reason: `unsupported expected_dynamic kind "${meta.expected_dynamic}"`,
+    };
+  }
+  if (meta.dynamic_cells.length === 0) {
+    return {
+      fixture: name,
+      status: 'error',
+      duration_ms: Date.now() - start,
+      error: 'meta.yaml: expected_dynamic requires at least one dynamic_cells entry',
+    };
+  }
+
+  const expectedExample = formatUtcToday(runnerStart, meta.dynamic_cells[0]!.format);
+  try {
+    const out = await convert(toArrayBuffer(tmpl), toArrayBuffer(data));
+    if (out.length !== 1) {
+      return {
+        fixture: name,
+        status: 'fail',
+        duration_ms: Date.now() - start,
+        diff: `expected single output file for dynamic fixture, got ${out.length}`,
+      };
+    }
+
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(out[0]!.data);
+    const diffs: string[] = [];
+    for (const assertion of meta.dynamic_cells) {
+      const sheet = wb.getWorksheet(assertion.sheet);
+      if (!sheet) {
+        diffs.push(`missing sheet: ${assertion.sheet}`);
+        continue;
+      }
+      const actual = comparable(sheet.getCell(assertion.cell).value);
+      const cellExpected = formatUtcToday(runnerStart, assertion.format);
+      if (actual !== cellExpected) {
+        diffs.push(`${assertion.sheet}@${assertion.cell}: actual=${JSON.stringify(actual)}, expected=${JSON.stringify(cellExpected)}`);
+      }
+    }
+
+    if (diffs.length === 0) {
+      return { fixture: name, status: 'pass', duration_ms: Date.now() - start };
+    }
+    return {
+      fixture: name,
+      status: 'fail',
+      duration_ms: Date.now() - start,
+      diff: diffs.join('\n'),
+    };
+  } catch (e) {
+    return {
+      fixture: name,
+      status: 'fail',
+      duration_ms: Date.now() - start,
+      diff: `expected dynamic output ${expectedExample}, got error ${(e as Error).message}`,
     };
   }
 }
@@ -227,6 +341,7 @@ async function loadExpected(dir: string): Promise<ExpectedFile[] | null> {
 async function diffOutput(
   out: { filename: string; data: ArrayBuffer }[],
   expected: ExpectedFile[],
+  comparisonStage: ComparisonStage,
 ): Promise<string[]> {
   const diffs: string[] = [];
   const isMultiFile = !(expected.length === 1 && expected[0]!.filename === 'expected.xlsx');
@@ -243,21 +358,102 @@ async function diffOutput(
       const e = expectedByName.get(fn);
       if (!a) { diffs.push(`missing output file: ${fn}`); continue; }
       if (!e) { diffs.push(`unexpected output file: ${fn}`); continue; }
-      const aCells = await loadCells(a);
-      const eCells = await loadCells(toArrayBuffer(e));
-      diffCellMaps(aCells, eCells, diffs, fn);
+      if (comparisonStage === 2) {
+        await diffCanonicalWorkbooks(a, toArrayBuffer(e), diffs, fn);
+      } else {
+        const aCells = await loadCells(a);
+        const eCells = await loadCells(toArrayBuffer(e));
+        diffCellMaps(aCells, eCells, diffs, fn);
+      }
     }
   } else {
     if (out.length !== 1) {
       diffs.push(`expected single output file, got ${out.length}`);
       return diffs;
     }
-    const aCells = await loadCells(out[0]!.data);
-    const eCells = await loadCells(toArrayBuffer(expected[0]!.buf));
-    diffCellMaps(aCells, eCells, diffs);
+    if (comparisonStage === 2) {
+      await diffCanonicalWorkbooks(out[0]!.data, toArrayBuffer(expected[0]!.buf), diffs);
+    } else {
+      const aCells = await loadCells(out[0]!.data);
+      const eCells = await loadCells(toArrayBuffer(expected[0]!.buf));
+      diffCellMaps(aCells, eCells, diffs);
+    }
   }
 
   return diffs;
+}
+
+async function diffCanonicalWorkbooks(
+  actual: ArrayBuffer,
+  expected: ArrayBuffer,
+  diffs: string[],
+  fnPrefix?: string,
+) {
+  const a = await canonicalizeXlsx(actual);
+  const e = await canonicalizeXlsx(expected);
+  const parts = new Set([...a.keys(), ...e.keys()]);
+  for (const part of [...parts].sort()) {
+    const av = a.get(part);
+    const ev = e.get(part);
+    const where = fnPrefix ? `[${fnPrefix}] ${part}` : part;
+    if (av === undefined) { diffs.push(`missing package part: ${where}`); continue; }
+    if (ev === undefined) { diffs.push(`unexpected package part: ${where}`); continue; }
+    if (av !== ev) diffs.push(`${where}: canonical content differs`);
+  }
+}
+
+async function canonicalizeXlsx(buf: ArrayBuffer): Promise<Map<string, string>> {
+  const zip = await JSZip.loadAsync(buf);
+  const out = new Map<string, string>();
+  const names = Object.keys(zip.files)
+    .filter((name) => !zip.files[name]!.dir)
+    .sort();
+
+  for (const name of names) {
+    const file = zip.files[name]!;
+    if (name.endsWith('.xml') || name.endsWith('.rels')) {
+      const xml = await file.async('string');
+      out.set(name, canonicalizeXml(name, xml));
+    } else {
+      const data = await file.async('uint8array');
+      out.set(name, Buffer.from(data).toString('base64'));
+    }
+  }
+  return out;
+}
+
+function canonicalizeXml(partName: string, xml: string): string {
+  let out = xml
+    .replace(/^\uFEFF/, '')
+    .replace(/<\?xml[^>]*\?>\s*/g, '')
+    .replace(/\r\n?/g, '\n')
+    .trim();
+
+  if (partName === 'docProps/core.xml') {
+    out = out
+      .replace(/<dc:creator\b[^>]*>[\s\S]*?<\/dc:creator>/g, '')
+      .replace(/<cp:lastModifiedBy\b[^>]*>[\s\S]*?<\/cp:lastModifiedBy>/g, '')
+      .replace(/<dcterms:created\b[^>]*>[\s\S]*?<\/dcterms:created>/g, '')
+      .replace(/<dcterms:modified\b[^>]*>[\s\S]*?<\/dcterms:modified>/g, '');
+  }
+
+  out = out.replace(/\s+calcId="[^"]*"/g, '');
+  out = out.replace(/<([A-Za-z_][\w:.-]*)([^<>]*?)(\/?)>/g, (_full, name: string, attrs: string, slash: string) => {
+    if (!attrs.trim()) return `<${name}${slash}>`;
+    const sorted = parseAttrs(attrs).sort((a, b) => a.name.localeCompare(b.name));
+    return `<${name} ${sorted.map((a) => `${a.name}=${a.value}`).join(' ')}${slash}>`;
+  });
+  return out;
+}
+
+function parseAttrs(attrs: string): { name: string; value: string }[] {
+  const result: { name: string; value: string }[] = [];
+  const re = /([^\s=]+)\s*=\s*("[^"]*"|'[^']*')/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(attrs)) !== null) {
+    result.push({ name: m[1]!, value: m[2]! });
+  }
+  return result;
 }
 
 type CellMap = Record<string, Record<string, unknown>>;
@@ -291,6 +487,25 @@ function comparable(v: ExcelJS.CellValue): unknown {
     if (v instanceof Date) return v.toISOString();
   }
   return v;
+}
+
+function formatUtcToday(d: Date, fmt: string): string {
+  const y = d.getUTCFullYear();
+  const M = d.getUTCMonth() + 1;
+  const D = d.getUTCDate();
+  const H = d.getUTCHours();
+  const m = d.getUTCMinutes();
+  const s = d.getUTCSeconds();
+  return fmt
+    .replace('YYYY', String(y))
+    .replace('YY', String(y).slice(-2))
+    .replace('MM', String(M).padStart(2, '0'))
+    .replace('DD', String(D).padStart(2, '0'))
+    .replace('dd', String(D).padStart(2, '0'))
+    .replace('HH', String(H).padStart(2, '0'))
+    .replace('hh', String(H).padStart(2, '0'))
+    .replace('mm', String(m).padStart(2, '0'))
+    .replace('ss', String(s).padStart(2, '0'));
 }
 
 function diffCellMaps(actual: CellMap, expected: CellMap, diffs: string[], fnPrefix?: string) {
@@ -327,8 +542,12 @@ export function parseMeta(text: string): FixtureMeta {
     tags: [],
     verified_by: [],
     expected_warnings: [],
+    dynamic_cells: [],
+    comparison_stage: 1,
   };
-  for (const rawLine of text.split('\n')) {
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i]!;
     const line = rawLine.replace(/#.*$/, '').trimEnd();
     if (!line.trim() || line.startsWith('---')) continue;
 
@@ -341,12 +560,64 @@ export function parseMeta(text: string): FixtureMeta {
       meta[key] = parseInlineList(value);
     } else if (
       key === 'description' || key === 'spec_section' ||
-      key === 'spec_version' || key === 'skip_reason' || key === 'expected_error'
+      key === 'spec_version' || key === 'skip_reason' ||
+      key === 'expected_error' || key === 'expected_dynamic'
     ) {
       meta[key] = stripQuotes(value);
+    } else if (key === 'comparison_stage') {
+      meta.comparison_stage = parseComparisonStage(value);
+    } else if (key === 'dynamic_cells') {
+      meta.dynamic_cells = parseDynamicCells(lines.slice(i + 1));
     }
   }
   return meta;
+}
+
+function parseComparisonStage(v: string): ComparisonStage {
+  const n = Number(stripQuotes(v));
+  return n === 2 ? 2 : 1;
+}
+
+function parseDynamicCells(lines: string[]): DynamicCellAssertion[] {
+  const cells: DynamicCellAssertion[] = [];
+  let current: Partial<DynamicCellAssertion> | null = null;
+
+  const flush = () => {
+    if (current?.sheet && current.cell && current.format) {
+      cells.push({
+        sheet: current.sheet,
+        cell: current.cell,
+        format: current.format,
+      });
+    }
+  };
+
+  for (const raw of lines) {
+    if (!raw.startsWith(' ') && raw.trim()) break;
+    const line = raw.replace(/#.*$/, '').trimEnd();
+    if (!line.trim()) continue;
+    const trimmed = line.trim();
+    if (trimmed.startsWith('- ')) {
+      flush();
+      current = {};
+      const rest = trimmed.slice(2).trim();
+      if (rest) assignDynamicCellField(current, rest);
+    } else if (current) {
+      assignDynamicCellField(current, trimmed);
+    }
+  }
+  flush();
+  return cells;
+}
+
+function assignDynamicCellField(cell: Partial<DynamicCellAssertion>, line: string) {
+  const idx = line.indexOf(':');
+  if (idx < 0) return;
+  const key = line.slice(0, idx).trim();
+  const value = stripQuotes(line.slice(idx + 1).trim());
+  if (key === 'sheet' || key === 'cell' || key === 'format') {
+    cell[key] = value;
+  }
 }
 
 function parseInlineList(v: string): string[] {
@@ -374,7 +645,7 @@ function pkgVersion(): string {
 
 export function formatTextReport(report: ConformanceReport): string {
   const lines: string[] = [];
-  lines.push(`${report.implementation} ${report.version} — XTL ${report.spec_version}`);
+  lines.push(`${report.implementation} ${report.version} — XTL ${report.spec_version} — Stage ${report.comparison_stage}`);
   for (const r of report.results) {
     const status = r.status.toUpperCase().padEnd(5);
     let line = `  ${status} ${r.fixture}  (${r.duration_ms}ms)`;

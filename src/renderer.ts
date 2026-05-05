@@ -12,7 +12,7 @@ import { normalizeTemplate } from './normalizer.js';
 import { evalCell } from './template-eval.js';
 import { applyDirectives } from './data-transform.js';
 import type { FileGroup } from './grouper.js';
-import { ExcelJsWorkbookDocument, sanitizeFilename, sanitizeSheetName } from './excel-document.js';
+import { ExcelJsWorkbookDocument, sanitizeFilename, sanitizeSheetName, type WorkbookDocument } from './excel-document.js';
 
 const VAR_PATTERN = /\{\{.*?\}\}/;
 
@@ -77,7 +77,7 @@ export class Renderer {
           }
           const sheet = document.getWorksheet(st.originalName);
           if (sheet) {
-            this.renderSheet(sheet, st, matchingGroups[0], fileGroup.key);
+            this.renderSheet(document, sheet, st, matchingGroups[0], fileGroup.key);
           }
         }
       } else {
@@ -102,7 +102,7 @@ export class Renderer {
           const newSheet = document.cloneWorksheet(st.originalName, sanitized);
           if (!newSheet) continue;
 
-          this.renderSheet(newSheet, st, sg, fileGroup.key);
+          this.renderSheet(document, newSheet, st, sg, fileGroup.key);
         }
       }
     }
@@ -122,6 +122,7 @@ export class Renderer {
   }
 
   private renderSheet(
+    document: WorkbookDocument,
     sheet: ExcelJS.Worksheet,
     st: SheetTemplate,
     sg: SheetGroup,
@@ -130,14 +131,7 @@ export class Renderer {
     // 0. Remove directive rows (iterate in reverse to keep indices stable)
     const sortedDirectiveRows = [...st.directiveRows].sort((a, b) => b - a);
     for (const rowNum of sortedDirectiveRows) {
-      const saved = saveMergesBelow(sheet, rowNum + 1);
-      for (const m of saved) {
-        try { sheet.unMergeCells(m.top, m.left, m.bottom, m.right); } catch { /* ok */ }
-      }
-      sheet.spliceRows(rowNum, 1);
-      for (const m of saved) {
-        try { sheet.mergeCells(m.top - 1, m.left, m.bottom - 1, m.right); } catch { /* ok */ }
-      }
+      document.spliceRowsPreservingMerges(sheet, rowNum, 1);
     }
 
     // Adjust row positions after directive row removal
@@ -173,14 +167,7 @@ export class Renderer {
           const shiftedBlock = { ...block, startRow: block.startRow + rowShift, endRow: block.endRow + rowShift };
           if (filteredRows.length === 0) {
             if (shiftedBlock.startRow > 0) {
-              const saved = saveMergesBelow(sheet, shiftedBlock.startRow + 1);
-              for (const m of saved) {
-                try { sheet.unMergeCells(m.top, m.left, m.bottom, m.right); } catch { /* ok */ }
-              }
-              sheet.spliceRows(shiftedBlock.startRow, 1);
-              for (const m of saved) {
-                try { sheet.mergeCells(m.top - 1, m.left, m.bottom - 1, m.right); } catch { /* ok */ }
-              }
+              document.spliceRowsPreservingMerges(sheet, shiftedBlock.startRow, 1);
               rowShift -= 1;
             }
           } else {
@@ -190,7 +177,7 @@ export class Renderer {
               dataEndRow: shiftedBlock.endRow,
               directiveRows: [],
             };
-            this.renderDataRows(sheet, asSt, filteredRows);
+            this.renderDataRows(document, sheet, asSt, filteredRows);
             const templateRowCount = shiftedBlock.endRow - shiftedBlock.startRow + 1;
             rowShift += filteredRows.length - templateRowCount;
           }
@@ -252,23 +239,17 @@ export class Renderer {
       // Render data rows
       if (adjustedSt.dataStartRow === 0 || filteredRows.length === 0) {
         if (adjustedSt.dataStartRow > 0) {
-          const saved = saveMergesBelow(sheet, adjustedSt.dataStartRow + 1);
-          for (const m of saved) {
-            try { sheet.unMergeCells(m.top, m.left, m.bottom, m.right); } catch { /* ok */ }
-          }
-          sheet.spliceRows(adjustedSt.dataStartRow, 1);
-          for (const m of saved) {
-            try { sheet.mergeCells(m.top - 1, m.left, m.bottom - 1, m.right); } catch { /* ok */ }
-          }
+          document.spliceRowsPreservingMerges(sheet, adjustedSt.dataStartRow, 1);
         }
         return;
       }
 
-      this.renderDataRows(sheet, adjustedSt, filteredRows);
+      this.renderDataRows(document, sheet, adjustedSt, filteredRows);
     }
   }
 
   private renderDataRows(
+    document: WorkbookDocument,
     sheet: ExcelJS.Worksheet,
     st: SheetTemplate,
     dataRows: Row[],
@@ -302,18 +283,7 @@ export class Renderer {
       const insertCount = totalTargetRows - templateRowCount;
       const insertPoint = st.dataStartRow + templateRowCount;
 
-      const savedMerges = saveMergesBelow(sheet, insertPoint);
-      for (const merge of savedMerges) {
-        try { sheet.unMergeCells(merge.top, merge.left, merge.bottom, merge.right); } catch { /* ok */ }
-      }
-
-      sheet.spliceRows(insertPoint, 0, ...Array(insertCount).fill([]));
-
-      for (const m of savedMerges) {
-        try {
-          sheet.mergeCells(m.top + insertCount, m.left, m.bottom + insertCount, m.right);
-        } catch { /* overlap guard */ }
-      }
+      document.spliceRowsPreservingMerges(sheet, insertPoint, 0, ...Array(insertCount).fill([]));
     }
 
     // 3. Render each data record
@@ -627,45 +597,4 @@ function stripQuotedNumFmt(numFmt: string): string {
     .replace(/"[^"]*"/g, '')
     .replace(/\\./g, '')
     .replace(/\[[^\]]+\]/g, '');
-}
-
-
-interface MergeRect { top: number; left: number; bottom: number; right: number }
-
-/**
- * Collect all merged cell ranges whose top row is >= `fromRow`.
- * ExcelJS's spliceRows doesn't reliably shift merge references,
- * so we save them, unmerge before splice, then reapply with adjusted offsets.
- */
-function saveMergesBelow(sheet: ExcelJS.Worksheet, fromRow: number): MergeRect[] {
-  const result: MergeRect[] = [];
-  const merges = sheet.model.merges ?? [];
-  for (const m of merges) {
-    const decoded = decodeMerge(m as string);
-    if (!decoded) continue;
-    if (decoded.top >= fromRow) {
-      result.push(decoded);
-    }
-  }
-  return result;
-}
-
-/** Decode "A1:F3" style merge string into row/col numbers. */
-function decodeMerge(ref: string): MergeRect | null {
-  const parts = ref.split(':');
-  if (parts.length !== 2) return null;
-  const tl = decodeCell(parts[0]);
-  const br = decodeCell(parts[1]);
-  if (!tl || !br) return null;
-  return { top: tl.row, left: tl.col, bottom: br.row, right: br.col };
-}
-
-function decodeCell(ref: string): { row: number; col: number } | null {
-  const m = ref.match(/^([A-Z]+)(\d+)$/);
-  if (!m) return null;
-  let col = 0;
-  for (const ch of m[1]) {
-    col = col * 26 + (ch.charCodeAt(0) - 64);
-  }
-  return { row: parseInt(m[2], 10), col };
 }

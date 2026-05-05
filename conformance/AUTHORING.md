@@ -39,8 +39,14 @@ description: "Basic per-row substitution with [field] syntax"
 spec_section: "Cell-level variables"
 spec_version: 0.1
 tags: [substitution, basic]
+comparison_stage: 1
 verified_by: [hand]            # or [excel-formulas, manual-script], etc.
 ```
+
+`comparison_stage` is optional and defaults to `1`. Use `2` only for
+static-output fixtures that need canonical OOXML comparison to assert styles,
+merged ranges, images, package structure, or other workbook features that Stage
+1 cell-value comparison cannot observe.
 
 For error fixtures, omit `expected.xlsx` and `expected/`, and declare the stable
 part of the expected diagnostic:

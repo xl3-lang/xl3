@@ -50,6 +50,7 @@ verified_by: [hand | excel-formulas | manual-script | reference-impl]
 expected_warnings: [string, ...]   # warnings the impl should emit
 expected_error: string             # expected error message substring; no expected output is required
 expected_dynamic: string           # dynamic assertion kind; no expected output is required
+comparison_stage: 1 | 2            # minimum comparison stage for static-output fixtures; default is 1
 skip_reason: string                # if fixture is currently broken
 ```
 
@@ -114,6 +115,9 @@ comparison stage.
 
 Reports SHOULD identify the comparison stage used for each run. An
 implementation MUST NOT claim Stage 2 conformance from a Stage 1-only run.
+Static-output fixtures MAY declare `comparison_stage` in `meta.yaml`. A runner
+MUST skip a fixture whose declared comparison stage is greater than the runner's
+active stage.
 
 ## Stage 2 output comparison
 
@@ -145,7 +149,7 @@ A reference canonicalizer implementation is provided in the JS reference impl as
 Implementations should expose a runner with this minimal interface:
 
 ```
-<runner> [--fixture-dir=<path>] [--filter=<tag>] [--spec-version=<x.y>] [--report=json|text]
+<runner> [--fixture-dir=<path>] [--filter=<tag>] [--spec-version=<x.y>] [--comparison-stage=1|2] [--report=json|text]
 ```
 
 JSON report format:
@@ -155,6 +159,7 @@ JSON report format:
   "implementation": "xl3-js",
   "version": "0.1.0-alpha.0",
   "spec_version": "0.1",
+  "comparison_stage": 1,
   "results": [
     {
       "fixture": "001-basic-substitution",

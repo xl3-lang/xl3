@@ -17,6 +17,8 @@ verified_by: [manual-script]
       tags: ['substitution', 'basic'],
       verified_by: ['manual-script'],
       expected_warnings: [],
+      dynamic_cells: [],
+      comparison_stage: 1,
     });
   });
 
@@ -35,6 +37,26 @@ verified_by: [manual-script]
   it('parses expected_error when present', () => {
     const meta = parseMeta(`description: x\nexpected_error: "Source sheet"`);
     expect(meta.expected_error).toBe('Source sheet');
+  });
+
+  it('parses expected_dynamic and dynamic cell assertions', () => {
+    const meta = parseMeta(`
+description: today
+expected_dynamic: utc_today
+dynamic_cells:
+  - sheet: R
+    cell: A2
+    format: YYYY-MM-DD
+`);
+    expect(meta.expected_dynamic).toBe('utc_today');
+    expect(meta.dynamic_cells).toEqual([
+      { sheet: 'R', cell: 'A2', format: 'YYYY-MM-DD' },
+    ]);
+  });
+
+  it('parses comparison_stage with default 1', () => {
+    expect(parseMeta(`description: x`).comparison_stage).toBe(1);
+    expect(parseMeta(`description: x\ncomparison_stage: 2`).comparison_stage).toBe(2);
   });
 
   it('parses inline string lists with trimmed items', () => {

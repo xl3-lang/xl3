@@ -1,0 +1,10 @@
+description: TODAY() returns the UTC date at render time.
+spec_section: language.md "Row and Date Functions"; ADR-0001; ADR-0005
+spec_version: "0.1"
+tags: [function, today, dynamic]
+verified_by: [manual-script]
+expected_dynamic: utc_today
+dynamic_cells:
+  - sheet: R
+    cell: A2
+    format: YYYY-MM-DD

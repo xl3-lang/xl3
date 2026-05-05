@@ -49,6 +49,10 @@ not include `expected.xlsx` or an `expected/` directory.
 
 Each fixture directory contains `meta.yaml` declaring the minimum spec version it requires (`spec_version: 0.1`). Implementations report which spec version they target; the suite filters fixtures accordingly.
 
+Static-output fixtures may also declare `comparison_stage`. The field defaults
+to `1`; fixtures that require canonical OOXML comparison declare
+`comparison_stage: 2`.
+
 ## Fixture Catalog
 
 The XTL 0.1 bootstrap corpus currently contains these fixtures:
@@ -77,6 +81,7 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 020 | `filename-length-overflow-error` | Filename sanitization reports an error above the 255-byte limit. |
 | 021 | `numfmt-number-coercion-error` | Numeric template formats report an error when coercion fails. |
 | 022 | `numfmt-date-coercion-error` | Date template formats report an error when coercion fails. |
+| 023 | `today-utc-dynamic` | `TODAY()` renders the runner-start UTC date through a dynamic assertion. |
 
 ## Status
 

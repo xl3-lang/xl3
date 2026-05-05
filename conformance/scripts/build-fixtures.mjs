@@ -1061,6 +1061,41 @@ async function build022() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 023 - today-utc-dynamic
+//
+// Concept: TODAY() returns the UTC date at render time. The expected value is
+// dynamic, so meta.yaml declares expected_dynamic instead of expected.xlsx.
+// Spec section: language.md "Row and Date Functions"; ADR-0001; ADR-0005.
+// ---------------------------------------------------------------------------
+async function build023() {
+  const dir = join(FIXTURES, '023-today-utc-dynamic');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'today-utc-dynamic'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Today';
+    sh.getCell('A2').value = '{{ TEXT(TODAY(), "YYYY-MM-DD") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — one row is enough to render the template.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('A2').value = 'Widget';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
 await build001();
 await build002();
 await build003();
@@ -1083,4 +1118,5 @@ await build019();
 await build020();
 await build021();
 await build022();
-console.log('built fixtures 001-022');
+await build023();
+console.log('built fixtures 001-023');
