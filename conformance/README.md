@@ -107,6 +107,7 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 024 | `stage2-merge-preservation` | Stage 2 comparison verifies merged ranges below expanded data blocks are preserved. |
 | 025 | `stage2-style-numfmt-preservation` | Stage 2 comparison verifies rendered cells preserve template style and numFmt. |
 | 026 | `stage2-splice-merge-style-preservation` | Stage 2 comparison verifies row expansion preserves both shifted merges and styled/number-formatted rendered cells. |
+| 027 | `stage2-cross-writer-canonicalization` | Stage 2 comparison verifies known OOXML writer differences canonicalize to the same workbook content. |
 
 ## Status
 

@@ -523,6 +523,9 @@ function tokenizeXml(xml: string): XmlToken[] {
     if (xml.startsWith('<?', lt)) {
       const end = xml.indexOf('?>', lt + 2);
       i = end < 0 ? xml.length : end + 2;
+      if (tokens.length === 0) {
+        while (i < xml.length && /\s/.test(xml[i]!)) i++;
+      }
       continue;
     }
     if (xml.startsWith('<!--', lt)) {
@@ -716,7 +719,108 @@ function diffSummary(part: string, actual: string, expected: string): string {
     : null;
   if (styleHint) return `style xf numFmtId differs: ${styleHint}`;
 
+  const xmlHint = part.endsWith('.xml') || part.endsWith('.rels')
+    ? xmlTokenDiffSummary(actual, expected)
+    : null;
+  if (xmlHint) return xmlHint;
+
   return firstDiffSummary(actual, expected);
+}
+
+interface AnnotatedXmlToken {
+  token: XmlToken;
+  path: string;
+}
+
+function xmlTokenDiffSummary(actual: string, expected: string): string | null {
+  const actualTokens = annotateXmlTokens(tokenizeXml(actual));
+  const expectedTokens = annotateXmlTokens(tokenizeXml(expected));
+  const max = Math.max(actualTokens.length, expectedTokens.length);
+
+  for (let i = 0; i < max; i++) {
+    const a = actualTokens[i];
+    const e = expectedTokens[i];
+    if (!a) return `${e!.path}: missing ${xmlTokenLabel(e!.token)}`;
+    if (!e) return `${a.path}: unexpected ${xmlTokenLabel(a.token)}`;
+    if (xmlTokenKey(a.token) === xmlTokenKey(e.token)) continue;
+    return describeXmlTokenDiff(a, e);
+  }
+  return null;
+}
+
+function annotateXmlTokens(tokens: XmlToken[]): AnnotatedXmlToken[] {
+  const out: AnnotatedXmlToken[] = [];
+  const stack: string[] = [];
+  const siblingCounts = new Map<string, number>();
+
+  for (const token of tokens) {
+    if (token.kind === 'start') {
+      const parentPath = stack.at(-1) ?? '';
+      const countKey = `${parentPath}/${token.name}`;
+      const count = (siblingCounts.get(countKey) ?? 0) + 1;
+      siblingCounts.set(countKey, count);
+      const path = `${parentPath}/${token.name}[${count}]`;
+      out.push({ token, path });
+      if (!token.selfClosing) stack.push(path);
+    } else if (token.kind === 'end') {
+      const path = stack.pop() ?? `/${token.name}`;
+      out.push({ token, path });
+    } else {
+      const path = `${stack.at(-1) ?? ''}/text()`;
+      out.push({ token, path });
+    }
+  }
+  return out;
+}
+
+function describeXmlTokenDiff(actual: AnnotatedXmlToken, expected: AnnotatedXmlToken): string {
+  const a = actual.token;
+  const e = expected.token;
+  if (a.kind === 'start' && e.kind === 'start' && a.name === e.name) {
+    const attrHint = firstAttrDiff(a.attrs, e.attrs);
+    if (attrHint) return `${actual.path}: ${attrHint}`;
+  }
+  if (a.kind === 'text' && e.kind === 'text') {
+    return `${actual.path}: text differs: actual ${JSON.stringify(snippetAt(a.value, firstDiffIndex(a.value, e.value)))}, expected ${JSON.stringify(snippetAt(e.value, firstDiffIndex(a.value, e.value)))}`;
+  }
+  return `${actual.path}: actual ${xmlTokenLabel(a)}, expected ${xmlTokenLabel(e)} at ${expected.path}`;
+}
+
+function firstAttrDiff(actual: XmlAttr[], expected: XmlAttr[]): string | null {
+  const a = new Map(actual.map((attr) => [attr.name, attr.value]));
+  const e = new Map(expected.map((attr) => [attr.name, attr.value]));
+  const names = [...new Set([...a.keys(), ...e.keys()])].sort();
+  for (const name of names) {
+    if (!a.has(name)) return `missing attribute ${name}=${JSON.stringify(e.get(name))}`;
+    if (!e.has(name)) return `unexpected attribute ${name}=${JSON.stringify(a.get(name))}`;
+    if (a.get(name) !== e.get(name)) {
+      return `attribute ${name} differs: actual ${JSON.stringify(a.get(name))}, expected ${JSON.stringify(e.get(name))}`;
+    }
+  }
+  return null;
+}
+
+function xmlTokenKey(token: XmlToken): string {
+  if (token.kind === 'start') {
+    return `start:${token.name}:${token.selfClosing}:${canonicalAttrs(token.attrs)
+      .map((attr) => `${attr.name}=${attr.value}`)
+      .join('\u0000')}`;
+  }
+  if (token.kind === 'end') return `end:${token.name}`;
+  return `text:${token.value}`;
+}
+
+function xmlTokenLabel(token: XmlToken): string {
+  if (token.kind === 'start') return token.selfClosing ? `<${token.name}/>` : `<${token.name}>`;
+  if (token.kind === 'end') return `</${token.name}>`;
+  return `text ${JSON.stringify(snippetAt(token.value, 0))}`;
+}
+
+function firstDiffIndex(actual: string, expected: string): number {
+  const max = Math.min(actual.length, expected.length);
+  let i = 0;
+  while (i < max && actual[i] === expected[i]) i++;
+  return i;
 }
 
 function firstRegexValueDiff(actual: string, expected: string, re: RegExp): string | null {

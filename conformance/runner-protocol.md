@@ -175,6 +175,18 @@ Implementations should expose a runner with this minimal interface:
 <runner> [--fixture-dir=<path>] [--filter=<tag>] [--spec-version=<x.y>] [--comparison-stage=1|2] [--report=json|text]
 ```
 
+Implementations that provide a Stage 2 canonicalizer SHOULD also expose a
+debugging command that prints canonical package content in deterministic part
+order:
+
+```
+<runner> canonicalize <input.xlsx> [--part=<canonical-part-name>]
+```
+
+When `--part` is omitted, the command SHOULD emit a JSON object keyed by
+canonical package part name. When `--part` is present, it SHOULD emit only that
+canonical part's content.
+
 JSON report format:
 
 ```json

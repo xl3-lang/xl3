@@ -16,6 +16,10 @@ To rebuild only selected fixtures, pass fixture ids:
 node conformance/scripts/build-fixtures.mjs 026
 ```
 
+Fixture 027 uses the same authoring flow, then rewrites selected OOXML package
+parts to simulate cross-writer serialization differences while preserving the
+same workbook semantics.
+
 The committed `.xlsx` files in `conformance/fixtures/<NNN>-*/` are the artifacts of this script. The script itself is checked in as an audit trail so reviewers can re-derive the binaries from the source comments and confirm no spec-versus-impl shortcut was taken.
 
 ## `verify-fixtures.mjs`

@@ -9,6 +9,7 @@
 // generic xlsx writer — the same way Excel itself would be in a manual flow.
 
 import ExcelJS from 'exceljs';
+import JSZip from 'jszip';
 import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -19,6 +20,47 @@ const FIXTURES = join(__dirname, '..', 'fixtures');
 async function writeBook(wb, path) {
   const buf = await wb.xlsx.writeBuffer();
   await writeFile(path, Buffer.from(buf));
+}
+
+async function writeCrossWriterVariantBook(wb, path) {
+  const buf = await wb.xlsx.writeBuffer();
+  const zip = await JSZip.loadAsync(buf);
+
+  renameZipFile(zip, 'xl/worksheets/sheet1.xml', 'xl/worksheets/sheet7.xml');
+  await rewriteZipXml(zip, '[Content_Types].xml', (xml) =>
+    xml.replace('/xl/worksheets/sheet1.xml', '/xl/worksheets/sheet7.xml'));
+  await rewriteZipXml(zip, 'xl/_rels/workbook.xml.rels', (xml) =>
+    xml
+      .replace('Target="worksheets/sheet1.xml"', "Target='worksheets/sheet7.xml'")
+      .replace(
+        /<Relationship Id="([^"]+)" Type="([^"]+\/worksheet)" Target='worksheets\/sheet7\.xml'\/>/,
+        (_m, id, type) => `<Relationship Target='worksheets/sheet7.xml' Type='${type}' Id='${id}'></Relationship>`,
+      ));
+  await rewriteZipXml(zip, 'xl/workbook.xml', (xml) =>
+    xml.replace(
+      /<sheet sheetId="1" name="R" state="visible" r:id="([^"]+)"\/>/,
+      (_m, id) => `<sheet r:id='${id}' sheetId='42' state='visible' name='R'></sheet>`,
+    ));
+  await rewriteZipXml(zip, 'xl/worksheets/sheet7.xml', (xml) =>
+    xml
+      .replace(/<pageSetup\b([^>]*)\/>/g, (_m, attrs) => `<pageSetup${attrs} copies='1' firstPageNumber='1' useFirstPageNumber='1'></pageSetup>`)
+      .replace(/<c r="B2" s="1">/g, "<c s='1' r='B2'>"));
+
+  const out = await zip.generateAsync({ type: 'uint8array' });
+  await writeFile(path, Buffer.from(out));
+}
+
+function renameZipFile(zip, from, to) {
+  const file = zip.file(from);
+  if (!file) throw new Error(`missing zip part ${from}`);
+  zip.remove(from);
+  zip.file(to, file.async('uint8array'));
+}
+
+async function rewriteZipXml(zip, name, transform) {
+  const file = zip.file(name);
+  if (!file) throw new Error(`missing zip part ${name}`);
+  zip.file(name, transform(await file.async('string')));
 }
 
 function addConfig(wb, entries) {
@@ -1290,6 +1332,66 @@ async function build026() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 027 - stage2-cross-writer-canonicalization
+//
+// Concept: Stage 2 comparison must ignore known OOXML writer differences that
+// do not change workbook semantics, such as generated sheet part names,
+// volatile sheet ids, quote style, attribute order, and default page setup
+// values.
+// Spec section: conformance/runner-protocol.md "Stage 2 output comparison";
+// ADR-0006.
+// ---------------------------------------------------------------------------
+async function build027() {
+  const dir = join(FIXTURES, '027-stage2-cross-writer-canonicalization');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'stage2-cross-writer-canonicalization'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.pageSetup.fitToWidth = 1;
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Amount] }}';
+    sh.getCell('B2').numFmt = '#,##0.00';
+    sh.getCell('B2').font = { bold: true, color: { argb: 'FF1F4E79' } };
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 1234.5;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — authored to the same workbook semantics, then rewritten at
+  // the OOXML package level to simulate writer-specific serialization noise.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.pageSetup.fitToWidth = 1;
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 1234.5;
+    sh.getCell('B2').numFmt = '#,##0.00';
+    sh.getCell('B2').font = { bold: true, color: { argb: 'FF1F4E79' } };
+    await writeCrossWriterVariantBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -1317,6 +1419,7 @@ const builders = [
   ['024', build024],
   ['025', build025],
   ['026', build026],
+  ['027', build027],
 ];
 
 const selected = new Set(process.argv.slice(2));

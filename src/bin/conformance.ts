@@ -2,10 +2,14 @@
 // CLI entry point for the conformance runner.
 // Surface follows runner-protocol.md "Runner CLI conventions".
 
+import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { runConformance, formatTextReport, type ComparisonStage } from '../conformance-runner.js';
+import { runConformance, formatTextReport, canonicalizeXlsx, type ComparisonStage } from '../conformance-runner.js';
 
-interface Cli {
+type Cli = RunCli | CanonicalizeCli;
+
+interface RunCli {
+  command: 'run';
   fixtureDir: string;
   filter?: string;
   specVersion?: string;
@@ -13,8 +17,17 @@ interface Cli {
   report: 'json' | 'text';
 }
 
+interface CanonicalizeCli {
+  command: 'canonicalize';
+  input: string;
+  part?: string;
+}
+
 function parseArgs(argv: string[]): Cli {
-  const cli: Cli = {
+  if (argv[2] === 'canonicalize') return parseCanonicalizeArgs(argv.slice(3));
+
+  const cli: RunCli = {
+    command: 'run',
     fixtureDir: 'conformance/fixtures',
     comparisonStage: 1,
     report: 'text',
@@ -44,13 +57,43 @@ function parseArgs(argv: string[]): Cli {
   return cli;
 }
 
+function parseCanonicalizeArgs(args: string[]): CanonicalizeCli {
+  const cli: Partial<CanonicalizeCli> = { command: 'canonicalize' };
+  for (const arg of args) {
+    if (arg.startsWith('--part=')) {
+      cli.part = arg.slice('--part='.length);
+      continue;
+    }
+    if (arg.startsWith('--')) die(`unknown canonicalize flag: ${arg}`);
+    if (cli.input) die(`canonicalize accepts one input file`);
+    cli.input = arg;
+  }
+  if (!cli.input) die(`canonicalize requires an input .xlsx file`);
+  return cli as CanonicalizeCli;
+}
+
 function die(msg: string): never {
   console.error(`xl3-conformance: ${msg}`);
   console.error('usage: xl3-conformance [--fixture-dir=<path>] [--filter=<tag>] [--spec-version=<x.y>] [--comparison-stage=1|2] [--report=json|text]');
+  console.error('       xl3-conformance canonicalize <input.xlsx> [--part=<canonical-part-name>]');
   process.exit(2);
 }
 
 const cli = parseArgs(process.argv);
+if (cli.command === 'canonicalize') {
+  const buf = await readFile(resolve(cli.input));
+  const canonical = await canonicalizeXlsx(toArrayBuffer(buf));
+  if (cli.part) {
+    const content = canonical.get(cli.part);
+    if (content === undefined) die(`canonical part not found: ${cli.part}`);
+    process.stdout.write(content + '\n');
+  } else {
+    const entries = [...canonical].sort(([a], [b]) => a.localeCompare(b));
+    process.stdout.write(JSON.stringify(Object.fromEntries(entries), null, 2) + '\n');
+  }
+  process.exit(0);
+}
+
 const report = await runConformance({
   fixtureDir: resolve(cli.fixtureDir),
   filter: cli.filter,
@@ -65,3 +108,7 @@ if (cli.report === 'json') {
 }
 
 process.exit(report.summary.failed + report.summary.errored > 0 ? 1 : 0);
+
+function toArrayBuffer(buf: Buffer): ArrayBuffer {
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+}

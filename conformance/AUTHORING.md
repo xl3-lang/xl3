@@ -56,21 +56,27 @@ turns the fixture into a dynamic assertion fixture and must include
 
 ### Stage 2 fixture authoring caveat
 
-Both `template.xlsx` and `expected.xlsx` for current Stage 2 fixtures (024-026)
-are built by the same `exceljs` writer the JS reference implementation
+Both `template.xlsx` and `expected.xlsx` for most current Stage 2 fixtures
+(024-026) are built by the same `exceljs` writer the JS reference implementation
 uses internally. They round-trip through one library on both sides, so they
 exercise the canonicalizer's *equivalence* claim (sheet part renaming, default
 page setup stripping, attribute order, quote style, empty-element form) but
 not its *cross-writer* claim. A canonicalizer that only handles ExcelJS quirks
-will still pass these fixtures.
+will still pass those fixtures.
+
+Fixture 027 adds package-level writer-variance coverage by hand-rewriting the
+authored expected workbook's OOXML serialization while keeping the same workbook
+semantics. This is still not a substitute for a workbook saved by Excel,
+LibreOffice, or another independent OOXML writer; such a fixture remains the
+preferred follow-up when that authoring environment is available.
 
 The cardinal rule still applies: a Stage 2 `expected.xlsx` authored by running
 the JS implementation is forbidden. ExcelJS authoring is acceptable as
 scaffolding only because the package writer is generic — it is not the XTL
 implementation. Adding a Stage 2 fixture whose `expected.xlsx` is saved by
-Excel itself (or by another OOXML writer) is an open follow-up; until then,
-canonicalizer cross-writer behavior is covered by unit tests in
-`src/__tests__/conformance-runner.test.ts` rather than by the corpus.
+Excel itself (or by another OOXML writer) remains a stronger follow-up; until
+then, cross-writer behavior is covered by fixture 027's package rewrite plus
+canonicalizer unit tests in `src/__tests__/conformance-runner.test.ts`.
 
 For error fixtures, omit `expected.xlsx` and `expected/`, and declare the stable
 part of the expected diagnostic:

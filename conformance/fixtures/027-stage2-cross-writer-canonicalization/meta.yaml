@@ -1,0 +1,6 @@
+description: Stage 2 comparison treats semantically equivalent OOXML writer differences as equal.
+spec_section: conformance/runner-protocol.md "Stage 2 output comparison"; ADR-0006
+spec_version: "0.1"
+tags: [stage2, canonicalization, cross-writer, style, structure]
+comparison_stage: 2
+verified_by: [manual-script]

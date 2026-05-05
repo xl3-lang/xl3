@@ -127,6 +127,12 @@ describe('canonicalizeXlsx', () => {
     expect(await canonicalizeXlsx(a)).toEqual(await canonicalizeXlsx(b));
   });
 
+  it('ignores XML declarations and prolog whitespace', async () => {
+    const a = await singleXmlZip('part.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<root><x a="1"/></root>`);
+    const b = await singleXmlZip('part.xml', `<root><x a="1"/></root>`);
+    expect(await canonicalizeXlsx(a)).toEqual(await canonicalizeXlsx(b));
+  });
+
   it('parses tag delimiters without splitting on `>` inside quoted attributes', async () => {
     const a = await singleXmlZip('part.xml', `<root><x a="1 &gt; 0" b="2"/></root>`);
     const b = await singleXmlZip('part.xml', `<root><x b='2' a='1 &gt; 0'></x></root>`);
