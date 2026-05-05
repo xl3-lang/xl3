@@ -150,6 +150,24 @@ describe('canonicalizeXlsx', () => {
     const b = await singleXmlZip('part.xml', '<root><x a="2"/></root>');
     expect(await canonicalizeXlsx(a)).not.toEqual(await canonicalizeXlsx(b));
   });
+
+  it('strips volatile calcId regardless of writer quote style', async () => {
+    const dq = await singleXmlZip('part.xml', '<root><calcPr calcId="123" iterate="1"/></root>');
+    const sq = await singleXmlZip('part.xml', `<root><calcPr calcId='999' iterate='1'/></root>`);
+    expect(await canonicalizeXlsx(dq)).toEqual(await canonicalizeXlsx(sq));
+  });
+
+  it('strips volatile sheetId regardless of writer quote style', async () => {
+    const dq = await singleXmlZip('part.xml', '<root><sheet name="R" sheetId="1"/></root>');
+    const sq = await singleXmlZip('part.xml', `<root><sheet name='R' sheetId='42'/></root>`);
+    expect(await canonicalizeXlsx(dq)).toEqual(await canonicalizeXlsx(sq));
+  });
+
+  it('strips default page setup attributes regardless of writer quote style', async () => {
+    const dq = await singleXmlZip('part.xml', '<root><pageSetup fitToWidth="1" copies="1" firstPageNumber="1" useFirstPageNumber="1"/></root>');
+    const sq = await singleXmlZip('part.xml', `<root><pageSetup fitToWidth='1' copies='1' firstPageNumber='1' useFirstPageNumber='1'/></root>`);
+    expect(await canonicalizeXlsx(dq)).toEqual(await canonicalizeXlsx(sq));
+  });
 });
 
 async function singleXmlZip(name: string, content: string): Promise<ArrayBuffer> {

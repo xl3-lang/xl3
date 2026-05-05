@@ -489,15 +489,11 @@ function canonicalizeXml(partName: string, xml: string, sheetPartNames: Map<stri
       .replace(/<dcterms:modified\b[^>]*>[\s\S]*?<\/dcterms:modified>/g, '');
   }
 
-  out = out.replace(/\s+calcId="[^"]*"/g, '');
-  out = out.replace(/\s+sheetId="[^"]*"/g, '');
-  out = out
-    .replace(/\s+copies="1"/g, '')
-    .replace(/\s+firstPageNumber="1"/g, '')
-    .replace(/\s+useFirstPageNumber="1"/g, '');
   // ADR-0006 rule 3: deterministic attribute order, quote style, and
   // empty-element representation. Sort attributes and force double-quoted
-  // values on every open tag.
+  // values on every open tag. Run this before the volatile-attribute strip
+  // pass so the strip patterns can rely on a single canonical quote style
+  // instead of duplicating both forms.
   out = out.replace(/<([A-Za-z_][\w:.-]*)([^<>]*?)(\/?)>/g, (_full, name: string, attrs: string, slash: string) => {
     if (!attrs.trim()) return `<${name}${slash}>`;
     const sorted = parseAttrs(attrs)
@@ -505,6 +501,12 @@ function canonicalizeXml(partName: string, xml: string, sheetPartNames: Map<stri
       .sort((a, b) => a.name.localeCompare(b.name));
     return `<${name} ${sorted.map((a) => `${a.name}=${a.value}`).join(' ')}${slash}>`;
   });
+  out = out.replace(/\s+calcId="[^"]*"/g, '');
+  out = out.replace(/\s+sheetId="[^"]*"/g, '');
+  out = out
+    .replace(/\s+copies="1"/g, '')
+    .replace(/\s+firstPageNumber="1"/g, '')
+    .replace(/\s+useFirstPageNumber="1"/g, '');
   // Strip insignificant whitespace inside closing tags.
   out = out.replace(/<\/([A-Za-z_][\w:.-]*)\s+>/g, '</$1>');
   // Collapse `<name attrs></name>` -> `<name attrs/>`. The regex requires `>`
