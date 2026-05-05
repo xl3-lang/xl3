@@ -127,6 +127,12 @@ describe('canonicalizeXlsx', () => {
     expect(await canonicalizeXlsx(a)).toEqual(await canonicalizeXlsx(b));
   });
 
+  it('parses tag delimiters without splitting on `>` inside quoted attributes', async () => {
+    const a = await singleXmlZip('part.xml', `<root><x a="1 &gt; 0" b="2"/></root>`);
+    const b = await singleXmlZip('part.xml', `<root><x b='2' a='1 &gt; 0'></x></root>`);
+    expect(await canonicalizeXlsx(a)).toEqual(await canonicalizeXlsx(b));
+  });
+
   it('drops insignificant whitespace inside closing tags', async () => {
     const a = await singleXmlZip('part.xml', '<root><x>1</x></root>');
     const b = await singleXmlZip('part.xml', '<root><x>1</x   ></root>');
@@ -167,6 +173,23 @@ describe('canonicalizeXlsx', () => {
     const dq = await singleXmlZip('part.xml', '<root><pageSetup fitToWidth="1" copies="1" firstPageNumber="1" useFirstPageNumber="1"/></root>');
     const sq = await singleXmlZip('part.xml', `<root><pageSetup fitToWidth='1' copies='1' firstPageNumber='1' useFirstPageNumber='1'/></root>`);
     expect(await canonicalizeXlsx(dq)).toEqual(await canonicalizeXlsx(sq));
+  });
+
+  it('strips volatile core properties without touching stable core metadata', async () => {
+    const a = await singleXmlZip(
+      'docProps/core.xml',
+      '<cp:coreProperties><dc:title>Report</dc:title><dc:creator>A</dc:creator><cp:lastModifiedBy>A</cp:lastModifiedBy></cp:coreProperties>',
+    );
+    const b = await singleXmlZip(
+      'docProps/core.xml',
+      '<cp:coreProperties><dc:title>Report</dc:title><dc:creator>B</dc:creator><cp:lastModifiedBy>B</cp:lastModifiedBy></cp:coreProperties>',
+    );
+    const c = await singleXmlZip(
+      'docProps/core.xml',
+      '<cp:coreProperties><dc:title>Invoice</dc:title><dc:creator>B</dc:creator><cp:lastModifiedBy>B</cp:lastModifiedBy></cp:coreProperties>',
+    );
+    expect(await canonicalizeXlsx(a)).toEqual(await canonicalizeXlsx(b));
+    expect(await canonicalizeXlsx(a)).not.toEqual(await canonicalizeXlsx(c));
   });
 });
 

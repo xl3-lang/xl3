@@ -439,10 +439,9 @@ async function buildSheetPartNames(zip: JSZip): Promise<Map<string, string>> {
   const workbookXml = await workbook.async('string');
   const relsXml = await rels.async('string');
   const relTargets = new Map<string, string>();
-  const relRe = /<Relationship\b([^>]*)\/?>/g;
-  let relMatch: RegExpExecArray | null;
-  while ((relMatch = relRe.exec(relsXml)) !== null) {
-    const attrs = attrsToMap(parseAttrs(relMatch[1]!));
+  for (const rel of tokenizeXml(relsXml)) {
+    if (rel.kind !== 'start' || rel.name !== 'Relationship') continue;
+    const attrs = xmlAttrsToMap(rel.attrs);
     const id = attrs.get('Id');
     const target = attrs.get('Target');
     if (!id || !target) continue;
@@ -451,10 +450,9 @@ async function buildSheetPartNames(zip: JSZip): Promise<Map<string, string>> {
   }
 
   const out = new Map<string, string>();
-  const sheetRe = /<sheet\b([^>]*)\/?>/g;
-  let sheetMatch: RegExpExecArray | null;
-  while ((sheetMatch = sheetRe.exec(workbookXml)) !== null) {
-    const attrs = attrsToMap(parseAttrs(sheetMatch[1]!));
+  for (const sheet of tokenizeXml(workbookXml)) {
+    if (sheet.kind !== 'start' || sheet.name !== 'sheet') continue;
+    const attrs = xmlAttrsToMap(sheet.attrs);
     const sheetName = attrs.get('name');
     const relId = attrs.get('r:id');
     if (!sheetName || !relId) continue;
@@ -464,8 +462,8 @@ async function buildSheetPartNames(zip: JSZip): Promise<Map<string, string>> {
   return out;
 }
 
-function attrsToMap(attrs: { name: string; value: string }[]): Map<string, string> {
-  return new Map(attrs.map((attr) => [attr.name, stripQuotes(attr.value)]));
+function xmlAttrsToMap(attrs: XmlAttr[]): Map<string, string> {
+  return new Map(attrs.map((attr) => [attr.name, attr.value]));
 }
 
 function sanitizePartName(name: string): string {
@@ -473,59 +471,17 @@ function sanitizePartName(name: string): string {
 }
 
 function canonicalizeXml(partName: string, xml: string, sheetPartNames: Map<string, string>): string {
-  let out = xml
+  const normalized = xml
     .replace(/^\uFEFF/, '')
-    .replace(/<\?xml[^>]*\?>\s*/g, '')
     .replace(/\r\n?/g, '\n')
     .trim();
 
-  out = normalizeSheetPartReferences(out, sheetPartNames);
-
-  if (partName === 'docProps/core.xml') {
-    out = out
-      .replace(/<dc:creator\b[^>]*>[\s\S]*?<\/dc:creator>/g, '')
-      .replace(/<cp:lastModifiedBy\b[^>]*>[\s\S]*?<\/cp:lastModifiedBy>/g, '')
-      .replace(/<dcterms:created\b[^>]*>[\s\S]*?<\/dcterms:created>/g, '')
-      .replace(/<dcterms:modified\b[^>]*>[\s\S]*?<\/dcterms:modified>/g, '');
-  }
-
-  // ADR-0006 rule 3: deterministic attribute order, quote style, and
-  // empty-element representation. Sort attributes and force double-quoted
-  // values on every open tag. Run this before the volatile-attribute strip
-  // pass so the strip patterns can rely on a single canonical quote style
-  // instead of duplicating both forms.
-  out = out.replace(/<([A-Za-z_][\w:.-]*)([^<>]*?)(\/?)>/g, (_full, name: string, attrs: string, slash: string) => {
-    if (!attrs.trim()) return `<${name}${slash}>`;
-    const sorted = parseAttrs(attrs)
-      .map((a) => ({ name: a.name, value: normalizeAttrValue(a.value) }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-    return `<${name} ${sorted.map((a) => `${a.name}=${a.value}`).join(' ')}${slash}>`;
-  });
-  out = out.replace(/\s+calcId="[^"]*"/g, '');
-  out = out.replace(/\s+sheetId="[^"]*"/g, '');
-  out = out
-    .replace(/\s+copies="1"/g, '')
-    .replace(/\s+firstPageNumber="1"/g, '')
-    .replace(/\s+useFirstPageNumber="1"/g, '');
-  // Strip insignificant whitespace inside closing tags.
-  out = out.replace(/<\/([A-Za-z_][\w:.-]*)\s+>/g, '</$1>');
-  // Collapse `<name attrs></name>` -> `<name attrs/>`. The regex requires `>`
-  // and `<` to be directly adjacent, so whitespace-only or text content is
-  // preserved per ADR-0006 rule 6.
-  out = out.replace(/<([A-Za-z_][\w:.-]*)((?:\s[^<>]*[^\s/])?)><\/\1>/g, '<$1$2/>');
-  return out;
-}
-
-/**
- * Force double-quoted attribute values, escaping any embedded `"` so the
- * canonical form does not depend on the writer's choice of quote character.
- */
-function normalizeAttrValue(quoted: string): string {
-  if (quoted.startsWith("'") && quoted.endsWith("'")) {
-    const inner = quoted.slice(1, -1).replace(/"/g, '&quot;');
-    return `"${inner}"`;
-  }
-  return quoted;
+  return serializeXmlTokens(
+    filterVolatileCoreProps(
+      tokenizeXml(normalizeSheetPartReferences(normalized, sheetPartNames)),
+      partName,
+    ),
+  );
 }
 
 function normalizeSheetPartReferences(xml: string, sheetPartNames: Map<string, string>): string {
@@ -543,14 +499,201 @@ function replaceAllLiteral(input: string, search: string, replacement: string): 
   return input.split(search).join(replacement);
 }
 
-function parseAttrs(attrs: string): { name: string; value: string }[] {
-  const result: { name: string; value: string }[] = [];
-  const re = /([^\s=]+)\s*=\s*("[^"]*"|'[^']*')/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(attrs)) !== null) {
-    result.push({ name: m[1]!, value: m[2]! });
+type XmlToken =
+  | { kind: 'start'; name: string; attrs: XmlAttr[]; selfClosing: boolean }
+  | { kind: 'end'; name: string }
+  | { kind: 'text'; value: string };
+
+interface XmlAttr {
+  name: string;
+  value: string;
+}
+
+function tokenizeXml(xml: string): XmlToken[] {
+  const tokens: XmlToken[] = [];
+  let i = 0;
+  while (i < xml.length) {
+    const lt = xml.indexOf('<', i);
+    if (lt < 0) {
+      if (i < xml.length) tokens.push({ kind: 'text', value: xml.slice(i) });
+      break;
+    }
+    if (lt > i) tokens.push({ kind: 'text', value: xml.slice(i, lt) });
+
+    if (xml.startsWith('<?', lt)) {
+      const end = xml.indexOf('?>', lt + 2);
+      i = end < 0 ? xml.length : end + 2;
+      continue;
+    }
+    if (xml.startsWith('<!--', lt)) {
+      const end = xml.indexOf('-->', lt + 4);
+      i = end < 0 ? xml.length : end + 3;
+      continue;
+    }
+    if (xml.startsWith('<![CDATA[', lt)) {
+      const end = xml.indexOf(']]>', lt + 9);
+      const textEnd = end < 0 ? xml.length : end;
+      tokens.push({ kind: 'text', value: xml.slice(lt + 9, textEnd) });
+      i = end < 0 ? xml.length : end + 3;
+      continue;
+    }
+    if (xml.startsWith('</', lt)) {
+      const gt = xml.indexOf('>', lt + 2);
+      if (gt < 0) {
+        tokens.push({ kind: 'text', value: xml.slice(lt) });
+        break;
+      }
+      tokens.push({ kind: 'end', name: xml.slice(lt + 2, gt).trim() });
+      i = gt + 1;
+      continue;
+    }
+
+    const gt = findTagEnd(xml, lt + 1);
+    if (gt < 0) {
+      tokens.push({ kind: 'text', value: xml.slice(lt) });
+      break;
+    }
+    tokens.push(parseStartTag(xml.slice(lt + 1, gt)));
+    i = gt + 1;
   }
-  return result;
+  return tokens.filter((token) => token.kind !== 'text' || token.value.length > 0);
+}
+
+function findTagEnd(xml: string, start: number): number {
+  let quote: string | null = null;
+  for (let i = start; i < xml.length; i++) {
+    const ch = xml[i]!;
+    if (quote) {
+      if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      quote = ch;
+      continue;
+    }
+    if (ch === '>') return i;
+  }
+  return -1;
+}
+
+function parseStartTag(raw: string): XmlToken {
+  const trimmed = raw.trim();
+  const selfClosing = trimmed.endsWith('/');
+  const body = selfClosing ? trimmed.slice(0, -1).trimEnd() : trimmed;
+  const nameEnd = findNameEnd(body);
+  const name = body.slice(0, nameEnd);
+  return {
+    kind: 'start',
+    name,
+    attrs: parseXmlAttrs(body.slice(nameEnd)),
+    selfClosing,
+  };
+}
+
+function findNameEnd(s: string): number {
+  for (let i = 0; i < s.length; i++) {
+    if (/\s/.test(s[i]!)) return i;
+  }
+  return s.length;
+}
+
+function parseXmlAttrs(input: string): XmlAttr[] {
+  const attrs: XmlAttr[] = [];
+  let i = 0;
+  while (i < input.length) {
+    while (i < input.length && /\s/.test(input[i]!)) i++;
+    if (i >= input.length) break;
+
+    const nameStart = i;
+    while (i < input.length && !/[\s=]/.test(input[i]!)) i++;
+    const name = input.slice(nameStart, i);
+    while (i < input.length && /\s/.test(input[i]!)) i++;
+    if (input[i] !== '=') break;
+    i++;
+    while (i < input.length && /\s/.test(input[i]!)) i++;
+
+    const quote = input[i];
+    if (quote !== '"' && quote !== "'") break;
+    i++;
+    const valueStart = i;
+    while (i < input.length && input[i] !== quote) i++;
+    attrs.push({ name, value: input.slice(valueStart, i) });
+    if (i < input.length) i++;
+  }
+  return attrs;
+}
+
+function filterVolatileCoreProps(tokens: XmlToken[], partName: string): XmlToken[] {
+  if (partName !== 'docProps/core.xml') return tokens;
+
+  const volatile = new Set(['dc:creator', 'cp:lastModifiedBy', 'dcterms:created', 'dcterms:modified']);
+  const out: XmlToken[] = [];
+  let skipName: string | null = null;
+  let skipDepth = 0;
+
+  for (const token of tokens) {
+    if (skipName) {
+      if (token.kind === 'start' && token.name === skipName && !token.selfClosing) skipDepth++;
+      if (token.kind === 'end' && token.name === skipName) {
+        if (skipDepth === 0) skipName = null;
+        else skipDepth--;
+      }
+      continue;
+    }
+    if (token.kind === 'start' && volatile.has(token.name)) {
+      if (!token.selfClosing) skipName = token.name;
+      continue;
+    }
+    out.push(token);
+  }
+  return out;
+}
+
+function serializeXmlTokens(tokens: XmlToken[]): string {
+  const out: string[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i]!;
+    if (token.kind === 'text') {
+      out.push(token.value);
+      continue;
+    }
+    if (token.kind === 'end') {
+      out.push(`</${token.name}>`);
+      continue;
+    }
+
+    const attrs = canonicalAttrs(token.attrs);
+    const attrText = attrs.length
+      ? ` ${attrs.map((attr) => `${attr.name}="${escapeAttrValue(attr.value)}"`).join(' ')}`
+      : '';
+    const next = tokens[i + 1];
+    if (token.selfClosing || (next?.kind === 'end' && next.name === token.name)) {
+      out.push(`<${token.name}${attrText}/>`);
+      if (!token.selfClosing) i++;
+    } else {
+      out.push(`<${token.name}${attrText}>`);
+    }
+  }
+  return out.join('');
+}
+
+function canonicalAttrs(attrs: XmlAttr[]): XmlAttr[] {
+  return attrs
+    .filter((attr) => !isVolatileAttr(attr))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function isVolatileAttr(attr: XmlAttr): boolean {
+  if (attr.name === 'calcId') return true;
+  if (attr.name === 'sheetId') return true;
+  return (
+    (attr.name === 'copies' || attr.name === 'firstPageNumber' || attr.name === 'useFirstPageNumber') &&
+    attr.value === '1'
+  );
+}
+
+function escapeAttrValue(value: string): string {
+  return value.replace(/"/g, '&quot;');
 }
 
 function firstDiffSummary(actual: string, expected: string): string {
