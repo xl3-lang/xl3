@@ -4,7 +4,7 @@ Implementations of the [XTL spec](./spec/). xl3 is the reference implementation.
 
 | Language | Package | Spec version | Conformance | Notes |
 |---|---|---|---|---|
-| TypeScript | [`xl3`](https://www.npmjs.com/package/xl3) | XTL 0.1 (draft) | reference, 22/22 fixtures | Browser + Node >=18; runner via `npx xl3-conformance` |
+| TypeScript | [`xl3`](https://www.npmjs.com/package/xl3) | XTL 0.1 (draft) | reference, 25/25 fixtures, Stage 2 capable | Browser + Node >=18; runner via `npx xl3-conformance` |
 
 ## Adding an implementation
 

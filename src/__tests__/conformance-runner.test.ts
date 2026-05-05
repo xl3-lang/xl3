@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formatTextReport, parseMeta } from '../conformance-runner.js';
+import JSZip from 'jszip';
+import { canonicalizeXlsx, formatTextReport, parseMeta } from '../conformance-runner.js';
 
 describe('parseMeta', () => {
   it('reads required scalar fields', () => {
@@ -85,6 +86,51 @@ tags: [a, b]
     expect(() => parseMeta(`unknown_key: 123\ndescription: ok`)).not.toThrow();
   });
 });
+
+describe('canonicalizeXlsx', () => {
+  it('normalizes generated sheet part names and default page setup noise', async () => {
+    const first = await workbookZip({
+      sheetId: 1,
+      sheetPart: 'sheet1.xml',
+      pageSetupAttrs: '',
+    });
+    const second = await workbookZip({
+      sheetId: 7,
+      sheetPart: 'sheet9.xml',
+      pageSetupAttrs: ' copies="1" firstPageNumber="1" useFirstPageNumber="1"',
+    });
+
+    expect(await canonicalizeXlsx(first)).toEqual(await canonicalizeXlsx(second));
+  });
+});
+
+async function workbookZip(opts: {
+  sheetId: number;
+  sheetPart: string;
+  pageSetupAttrs: string;
+}): Promise<ArrayBuffer> {
+  const zip = new JSZip();
+  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/${opts.sheetPart}" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+</Types>`);
+  zip.file('xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets><sheet name="R" sheetId="${opts.sheetId}" r:id="rId1"/></sheets>
+  <calcPr calcId="123"/>
+</workbook>`);
+  zip.file('xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/${opts.sheetPart}"/>
+</Relationships>`);
+  zip.file(`xl/worksheets/${opts.sheetPart}`, `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheetData><row r="1"><c r="A1"><v>1</v></c></row></sheetData>
+  <pageSetup fitToWidth="1"${opts.pageSetupAttrs}/>
+</worksheet>`);
+  const data = await zip.generateAsync({ type: 'uint8array' });
+  return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+}
 
 describe('formatTextReport', () => {
   it('shows the run stage and fixture comparison stage', () => {

@@ -405,11 +405,11 @@ async function diffCanonicalWorkbooks(
     const where = fnPrefix ? `[${fnPrefix}] ${part}` : part;
     if (av === undefined) { diffs.push(`missing package part: ${where}`); continue; }
     if (ev === undefined) { diffs.push(`unexpected package part: ${where}`); continue; }
-    if (av !== ev) diffs.push(`${where}: canonical content differs (${firstDiffSummary(av, ev)})`);
+    if (av !== ev) diffs.push(`${where}: canonical content differs (${diffSummary(part, av, ev)})`);
   }
 }
 
-async function canonicalizeXlsx(buf: ArrayBuffer): Promise<Map<string, string>> {
+export async function canonicalizeXlsx(buf: ArrayBuffer): Promise<Map<string, string>> {
   const zip = await JSZip.loadAsync(buf);
   const out = new Map<string, string>();
   const names = Object.keys(zip.files)
@@ -534,6 +534,33 @@ function firstDiffSummary(actual: string, expected: string): string {
   while (i < max && actual[i] === expected[i]) i++;
   if (i === actual.length && i === expected.length) return 'same length but unequal';
   return `first difference at char ${i}: actual ${JSON.stringify(snippetAt(actual, i))}, expected ${JSON.stringify(snippetAt(expected, i))}`;
+}
+
+function diffSummary(part: string, actual: string, expected: string): string {
+  const mergeHint = firstRegexValueDiff(actual, expected, /<mergeCell\b[^>]*\bref=("[^"]*"|'[^']*')/g);
+  if (mergeHint) return `mergeCell ref differs: ${mergeHint}`;
+
+  const numFmtHint = firstRegexValueDiff(actual, expected, /<numFmt\b[^>]*\bformatCode=("[^"]*"|'[^']*')/g);
+  if (numFmtHint) return `numFmt differs: ${numFmtHint}`;
+
+  const styleHint = part.endsWith('styles.xml')
+    ? firstRegexValueDiff(actual, expected, /<xf\b[^>]*\bnumFmtId=("[^"]*"|'[^']*')/g)
+    : null;
+  if (styleHint) return `style xf numFmtId differs: ${styleHint}`;
+
+  return firstDiffSummary(actual, expected);
+}
+
+function firstRegexValueDiff(actual: string, expected: string, re: RegExp): string | null {
+  const actualValues = [...actual.matchAll(re)].map((m) => m[1]);
+  const expectedValues = [...expected.matchAll(re)].map((m) => m[1]);
+  const max = Math.max(actualValues.length, expectedValues.length);
+  for (let i = 0; i < max; i++) {
+    if (actualValues[i] !== expectedValues[i]) {
+      return `actual ${JSON.stringify(actualValues[i] ?? null)}, expected ${JSON.stringify(expectedValues[i] ?? null)}`;
+    }
+  }
+  return null;
 }
 
 function snippetAt(s: string, index: number): string {

@@ -1,0 +1,6 @@
+description: Stage 2 comparison preserves template style and numFmt on rendered cells.
+spec_section: evaluation.md "Cell Evaluation"; ADR-0006
+spec_version: "0.1"
+tags: [stage2, style, numfmt]
+comparison_stage: 2
+verified_by: [manual-script]

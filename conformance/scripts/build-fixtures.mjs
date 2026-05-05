@@ -1147,6 +1147,65 @@ async function build024() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 025 - stage2-style-numfmt-preservation
+//
+// Concept: Stage 2 comparison can assert style and number-format preservation
+// that Stage 1 cell-value comparison cannot observe.
+// Spec section: evaluation.md "Cell Evaluation"; ADR-0006.
+// ---------------------------------------------------------------------------
+async function build025() {
+  const dir = join(FIXTURES, '025-stage2-style-numfmt-preservation');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'stage2-style-numfmt-preservation'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = '{{ [Amount] }}';
+    sh.getCell('A2').numFmt = '#,##0.00';
+    sh.getCell('A2').font = { bold: true, color: { argb: 'FF1F4E79' } };
+    sh.getCell('A2').fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFD9EAF7' },
+    };
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = 1234.5;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — A2 keeps the template style and numFmt while receiving the
+  // source numeric value.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = 1234.5;
+    sh.getCell('A2').numFmt = '#,##0.00';
+    sh.getCell('A2').font = { bold: true, color: { argb: 'FF1F4E79' } };
+    sh.getCell('A2').fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFD9EAF7' },
+    };
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 await build001();
 await build002();
 await build003();
@@ -1171,4 +1230,5 @@ await build021();
 await build022();
 await build023();
 await build024();
-console.log('built fixtures 001-024');
+await build025();
+console.log('built fixtures 001-025');

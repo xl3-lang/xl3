@@ -69,6 +69,13 @@ Runs in browsers and Node (≥18).
 
 The XTL spec is language-neutral and lives in [`spec/`](./spec). This repo provides the TypeScript reference implementation. Other-language ports are welcome — see [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md).
 
+Run the conformance corpus locally:
+
+```bash
+npm run conformance
+node dist/bin/conformance.js --fixture-dir=conformance/fixtures --comparison-stage=2
+```
+
 ## Project structure
 
 - `spec/` — normative XTL language draft.

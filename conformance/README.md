@@ -83,6 +83,7 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 022 | `numfmt-date-coercion-error` | Date template formats report an error when coercion fails. |
 | 023 | `today-utc-dynamic` | `TODAY()` renders the runner-start UTC date through a dynamic assertion. |
 | 024 | `stage2-merge-preservation` | Stage 2 comparison verifies merged ranges below expanded data blocks are preserved. |
+| 025 | `stage2-style-numfmt-preservation` | Stage 2 comparison verifies rendered cells preserve template style and numFmt. |
 
 ## Status
 
