@@ -1,8 +1,10 @@
 // Authoring-time verifier (NOT the conformance runner).
 //
-// For each fixture, runs the reference impl on (template.xlsx, data.xlsx)
-// and compares the resulting output against expected.xlsx using cell-value
-// equality (not byte-equality; canonical OOXML comparison is the runner's job).
+// For each static-output fixture, runs the reference impl on (template.xlsx,
+// data.xlsx) and compares the resulting output against expected.xlsx using
+// cell-value equality (not byte-equality; canonical OOXML comparison is the
+// runner's job). Error and dynamic fixtures are skipped because their pass/fail
+// contracts belong to the conformance runner.
 //
 // Per AUTHORING.md step 4: if the impl disagrees with the hand-authored
 // expected, do NOT change the expected. Investigate.
@@ -71,9 +73,20 @@ async function loadExpected(dir) {
   })));
 }
 
-let pass = 0, fail = 0;
+async function isStaticOutputFixture(dir) {
+  const meta = await readFile(join(dir, 'meta.yaml'), 'utf8');
+  return !/^\s*expected_error\s*:/m.test(meta) && !/^\s*expected_dynamic\s*:/m.test(meta);
+}
+
+let pass = 0, fail = 0, skip = 0;
 for (const name of cases) {
   const dir = join(FIXTURES, name);
+  if (!(await isStaticOutputFixture(dir))) {
+    console.log(`SKIP  ${name}  (non-static fixture)`);
+    skip++;
+    continue;
+  }
+
   const tmpl = await readFile(join(dir, 'template.xlsx'));
   const data = await readFile(join(dir, 'data.xlsx'));
   const expectedFiles = await loadExpected(dir);
@@ -141,5 +154,5 @@ function diffCellMaps(actualCells, expectedCells, diffs, fnPrefix) {
   }
 }
 
-console.log(`\n${pass} passed, ${fail} failed`);
+console.log(`\n${pass} passed, ${fail} failed, ${skip} skipped`);
 process.exit(fail === 0 ? 0 : 1);

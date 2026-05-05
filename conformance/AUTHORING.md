@@ -48,10 +48,16 @@ static-output fixtures that need canonical OOXML comparison to assert styles,
 merged ranges, images, package structure, or other workbook features that Stage
 1 cell-value comparison cannot observe.
 
+`expected_error` turns the fixture into an error fixture and must not be used
+with `expected.xlsx`, `expected/`, or `expected_dynamic`. `expected_dynamic`
+turns the fixture into a dynamic assertion fixture and must include
+`dynamic_cells`; dynamic fixtures also omit static expected outputs. Keep
+`comparison_stage` for static-output fixtures only.
+
 ### Stage 2 fixture authoring caveat
 
-Both `template.xlsx` and `expected.xlsx` for current Stage 2 fixtures (024,
-025) are built by the same `exceljs` writer the JS reference implementation
+Both `template.xlsx` and `expected.xlsx` for current Stage 2 fixtures (024-026)
+are built by the same `exceljs` writer the JS reference implementation
 uses internally. They round-trip through one library on both sides, so they
 exercise the canonicalizer's *equivalence* claim (sheet part renaming, default
 page setup stripping, attribute order, quote style, empty-element form) but

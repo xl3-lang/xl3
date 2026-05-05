@@ -54,6 +54,18 @@ comparison_stage: 1 | 2            # minimum comparison stage for static-output 
 skip_reason: string                # if fixture is currently broken
 ```
 
+Stage-gating metadata:
+
+- `comparison_stage` applies only to static-output fixtures. It defaults to
+  `1`. Use `2` only when the fixture asserts workbook content that Stage 1
+  cannot observe, such as styles, merges, package parts, or binary media.
+- `expected_error` fixtures and `expected_dynamic` fixtures do not use workbook
+  comparison stages for pass/fail. A runner still reports the active run stage,
+  but these fixtures keep their own error or dynamic assertion rules.
+- `expected_dynamic` requires `dynamic_cells` for the currently defined
+  `utc_today` assertion kind. Static-output and error fixtures omit
+  `dynamic_cells`.
+
 A runner MUST mark an `expected_error` fixture as:
 
 - `pass` when the implementation reports an error containing `expected_error`
@@ -134,7 +146,7 @@ Comparison is performed on **canonicalized** OOXML. The minimum canonicalization
    specific element collection as unordered. Relationship files are ordered
    package data, not sets, until such a rule exists.
 5. The following fields are stripped before comparison (they reflect generator metadata, not content):
-   - `cp:lastModifiedBy`, `dc:creator`, `cp:created`, `dcterms:modified`
+   - `cp:lastModifiedBy`, `dc:creator`, `dcterms:created`, `dcterms:modified`
    - Any `<calcPr>` `calcId` attribute (Excel calc engine version)
    - Generated sheet ids and sheet part filenames when they can be resolved
      through workbook relationships and sheet names
@@ -146,7 +158,14 @@ Comparison is performed on **canonicalized** OOXML. The minimum canonicalization
    `<row>` MUST match.
 8. Binary package parts, such as images, MUST be compared by exact bytes.
 
-A reference canonicalizer implementation is provided in the JS reference impl as `xl3 conformance canonicalize <input.xlsx>` (planned).
+The JS reference runner includes a Stage 2 canonicalizer for conformance
+comparison. It is intentionally scoped to the OOXML produced by supported XTL
+fixtures plus the normalization rules above; it is not a general-purpose XML
+canonicalization library. In particular, it does not claim full XML C14N
+support, DTD/entity processing, semantic namespace rewriting, or application
+specific unordered-collection rules beyond those explicitly listed here.
+Fixtures that need additional OOXML equivalence rules should update this
+protocol first.
 
 ## Runner CLI conventions
 

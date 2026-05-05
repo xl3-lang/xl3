@@ -53,6 +53,28 @@ Static-output fixtures may also declare `comparison_stage`. The field defaults
 to `1`; fixtures that require canonical OOXML comparison declare
 `comparison_stage: 2`.
 
+## Fixture Metadata
+
+`meta.yaml` fields used by the corpus:
+
+| Field | Required | Applies to | Meaning |
+|---|---:|---|---|
+| `description` | yes | all fixtures | One-line contract the fixture asserts. |
+| `spec_section` | yes | all fixtures | Spec or ADR section that defines the behavior. |
+| `spec_version` | yes | all fixtures | Minimum XTL version required by the fixture. |
+| `tags` | yes | all fixtures | Filterable categories for reports and focused runs. |
+| `verified_by` | no | all fixtures | Independent authoring checks, such as `hand` or `manual-script`. |
+| `expected_warnings` | no | all fixtures | Stable warning substrings the implementation should emit. |
+| `expected_error` | no | error fixtures | Stable error substring; omit static expected outputs. |
+| `expected_dynamic` | no | dynamic fixtures | Dynamic assertion kind; currently `utc_today`. |
+| `dynamic_cells` | with `expected_dynamic` | dynamic fixtures | Sheet/cell/format assertions computed by the runner. |
+| `comparison_stage` | no | static-output fixtures | Minimum comparison stage; defaults to `1`, use `2` for OOXML-sensitive checks. |
+| `skip_reason` | no | all fixtures | Temporary reason a known-broken fixture is skipped. |
+
+`expected_error` and `expected_dynamic` are mutually exclusive. Static-output
+fixtures use `expected.xlsx` or `expected/`; error and dynamic fixtures omit
+static expected outputs.
+
 ## Fixture Catalog
 
 The XTL 0.1 bootstrap corpus currently contains these fixtures:
@@ -84,6 +106,7 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 023 | `today-utc-dynamic` | `TODAY()` renders the runner-start UTC date through a dynamic assertion. |
 | 024 | `stage2-merge-preservation` | Stage 2 comparison verifies merged ranges below expanded data blocks are preserved. |
 | 025 | `stage2-style-numfmt-preservation` | Stage 2 comparison verifies rendered cells preserve template style and numFmt. |
+| 026 | `stage2-splice-merge-style-preservation` | Stage 2 comparison verifies row expansion preserves both shifted merges and styled/number-formatted rendered cells. |
 
 ## Status
 

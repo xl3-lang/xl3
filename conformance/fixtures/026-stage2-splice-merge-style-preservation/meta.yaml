@@ -1,0 +1,6 @@
+description: Stage 2 comparison preserves row-splice shifted merges and rendered cell styles together.
+spec_section: evaluation.md "Render Phases"; evaluation.md "Cell Evaluation"; ADR-0006
+spec_version: "0.1"
+tags: [stage2, merge, style, numfmt, structure]
+comparison_stage: 2
+verified_by: [manual-script]

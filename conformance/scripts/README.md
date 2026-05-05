@@ -10,11 +10,17 @@ Constructs `template.xlsx`, `data.xlsx`, and `expected.xlsx` for each fixture by
 node conformance/scripts/build-fixtures.mjs
 ```
 
+To rebuild only selected fixtures, pass fixture ids:
+
+```bash
+node conformance/scripts/build-fixtures.mjs 026
+```
+
 The committed `.xlsx` files in `conformance/fixtures/<NNN>-*/` are the artifacts of this script. The script itself is checked in as an audit trail so reviewers can re-derive the binaries from the source comments and confirm no spec-versus-impl shortcut was taken.
 
 ## `verify-fixtures.mjs`
 
-Runs the reference implementation on each fixture's inputs and compares the result to the hand-authored `expected.xlsx` using cell-value equality. This is the local "step 4" check from [`../AUTHORING.md`](../AUTHORING.md): if the impl disagrees with expected, do **not** change expected — investigate.
+Runs the reference implementation on each static-output fixture's inputs and compares the result to the hand-authored `expected.xlsx` using cell-value equality. Error and dynamic fixtures are skipped because their assertions are runner responsibilities. This is the local "step 4" check from [`../AUTHORING.md`](../AUTHORING.md): if the impl disagrees with expected, do **not** change expected — investigate.
 
 This is **not** the conformance runner. The conformance runner is the protocol described in [`../runner-protocol.md`](../runner-protocol.md), which uses canonical OOXML comparison and is implementation-specific.
 

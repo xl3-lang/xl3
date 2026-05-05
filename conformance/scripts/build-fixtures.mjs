@@ -1206,29 +1206,130 @@ async function build025() {
   }
 }
 
-await build001();
-await build002();
-await build003();
-await build004();
-await build005();
-await build006();
-await build007();
-await build008();
-await build009();
-await build010();
-await build011();
-await build012();
-await build013();
-await build014();
-await build015();
-await build016();
-await build017();
-await build018();
-await build019();
-await build020();
-await build021();
-await build022();
-await build023();
-await build024();
-await build025();
-console.log('built fixtures 001-025');
+// ---------------------------------------------------------------------------
+// 026 - stage2-splice-merge-style-preservation
+//
+// Concept: a single Stage 2 fixture can catch interactions between row
+// expansion, merge shifting, and rendered-cell style/numFmt preservation.
+// Spec section: evaluation.md "Render Phases"; evaluation.md "Cell Evaluation";
+// ADR-0006.
+// ---------------------------------------------------------------------------
+async function build026() {
+  const dir = join(FIXTURES, '026-stage2-splice-merge-style-preservation');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'stage2-splice-merge-style-preservation'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Amount] }}';
+    sh.getCell('B2').numFmt = '#,##0.00';
+    sh.getCell('B2').font = { bold: true, color: { argb: 'FF1F4E79' } };
+    sh.getCell('B2').fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFD9EAF7' },
+    };
+    sh.getCell('A3').value = 'Approved total';
+    sh.getCell('A3').font = { italic: true };
+    sh.mergeCells('A3:C3');
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — three source rows expand the one-row block by two rows.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 1234.5;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 67.89;
+    sh.getCell('A4').value = 'Coda';
+    sh.getCell('B4').value = 10;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — rendered amount cells keep the template numFmt/style, and
+  // the footer merge shifts from A3:C3 to A5:C5 after row expansion.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    const rows = [
+      ['Acme', 1234.5],
+      ['Beta', 67.89],
+      ['Coda', 10],
+    ];
+    rows.forEach(([customer, amount], i) => {
+      const row = i + 2;
+      sh.getCell(row, 1).value = customer;
+      sh.getCell(row, 2).value = amount;
+      sh.getCell(row, 2).numFmt = '#,##0.00';
+      sh.getCell(row, 2).font = { bold: true, color: { argb: 'FF1F4E79' } };
+      sh.getCell(row, 2).fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD9EAF7' },
+      };
+    });
+    sh.getCell('A5').value = 'Approved total';
+    sh.getCell('A5').font = { italic: true };
+    sh.mergeCells('A5:C5');
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+const builders = [
+  ['001', build001],
+  ['002', build002],
+  ['003', build003],
+  ['004', build004],
+  ['005', build005],
+  ['006', build006],
+  ['007', build007],
+  ['008', build008],
+  ['009', build009],
+  ['010', build010],
+  ['011', build011],
+  ['012', build012],
+  ['013', build013],
+  ['014', build014],
+  ['015', build015],
+  ['016', build016],
+  ['017', build017],
+  ['018', build018],
+  ['019', build019],
+  ['020', build020],
+  ['021', build021],
+  ['022', build022],
+  ['023', build023],
+  ['024', build024],
+  ['025', build025],
+  ['026', build026],
+];
+
+const selected = new Set(process.argv.slice(2));
+const activeBuilders = selected.size > 0
+  ? builders.filter(([id]) => selected.has(id))
+  : builders;
+
+if (activeBuilders.length === 0) {
+  throw new Error(`No matching fixture builders for: ${[...selected].join(', ')}`);
+}
+
+for (const [, build] of activeBuilders) {
+  await build();
+}
+
+console.log(`built fixtures ${activeBuilders.map(([id]) => id).join(', ')}`);
