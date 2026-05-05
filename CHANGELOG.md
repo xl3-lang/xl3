@@ -26,6 +26,8 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 - ADR-0006 Stage 2 canonical OOXML conformance comparison design.
 - `TODAY()` dynamic conformance fixture and fixture-level comparison stage
   metadata.
+- Stage 2 merged-range preservation fixture plus canonical diff/report
+  refinements.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 

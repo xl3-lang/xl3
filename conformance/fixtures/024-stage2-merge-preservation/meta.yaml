@@ -1,0 +1,6 @@
+description: Stage 2 comparison preserves a merged footer range below an expanded data block.
+spec_section: evaluation.md "Render Phases"; ADR-0006
+spec_version: "0.1"
+tags: [stage2, merge, structure]
+comparison_stage: 2
+verified_by: [manual-script]

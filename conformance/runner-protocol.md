@@ -136,6 +136,10 @@ Comparison is performed on **canonicalized** OOXML. The minimum canonicalization
 5. The following fields are stripped before comparison (they reflect generator metadata, not content):
    - `cp:lastModifiedBy`, `dc:creator`, `cp:created`, `dcterms:modified`
    - Any `<calcPr>` `calcId` attribute (Excel calc engine version)
+   - Generated sheet ids and sheet part filenames when they can be resolved
+     through workbook relationships and sheet names
+   - Default page setup values that ExcelJS may add or omit (`copies="1"`,
+     `firstPageNumber="1"`, `useFirstPageNumber="1"`)
 6. Insignificant whitespace within text runs is preserved (it can be semantically
    meaningful).
 7. Cell `r` (reference) attributes MUST match exactly; cell ordering within

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseMeta } from '../conformance-runner.js';
+import { formatTextReport, parseMeta } from '../conformance-runner.js';
 
 describe('parseMeta', () => {
   it('reads required scalar fields', () => {
@@ -83,5 +83,34 @@ tags: [a, b]
 
   it('ignores unknown keys without throwing', () => {
     expect(() => parseMeta(`unknown_key: 123\ndescription: ok`)).not.toThrow();
+  });
+});
+
+describe('formatTextReport', () => {
+  it('shows the run stage and fixture comparison stage', () => {
+    const text = formatTextReport({
+      implementation: 'xl3-js',
+      version: '0.1.0-alpha.0',
+      spec_version: '0.1',
+      comparison_stage: 2,
+      results: [
+        {
+          fixture: '024-stage2-merge-preservation',
+          status: 'pass',
+          duration_ms: 1,
+          comparison_stage: 2,
+        },
+      ],
+      summary: {
+        total: 1,
+        passed: 1,
+        failed: 0,
+        errored: 0,
+        skipped: 0,
+      },
+    });
+
+    expect(text).toContain('XTL 0.1 — Stage 2');
+    expect(text).toContain('024-stage2-merge-preservation [stage 2]');
   });
 });

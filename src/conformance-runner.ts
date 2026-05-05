@@ -41,6 +41,7 @@ export interface FixtureResult {
   fixture: string;
   status: FixtureStatus;
   duration_ms: number;
+  comparison_stage?: ComparisonStage;
   diff?: string;
   error?: string;
   skip_reason?: string;
@@ -190,12 +191,18 @@ async function runOne(
     const diffs = await diffOutput(out, expected, meta.comparison_stage);
 
     if (diffs.length === 0) {
-      return { fixture: name, status: 'pass', duration_ms: Date.now() - start };
+      return {
+        fixture: name,
+        status: 'pass',
+        duration_ms: Date.now() - start,
+        comparison_stage: meta.comparison_stage,
+      };
     }
     return {
       fixture: name,
       status: 'fail',
       duration_ms: Date.now() - start,
+      comparison_stage: meta.comparison_stage,
       diff: diffs.join('\n'),
     };
   } catch (e) {
@@ -398,7 +405,7 @@ async function diffCanonicalWorkbooks(
     const where = fnPrefix ? `[${fnPrefix}] ${part}` : part;
     if (av === undefined) { diffs.push(`missing package part: ${where}`); continue; }
     if (ev === undefined) { diffs.push(`unexpected package part: ${where}`); continue; }
-    if (av !== ev) diffs.push(`${where}: canonical content differs`);
+    if (av !== ev) diffs.push(`${where}: canonical content differs (${firstDiffSummary(av, ev)})`);
   }
 }
 
@@ -408,26 +415,71 @@ async function canonicalizeXlsx(buf: ArrayBuffer): Promise<Map<string, string>> 
   const names = Object.keys(zip.files)
     .filter((name) => !zip.files[name]!.dir)
     .sort();
+  const sheetPartNames = await buildSheetPartNames(zip);
 
   for (const name of names) {
     const file = zip.files[name]!;
+    const canonicalName = sheetPartNames.get(name) ?? name;
     if (name.endsWith('.xml') || name.endsWith('.rels')) {
       const xml = await file.async('string');
-      out.set(name, canonicalizeXml(name, xml));
+      out.set(canonicalName, canonicalizeXml(name, xml, sheetPartNames));
     } else {
       const data = await file.async('uint8array');
-      out.set(name, Buffer.from(data).toString('base64'));
+      out.set(canonicalName, Buffer.from(data).toString('base64'));
     }
   }
   return out;
 }
 
-function canonicalizeXml(partName: string, xml: string): string {
+async function buildSheetPartNames(zip: JSZip): Promise<Map<string, string>> {
+  const workbook = zip.file('xl/workbook.xml');
+  const rels = zip.file('xl/_rels/workbook.xml.rels');
+  if (!workbook || !rels) return new Map();
+
+  const workbookXml = await workbook.async('string');
+  const relsXml = await rels.async('string');
+  const relTargets = new Map<string, string>();
+  const relRe = /<Relationship\b([^>]*)\/?>/g;
+  let relMatch: RegExpExecArray | null;
+  while ((relMatch = relRe.exec(relsXml)) !== null) {
+    const attrs = attrsToMap(parseAttrs(relMatch[1]!));
+    const id = attrs.get('Id');
+    const target = attrs.get('Target');
+    if (!id || !target) continue;
+    const normalizedTarget = target.startsWith('/') ? target.slice(1) : `xl/${target.replace(/^\.\.\//, '')}`;
+    relTargets.set(id, normalizedTarget.replace(/\/\.\//g, '/'));
+  }
+
+  const out = new Map<string, string>();
+  const sheetRe = /<sheet\b([^>]*)\/?>/g;
+  let sheetMatch: RegExpExecArray | null;
+  while ((sheetMatch = sheetRe.exec(workbookXml)) !== null) {
+    const attrs = attrsToMap(parseAttrs(sheetMatch[1]!));
+    const sheetName = attrs.get('name');
+    const relId = attrs.get('r:id');
+    if (!sheetName || !relId) continue;
+    const part = relTargets.get(relId);
+    if (part) out.set(part, `xl/worksheets/by-name/${sanitizePartName(sheetName)}.xml`);
+  }
+  return out;
+}
+
+function attrsToMap(attrs: { name: string; value: string }[]): Map<string, string> {
+  return new Map(attrs.map((attr) => [attr.name, stripQuotes(attr.value)]));
+}
+
+function sanitizePartName(name: string): string {
+  return encodeURIComponent(name).replace(/%/g, '_');
+}
+
+function canonicalizeXml(partName: string, xml: string, sheetPartNames: Map<string, string>): string {
   let out = xml
     .replace(/^\uFEFF/, '')
     .replace(/<\?xml[^>]*\?>\s*/g, '')
     .replace(/\r\n?/g, '\n')
     .trim();
+
+  out = normalizeSheetPartReferences(out, sheetPartNames);
 
   if (partName === 'docProps/core.xml') {
     out = out
@@ -438,12 +490,32 @@ function canonicalizeXml(partName: string, xml: string): string {
   }
 
   out = out.replace(/\s+calcId="[^"]*"/g, '');
+  out = out.replace(/\s+sheetId="[^"]*"/g, '');
+  out = out
+    .replace(/\s+copies="1"/g, '')
+    .replace(/\s+firstPageNumber="1"/g, '')
+    .replace(/\s+useFirstPageNumber="1"/g, '');
   out = out.replace(/<([A-Za-z_][\w:.-]*)([^<>]*?)(\/?)>/g, (_full, name: string, attrs: string, slash: string) => {
     if (!attrs.trim()) return `<${name}${slash}>`;
     const sorted = parseAttrs(attrs).sort((a, b) => a.name.localeCompare(b.name));
     return `<${name} ${sorted.map((a) => `${a.name}=${a.value}`).join(' ')}${slash}>`;
   });
   return out;
+}
+
+function normalizeSheetPartReferences(xml: string, sheetPartNames: Map<string, string>): string {
+  let out = xml;
+  for (const [originalPart, canonicalPart] of sheetPartNames) {
+    out = replaceAllLiteral(out, `/${originalPart}`, `/${canonicalPart}`);
+    if (originalPart.startsWith('xl/') && canonicalPart.startsWith('xl/')) {
+      out = replaceAllLiteral(out, originalPart.slice(3), canonicalPart.slice(3));
+    }
+  }
+  return out;
+}
+
+function replaceAllLiteral(input: string, search: string, replacement: string): string {
+  return input.split(search).join(replacement);
 }
 
 function parseAttrs(attrs: string): { name: string; value: string }[] {
@@ -454,6 +526,20 @@ function parseAttrs(attrs: string): { name: string; value: string }[] {
     result.push({ name: m[1]!, value: m[2]! });
   }
   return result;
+}
+
+function firstDiffSummary(actual: string, expected: string): string {
+  const max = Math.min(actual.length, expected.length);
+  let i = 0;
+  while (i < max && actual[i] === expected[i]) i++;
+  if (i === actual.length && i === expected.length) return 'same length but unequal';
+  return `first difference at char ${i}: actual ${JSON.stringify(snippetAt(actual, i))}, expected ${JSON.stringify(snippetAt(expected, i))}`;
+}
+
+function snippetAt(s: string, index: number): string {
+  const start = Math.max(0, index - 30);
+  const end = Math.min(s.length, index + 60);
+  return s.slice(start, end);
 }
 
 type CellMap = Record<string, Record<string, unknown>>;
@@ -648,7 +734,8 @@ export function formatTextReport(report: ConformanceReport): string {
   lines.push(`${report.implementation} ${report.version} — XTL ${report.spec_version} — Stage ${report.comparison_stage}`);
   for (const r of report.results) {
     const status = r.status.toUpperCase().padEnd(5);
-    let line = `  ${status} ${r.fixture}  (${r.duration_ms}ms)`;
+    const stage = r.comparison_stage ? ` [stage ${r.comparison_stage}]` : '';
+    let line = `  ${status} ${r.fixture}${stage}  (${r.duration_ms}ms)`;
     if (r.skip_reason) line += `  — ${r.skip_reason}`;
     if (r.error) line += `  — error: ${r.error}`;
     lines.push(line);

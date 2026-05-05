@@ -1096,6 +1096,57 @@ async function build023() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 024 - stage2-merge-preservation
+//
+// Concept: Stage 2 fixtures can assert workbook structure that Stage 1 cannot
+// observe. This fixture checks a merged footer range below an expanded data
+// block shifts down and remains merged.
+// Spec section: evaluation.md "Render Phases"; ADR-0006.
+// ---------------------------------------------------------------------------
+async function build024() {
+  const dir = join(FIXTURES, '024-stage2-merge-preservation');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'stage2-merge-preservation'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('A3').value = 'Footer';
+    sh.mergeCells('A3:B3');
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — two source rows expand the one-row block by one row.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — the merged footer has shifted from A3:B3 to A4:B4.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('A4').value = 'Footer';
+    sh.mergeCells('A4:B4');
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 await build001();
 await build002();
 await build003();
@@ -1119,4 +1170,5 @@ await build020();
 await build021();
 await build022();
 await build023();
-console.log('built fixtures 001-023');
+await build024();
+console.log('built fixtures 001-024');
