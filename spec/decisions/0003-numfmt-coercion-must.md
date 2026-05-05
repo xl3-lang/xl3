@@ -42,7 +42,10 @@ The set of supported date formats and numeric format tokens is **not** normative
 ## Consequences
 
 - The reference implementation (`src/renderer.ts` `renderCellValue`, `coerceDateValue`, `coerceNumberValue`) already throws when coercion fails, matching the new MUST. No impl change is required.
-- New conformance fixtures cover three coercion paths: numeric string to number under a numeric format, date-like string to date under a date format, and `@` format coercing values to string. Failure-mode fixtures are deferred until the runner protocol gains an `expected_error` mode (same constraint that defers ADR-0002 error fixtures).
+- New conformance fixtures cover three coercion paths: numeric string to number
+  under a numeric format, date-like string to date under a date format, and `@`
+  format coercing values to string. Error fixtures cover numeric and date
+  coercion failures.
 - An implementation that lacks a numFmt parser cannot claim full XTL 0.1 conformance. This is intentional — coercion is core, not an extension.
 - The minimum format set remains under-specified. Two impls may legitimately disagree on whether `"15-Jan-2026"` is parseable. That ambiguity is bounded: each side reports either success-with-equal-value or an error; silent string-pass-through is no longer conformant.
 

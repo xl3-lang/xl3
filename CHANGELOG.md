@@ -20,6 +20,7 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 - Source formula cells without cached results now report an error.
 - Clarified that `TEXT()` formats outside the XTL 0.1 core table are
   implementation-defined extensions, not portable conformance requirements.
+- Error fixtures for output filename sanitization and numFmt coercion failures.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 

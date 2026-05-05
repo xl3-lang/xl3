@@ -915,6 +915,152 @@ async function build018() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 019 - filename-empty-basename-error
+//
+// Concept: output filename sanitization reports an error when the rendered
+// filename has an empty basename.
+// Spec section: evaluation.md "Output Filenames".
+// ---------------------------------------------------------------------------
+async function build019() {
+  const dir = join(FIXTURES, '019-filename-empty-basename-error');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'filename-empty-basename-error'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', '{{ [Name] }}.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('A2').value = '{{ [Item] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Name is empty, so the pattern renders to ".xlsx".
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Name';
+    sh.getCell('B1').value = 'Item';
+    sh.getCell('A2').value = '';
+    sh.getCell('B2').value = 'Widget';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 020 - filename-length-overflow-error
+//
+// Concept: output filename sanitization reports an error when the UTF-8 byte
+// length exceeds 255 bytes.
+// Spec section: evaluation.md "Output Filenames".
+// ---------------------------------------------------------------------------
+async function build020() {
+  const dir = join(FIXTURES, '020-filename-length-overflow-error');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'filename-length-overflow-error'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', '{{ [Name] }}.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('A2').value = '{{ [Item] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — 251 ASCII bytes + ".xlsx" = 256 UTF-8 bytes.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Name';
+    sh.getCell('B1').value = 'Item';
+    sh.getCell('A2').value = 'a'.repeat(251);
+    sh.getCell('B2').value = 'Widget';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 021 - numfmt-number-coercion-error
+//
+// Concept: a single-expression cell with a numeric numFmt reports an error
+// when the source value cannot be coerced to a number.
+// Spec section: evaluation.md "Single-Expression Cells".
+// ---------------------------------------------------------------------------
+async function build021() {
+  const dir = join(FIXTURES, '021-numfmt-number-coercion-error');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'numfmt-number-coercion-error'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = '{{ [Amount] }}';
+    sh.getCell('A2').numFmt = '0.00';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = 'not-a-number';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 022 - numfmt-date-coercion-error
+//
+// Concept: a single-expression cell with a date numFmt reports an error when
+// the source value cannot be coerced to a date.
+// Spec section: evaluation.md "Single-Expression Cells".
+// ---------------------------------------------------------------------------
+async function build022() {
+  const dir = join(FIXTURES, '022-numfmt-date-coercion-error');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'numfmt-date-coercion-error'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'OrderDate';
+    sh.getCell('A2').value = '{{ [OrderDate] }}';
+    sh.getCell('A2').numFmt = 'yyyy-mm-dd';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'OrderDate';
+    sh.getCell('A2').value = 'not-a-date';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
 await build001();
 await build002();
 await build003();
@@ -933,4 +1079,8 @@ await build015();
 await build016();
 await build017();
 await build018();
-console.log('built fixtures 001-018');
+await build019();
+await build020();
+await build021();
+await build022();
+console.log('built fixtures 001-022');

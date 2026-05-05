@@ -1,0 +1,6 @@
+description: Date template formats report an error when coercion fails.
+spec_section: evaluation.md "Single-Expression Cells"
+spec_version: "0.1"
+tags: [numfmt, coercion, date, error]
+verified_by: [manual-script]
+expected_error: 'Value cannot be coerced to a date for cell format "yyyy-mm-dd": not-a-date'

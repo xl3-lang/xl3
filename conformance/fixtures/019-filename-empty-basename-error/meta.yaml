@@ -1,0 +1,6 @@
+description: Output filename sanitization reports an error for an empty basename.
+spec_section: evaluation.md "Output Filenames"
+spec_version: "0.1"
+tags: [filename, sanitization, error]
+verified_by: [manual-script]
+expected_error: 'Output filename ".xlsx" sanitized to an empty string and is invalid.'

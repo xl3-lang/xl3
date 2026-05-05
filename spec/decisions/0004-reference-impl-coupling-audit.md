@@ -62,13 +62,9 @@ reference implementation:
 
 ## Remaining Follow-Ups
 
-The remaining low-risk work should be prose and fixtures before renderer
-refactoring:
+The remaining low-risk work should happen before renderer refactoring:
 
-1. Add fixture candidates for edge cases not covered by the initial follow-up:
-   - Additional `expected_error` coverage for filename sanitization and numFmt
-     coercion failures.
-2. Move row-splice plus merge preservation behind a narrow workbook document
+1. Move row-splice plus merge preservation behind a narrow workbook document
    boundary only after the fixture coverage above exists.
 
 ## Consequences

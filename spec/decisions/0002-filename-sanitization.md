@@ -46,7 +46,8 @@ A new section `Output Filenames` is added to `evaluation.md`, between `Cell Eval
 
 - The reference implementation gains a `sanitizeFilename` helper applied in `renderer.ts` after `renderFilename` produces the raw string.
 - `evaluation.md` gains a new section. The existing error-list bullet "Producing an invalid output filename after sanitization rules are applied" is preserved and now references the new section.
-- New fixtures cover: forbidden char replacement, trailing-dot trim, reserved-name suffix, empty-after-sanitization error, and a length-overflow error. The error fixtures presume a future "expected_error" assertion in the runner protocol; until that lands, the empty-result and length-cap rules are exercised only by reference-impl unit tests.
+- New fixtures cover: forbidden char replacement, reserved-name suffix,
+  empty-after-sanitization error, and a length-overflow error.
 - Unicode names (CJK, emoji, etc.) are intentionally **not** restricted. Filesystems and shells handle UTF-8 widely; restricting them would surprise non-English users.
 - The `_config.output_file_pattern` itself is not validated up-front — sanitization happens after rendering, when group-key values are substituted in. A template authored to be safe may still produce a forbidden-char filename if a source value contains one, hence the warning.
 
