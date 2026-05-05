@@ -18,6 +18,8 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   matching, including negative half-away numeric rounding.
 - `expected_error` conformance fixture mode for required failure cases.
 - Source formula cells without cached results now report an error.
+- Clarified that `TEXT()` formats outside the XTL 0.1 core table are
+  implementation-defined extensions, not portable conformance requirements.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 

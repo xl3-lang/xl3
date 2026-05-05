@@ -120,7 +120,8 @@ Aggregates operate on the current rendered row set.
 {{ TEXT([amount], "#,##0") }}
 ```
 
-`TEXT()` returns a string. Use template cell number/date formats when the output should remain a number or date value.
+For the supported formats below, `TEXT()` returns a string. Use template cell
+number/date formats when the output should remain a number or date value.
 
 XTL 0.1 defines this minimum `TEXT()` format subset:
 
@@ -133,7 +134,11 @@ XTL 0.1 defines this minimum `TEXT()` format subset:
 | Number | `#,##0.00` | Fixed two decimal places with `,` thousands grouping. |
 
 Numeric `TEXT()` rounding uses the same half-away-from-zero rule as
-`ROUND()`. Formats outside this table are implementation-defined in XTL 0.1.
+`ROUND()`.
+
+Formats outside this table are extensions in XTL 0.1. An implementation MAY
+accept additional formats, but their exact output is implementation-defined and
+outside core conformance. Portable templates MUST use only the table above.
 
 ### Row and Date Functions
 

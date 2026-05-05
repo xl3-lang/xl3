@@ -25,6 +25,11 @@ The spec distinguishes:
 
 Implementations MAY add extensions but MUST NOT silently change core semantics.
 
+For example, implementations may support additional `TEXT()` formats beyond the
+XTL 0.1 core table. Such formats are extensions: portable templates should not
+depend on them, and conformance fixtures do not require identical output for
+them.
+
 ## Conformance corpus versioning
 
 The conformance corpus version tracks the spec version. A fixture added in spec 0.3 is tagged accordingly; implementations declare which fixtures they pass and, in turn, which spec version they conform to.

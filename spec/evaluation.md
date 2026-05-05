@@ -143,7 +143,13 @@ Mixed text cells render as strings. Template number/date formats do not coerce m
 
 ### TEXT Function
 
-`TEXT(value, format)` always returns a string. It is intended for filenames and explicit display strings, not for cells that should remain numeric/date values.
+For XTL 0.1 core formats, `TEXT(value, format)` returns a string. It is intended
+for filenames and explicit display strings, not for cells that should remain
+numeric/date values.
+
+Formats outside the XTL 0.1 core `TEXT()` table are implementation-defined
+extensions. The conformance corpus does not assert a specific result for those
+formats.
 
 ## Output Filenames
 

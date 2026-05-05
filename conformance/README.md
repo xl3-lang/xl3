@@ -44,3 +44,6 @@ Each fixture directory contains `meta.yaml` declaring the minimum spec version i
 XTL 0.1 corpus is **bootstrap state**. Fixtures should be added only for behavior already stated in [`spec/README.md`](../spec/README.md), following the same pattern used by standards projects such as CommonMark: prose defines the rule, fixtures make the rule executable, and implementations report which fixtures they pass.
 
 The reference implementation does not make its own behavior normative. When a fixture and the implementation disagree, update the implementation or the fixture according to the spec precedence in [`spec/README.md`](../spec/README.md).
+
+Fixtures for XTL 0.1 core behavior avoid implementation-defined extensions such
+as `TEXT()` formats outside the minimum table in [`spec/language.md`](../spec/language.md).
