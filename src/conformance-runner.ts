@@ -495,12 +495,35 @@ function canonicalizeXml(partName: string, xml: string, sheetPartNames: Map<stri
     .replace(/\s+copies="1"/g, '')
     .replace(/\s+firstPageNumber="1"/g, '')
     .replace(/\s+useFirstPageNumber="1"/g, '');
+  // ADR-0006 rule 3: deterministic attribute order, quote style, and
+  // empty-element representation. Sort attributes and force double-quoted
+  // values on every open tag.
   out = out.replace(/<([A-Za-z_][\w:.-]*)([^<>]*?)(\/?)>/g, (_full, name: string, attrs: string, slash: string) => {
     if (!attrs.trim()) return `<${name}${slash}>`;
-    const sorted = parseAttrs(attrs).sort((a, b) => a.name.localeCompare(b.name));
+    const sorted = parseAttrs(attrs)
+      .map((a) => ({ name: a.name, value: normalizeAttrValue(a.value) }))
+      .sort((a, b) => a.name.localeCompare(b.name));
     return `<${name} ${sorted.map((a) => `${a.name}=${a.value}`).join(' ')}${slash}>`;
   });
+  // Strip insignificant whitespace inside closing tags.
+  out = out.replace(/<\/([A-Za-z_][\w:.-]*)\s+>/g, '</$1>');
+  // Collapse `<name attrs></name>` -> `<name attrs/>`. The regex requires `>`
+  // and `<` to be directly adjacent, so whitespace-only or text content is
+  // preserved per ADR-0006 rule 6.
+  out = out.replace(/<([A-Za-z_][\w:.-]*)((?:\s[^<>]*[^\s/])?)><\/\1>/g, '<$1$2/>');
   return out;
+}
+
+/**
+ * Force double-quoted attribute values, escaping any embedded `"` so the
+ * canonical form does not depend on the writer's choice of quote character.
+ */
+function normalizeAttrValue(quoted: string): string {
+  if (quoted.startsWith("'") && quoted.endsWith("'")) {
+    const inner = quoted.slice(1, -1).replace(/"/g, '&quot;');
+    return `"${inner}"`;
+  }
+  return quoted;
 }
 
 function normalizeSheetPartReferences(xml: string, sheetPartNames: Map<string, string>): string {

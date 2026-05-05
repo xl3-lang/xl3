@@ -102,7 +102,62 @@ describe('canonicalizeXlsx', () => {
 
     expect(await canonicalizeXlsx(first)).toEqual(await canonicalizeXlsx(second));
   });
+
+  it('treats `<x></x>` and `<x/>` as equivalent', async () => {
+    const a = await singleXmlZip('part.xml', '<root><x/></root>');
+    const b = await singleXmlZip('part.xml', '<root><x></x></root>');
+    expect(await canonicalizeXlsx(a)).toEqual(await canonicalizeXlsx(b));
+  });
+
+  it('treats `<x attrs></x>` and `<x attrs/>` as equivalent', async () => {
+    const a = await singleXmlZip('part.xml', '<root><x a="1" b="2"/></root>');
+    const b = await singleXmlZip('part.xml', '<root><x b="2" a="1"></x></root>');
+    expect(await canonicalizeXlsx(a)).toEqual(await canonicalizeXlsx(b));
+  });
+
+  it('treats reordered attributes as equivalent', async () => {
+    const a = await singleXmlZip('part.xml', '<root><x a="1" b="2"/></root>');
+    const b = await singleXmlZip('part.xml', '<root><x b="2" a="1"/></root>');
+    expect(await canonicalizeXlsx(a)).toEqual(await canonicalizeXlsx(b));
+  });
+
+  it('normalizes single-quoted attribute values to double-quoted', async () => {
+    const a = await singleXmlZip('part.xml', `<root><x a="1"/></root>`);
+    const b = await singleXmlZip('part.xml', `<root><x a='1'/></root>`);
+    expect(await canonicalizeXlsx(a)).toEqual(await canonicalizeXlsx(b));
+  });
+
+  it('drops insignificant whitespace inside closing tags', async () => {
+    const a = await singleXmlZip('part.xml', '<root><x>1</x></root>');
+    const b = await singleXmlZip('part.xml', '<root><x>1</x   ></root>');
+    expect(await canonicalizeXlsx(a)).toEqual(await canonicalizeXlsx(b));
+  });
+
+  it('preserves real text differences', async () => {
+    const a = await singleXmlZip('part.xml', '<root><x>1</x></root>');
+    const b = await singleXmlZip('part.xml', '<root><x>2</x></root>');
+    expect(await canonicalizeXlsx(a)).not.toEqual(await canonicalizeXlsx(b));
+  });
+
+  it('preserves whitespace-only content (does not collapse `<x> </x>`)', async () => {
+    const a = await singleXmlZip('part.xml', '<root><x> </x></root>');
+    const b = await singleXmlZip('part.xml', '<root><x/></root>');
+    expect(await canonicalizeXlsx(a)).not.toEqual(await canonicalizeXlsx(b));
+  });
+
+  it('preserves real attribute value differences', async () => {
+    const a = await singleXmlZip('part.xml', '<root><x a="1"/></root>');
+    const b = await singleXmlZip('part.xml', '<root><x a="2"/></root>');
+    expect(await canonicalizeXlsx(a)).not.toEqual(await canonicalizeXlsx(b));
+  });
 });
+
+async function singleXmlZip(name: string, content: string): Promise<ArrayBuffer> {
+  const zip = new JSZip();
+  zip.file(name, content);
+  const data = await zip.generateAsync({ type: 'uint8array' });
+  return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
+}
 
 async function workbookZip(opts: {
   sheetId: number;
