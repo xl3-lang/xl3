@@ -1,6 +1,7 @@
 # xl3
 
-> Excel-to-Excel templates where the spreadsheet itself is the template.
+> Use an Excel workbook as the template. Feed it data from another Excel workbook.
+> Get a formatted Excel workbook back.
 
 **Status:** alpha · XTL spec 0.1 (draft) · breaking changes possible until 1.0
 
@@ -10,29 +11,77 @@
 
 ## What is xl3?
 
-xl3 takes a source workbook and a template workbook, then produces one or more result workbooks:
+xl3 is an Excel-to-Excel templating engine.
+
+You design a normal `.xlsx` workbook as the template, write expressions such as
+`{{ [Customer] }}` or `{{ IF([Amount] > 1000, "VIP", "Standard") }}` inside
+cells, and feed xl3 another `.xlsx` workbook as data. xl3 renders a new workbook
+while preserving spreadsheet structure, styles, number formats, and merged
+cells.
 
 ```
-data.xlsx       (your raw data)
+data.xlsx       (your source data)
        +
-template.xlsx   (your form, with {{ }} placeholders inside cells)
+template.xlsx   (your workbook template)
        ↓
-result.xlsx     (filled, repeated, grouped — possibly many files)
+result.xlsx     (filled workbook, with formatting preserved)
 ```
 
-Templates are authored **in Excel itself**. Drop variables into cells, save, run. No code, no DSL learned outside the spreadsheet, no vendor cloud.
+Templates are authored **in Excel itself**. Drop variables into cells, save the
+file, run xl3. No macros, no hidden scripts, no vendor cloud.
+
+Excel users design the document. Developers automate the data flow.
 
 ## Quick example
 
-A template cell containing `{{ [Item] }} - {{ [Quantity] }}` followed by a row of source data with `Item="Widget"`, `Quantity=12` produces a cell with the value `Widget - 12`. Repeat blocks, group keys (sheet/file split), filters, Excel-style functions such as `IF()`, `SUM()`, `COUNT()`, `ROW()`, and `TODAY()`, and template cell number/date formats extend this to real-world reporting workflows.
+A template can contain ordinary Excel content plus xl3 expressions:
+
+| Cell | Template value |
+|---|---|
+| A1 | `Customer` |
+| B1 | `Amount` |
+| A2 | `{{ [Customer] }}` |
+| B2 | `{{ TEXT([Amount], "#,##0.00") }}` |
+
+Given this data workbook:
+
+| Customer | Amount |
+|---|---:|
+| Acme | 1200 |
+| Beta | 350 |
+
+xl3 renders:
+
+| Customer | Amount |
+|---|---:|
+| Acme | 1,200.00 |
+| Beta | 350.00 |
+
+The output is still an `.xlsx` workbook. Template formatting, number formats,
+and merged cells are part of the expected result, not incidental details.
 
 See [`spec/`](./spec) for the language draft and [`conformance/`](./conformance) for the implementation-neutral fixture corpus and runner protocol.
 
 ## Why xl3 exists
 
-Many reporting workflows already live in spreadsheets: forms, totals, filters, grouping, and layout. xl3 keeps that authoring model intact. The spreadsheet remains the template, while the transformation rules are explicit, deterministic, and testable.
+Many reporting workflows already live in spreadsheets: report forms, invoices,
+settlement sheets, exports, and internal operation templates. xl3 keeps that
+authoring model intact. The spreadsheet remains the template, while the
+transformation rules are explicit, deterministic, and testable.
 
-The goal is not to replace Excel with code. The goal is to make spreadsheet-authored transformations reproducible across implementations.
+The goal is not to replace Excel with code. The goal is to keep Excel as the
+authoring tool and move repetitive data filling into a small, testable template
+language.
+
+## What xl3 emphasizes
+
+- **Excel in, Excel out.** Templates and source data are both `.xlsx` files.
+- **Templates are real spreadsheets.** Layout and formatting stay in the workbook.
+- **Formatting is part of the contract.** Styles, number formats, and merged cells
+  are covered by Stage 2 conformance tests.
+- **No macros.** Template behavior is represented by explicit cell expressions.
+- **Conformance-tested behavior.** The TypeScript reference implementation
+  currently passes the XTL 0.1 fixture corpus, including Stage 2 OOXML comparison.
 
 ## How it compares
 

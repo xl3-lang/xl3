@@ -1,7 +1,7 @@
 {
   "name": "xl3",
   "version": "0.1.0-alpha.0",
-  "description": "Excel-to-Excel templates where the spreadsheet itself is the template.",
+  "description": "Use Excel workbooks as templates and render formatted Excel output from Excel data.",
   "keywords": [
     "excel",
     "xlsx",
