@@ -39,6 +39,35 @@ or an `expected/` directory.
 
 Each fixture directory contains `meta.yaml` declaring the minimum spec version it requires (`spec_version: 0.1`). Implementations report which spec version they target; the suite filters fixtures accordingly.
 
+## Fixture Catalog
+
+The XTL 0.1 bootstrap corpus currently contains these fixtures:
+
+| ID | Fixture | Contract |
+|---|---|---|
+| 001 | `bracket-substitution` | Single bracketed source-column expressions render one output row per source row. |
+| 002 | `if-function` | `IF(condition, then, else)` evaluates comparisons inside the current data row. |
+| 003 | `list-sheet-filter` | `@filter [field] in _ListSheet` keeps matching rows and removes the list sheet from output. |
+| 004 | `repeat-right-default` | `@repeat right` without an explicit count defaults to `colSpan = 1`. |
+| 005 | `round-half-away-from-zero` | `ROUND()` uses Excel-style half-away-from-zero rounding. |
+| 006 | `filename-forbidden-chars` | Forbidden filename characters are replaced with `_`. |
+| 007 | `filename-reserved-name` | Windows reserved device basenames get a single trailing `_`. |
+| 008 | `numfmt-numeric-string-coercion` | Numeric template formats coerce numeric strings to numbers. |
+| 009 | `numfmt-date-string-coercion` | Date template formats coerce date-like strings to date values. |
+| 010 | `numfmt-text-format-coercion` | Text format `@` coerces a single-expression value to a string. |
+| 011 | `text-date-format` | `TEXT(date, "YYYY-MM-DD")` returns a string using XTL date tokens. |
+| 012 | `text-number-format` | `TEXT(number, format)` supports the minimum XTL 0.1 numeric format subset. |
+| 013 | `rich-text-template-expression` | Rich-text template cells are parsed by concatenating text runs before expression detection. |
+| 014 | `source-formula-cached-result` | Source formula cells use cached results and are not recalculated by XTL. |
+| 015 | `source-sheet-prefix-first-match` | `source_sheet` prefix patterns select the first matching worksheet in workbook order. |
+| 016 | `text-number-negative-rounding` | Numeric `TEXT()` formats round negative `.5` boundaries half away from zero. |
+| 017 | `source-sheet-prefix-no-match-error` | Missing `source_sheet` prefix matches report a stable error. |
+| 018 | `source-formula-missing-cached-result-error` | Source formula cells without cached results report a stable error. |
+| 019 | `filename-empty-basename-error` | Filename sanitization reports an error for an empty basename. |
+| 020 | `filename-length-overflow-error` | Filename sanitization reports an error above the 255-byte limit. |
+| 021 | `numfmt-number-coercion-error` | Numeric template formats report an error when coercion fails. |
+| 022 | `numfmt-date-coercion-error` | Date template formats report an error when coercion fails. |
+
 ## Status
 
 XTL 0.1 corpus is **bootstrap state**. Fixtures should be added only for behavior already stated in [`spec/README.md`](../spec/README.md), following the same pattern used by standards projects such as CommonMark: prose defines the rule, fixtures make the rule executable, and implementations report which fixtures they pass.
