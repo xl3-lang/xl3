@@ -5,7 +5,7 @@
 
 **Status:** alpha · XTL spec 0.1 (draft) · breaking changes possible until 1.0
 
-[Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md)
+[한국어](./README.ko.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md)
 
 ---
 
