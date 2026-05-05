@@ -1,0 +1,5 @@
+description: Source formula cells use cached results and are not recalculated by XTL.
+spec_section: evaluation.md "Cell Text Extraction"
+spec_version: "0.1"
+tags: [cell-text, formula, source]
+verified_by: [manual-script]

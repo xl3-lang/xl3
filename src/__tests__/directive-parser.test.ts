@@ -81,7 +81,7 @@ describe('parseDirective: top', () => {
 });
 
 describe('parseDirective: repeat right', () => {
-  it('defaults colSpan to 1 when number is omitted (ADR/spec 0.2)', () => {
+  it('defaults colSpan to 1 when number is omitted (XTL 0.1)', () => {
     expect(parseDirective('@repeat right')).toEqual({
       kind: 'repeat', direction: 'right', colSpan: 1,
     });

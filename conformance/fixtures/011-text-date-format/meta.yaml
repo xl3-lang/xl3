@@ -1,0 +1,5 @@
+description: TEXT(date, "YYYY-MM-DD") returns a string formatted with XTL date tokens.
+spec_section: language.md "Text Formatting"
+spec_version: "0.1"
+tags: [function, text, date]
+verified_by: [manual-script]

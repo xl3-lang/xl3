@@ -1,0 +1,5 @@
+description: source_sheet prefix patterns select the first matching worksheet in workbook order.
+spec_section: evaluation.md "Source Data Model"
+spec_version: "0.1"
+tags: [config, source-sheet, prefix]
+verified_by: [manual-script]

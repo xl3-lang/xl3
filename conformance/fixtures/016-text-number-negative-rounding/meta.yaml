@@ -1,0 +1,5 @@
+description: Numeric TEXT() formats round negative .5 boundaries half away from zero.
+spec_section: language.md "Text Formatting"
+spec_version: "0.1"
+tags: [function, text, numeric, rounding]
+verified_by: [manual-script]

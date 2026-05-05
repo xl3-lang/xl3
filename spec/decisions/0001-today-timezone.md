@@ -2,7 +2,7 @@
 
 - **Status:** accepted
 - **Date:** 2026-05-03
-- **Spec target:** XTL 0.2
+- **Spec target:** XTL 0.1 draft
 - **Affects:** language.md
 
 ## Context

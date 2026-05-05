@@ -6,6 +6,17 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Added
+
+- Stage 1 `xl3-conformance` runner with cell-value comparison.
+- Bootstrap conformance fixtures covering substitution, `IF`, list-sheet filters,
+  repeat-right defaults, `ROUND`, filename sanitization, and numFmt coercion.
+- ADR-0004 reference implementation coupling audit, plus spec clarifications
+  for cell text extraction and `source_sheet` prefix matching.
+- XTL 0.1 `TEXT()` date/numeric format subset and conformance fixtures for
+  `TEXT()`, rich-text cells, cached formula results, and `source_sheet` prefix
+  matching, including negative half-away numeric rounding.
+
 ## [0.1.0-alpha.0] - 2026-05-03
 
 Initial public draft.

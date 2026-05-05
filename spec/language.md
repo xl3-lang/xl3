@@ -122,6 +122,19 @@ Aggregates operate on the current rendered row set.
 
 `TEXT()` returns a string. Use template cell number/date formats when the output should remain a number or date value.
 
+XTL 0.1 defines this minimum `TEXT()` format subset:
+
+| Kind | Tokens / formats | Meaning |
+|---|---|---|
+| Date/time | `YYYY`, `YY`, `MM`, `DD`, `dd`, `HH`, `hh`, `mm`, `ss` | Zero-padded calendar fields, except `YYYY` and `YY`. `DD` and `dd` are both day-of-month. |
+| Number | `0` | Rounded integer with no grouping. |
+| Number | `#,##0` | Rounded integer with `,` thousands grouping. |
+| Number | `0.00` | Fixed two decimal places, no grouping. |
+| Number | `#,##0.00` | Fixed two decimal places with `,` thousands grouping. |
+
+Numeric `TEXT()` rounding uses the same half-away-from-zero rule as
+`ROUND()`. Formats outside this table are implementation-defined in XTL 0.1.
+
 ### Row and Date Functions
 
 ```text

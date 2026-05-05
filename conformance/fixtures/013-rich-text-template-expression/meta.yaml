@@ -1,0 +1,5 @@
+description: Rich-text template cells are parsed by concatenating text runs before expression detection.
+spec_section: evaluation.md "Cell Text Extraction"
+spec_version: "0.1"
+tags: [cell-text, rich-text, substitution]
+verified_by: [manual-script]

@@ -1,7 +1,7 @@
 // Authoring-only script. Not part of the conformance corpus.
 //
-// Constructs template.xlsx, data.xlsx, and expected.xlsx for fixtures
-// 001..003 by writing each cell explicitly from spec prose.
+// Constructs template.xlsx, data.xlsx, and expected.xlsx for fixtures by
+// writing each cell explicitly from spec prose.
 //
 // Cardinal rule (conformance/AUTHORING.md): expected.xlsx is authored from
 // the spec, never produced by running the reference implementation. This
@@ -549,6 +549,299 @@ async function build010() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 011 - text-date-format
+//
+// Concept: TEXT(date, "YYYY-MM-DD") formats a date value using the XTL 0.1
+// date token subset.
+// Spec section: language.md "Text Formatting".
+// ---------------------------------------------------------------------------
+async function build011() {
+  const dir = join(FIXTURES, '011-text-date-format');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'text-date-format'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Formatted';
+    sh.getCell('A2').value = '{{ TEXT([OrderDate], "YYYY-MM-DD") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — OrderDate is a date cell.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'OrderDate';
+    sh.getCell('A2').value = new Date(2026, 4, 3);
+    sh.getCell('A2').numFmt = 'yyyy-mm-dd';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — TEXT() always returns a string.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Formatted';
+    sh.getCell('A2').value = '2026-05-03';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 012 - text-number-format
+//
+// Concept: TEXT(number, format) supports the XTL 0.1 numeric subset:
+// "#,##0", "0.00", and "#,##0.00".
+// Spec section: language.md "Text Formatting".
+// ---------------------------------------------------------------------------
+async function build012() {
+  const dir = join(FIXTURES, '012-text-number-format');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'text-number-format'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Grouped';
+    sh.getCell('B1').value = 'Fixed';
+    sh.getCell('C1').value = 'GroupedFixed';
+    sh.getCell('A2').value = '{{ TEXT([Amount], "#,##0") }}';
+    sh.getCell('B2').value = '{{ TEXT([Amount], "0.00") }}';
+    sh.getCell('C2').value = '{{ TEXT([Amount], "#,##0.00") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — value chosen to exercise grouping and fixed decimals.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = 1234.5;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — TEXT() returns strings; "#,##0" rounds to an integer.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Grouped';
+    sh.getCell('B1').value = 'Fixed';
+    sh.getCell('C1').value = 'GroupedFixed';
+    sh.getCell('A2').value = '1,235';
+    sh.getCell('B2').value = '1234.50';
+    sh.getCell('C2').value = '1,234.50';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 013 - rich-text-template-expression
+//
+// Concept: rich-text template cells are parsed by concatenating text runs in
+// order before expression detection.
+// Spec section: evaluation.md "Cell Text Extraction".
+// ---------------------------------------------------------------------------
+async function build013() {
+  const dir = join(FIXTURES, '013-rich-text-template-expression');
+
+  // template.xlsx — the expression is split across rich-text runs.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'rich-text-template-expression'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = {
+      richText: [
+        { text: '{{ ' },
+        { text: '[Customer]' },
+        { text: ' }}' },
+      ],
+    };
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 014 - source-formula-cached-result
+//
+// Concept: XTL does not recalculate formulas. Source formula cells use the
+// cached result when present.
+// Spec section: evaluation.md "Cell Text Extraction".
+// ---------------------------------------------------------------------------
+async function build014() {
+  const dir = join(FIXTURES, '014-source-formula-cached-result');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-formula-cached-result'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Total';
+    sh.getCell('A2').value = '{{ [Total] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Total is a formula cell with a cached result.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Total';
+    sh.getCell('B1').value = 'Left';
+    sh.getCell('C1').value = 'Right';
+    sh.getCell('A2').value = { formula: 'B2+C2', result: 42 };
+    sh.getCell('B2').value = 20;
+    sh.getCell('C2').value = 22;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — cached formula result 42 is used as the source value.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Total';
+    sh.getCell('A2').value = 42;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 015 - source-sheet-prefix-first-match
+//
+// Concept: source_sheet ending in `*` is a prefix pattern and selects the
+// first matching worksheet in workbook order.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build015() {
+  const dir = join(FIXTURES, '015-source-sheet-prefix-first-match');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-sheet-prefix-first-match'],
+      ['source_sheet', 'Data_*'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Data_2025 appears before Data_2026 and should be selected.
+  {
+    const wb = new ExcelJS.Workbook();
+    const older = wb.addWorksheet('Data_2025');
+    older.getCell('A1').value = 'Customer';
+    older.getCell('A2').value = 'First';
+    const newer = wb.addWorksheet('Data_2026');
+    newer.getCell('A1').value = 'Customer';
+    newer.getCell('A2').value = 'Second';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'First';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 016 - text-number-negative-rounding
+//
+// Concept: Numeric TEXT() formats round negative .5 boundaries half away from
+// zero, matching ROUND().
+// Spec section: language.md "Text Formatting".
+// ---------------------------------------------------------------------------
+async function build016() {
+  const dir = join(FIXTURES, '016-text-number-negative-rounding');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'text-number-negative-rounding'],
+      ['source_sheet', 'Data'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Integer';
+    sh.getCell('B1').value = 'Fixed';
+    sh.getCell('A2').value = '{{ TEXT([IntegerValue], "0") }}';
+    sh.getCell('B2').value = '{{ TEXT([FixedValue], "0.00") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — exercise negative half boundaries for integer and decimal
+  // TEXT() rounding.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'IntegerValue';
+    sh.getCell('B1').value = 'FixedValue';
+    sh.getCell('A2').value = -2.5;
+    sh.getCell('B2').value = -2.345;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — TEXT() returns strings and rounds half away from zero.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Integer';
+    sh.getCell('B1').value = 'Fixed';
+    sh.getCell('A2').value = '-3';
+    sh.getCell('B2').value = '-2.35';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 await build001();
 await build002();
 await build003();
@@ -559,4 +852,10 @@ await build007();
 await build008();
 await build009();
 await build010();
-console.log('built fixtures 001-010');
+await build011();
+await build012();
+await build013();
+await build014();
+await build015();
+await build016();
+console.log('built fixtures 001-016');

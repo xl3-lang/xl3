@@ -123,9 +123,12 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
 
   TEXT: (v, fmt) => {
     const f = String(fmt);
-    const d = toDate(v);
-    if (d) return formatDate(d, f);
-    if (/[#0?,.%]/.test(f)) return formatNumber(v);
+    if (isTextDateFormat(f)) {
+      const d = toDate(v);
+      if (d) return formatDate(d, f);
+    }
+    const formatted = formatNumber(v, f);
+    if (formatted !== null) return formatted;
     return String(v ?? '');
   },
 
@@ -166,16 +169,24 @@ function formatDate(d: Date, fmt: string): string {
     .replace('ss', String(s).padStart(2, '0'));
 }
 
-function formatNumber(v: unknown): string {
+function isTextDateFormat(fmt: string): boolean {
+  return /(Y{2,4}|M{2}|D{2}|d{2}|H{2}|h{2}|m{2}|s{2})/.test(fmt);
+}
+
+function formatNumber(v: unknown, fmt: string): string | null {
+  if (!['0', '#,##0', '0.00', '#,##0.00'].includes(fmt)) return null;
+
   const n = toNumber(v);
   const isNeg = n < 0;
   const abs = Math.abs(n);
-  const intPart = Math.floor(abs);
-  const fracPart = abs - intPart;
+  const decimals = fmt.endsWith('.00') ? 2 : 0;
+  const factor = Math.pow(10, decimals);
+  const rounded = Math.floor(abs * factor + 0.5) / factor;
 
-  let s = intPart.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  if (fracPart > 0.0001) {
-    s += fracPart.toFixed(2).slice(1);
+  let s = decimals > 0 ? rounded.toFixed(decimals) : String(Math.floor(rounded));
+  if (fmt.startsWith('#,##0')) {
+    const [intPart, fracPart] = s.split('.');
+    s = intPart!.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (fracPart ? `.${fracPart}` : '');
   }
   return isNeg ? '-' + s : s;
 }

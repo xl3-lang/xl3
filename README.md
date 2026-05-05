@@ -26,7 +26,7 @@ Templates are authored **in Excel itself**. Drop variables into cells, save, run
 
 A template cell containing `{{ [Item] }} - {{ [Quantity] }}` followed by a row of source data with `Item="Widget"`, `Quantity=12` produces a cell with the value `Widget - 12`. Repeat blocks, group keys (sheet/file split), filters, Excel-style functions such as `IF()`, `SUM()`, `COUNT()`, `ROW()`, and `TODAY()`, and template cell number/date formats extend this to real-world reporting workflows.
 
-See [`spec/`](./spec) for the language draft and [`conformance/`](./conformance) for the implementation-neutral fixture corpus scaffold.
+See [`spec/`](./spec) for the language draft and [`conformance/`](./conformance) for the implementation-neutral fixture corpus and runner protocol.
 
 ## Why xl3 exists
 

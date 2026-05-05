@@ -43,6 +43,11 @@ By default:
 3. Rows below `header_row` are data rows.
 4. Empty data rows are skipped.
 
+If `source_sheet` ends with `*`, it is a prefix pattern. The implementation MUST
+select the first worksheet, in workbook order, whose name starts with the prefix
+before `*`. If no worksheet matches, this is an error. Exact sheet-name matches
+take precedence over prefix matching.
+
 When `source_range` is set:
 
 1. The range start row is the header row.
@@ -93,6 +98,17 @@ Multiple filters are combined with logical AND. Multiple sorts are applied in di
 
 `@repeat right` changes block expansion direction and is not a data filtering directive.
 
+## Cell Text Extraction
+
+Template expression parsing and source-row reading operate on each cell's
+effective text/value:
+
+- Plain string, number, boolean, and date cells are read as their cell values.
+- Rich-text cells are read as the concatenation of their text runs, in order.
+- Formula cells are not recalculated by XTL. If the workbook contains a cached
+  formula result, that cached result is used. If no cached result is available,
+  behavior is implementation-defined.
+
 ## Cell Evaluation
 
 ### Single-Expression Cells
@@ -113,7 +129,7 @@ If the template cell has a number/date/text format, the implementation MUST coer
 
 If coercion fails, the implementation MUST report an error.
 
-The minimum set of supported date formats and numeric format tokens is not normatively defined by XTL 0.2 and is left to each implementation. Implementations that support fewer formats than another implementation may declare partial conformance.
+The minimum set of supported date formats and numeric format tokens is not normatively defined by XTL 0.1 and is left to each implementation. Implementations that support fewer formats than another implementation may declare partial conformance.
 
 ### Mixed Text Cells
 
