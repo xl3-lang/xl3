@@ -3,7 +3,7 @@
 // Iterates fixtures under a directory, runs the reference impl on each,
 // and compares output to expected via cell-value equality. This is *not*
 // the canonical OOXML comparison runner-protocol.md ultimately requires
-// (that's Stage 2, deferred to a future ADR). It is the minimum that
+// (that's Stage 2, defined by ADR-0006). It is the minimum that
 // makes the corpus actionable for both this impl and other-language
 // ports targeting cell-equivalent conformance.
 

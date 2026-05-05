@@ -23,14 +23,19 @@ conformance/
 
 ## What "passing" means
 
-A fixture passes if the implementation, given `template.xlsx` and `data.xlsx`, produces output(s) that match `expected.xlsx` (or the contents of `expected/`) byte-equivalently after **canonical normalization** of the OOXML zip:
+A static-output fixture passes if the implementation, given `template.xlsx` and
+`data.xlsx`, produces output(s) that match `expected.xlsx` (or the contents of
+`expected/`). Stage 1 runners may compare higher-level worksheet/cell values.
+Stage 2 runners compare byte-equivalent workbook content after **canonical
+normalization** of the OOXML zip:
 
 - Files within the zip sorted by name
-- XML attributes sorted within each element
-- Insignificant whitespace collapsed
+- XML serialized in deterministic canonical form
+- Text-run whitespace preserved
 - Generator metadata stripped (creator, modifiedBy, lastModified)
 
-(Exact canonicalization rules to be specified in [`runner-protocol.md`](./runner-protocol.md). Until then, comparison may use a higher-level value-equality check on each cell.)
+See [`runner-protocol.md`](./runner-protocol.md) for the comparison stage and
+canonicalization rules.
 
 An error fixture passes when the implementation reports an error containing the
 fixture's `expected_error` text. Error fixtures do not include `expected.xlsx`

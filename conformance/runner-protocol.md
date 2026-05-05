@@ -93,17 +93,50 @@ A runner MUST mark an `expected_dynamic` fixture as:
 Runners that do not implement a declared `expected_dynamic` kind MUST mark the
 fixture as `skip` and include a reason. They MUST NOT report it as passed.
 
-## Output comparison
+## Comparison stages
+
+The conformance protocol has two comparison stages:
+
+- **Stage 1: cell-value comparison.** The runner compares worksheet names and
+  non-auxiliary cell values after loading `.xlsx` files through a spreadsheet
+  library. This stage intentionally ignores styles, merges, page setup,
+  embedded media, formulas beyond cached values, and package structure. It is
+  sufficient for the XTL 0.1 bootstrap corpus while canonical OOXML comparison
+  is being specified and implemented.
+- **Stage 2: canonical OOXML comparison.** The runner compares generated `.xlsx`
+  files after canonicalizing their OOXML packages. This is the target for full
+  static-output conformance because it can catch layout, style, merge, sheet
+  structure, and package regressions that Stage 1 cannot see.
+
+Error fixtures and dynamic fixtures are not workbook-output comparisons. They
+keep their `expected_error` and `expected_dynamic` pass/fail rules regardless of
+comparison stage.
+
+Reports SHOULD identify the comparison stage used for each run. An
+implementation MUST NOT claim Stage 2 conformance from a Stage 1-only run.
+
+## Stage 2 output comparison
 
 Comparison is performed on **canonicalized** OOXML. The minimum canonicalization rules:
 
-1. Files within the zip MUST be compared by content, not by zip metadata (timestamps, compression).
-2. XML files MUST be compared after parsing and re-serializing in canonical order.
-3. The following fields are stripped before comparison (they reflect generator metadata, not content):
+1. Files within the zip MUST be compared by content, not by zip metadata
+   (timestamps, compression, entry order, or compression level).
+2. Package part names MUST match after canonicalization. Missing or extra
+   workbook parts are differences unless a later ADR marks the part volatile.
+3. XML files MUST be compared after parsing and re-serializing with deterministic
+   namespace declarations, attribute order, quote style, and empty-element
+   representation.
+4. XML element order MUST be preserved unless a later ADR explicitly marks a
+   specific element collection as unordered. Relationship files are ordered
+   package data, not sets, until such a rule exists.
+5. The following fields are stripped before comparison (they reflect generator metadata, not content):
    - `cp:lastModifiedBy`, `dc:creator`, `cp:created`, `dcterms:modified`
    - Any `<calcPr>` `calcId` attribute (Excel calc engine version)
-4. Insignificant whitespace within text runs is preserved (it can be semantically meaningful).
-5. Cell `r` (reference) attributes MUST match exactly; cell ordering within `<row>` MUST match.
+6. Insignificant whitespace within text runs is preserved (it can be semantically
+   meaningful).
+7. Cell `r` (reference) attributes MUST match exactly; cell ordering within
+   `<row>` MUST match.
+8. Binary package parts, such as images, MUST be compared by exact bytes.
 
 A reference canonicalizer implementation is provided in the JS reference impl as `xl3 conformance canonicalize <input.xlsx>` (planned).
 

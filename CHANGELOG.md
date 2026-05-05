@@ -23,6 +23,7 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 - Error fixtures for output filename sanitization and numFmt coercion failures.
 - ADR-0005 dynamic conformance assertion protocol for render-time values such
   as `TODAY()`.
+- ADR-0006 Stage 2 canonical OOXML conformance comparison design.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 
