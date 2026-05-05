@@ -584,19 +584,79 @@ pre {
 .code-pair {
   display: grid;
   grid-template-columns: 0.7fr 1.3fr;
-  gap: 16px;
+  gap: 18px;
+  align-items: start;
 }
 
-pre {
+.code-card {
   margin: 0;
-  padding: 18px;
-  overflow-x: auto;
-  border-radius: 8px;
-  background: var(--code);
-  color: #dcf8e7;
-  font-size: 14px;
-  line-height: 1.7;
+  border-radius: 14px;
+  background: #0d1117;
+  border: 1px solid #1f2630;
+  box-shadow: 0 18px 50px rgba(13, 17, 23, 0.18);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
+
+.code-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #161b22;
+  border-bottom: 1px solid #1f2630;
+}
+
+.code-card .window-dots {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.code-card .window-dots span {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #2a313a;
+}
+
+.code-card .window-dots span:nth-child(1) { background: #ff5f57; }
+.code-card .window-dots span:nth-child(2) { background: #febc2e; }
+.code-card .window-dots span:nth-child(3) { background: #28c840; }
+
+.code-card-name {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: #8b949e;
+}
+
+.code-block {
+  margin: 0;
+  padding: 18px 20px;
+  overflow-x: auto;
+  background: transparent;
+  color: #c9d1d9;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.75;
+  flex: 1;
+}
+
+.code-block code {
+  font-family: inherit;
+  color: inherit;
+  font-size: inherit;
+}
+
+.code-block .tok-kw      { color: #ff7b72; }
+.code-block .tok-string  { color: #a5d6ff; }
+.code-block .tok-fn      { color: #d2a8ff; }
+.code-block .tok-type    { color: #79c0ff; }
+.code-block .tok-const   { color: #79c0ff; }
+.code-block .tok-var     { color: #ffa657; }
+.code-block .tok-comment { color: #8b949e; font-style: italic; }
+.code-block .tok-prompt  { color: #58a6ff; user-select: none; margin-right: 6px; }
 
 .site-footer {
   width: min(1160px, calc(100% - 56px));

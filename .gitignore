@@ -37,3 +37,6 @@ PLAN.md
 PLANNING.md
 TODO.local.md
 *.plan.md
+
+# Playwright MCP scratch
+.playwright-mcp/

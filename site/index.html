@@ -15,7 +15,7 @@
     >
     <meta property="og:type" content="website">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23217846'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='24' font-weight='700' fill='white'%3Exl3%3C/text%3E%3C/svg%3E">
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./styles.css?v=20260505b">
   </head>
   <body>
     <header class="site-header">
@@ -160,11 +160,23 @@
           <h2 id="use-title">Small API, explicit contract.</h2>
         </div>
         <div class="code-pair">
-          <pre><code>npm install xl3</code></pre>
-          <pre><code>import { convert } from 'xl3';
+          <figure class="code-card">
+            <figcaption class="code-card-head">
+              <span class="window-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+              <span class="code-card-name">terminal</span>
+            </figcaption>
+            <pre class="code-block"><code><span class="tok-prompt">$</span> <span class="tok-fn">npm</span> <span class="tok-kw">install</span> <span class="tok-var">xl3</span></code></pre>
+          </figure>
+          <figure class="code-card">
+            <figcaption class="code-card-head">
+              <span class="window-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+              <span class="code-card-name">example.ts</span>
+            </figcaption>
+            <pre class="code-block"><code><span class="tok-kw">import</span> { <span class="tok-var">convert</span> } <span class="tok-kw">from</span> <span class="tok-string">'xl3'</span>;
 
-const outputs = await convert(templateBuffer, dataBuffer);
-// OutputFile[] -> formatted .xlsx workbook(s)</code></pre>
+<span class="tok-kw">const</span> <span class="tok-const">outputs</span> = <span class="tok-kw">await</span> <span class="tok-fn">convert</span>(<span class="tok-var">templateBuffer</span>, <span class="tok-var">dataBuffer</span>);
+<span class="tok-comment">// OutputFile[] -&gt; formatted .xlsx workbook(s)</span></code></pre>
+          </figure>
         </div>
       </section>
     </main>
@@ -177,6 +189,6 @@ const outputs = await convert(templateBuffer, dataBuffer);
       <a href="./ko/">한국어</a>
     </footer>
 
-    <script src="./script.js"></script>
+    <script src="./script.js?v=20260505"></script>
   </body>
 </html>
