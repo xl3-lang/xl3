@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>xl3 - Excel files as templates</title>
+    <meta
+      name="description"
+      content="xl3는 Excel 파일 자체를 템플릿으로 사용해서, 데이터 Excel을 구조와 서식이 보존된 결과 Excel로 변환하는 도구입니다."
+    >
+    <meta property="og:title" content="xl3 - Excel files as templates">
+    <meta
+      property="og:description"
+      content="Excel 파일을 템플릿으로 사용하고, 데이터 Excel을 넣어 서식이 유지된 결과 workbook을 생성합니다."
+    >
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231f8f5f'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='24' font-weight='700' fill='white'%3Exl3%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="xl3 home">
+        <span class="brand-mark">xl3</span>
+        <span class="brand-subtitle">Excel-to-Excel templates</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="#flow">Flow</a>
+        <a href="#why">Why</a>
+        <a href="#install">Install</a>
+        <a href="https://github.com/jinyoung4478/xl3">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-scene" aria-hidden="true">
+          <div class="floating-book floating-book-template">
+            <div class="mini-title">template.xlsx</div>
+            <div class="mini-grid">
+              <span>Customer</span><span>Amount</span>
+              <span>{{ [Customer] }}</span><span>{{ TEXT([Amount]) }}</span>
+            </div>
+          </div>
+          <div class="floating-book floating-book-data">
+            <div class="mini-title">data.xlsx</div>
+            <div class="mini-grid">
+              <span>Customer</span><span>Amount</span>
+              <span>Acme</span><span>1200</span>
+            </div>
+          </div>
+          <div class="floating-book floating-book-result">
+            <div class="mini-title">result.xlsx</div>
+            <div class="mini-grid">
+              <span>Customer</span><span>Amount</span>
+              <span>Acme</span><span>1,200.00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-copy">
+          <p class="eyebrow">XTL 0.1 draft · TypeScript reference implementation</p>
+          <h1 id="hero-title">Excel files as templates.</h1>
+          <p class="hero-lede">
+            xl3는 Excel 파일 자체를 템플릿으로 사용해서, 데이터 Excel을
+            구조와 서식이 보존된 결과 Excel로 변환하는 도구입니다.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-action" href="#flow">흐름 보기</a>
+            <a class="secondary-action" href="https://github.com/jinyoung4478/xl3">GitHub</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="flow" class="section flow-section" aria-labelledby="flow-title">
+        <div class="section-heading">
+          <p class="eyebrow">Interactive flow</p>
+          <h2 id="flow-title">template.xlsx + data.xlsx -> result.xlsx</h2>
+          <p>
+            아래 workbook 미리보기는 실제 Excel UI처럼 동작합니다. 단계 버튼을
+            누르거나 데이터 값을 바꾸면 결과 workbook이 즉시 갱신됩니다.
+          </p>
+        </div>
+
+        <div class="flow-controls" role="tablist" aria-label="Workbook step">
+          <button class="flow-tab is-active" type="button" data-step="template" role="tab" aria-selected="true">
+            Template
+          </button>
+          <button class="flow-tab" type="button" data-step="data" role="tab" aria-selected="false">
+            Data
+          </button>
+          <button class="flow-tab" type="button" data-step="result" role="tab" aria-selected="false">
+            Result
+          </button>
+        </div>
+
+        <div class="flow-stage" data-active-step="template">
+          <article class="excel-preview preview-template is-active" data-panel="template" aria-label="template workbook preview">
+            <div class="excel-window">
+              <div class="excel-titlebar">
+                <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+                <div>
+                  <strong>template.xlsx</strong>
+                  <small>Report layout written in Excel</small>
+                </div>
+              </div>
+              <div class="excel-ribbon">
+                <span>Home</span><span>Insert</span><span>Formulas</span><span>Review</span>
+              </div>
+              <div class="formula-bar">
+                <span class="name-box">B2</span>
+                <span class="fx">fx</span>
+                <span class="formula-text">{{ TEXT([Amount], "#,##0.00") }}</span>
+              </div>
+              <div class="sheet-wrap">
+                <table class="sheet-grid">
+                  <thead>
+                    <tr><th></th><th>A</th><th>B</th><th>C</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><th>1</th><td class="header-cell">Customer</td><td class="header-cell">Amount</td><td class="header-cell">Status</td></tr>
+                    <tr><th>2</th><td class="template-cell">{{ [Customer] }}</td><td class="template-cell selected">{{ TEXT([Amount], "#,##0.00") }}</td><td class="template-cell">{{ IF([Amount] > 1000, "VIP", "Standard") }}</td></tr>
+                    <tr><th>3</th><td class="merged-note" colspan="3">Prepared for finance review</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="sheet-tabs"><span class="sheet-tab is-current">Report</span></div>
+            </div>
+          </article>
+
+          <article class="excel-preview preview-data" data-panel="data" aria-label="data workbook preview">
+            <div class="excel-window">
+              <div class="excel-titlebar">
+                <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+                <div>
+                  <strong>data.xlsx</strong>
+                  <small>Source rows from another workbook</small>
+                </div>
+              </div>
+              <div class="excel-ribbon">
+                <span>Home</span><span>Data</span><span>Table</span><span>Review</span>
+              </div>
+              <div class="formula-bar">
+                <span class="name-box">B2</span>
+                <span class="fx">fx</span>
+                <input id="amountInput" class="formula-input" type="number" min="0" step="10" value="1200" aria-label="Amount value">
+              </div>
+              <div class="sheet-wrap">
+                <table class="sheet-grid">
+                  <thead>
+                    <tr><th></th><th>A</th><th>B</th><th>C</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><th>1</th><td class="header-cell">Customer</td><td class="header-cell">Amount</td><td class="header-cell">Region</td></tr>
+                    <tr><th>2</th><td><input id="customerInput" class="cell-input" value="Acme" aria-label="Customer value"></td><td class="selected"><span id="dataAmountCell">1200</span></td><td>Seoul</td></tr>
+                    <tr><th>3</th><td>Beta</td><td>350</td><td>Busan</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="sheet-tabs"><span class="sheet-tab is-current">Data</span></div>
+            </div>
+          </article>
+
+          <article class="excel-preview preview-result" data-panel="result" aria-label="result workbook preview">
+            <div class="excel-window">
+              <div class="excel-titlebar">
+                <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+                <div>
+                  <strong>result.xlsx</strong>
+                  <small>Rendered workbook, formatting preserved</small>
+                </div>
+              </div>
+              <div class="excel-ribbon">
+                <span>Home</span><span>Insert</span><span>Formulas</span><span>Review</span>
+              </div>
+              <div class="formula-bar">
+                <span class="name-box">B2</span>
+                <span class="fx">fx</span>
+                <span id="resultFormula" class="formula-text">1,200.00</span>
+              </div>
+              <div class="sheet-wrap">
+                <table class="sheet-grid">
+                  <thead>
+                    <tr><th></th><th>A</th><th>B</th><th>C</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><th>1</th><td class="header-cell">Customer</td><td class="header-cell">Amount</td><td class="header-cell">Status</td></tr>
+                    <tr><th>2</th><td id="resultCustomer">Acme</td><td id="resultAmount" class="selected currency-cell">1,200.00</td><td id="resultStatus" class="status-cell">VIP</td></tr>
+                    <tr><th>3</th><td class="merged-note" colspan="3">Prepared for finance review</td></tr>
+                    <tr><th>4</th><td>Beta</td><td class="currency-cell">350.00</td><td>Standard</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="sheet-tabs"><span class="sheet-tab is-current">Report</span></div>
+            </div>
+          </article>
+        </div>
+
+        <div class="run-panel" aria-live="polite">
+          <button id="runButton" class="primary-action" type="button">Run xl3</button>
+          <div class="run-status">
+            <span class="status-dot"></span>
+            <span id="runStatus">Template expressions are ready.</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="why" class="section values-section" aria-labelledby="why-title">
+        <div class="section-heading">
+          <p class="eyebrow">Why xl3</p>
+          <h2 id="why-title">Excel stays the authoring tool.</h2>
+          <p>반복적인 데이터 채우기만 작고 검증 가능한 템플릿 언어로 이동합니다.</p>
+        </div>
+        <div class="value-grid">
+          <div class="value-card"><h3>Excel in, Excel out</h3><p>템플릿과 원본 데이터가 모두 `.xlsx` 파일입니다.</p></div>
+          <div class="value-card"><h3>Real spreadsheet templates</h3><p>레이아웃, 숫자 형식, 병합 셀은 workbook 안에 남습니다.</p></div>
+          <div class="value-card"><h3>No macros</h3><p>동작은 숨겨진 스크립트가 아니라 명시적인 셀 표현식입니다.</p></div>
+          <div class="value-card"><h3>Conformance-tested</h3><p>Stage 2 OOXML 비교로 서식과 구조 보존을 검증합니다.</p></div>
+        </div>
+      </section>
+
+      <section id="install" class="section install-section" aria-labelledby="install-title">
+        <div class="section-heading">
+          <p class="eyebrow">Developer API</p>
+          <h2 id="install-title">Use it from TypeScript.</h2>
+        </div>
+        <div class="code-block">
+          <pre><code>npm install xl3</code></pre>
+          <pre><code>import { convert } from 'xl3';
+
+const outputs = await convert(templateBuffer, dataBuffer);
+// OutputFile[] -> formatted .xlsx workbook(s)</code></pre>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>xl3 is not affiliated with Microsoft.</span>
+      <a href="https://github.com/jinyoung4478/xl3">GitHub</a>
+      <a href="https://www.npmjs.com/package/xl3">npm</a>
+      <a href="https://github.com/jinyoung4478/xl3/tree/main/spec">Spec</a>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
