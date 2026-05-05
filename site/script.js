@@ -17,14 +17,14 @@ const copy = {
     conformanceNote: 'Stage 2 compares canonical OOXML so style and structure regressions are visible.',
   },
   ko: {
-    dataTitle: 'workbook이 원본 row를 제공합니다.',
-    dataNote: 'Header row의 field가 XTL source column이 됩니다.',
-    templateTitle: 'workbook이 출력 문서를 정의합니다.',
-    templateNote: 'XTL 표현식은 일반 Excel 셀 안에 들어갑니다.',
-    renderTitle: '렌더링 결과도 여전히 Excel입니다.',
+    dataTitle: 'workbook이 원본 row를 공급합니다.',
+    dataNote: 'Header row의 field가 그대로 XTL의 source column이 됩니다.',
+    templateTitle: 'workbook이 결과 문서의 모양을 정의합니다.',
+    templateNote: 'XTL 표현식은 평범한 Excel 셀 안에 그대로 들어갑니다.',
+    renderTitle: '렌더링 결과 역시 Excel입니다.',
     renderNote: '값은 바뀌지만 workbook 구조와 서식은 계약의 일부로 남습니다.',
-    conformanceTitle: '동작은 fixture로 검증됩니다.',
-    conformanceNote: 'Stage 2는 canonical OOXML을 비교해 스타일과 구조 회귀를 드러냅니다.',
+    conformanceTitle: '동작은 fixture로 검증합니다.',
+    conformanceNote: 'Stage 2는 canonical OOXML을 비교해 스타일과 구조 회귀까지 잡아냅니다.',
   },
 };
 
@@ -36,7 +36,7 @@ const examples = {
     title: t.dataTitle,
     note: t.dataNote,
     workbookTitle: 'data.xlsx',
-    workbookSubtitle: isKorean ? '원본 row workbook' : 'source row workbook',
+    workbookSubtitle: isKorean ? '원본 row 공급용 workbook' : 'source row workbook',
     formula: 'B2  1200',
     sheetName: 'Data',
     rows: [
@@ -55,7 +55,7 @@ const examples = {
     title: t.templateTitle,
     note: t.templateNote,
     workbookTitle: 'template.xlsx',
-    workbookSubtitle: isKorean ? 'Excel에서 작성한 템플릿' : 'template authored in Excel',
+    workbookSubtitle: isKorean ? 'Excel에서 작성한 템플릿 workbook' : 'template authored in Excel',
     formula: 'B2  {{ TEXT([Amount], "#,##0.00") }}',
     sheetName: 'Report',
     rows: [
@@ -75,7 +75,7 @@ const examples = {
     title: t.renderTitle,
     note: t.renderNote,
     workbookTitle: 'result.xlsx',
-    workbookSubtitle: isKorean ? '서식이 유지된 결과 workbook' : 'rendered workbook with formatting preserved',
+    workbookSubtitle: isKorean ? '서식까지 보존된 결과 workbook' : 'rendered workbook with formatting preserved',
     formula: 'B2  1,200.00',
     sheetName: 'Report',
     rows: [

@@ -39,6 +39,18 @@ body {
     "Noto Sans KR",
     sans-serif;
   letter-spacing: 0;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+code,
+pre,
+.code-card,
+.code-block,
+.formula-text,
+.sheet-grid {
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 a {
