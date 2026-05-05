@@ -16,6 +16,7 @@ conformance/
         ├── expected.xlsx        ← canonical expected output (single-file case)
         ├── expected/            ← OR a directory of files (multi-file group case)
         │   └── *.xlsx
+        ├── no expected output   ← for expected_error fixtures
         └── meta.yaml            ← description, spec section refs, tags
 ```
 
@@ -29,6 +30,10 @@ A fixture passes if the implementation, given `template.xlsx` and `data.xlsx`, p
 - Generator metadata stripped (creator, modifiedBy, lastModified)
 
 (Exact canonicalization rules to be specified in [`runner-protocol.md`](./runner-protocol.md). Until then, comparison may use a higher-level value-equality check on each cell.)
+
+An error fixture passes when the implementation reports an error containing the
+fixture's `expected_error` text. Error fixtures do not include `expected.xlsx`
+or an `expected/` directory.
 
 ## Versioning
 

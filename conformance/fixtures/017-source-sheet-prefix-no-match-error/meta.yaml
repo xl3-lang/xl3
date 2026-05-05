@@ -1,0 +1,6 @@
+description: source_sheet prefix patterns report an error when no worksheet matches.
+spec_section: evaluation.md "Source Data Model"
+spec_version: "0.1"
+tags: [config, source-sheet, prefix, error]
+verified_by: [manual-script]
+expected_error: 'Source sheet "Missing_*" was not found'

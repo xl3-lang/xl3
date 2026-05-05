@@ -42,6 +42,13 @@ tags: [substitution, basic]
 verified_by: [hand]            # or [excel-formulas, manual-script], etc.
 ```
 
+For error fixtures, omit `expected.xlsx` and `expected/`, and declare the stable
+part of the expected diagnostic:
+
+```yaml
+expected_error: "Source sheet"
+```
+
 ## Hard rules
 
 - **Expected outputs are authored, not generated.** If you can't hand-verify, you must independently verify. Treat `expected.xlsx` as part of the spec, not as test output.
@@ -49,6 +56,8 @@ verified_by: [hand]            # or [excel-formulas, manual-script], etc.
 - **Fixture file sizes should be tiny.** If a fixture needs 1000 rows of data, the test concept is wrong — generate small data that exercises the same property.
 - **No PII or proprietary data.** Fixtures are MIT-licensed and public. Use synthetic data only.
 - **Templates must be human-readable.** Avoid binary-only Excel features (custom XML, macros) in fixtures unless explicitly testing them.
+- **Error fixtures assert stable diagnostics only.** Match a short substring that
+  describes the contract, not volatile details such as absolute paths.
 
 ## When the spec and a fixture disagree
 

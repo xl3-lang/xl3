@@ -24,6 +24,10 @@ For each fixture, the runner reads:
 - `expected.xlsx` (single-output case) **or** `expected/` directory of `.xlsx` files (multi-file group case)
 - `meta.yaml` — fixture metadata
 
+Error fixtures omit `expected.xlsx` and `expected/`. They declare
+`expected_error` in `meta.yaml`; the expected result is that the implementation
+reports an error whose message contains the declared text.
+
 ## Required `meta.yaml` fields
 
 ```yaml
@@ -38,8 +42,15 @@ Optional fields:
 ```yaml
 verified_by: [hand | excel-formulas | manual-script | reference-impl]
 expected_warnings: [string, ...]   # warnings the impl should emit
+expected_error: string             # expected error message substring; no expected output is required
 skip_reason: string                # if fixture is currently broken
 ```
+
+A runner MUST mark an `expected_error` fixture as:
+
+- `pass` when the implementation reports an error containing `expected_error`
+- `fail` when the implementation succeeds
+- `fail` when the implementation reports a different error
 
 ## Output comparison
 

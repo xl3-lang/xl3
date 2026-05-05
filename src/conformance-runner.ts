@@ -19,6 +19,7 @@ export interface FixtureMeta {
   tags: string[];
   verified_by: string[];
   expected_warnings: string[];
+  expected_error?: string;
   skip_reason?: string;
 }
 
@@ -129,6 +130,10 @@ async function runOne(name: string, dir: string, opts: RunOptions): Promise<Fixt
   try {
     const tmpl = await readFile(join(dir, 'template.xlsx'));
     const data = await readFile(join(dir, 'data.xlsx'));
+    if (meta.expected_error) {
+      return await runExpectedErrorFixture(name, start, tmpl, data, meta.expected_error);
+    }
+
     const expected = await loadExpected(dir);
     if (!expected) {
       return {
@@ -157,6 +162,35 @@ async function runOne(name: string, dir: string, opts: RunOptions): Promise<Fixt
       status: 'error',
       duration_ms: Date.now() - start,
       error: (e as Error).message,
+    };
+  }
+}
+
+async function runExpectedErrorFixture(
+  name: string,
+  start: number,
+  tmpl: Buffer,
+  data: Buffer,
+  expectedError: string,
+): Promise<FixtureResult> {
+  try {
+    await convert(toArrayBuffer(tmpl), toArrayBuffer(data));
+    return {
+      fixture: name,
+      status: 'fail',
+      duration_ms: Date.now() - start,
+      diff: `expected error containing ${JSON.stringify(expectedError)}, but conversion succeeded`,
+    };
+  } catch (e) {
+    const actual = (e as Error).message;
+    if (actual.includes(expectedError)) {
+      return { fixture: name, status: 'pass', duration_ms: Date.now() - start };
+    }
+    return {
+      fixture: name,
+      status: 'fail',
+      duration_ms: Date.now() - start,
+      diff: `expected error containing ${JSON.stringify(expectedError)}, got ${JSON.stringify(actual)}`,
     };
   }
 }
@@ -307,7 +341,7 @@ export function parseMeta(text: string): FixtureMeta {
       meta[key] = parseInlineList(value);
     } else if (
       key === 'description' || key === 'spec_section' ||
-      key === 'spec_version' || key === 'skip_reason'
+      key === 'spec_version' || key === 'skip_reason' || key === 'expected_error'
     ) {
       meta[key] = stripQuotes(value);
     }

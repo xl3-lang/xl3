@@ -16,6 +16,7 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 - XTL 0.1 `TEXT()` date/numeric format subset and conformance fixtures for
   `TEXT()`, rich-text cells, cached formula results, and `source_sheet` prefix
   matching, including negative half-away numeric rounding.
+- `expected_error` conformance fixture mode for required failure cases.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 

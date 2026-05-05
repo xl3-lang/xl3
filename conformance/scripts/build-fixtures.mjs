@@ -842,6 +842,40 @@ async function build016() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 017 - source-sheet-prefix-no-match-error
+//
+// Concept: source_sheet prefix patterns with no matching worksheet are errors.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build017() {
+  const dir = join(FIXTURES, '017-source-sheet-prefix-no-match-error');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-sheet-prefix-no-match-error'],
+      ['source_sheet', 'Missing_*'],
+      ['header_row', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — no sheet starts with Missing_.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
 await build001();
 await build002();
 await build003();
@@ -858,4 +892,5 @@ await build013();
 await build014();
 await build015();
 await build016();
-console.log('built fixtures 001-016');
+await build017();
+console.log('built fixtures 001-017');

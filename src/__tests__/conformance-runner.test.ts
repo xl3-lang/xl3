@@ -32,6 +32,11 @@ verified_by: [manual-script]
     expect(meta.skip_reason).toBe('needs canonicalization runner');
   });
 
+  it('parses expected_error when present', () => {
+    const meta = parseMeta(`description: x\nexpected_error: "Source sheet"`);
+    expect(meta.expected_error).toBe('Source sheet');
+  });
+
   it('parses inline string lists with trimmed items', () => {
     const meta = parseMeta(`tags: [a , b,c , d]`);
     expect(meta.tags).toEqual(['a', 'b', 'c', 'd']);
