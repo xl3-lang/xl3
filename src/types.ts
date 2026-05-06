@@ -102,6 +102,7 @@ export interface FileGroup {
 export interface OutputFile {
   filename: string;
   data: ArrayBuffer;
+  warnings: string[];
 }
 
 export interface PreviewSheet {

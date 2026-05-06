@@ -1,0 +1,6 @@
+description: sanitizing a rendered filename emits a warning without changing output semantics.
+spec_section: evaluation.md "Output Filenames"
+spec_version: "0.1"
+tags: [filename, sanitization, warning]
+verified_by: [manual-script]
+expected_warnings: ['Output filename "Acme:North.xlsx" sanitized to "Acme_North.xlsx"']

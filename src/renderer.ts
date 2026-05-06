@@ -40,7 +40,12 @@ export class Renderer {
 
   /** Generate a preview-safe filename for a file group (no full render). */
   previewFilename(fileGroup: FileGroup): string {
-    return this.renderFilename(fileGroup.key, fileGroup);
+    return this.renderFilenameDetail(fileGroup.key, fileGroup).filename;
+  }
+
+  /** Generate preview warnings for a file group. */
+  previewFilenameWarnings(fileGroup: FileGroup): string[] {
+    return this.renderFilenameDetail(fileGroup.key, fileGroup).warnings;
   }
 
   /** Generate a preview-safe sheet name from sheet templates and a group key. */
@@ -112,12 +117,13 @@ export class Renderer {
       document.removeWorksheet(name);
     }
 
-    const filename = this.renderFilename(fileGroup.key, fileGroup);
+    const filenameInfo = this.renderFilenameDetail(fileGroup.key, fileGroup);
     const outBuf = await document.writeBuffer();
 
     return {
-      filename,
+      filename: filenameInfo.filename,
       data: outBuf as ArrayBuffer,
+      warnings: filenameInfo.warnings,
     };
   }
 
@@ -417,11 +423,11 @@ export class Renderer {
     return String(evalCell(normalized, ctx) ?? '');
   }
 
-  private renderFilename(key: GroupKey, fileGroup: FileGroup): string {
+  private renderFilenameDetail(key: GroupKey, fileGroup: FileGroup): { filename: string; warnings: string[] } {
     const pattern = this.parsed.meta.output_file_pattern;
     const rendered = this.renderRawFilename(pattern, key, fileGroup);
     // ADR-0002: Output filenames MUST be sanitized.
-    return sanitizeFilename(rendered).filename;
+    return sanitizeFilename(rendered);
   }
 
   private renderRawFilename(pattern: string, key: GroupKey, fileGroup: FileGroup): string {

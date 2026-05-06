@@ -3,3 +3,4 @@ spec_section: evaluation.md "Output Filenames"; ADR-0002
 spec_version: "0.1"
 tags: [filename, sanitization, forbidden-chars]
 verified_by: [manual-script]
+expected_warnings: ['Output filename "R&D/Sales_report.xlsx" sanitized to "R&D_Sales_report.xlsx"']

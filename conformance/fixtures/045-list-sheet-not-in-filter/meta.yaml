@@ -1,0 +1,5 @@
+description: '@filter ... !in _Sheet keeps rows whose values are not present in the list sheet and removes the list sheet from output.'
+spec_section: evaluation.md "List Sheets"
+spec_version: "0.1"
+tags: [directive, filter, list-sheet]
+verified_by: [manual-script]

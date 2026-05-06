@@ -188,6 +188,17 @@ async function runOne(
     }
 
     const out = await convert(toArrayBuffer(tmpl), toArrayBuffer(data));
+    const actualWarnings = out.flatMap((f) => f.warnings ?? []);
+    const warningDiff = diffWarnings(actualWarnings, meta.expected_warnings);
+    if (warningDiff) {
+      return {
+        fixture: name,
+        status: 'fail',
+        duration_ms: Date.now() - start,
+        comparison_stage: meta.comparison_stage,
+        diff: warningDiff,
+      };
+    }
     const diffs = await diffOutput(out, expected, meta.comparison_stage);
 
     if (diffs.length === 0) {
@@ -213,6 +224,26 @@ async function runOne(
       error: (e as Error).message,
     };
   }
+}
+
+function diffWarnings(actual: string[], expected: string[]): string | null {
+  if (expected.length === 0 && actual.length === 0) return null;
+  if (expected.length === 0 && actual.length > 0) {
+    return `unexpected warnings: ${JSON.stringify(actual)}`;
+  }
+  if (expected.length > 0 && actual.length === 0) {
+    return `expected warnings containing ${JSON.stringify(expected)}, got none`;
+  }
+  if (actual.length !== expected.length) {
+    return `warning count differs: actual=${actual.length}, expected=${expected.length}; actual=${JSON.stringify(actual)}; expected=${JSON.stringify(expected)}`;
+  }
+
+  for (let i = 0; i < expected.length; i++) {
+    if (!actual[i]!.includes(expected[i]!)) {
+      return `warning ${i + 1} differs: actual=${JSON.stringify(actual[i])}, expected=${JSON.stringify(expected[i])}`;
+    }
+  }
+  return null;
 }
 
 async function runDynamicFixture(

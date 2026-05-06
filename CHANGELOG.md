@@ -37,6 +37,16 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 - `source_table` grammar is clarified and covered by conformance fixtures for
   row shorthand, open ranges, finite ranges, zero data rows, and invalid source
   column names.
+- Source table header cells now have conformance coverage for rich-text and
+  formula cached-result handling.
+- `source_sheet` exact-match precedence, first-worksheet defaulting, hidden
+  list-sheet removal, and `ROW()` repeat-block behavior now have conformance
+  coverage.
+- `IFEMPTY()` now has conformance coverage for empty and non-empty values.
+- `@sort`/`@top` directive order now has conformance coverage.
+- `@filter ... !in` and `COUNT([field])` now have conformance coverage.
+- Core aggregate functions now have conformance coverage on the rendered row set.
+- Comparison-boundary behavior and filename sanitization warnings now have conformance coverage.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 

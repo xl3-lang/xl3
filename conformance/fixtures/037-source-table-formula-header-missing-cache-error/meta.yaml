@@ -1,0 +1,7 @@
+description: source_table formula column-name cells without cached results report an error.
+spec_section: evaluation.md#source-data-model
+spec_version: "0.1"
+tags: [config, source-table, error]
+verified_by: [manual-script]
+expected_error: "Formula cell B3 has no cached result"
+

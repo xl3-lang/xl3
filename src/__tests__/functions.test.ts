@@ -21,3 +21,22 @@ describe('TEXT', () => {
     expect(functions.TEXT(1234.5, '$0.00')).toBe('1234.5');
   });
 });
+
+describe('IFEMPTY', () => {
+  it('returns the fallback for empty values and preserves non-empty values', () => {
+    expect(functions.IFEMPTY('', '-')).toBe('-');
+    expect(functions.IFEMPTY('hello', '-')).toBe('hello');
+    expect(functions.IFEMPTY(null, '-')).toBe('-');
+  });
+});
+
+describe('COUNT([field])', () => {
+  it('counts non-empty values in the provided row set', () => {
+    expect(functions.countRows([
+      { Memo: 'hello' },
+      { Memo: '' },
+      { Memo: null },
+      { Memo: 'world' },
+    ], 'Memo')).toBe(2);
+  });
+});

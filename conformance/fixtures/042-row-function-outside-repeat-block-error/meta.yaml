@@ -1,0 +1,6 @@
+description: calling ROW() outside a repeat block reports a stable error.
+spec_section: language.md "Row and Date Functions"
+spec_version: "0.1"
+tags: [language, row, error]
+verified_by: [manual-script]
+expected_error: "ROW() called outside a repeat block"

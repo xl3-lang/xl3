@@ -100,4 +100,36 @@ describe('readSource', () => {
       .rejects.toThrow('Formula cell A1 has no cached result');
   });
 
+  it('reads rich-text source_table headers', async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Raw');
+    sheet.getCell('B3').value = { richText: [{ text: 'Cus' }, { text: 'tomer' }] };
+    sheet.getCell('C3').value = 'Amount';
+    sheet.getCell('D3').value = 'Region';
+    sheet.getCell('B4').value = 'Acme';
+    sheet.getCell('C4').value = 10;
+    sheet.getCell('D4').value = 'Seoul';
+    const data = await workbook.xlsx.writeBuffer();
+
+    const source = await readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'B3:D' });
+    expect(source.headers).toEqual(['Customer', 'Amount', 'Region']);
+    expect(source.rows).toEqual([{ Customer: 'Acme', Amount: 10, Region: 'Seoul' }]);
+  });
+
+  it('reads formula source_table headers from cached results', async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Raw');
+    sheet.getCell('B3').value = { formula: '"Customer"', result: 'Customer' };
+    sheet.getCell('C3').value = 'Amount';
+    sheet.getCell('D3').value = 'Region';
+    sheet.getCell('B4').value = 'Acme';
+    sheet.getCell('C4').value = 10;
+    sheet.getCell('D4').value = 'Seoul';
+    const data = await workbook.xlsx.writeBuffer();
+
+    const source = await readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'B3:D' });
+    expect(source.headers).toEqual(['Customer', 'Amount', 'Region']);
+    expect(source.rows).toEqual([{ Customer: 'Acme', Amount: 10, Region: 'Seoul' }]);
+  });
+
 });

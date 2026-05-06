@@ -1,6 +1,6 @@
 import ExcelJS from 'exceljs';
 import { describe, expect, it } from 'vitest';
-import { ExcelJsWorkbookDocument } from '../excel-document.js';
+import { ExcelJsWorkbookDocument, sanitizeFilename } from '../excel-document.js';
 
 async function documentWithMergedSheet(mergeRef: string) {
   const wb = new ExcelJS.Workbook();
@@ -34,5 +34,15 @@ describe('ExcelJsWorkbookDocument.spliceRowsPreservingMerges', () => {
     doc.spliceRowsPreservingMerges(sheet, 2, 1);
 
     expect(merges(sheet)).toEqual(['A2:B2']);
+  });
+});
+
+describe('sanitizeFilename', () => {
+  it('returns a warning when sanitization changes the rendered name', () => {
+    expect(sanitizeFilename('Acme:North.xlsx')).toEqual({
+      filename: 'Acme_North.xlsx',
+      changed: true,
+      warnings: ['Output filename "Acme:North.xlsx" sanitized to "Acme_North.xlsx"'],
+    });
   });
 });

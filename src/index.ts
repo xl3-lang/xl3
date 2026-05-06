@@ -107,6 +107,7 @@ function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
       }
     }
 
+    warnings.push(...renderer.previewFilenameWarnings(fg));
     return { filename: renderer.previewFilename(fg), sheets };
   });
 

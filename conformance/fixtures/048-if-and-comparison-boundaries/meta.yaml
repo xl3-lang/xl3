@@ -1,0 +1,5 @@
+description: comparison operators drive IF() and @filter behavior around the zero boundary.
+spec_section: language.md "Functions / IF"; language.md "Operators"; evaluation.md "Directives"
+spec_version: "0.1"
+tags: [language, comparison, if, filter]
+verified_by: [manual-script]

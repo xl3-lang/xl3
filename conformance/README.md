@@ -116,6 +116,21 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 032 | `source-table-empty-column-name-error` | Empty source column names inside the selected span report a stable error. |
 | 033 | `source-table-duplicate-column-name-error` | Duplicate source column names report a stable error. |
 | 034 | `source-table-invalid-selector-error` | Invalid selectors such as row zero report a stable error. |
+| 035 | `source-table-rich-text-header` | Rich-text source column-name cells are concatenated before source_table parsing. |
+| 036 | `source-table-formula-header` | Formula source column-name cells use cached results. |
+| 037 | `source-table-formula-header-missing-cache-error` | Formula source column-name cells without cached results report a stable error. |
+| 038 | `source-sheet-exact-match-beats-prefix` | Exact `source_sheet` matches take precedence over prefix patterns. |
+| 039 | `source-sheet-default-first-worksheet` | If `source_sheet` is omitted, the first worksheet in workbook order is used. |
+| 040 | `list-sheet-hidden-states-removed` | Hidden and very hidden list sheets are still removed from output workbooks. |
+| 041 | `row-function-inside-repeat-block` | `ROW()` returns the 1-based index of the current rendered data row inside a repeat block. |
+| 042 | `row-function-outside-repeat-block-error` | Calling `ROW()` outside a repeat block reports a stable error. |
+| 043 | `ifempty-function` | `IFEMPTY()` returns the fallback for empty values and passes through non-empty values. |
+| 044 | `sort-and-top-order` | `@sort` runs before `@top`, so the top N rows come from the sorted set. |
+| 045 | `list-sheet-not-in-filter` | `@filter ... !in _Sheet` keeps rows whose values are not present in the list sheet and removes the list sheet from output. |
+| 046 | `count-field-non-empty` | `COUNT([field])` counts non-empty values in the current row set. |
+| 047 | `aggregate-functions` | Core aggregates operate on the current rendered row set. |
+| 048 | `if-and-comparison-boundaries` | Comparison operators drive `IF()` and `@filter` behavior around the zero boundary. |
+| 049 | `filename-sanitization-warning` | Sanitizing a rendered filename emits a warning without changing output semantics. |
 
 ## Status
 

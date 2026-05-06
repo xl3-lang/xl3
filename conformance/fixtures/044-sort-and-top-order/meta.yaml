@@ -1,0 +1,5 @@
+description: sort runs before top, so the top rows come from the sorted set.
+spec_section: evaluation.md "Directives"
+spec_version: "0.1"
+tags: [directive, sort, top]
+verified_by: [manual-script]

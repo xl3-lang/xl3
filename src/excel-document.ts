@@ -149,6 +149,7 @@ const RESERVED_DEVICE_NAMES = new Set([
 export interface SanitizedFilename {
   filename: string;
   changed: boolean;
+  warnings: string[];
 }
 
 export function sanitizeFilename(rendered: string): SanitizedFilename {
@@ -189,7 +190,10 @@ export function sanitizeFilename(rendered: string): SanitizedFilename {
     );
   }
 
-  return { filename: s, changed: s !== rendered };
+  const warnings = s !== rendered
+    ? [`Output filename "${rendered}" sanitized to "${s}"`]
+    : [];
+  return { filename: s, changed: s !== rendered, warnings };
 }
 
 export function sanitizeSheetName(name: string): string {

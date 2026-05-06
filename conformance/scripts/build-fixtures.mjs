@@ -1721,6 +1721,840 @@ async function build034() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 035 - source-table-rich-text-header
+//
+// Concept: rich-text source column-name cells are read by concatenating their
+// text runs before source_table parsing.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build035() {
+  const dir = join(FIXTURES, '035-source-table-rich-text-header');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-table-rich-text-header'],
+      ['source_sheet', 'Data'],
+      ['source_table', 'B3:D'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('C1').value = 'Region';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Amount] }}';
+    sh.getCell('C2').value = '{{ [Region] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('B3').value = { richText: [{ text: 'Cus' }, { text: 'tomer' }] };
+    sh.getCell('C3').value = 'Amount';
+    sh.getCell('D3').value = 'Region';
+    sh.getCell('B4').value = 'Acme';
+    sh.getCell('C4').value = 10;
+    sh.getCell('D4').value = 'Seoul';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('C1').value = 'Region';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 10;
+    sh.getCell('C2').value = 'Seoul';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 036 - source-table-formula-header
+//
+// Concept: formula source column-name cells use their cached formula result.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build036() {
+  const dir = join(FIXTURES, '036-source-table-formula-header');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-table-formula-header'],
+      ['source_sheet', 'Data'],
+      ['source_table', 'B3:D'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('C1').value = 'Region';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Amount] }}';
+    sh.getCell('C2').value = '{{ [Region] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('B3').value = { formula: '"Customer"', result: 'Customer' };
+    sh.getCell('C3').value = 'Amount';
+    sh.getCell('D3').value = 'Region';
+    sh.getCell('B4').value = 'Acme';
+    sh.getCell('C4').value = 10;
+    sh.getCell('D4').value = 'Seoul';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('C1').value = 'Region';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 10;
+    sh.getCell('C2').value = 'Seoul';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 037 - source-table-formula-header-missing-cache-error
+//
+// Concept: formula source column-name cells without cached results are errors.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build037() {
+  const dir = join(FIXTURES, '037-source-table-formula-header-missing-cache-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-table-formula-header-missing-cache-error'],
+      ['source_sheet', 'Data'],
+      ['source_table', 'B3:D'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('B3').value = { formula: '"Customer"' };
+    sh.getCell('C3').value = 'Amount';
+    sh.getCell('D3').value = 'Region';
+    sh.getCell('B4').value = 'Acme';
+    sh.getCell('C4').value = 10;
+    sh.getCell('D4').value = 'Seoul';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 038 - source-sheet-exact-match-beats-prefix
+//
+// Concept: exact source_sheet matches take precedence over prefix patterns.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build038() {
+  const dir = join(FIXTURES, '038-source-sheet-exact-match-beats-prefix');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-sheet-exact-match-beats-prefix'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — the exact Data sheet must be chosen, not Data_2025.
+  {
+    const wb = new ExcelJS.Workbook();
+    const prefix = wb.addWorksheet('Data_2025');
+    prefix.getCell('A1').value = 'Customer';
+    prefix.getCell('A2').value = 'Wrong';
+    const exact = wb.addWorksheet('Data');
+    exact.getCell('A1').value = 'Customer';
+    exact.getCell('A2').value = 'Right';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Right';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 039 - source-sheet-default-first-worksheet
+//
+// Concept: source_sheet omitted defaults to the first worksheet in workbook
+// order.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build039() {
+  const dir = join(FIXTURES, '039-source-sheet-default-first-worksheet');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-sheet-default-first-worksheet'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — the first worksheet must be used because source_sheet is omitted.
+  {
+    const wb = new ExcelJS.Workbook();
+    const first = wb.addWorksheet('First');
+    first.getCell('A1').value = 'Customer';
+    first.getCell('A2').value = 'First';
+    const second = wb.addWorksheet('Second');
+    second.getCell('A1').value = 'Customer';
+    second.getCell('A2').value = 'Second';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'First';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 040 - list-sheet-hidden-states-removed
+//
+// Concept: list sheets may be hidden or very hidden, and they are removed from
+// output workbooks either way.
+// Spec section: evaluation.md "List Sheets".
+// ---------------------------------------------------------------------------
+async function build040() {
+  const dir = join(FIXTURES, '040-list-sheet-hidden-states-removed');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'list-sheet-hidden-states-removed'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = '{{ @filter [Customer] in _Allowed }}';
+    sh.getCell('A3').value = '{{ [Customer] }}';
+    sh.getCell('B3').value = '{{ [Amount] }}';
+
+    const allowed = wb.addWorksheet('_Allowed', { state: 'hidden' });
+    allowed.getCell('A1').value = 'Acme';
+    allowed.getCell('A2').value = 'Beta';
+
+    const excluded = wb.addWorksheet('_Excluded', { state: 'veryHidden' });
+    excluded.getCell('A1').value = 'Gamma';
+
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 30;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 70;
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = 100;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 30;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 70;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 041 - row-function-inside-repeat-block
+//
+// Concept: ROW() returns the 1-based index of the current rendered data row
+// inside the repeat/data block.
+// Spec section: language.md "Row and Date Functions".
+// ---------------------------------------------------------------------------
+async function build041() {
+  const dir = join(FIXTURES, '041-row-function-inside-repeat-block');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'row-function-inside-repeat-block'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('B1').value = 'Row';
+    sh.getCell('A2').value = '{{ [Item] }}';
+    sh.getCell('B2').value = '{{ ROW() }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('B1').value = 'Row';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 1;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 2;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 042 - row-function-outside-repeat-block-error
+//
+// Concept: ROW() is only valid inside a repeat/data block; static rendering
+// outside that context must fail.
+// Spec section: language.md "Row and Date Functions".
+// ---------------------------------------------------------------------------
+async function build042() {
+  const dir = join(FIXTURES, '042-row-function-outside-repeat-block-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'row-function-outside-repeat-block-error'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ ROW() }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 043 - ifempty-function
+//
+// Concept: IFEMPTY returns the fallback for empty values and passes through
+// non-empty values.
+// Spec section: language.md "Functions / IFEMPTY".
+// ---------------------------------------------------------------------------
+async function build043() {
+  const dir = join(FIXTURES, '043-ifempty-function');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'ifempty-function'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ IFEMPTY([Memo], "-") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'hello';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = '-';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'hello';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 044 - sort-and-top-order
+//
+// Concept: sort runs before top, so the top N rows are selected from the
+// sorted row set.
+// Spec section: evaluation.md "Directives".
+// ---------------------------------------------------------------------------
+async function build044() {
+  const dir = join(FIXTURES, '044-sort-and-top-order');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'sort-and-top-order'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = '{{ @sort [Amount] desc }}';
+    sh.getCell('A3').value = '{{ @top 2 }}';
+    sh.getCell('A4').value = '{{ [Customer] }}';
+    sh.getCell('B4').value = '{{ [Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 10;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 30;
+    sh.getCell('A4').value = 'Charlie';
+    sh.getCell('B4').value = 20;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Beta';
+    sh.getCell('B2').value = 30;
+    sh.getCell('A3').value = 'Charlie';
+    sh.getCell('B3').value = 20;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 045 - list-sheet-not-in-filter
+//
+// Concept: `@filter ... !in _Sheet` keeps rows whose values are not present in
+// the list sheet and removes the list sheet from output.
+// Spec section: evaluation.md "List Sheets" and language.md "Directives / Filter".
+// ---------------------------------------------------------------------------
+async function build045() {
+  const dir = join(FIXTURES, '045-list-sheet-not-in-filter');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'list-sheet-not-in-filter'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = '{{ @filter [Customer] !in _Excluded }}';
+    sh.getCell('A3').value = '{{ [Customer] }}';
+    sh.getCell('B3').value = '{{ [Amount] }}';
+
+    const excluded = wb.addWorksheet('_Excluded');
+    excluded.getCell('A1').value = 'Beta';
+    excluded.getCell('A2').value = 'Charlie';
+
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 10;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 20;
+    sh.getCell('A4').value = 'Charlie';
+    sh.getCell('B4').value = 30;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 10;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 046 - count-field-non-empty
+//
+// Concept: COUNT([field]) counts non-empty values in the current row set.
+// Spec section: language.md "Functions / Aggregates".
+// ---------------------------------------------------------------------------
+async function build046() {
+  const dir = join(FIXTURES, '046-count-field-non-empty');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'count-field-non-empty'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'MemoCount';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ COUNT([Memo]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'hello';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = '';
+    sh.getCell('A4').value = 'Charlie';
+    sh.getCell('B4').value = 'world';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'MemoCount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 2;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 2;
+    sh.getCell('A4').value = 'Charlie';
+    sh.getCell('B4').value = 2;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 047 - aggregate-functions
+//
+// Concept: core aggregates operate on the current rendered row set.
+// Spec section: language.md "Functions / Aggregates".
+// ---------------------------------------------------------------------------
+async function build047() {
+  const dir = join(FIXTURES, '047-aggregate-functions');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'aggregate-functions'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Count';
+    sh.getCell('C1').value = 'Sum';
+    sh.getCell('D1').value = 'Avg';
+    sh.getCell('E1').value = 'Min';
+    sh.getCell('F1').value = 'Max';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ COUNT() }}';
+    sh.getCell('C2').value = '{{ SUM([Amount]) }}';
+    sh.getCell('D2').value = '{{ AVERAGE([Amount]) }}';
+    sh.getCell('E2').value = '{{ MIN([Amount]) }}';
+    sh.getCell('F2').value = '{{ MAX([Amount]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 10;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 20;
+    sh.getCell('A4').value = 'Charlie';
+    sh.getCell('B4').value = 30;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Count';
+    sh.getCell('C1').value = 'Sum';
+    sh.getCell('D1').value = 'Avg';
+    sh.getCell('E1').value = 'Min';
+    sh.getCell('F1').value = 'Max';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 3;
+    sh.getCell('C2').value = 60;
+    sh.getCell('D2').value = 20;
+    sh.getCell('E2').value = 10;
+    sh.getCell('F2').value = 30;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 3;
+    sh.getCell('C3').value = 60;
+    sh.getCell('D3').value = 20;
+    sh.getCell('E3').value = 10;
+    sh.getCell('F3').value = 30;
+    sh.getCell('A4').value = 'Charlie';
+    sh.getCell('B4').value = 3;
+    sh.getCell('C4').value = 60;
+    sh.getCell('D4').value = 20;
+    sh.getCell('E4').value = 10;
+    sh.getCell('F4').value = 30;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 048 - if-and-comparison-boundaries
+//
+// Concept: comparison operators drive IF() and @filter behavior around the
+// zero boundary.
+// Spec section: language.md "Functions / IF" and "Operators"; evaluation.md
+// "Directives".
+// ---------------------------------------------------------------------------
+async function build048() {
+  const dir = join(FIXTURES, '048-if-and-comparison-boundaries');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'if-and-comparison-boundaries'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('B1').value = 'gt0';
+    sh.getCell('C1').value = 'ge0';
+    sh.getCell('D1').value = 'eq0';
+    sh.getCell('E1').value = 'ne0';
+    sh.getCell('F1').value = 'le0';
+    sh.getCell('A2').value = '{{ @filter [Amount] >= 0 }}';
+    sh.getCell('A3').value = '{{ [Amount] }}';
+    sh.getCell('B3').value = '{{ IF([Amount] > 0, "positive", "non-positive") }}';
+    sh.getCell('C3').value = '{{ IF([Amount] >= 0, "non-negative", "negative") }}';
+    sh.getCell('D3').value = '{{ IF([Amount] = 0, "zero", "non-zero") }}';
+    sh.getCell('E3').value = '{{ IF([Amount] != 0, "non-zero", "zero") }}';
+    sh.getCell('F3').value = '{{ IF([Amount] <= 0, "lte-zero", "gt-zero") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = -1;
+    sh.getCell('A3').value = 0;
+    sh.getCell('A4').value = 1;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('B1').value = 'gt0';
+    sh.getCell('C1').value = 'ge0';
+    sh.getCell('D1').value = 'eq0';
+    sh.getCell('E1').value = 'ne0';
+    sh.getCell('F1').value = 'le0';
+    sh.getCell('A2').value = 0;
+    sh.getCell('B2').value = 'non-positive';
+    sh.getCell('C2').value = 'non-negative';
+    sh.getCell('D2').value = 'zero';
+    sh.getCell('E2').value = 'zero';
+    sh.getCell('F2').value = 'lte-zero';
+    sh.getCell('A3').value = 1;
+    sh.getCell('B3').value = 'positive';
+    sh.getCell('C3').value = 'non-negative';
+    sh.getCell('D3').value = 'zero';
+    sh.getCell('E3').value = 'non-zero';
+    sh.getCell('F3').value = 'gt-zero';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 049 - filename-sanitization-warning
+//
+// Concept: sanitizing a rendered filename emits a warning without changing
+// output semantics.
+// Spec section: evaluation.md "Output Filenames"; ADR-0002.
+// ---------------------------------------------------------------------------
+async function build049() {
+  const dir = join(FIXTURES, '049-filename-sanitization-warning');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'filename-sanitization-warning'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', '{{ Customer }}.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme:North';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const outDir = join(dir, 'expected');
+    await mkdir(outDir, { recursive: true });
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme:North';
+    await writeBook(wb, join(outDir, 'Acme_North.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -1756,6 +2590,21 @@ const builders = [
   ['032', build032],
   ['033', build033],
   ['034', build034],
+  ['035', build035],
+  ['036', build036],
+  ['037', build037],
+  ['038', build038],
+  ['039', build039],
+  ['040', build040],
+  ['041', build041],
+  ['042', build042],
+  ['043', build043],
+  ['044', build044],
+  ['045', build045],
+  ['046', build046],
+  ['047', build047],
+  ['048', build048],
+  ['049', build049],
 ];
 
 const selected = new Set(process.argv.slice(2));

@@ -1,0 +1,6 @@
+description: hidden and very hidden list sheets are removed from output workbooks.
+spec_section: evaluation.md "List Sheets"
+spec_version: "0.1"
+tags: [list-sheet, hidden, very-hidden]
+verified_by: [manual-script]
+

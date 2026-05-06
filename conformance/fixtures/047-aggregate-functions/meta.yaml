@@ -1,0 +1,5 @@
+description: core aggregate functions operate on the current rendered row set.
+spec_section: language.md "Functions / Aggregates"
+spec_version: "0.1"
+tags: [language, aggregate]
+verified_by: [manual-script]

@@ -61,6 +61,9 @@ When a range form includes an end row equal to the first row, such as
 `A1:D1`, the source table contains column names and zero data rows. This is
 valid.
 
+Source table column-name cells use the same effective text/value extraction as
+source data cells before trimming.
+
 Column name rules:
 
 1. Source column name cell values are converted to strings and trimmed.

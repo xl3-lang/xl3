@@ -104,6 +104,10 @@ function resolveArg(arg: string, ctx: Record<string, unknown>): unknown {
     return evalExpression(arg.slice(1, -1), ctx);
   }
 
+  if (arg === '.Rows') {
+    return ctx['Rows'] ?? [];
+  }
+
   const bracketMatch = arg.match(/^\[([^\]\r\n]+)\]$/);
   if (bracketMatch) {
     return ctx[bracketMatch[1]!.trim()] ?? '';

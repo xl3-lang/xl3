@@ -1,0 +1,6 @@
+description: omitted source_sheet defaults to the first worksheet in workbook order.
+spec_section: evaluation.md#source-data-model
+spec_version: "0.1"
+tags: [config, source-sheet]
+verified_by: [manual-script]
+

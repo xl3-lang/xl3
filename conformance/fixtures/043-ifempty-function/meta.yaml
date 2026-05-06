@@ -1,0 +1,5 @@
+description: IFEMPTY() returns the fallback for empty values and passes through non-empty values.
+spec_section: language.md "Functions / IFEMPTY"
+spec_version: "0.1"
+tags: [language, function, ifempty]
+verified_by: [manual-script]
