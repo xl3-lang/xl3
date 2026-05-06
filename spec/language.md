@@ -77,7 +77,7 @@ concatenation operator share a single coercion model. Both `IF()`
 conditions and `@filter` directives use the comparison algorithm
 defined here. `@sort` uses the same algorithm.
 
-### Canonical string form
+### Canonical String Form
 
 The canonical string form of a value is:
 
@@ -96,7 +96,7 @@ The canonical string form of a value is:
 Non-finite numbers (`NaN`, `Infinity`, `-Infinity`) MUST NOT arise from
 spec-conformant operations. If they appear, they stringify to `""`.
 
-### Comparison algorithm
+### Comparison Algorithm
 
 Comparison operators apply, in order:
 
@@ -106,8 +106,11 @@ Comparison operators apply, in order:
    For ordering, the empty value is less than any non-empty value.
 3. If both operands are numbers, or both are strings that parse as
    finite numbers via "trim, then `Number()` without producing `NaN`",
-   compare numerically.
-4. If both operands are Booleans, compare with `FALSE < TRUE`.
+   compare numerically. Numeric comparison uses IEEE 754 equality;
+   `0.1 + 0.2` is therefore not equal to `0.3`. Templates that need
+   tolerance MUST round explicitly via `ROUND()`.
+4. If both operands are Booleans, compare as values with `false`
+   ordered before `true`.
 5. Otherwise, compare canonical string forms using Unicode code-point
    order. No locale-aware collation is applied.
 
@@ -131,16 +134,17 @@ returns the third argument.
 
 A value is **truthy** unless it is one of:
 
-- The Boolean `FALSE`.
+- The Boolean `false`.
 - The number `0`.
 - A value that is empty per
-  [Empty Values](./evaluation.md#empty-values) — missing, `null`, `""`,
-  or a whitespace-only string.
+  [Empty Values](./evaluation.md#empty-values) — missing, `""`, or a
+  whitespace-only string.
 
 There is no special-case treatment of the strings `"0"` or `"false"`.
-Strings with non-whitespace content are always truthy. Templates that
-need to interpret a stringly-typed flag MUST compare explicitly, for
-example `IF([flag] = "1", …)`.
+A string with non-whitespace content is always truthy, including a
+stringly-typed flag value of `"0"` or `"false"`. Templates that need to
+interpret such a flag MUST compare explicitly, for example
+`IF([flag] = "1", …)`.
 
 Comparison expressions evaluate to a Boolean and are truthy when the
 comparison holds.

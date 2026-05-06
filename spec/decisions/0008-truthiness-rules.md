@@ -61,9 +61,10 @@ where `"   "` is empty.
 
 - `false` is falsy.
 - The number `0` is falsy.
-- A value that is empty per ADR-0007 is falsy. (This subsumes
-  `null`, `undefined`, missing values, `""`, and whitespace-only
-  strings.)
+- A value that is empty per ADR-0007 is falsy. (This covers missing
+  values, `""`, and whitespace-only strings — the spec value model;
+  `null` / `undefined` are host-language artifacts that map onto
+  "missing.")
 - Any other value is truthy. There is no special case for `"0"` or
   `"false"`.
 
@@ -85,7 +86,7 @@ one of:
 - The Boolean `false`.
 - The number `0`.
 - A value that is empty per [ADR-0007](./0007-empty-value-definition.md)
-  (missing, `null`, `undefined`, `""`, or a whitespace-only string).
+  (missing, `""`, or a whitespace-only string).
 
 There is no special-case treatment of the strings `"0"` or `"false"`.
 Strings are truthy whenever they have non-whitespace content.

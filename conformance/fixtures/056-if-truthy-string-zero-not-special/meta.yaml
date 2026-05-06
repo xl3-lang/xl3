@@ -1,4 +1,4 @@
-description: ADR-0008 does not special-case the strings "0" or "false"; both are truthy.
+description: '`IF("0", …)` and `IF("false", …)` take the truthy branch — ADR-0008 does not special-case stringly-typed flag values.'
 spec_section: language.md "Functions / IF"; ADR-0008 (Decision, Consequences)
 spec_version: "0.1"
 tags: [language, function, if, truthy]

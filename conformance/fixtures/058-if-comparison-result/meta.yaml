@@ -1,5 +1,5 @@
 description: A comparison expression's Boolean result feeds IF truthiness directly per ADR-0008.
-spec_section: language.md "Functions / IF" and "Operators"; ADR-0008
+spec_section: language.md "Functions / IF" and "Comparison and String Coercion"; ADR-0008; ADR-0009
 spec_version: "0.1"
 tags: [language, function, if, comparison, truthy]
 verified_by: [hand]

@@ -115,9 +115,9 @@ section.
   entry — which the same ADR drops anyway, since list-sheet reading also
   skips empty cells. The combined effect is that empty values never
   participate in `in` membership.
-- This ADR does not define the canonical *string form* of non-empty
-  values. ADR-0009 covers comparison and string coercion, and refines the
-  list-sheet wording to reference the canonical-string-form rule defined
+- This ADR does not define the canonical string form of non-empty
+  values. ADR-0009 covers comparison and string coercion, and refines
+  the list-sheet wording to reference the canonical string form defined
   there.
 - The ADR does not define a value model for source cells (gap #9 in the
   reference-impl coupling audit). Excel error sentinels (`#N/A`,
@@ -127,6 +127,6 @@ section.
 ## References
 
 - XTL 0.1 draft: `spec/language.md` "Functions / IFEMPTY"; `spec/language.md` "Aggregates"; `spec/evaluation.md` "Source Data Model"; `spec/evaluation.md` "List Sheets"
-- ADR-0004: reference implementation coupling audit (this ADR closes one of the spec gaps catalogued there).
+- ADR-0004: reference implementation coupling audit (this ADR closes the empty-value gap catalogued there).
 - ADR-0008: truthiness for `IF` and `@filter` (a value that is empty per this ADR is falsy).
 - ADR-0009: comparison and string coercion (defines the canonical string form referenced by list-sheet reading).

@@ -182,4 +182,4 @@ result.
 - XTL 0.1 draft: `spec/language.md` "Operators"; `spec/evaluation.md`
   "List Sheets".
 - ADR-0004: reference implementation coupling audit (this ADR closes the
-  comparison-and-coercion-side spec gaps catalogued there).
+  comparison-operator and string-coercion gaps catalogued there).

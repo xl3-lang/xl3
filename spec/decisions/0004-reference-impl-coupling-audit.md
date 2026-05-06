@@ -75,3 +75,12 @@ The remaining low-risk work should happen before renderer refactoring:
   exists.
 - Future work has a clear split: spec gaps should produce prose and fixtures;
   impl-only workarounds should stay behind narrow workbook-manipulation code.
+
+## Closed by
+
+- ADR-0007 closes the empty-value-predicate gap (`IFEMPTY`,
+  `COUNT([field])`, list-sheet membership, empty-row skip).
+- ADR-0008 closes the truthiness gap for `IF()` and any future
+  Boolean-valued context.
+- ADR-0009 closes the comparison-operator and string-coercion gaps for
+  `IF`, `@filter`, `@sort`, list-sheet reading, and `&`.
