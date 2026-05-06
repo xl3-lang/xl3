@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>xl3 - Build Excel transformation engines from workbook templates</title>
+    <title>xl3 - Excel transformation logic lives inside the Excel file</title>
     <meta
       name="description"
-      content="xl3 lets developers define recurring Excel workflows as template workbooks, then expose them as simple tools where operators upload raw Excel and download finished workbooks."
+      content="xl3 puts Excel transformation logic inside the Excel file, not in code. Non-developers can read and edit the rules directly, in the same Excel syntax they already know."
     >
     <meta name="keywords" content="xl3, XTL, Excel template, Excel to Excel, OOXML, xlsx, workbook transformation, conformance, spec">
     <meta name="author" content="xl3 contributors">
@@ -23,21 +23,21 @@
     <meta property="og:locale" content="en_US">
     <meta property="og:locale:alternate" content="ko_KR">
     <meta property="og:url" content="https://xl3.io/">
-    <meta property="og:title" content="xl3 - Build Excel transformation engines from workbook templates">
+    <meta property="og:title" content="xl3 - Excel transformation logic lives inside the Excel file">
     <meta
       property="og:description"
-      content="Define recurring Excel workflows as template workbooks. Operators upload raw Excel and download finished workbooks."
+      content="Transformation rules live inside template.xlsx, written in the same Excel syntax non-developers already know — not in code."
     >
     <meta property="og:image" content="https://xl3.io/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="xl3 - Build Excel transformation engines from workbook templates.">
+    <meta property="og:image:alt" content="xl3 - Excel transformation logic lives inside the Excel file.">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="xl3 - Build Excel transformation engines from workbook templates">
-    <meta name="twitter:description" content="Define recurring Excel workflows as template workbooks.">
+    <meta name="twitter:title" content="xl3 - Excel transformation logic lives inside the Excel file">
+    <meta name="twitter:description" content="Transformation rules live inside template.xlsx, in the same Excel syntax non-developers already know.">
     <meta name="twitter:image" content="https://xl3.io/og-image.png">
-    <meta name="twitter:image:alt" content="xl3 - Build Excel transformation engines from workbook templates.">
+    <meta name="twitter:image:alt" content="xl3 - Excel transformation logic lives inside the Excel file.">
 
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23217846'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='24' font-weight='700' fill='white'%3Exl3%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -94,12 +94,13 @@
     <main id="top">
       <section class="hero !min-h-0 !grid-cols-[minmax(0,0.95fr)_minmax(250px,340px)] !items-center !gap-14 !py-16 lg:!py-20 max-lg:!grid-cols-1 max-lg:!gap-10 max-sm:!py-12">
         <div class="hero-copy">
-          <p class="kicker">TypeScript engine · workbook-defined workflow</p>
-          <h1 class="max-w-4xl text-[clamp(40px,6.2vw,78px)] leading-[1.05]">Build Excel transformation engines from workbook templates.</h1>
+          <p class="kicker">Excel-to-Excel · logic stays in the workbook</p>
+          <h1 class="max-w-4xl text-[clamp(40px,6.2vw,78px)] leading-[1.05]">Excel transformation logic, inside the Excel file.</h1>
           <p class="lead">
-            xl3 lets developers define recurring Excel workflows as template
-            workbooks, then expose them as simple tools where non-developers
-            upload raw Excel files and download finished workbooks.
+            xl3 puts the transformation rules inside <code>template.xlsx</code>,
+            not in code. Non-developers can open it and edit the rules directly
+            — they are written with the same <code>IF</code>, <code>SUM</code>,
+            and column references they already use day to day.
           </p>
           <div class="hero-links">
             <a class="button primary" href="#use">Try the converter</a>

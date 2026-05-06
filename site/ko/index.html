@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>xl3 - workbook template으로 Excel 변환 엔진 만들기</title>
+    <title>xl3 - Excel 변환 로직은 Excel 파일 안에 산다</title>
     <meta
       name="description"
-      content="xl3는 개발자가 반복되는 Excel 변환 업무를 template workbook으로 정의하고, 비개발자는 raw Excel을 올려 완성된 workbook을 내려받는 흐름을 만들 수 있게 합니다."
+      content="xl3는 Excel 변환 로직을 코드가 아니라 Excel 파일 안에 넣습니다. 비개발자도 평소 쓰던 Excel 문법 그대로 변환 규칙을 직접 열어 보고 고칠 수 있습니다."
     >
     <meta name="keywords" content="xl3, XTL, Excel 템플릿, Excel 자동화, OOXML, xlsx, workbook 변환, conformance, 명세">
     <meta name="author" content="xl3 contributors">
@@ -23,21 +23,21 @@
     <meta property="og:locale" content="ko_KR">
     <meta property="og:locale:alternate" content="en_US">
     <meta property="og:url" content="https://xl3.io/ko/">
-    <meta property="og:title" content="xl3 - workbook template으로 Excel 변환 엔진 만들기">
+    <meta property="og:title" content="xl3 - Excel 변환 로직은 Excel 파일 안에 산다">
     <meta
       property="og:description"
-      content="반복되는 Excel 변환 업무를 template workbook으로 정의하고, 비개발자가 raw Excel을 올려 결과 workbook을 받는 흐름을 만듭니다."
+      content="변환 규칙이 코드가 아니라 template.xlsx 안에 살아 있습니다. 비개발자도 평소 쓰던 Excel 문법 그대로 직접 열어 고칠 수 있습니다."
     >
     <meta property="og:image" content="https://xl3.io/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="xl3 - workbook template으로 Excel 변환 엔진 만들기.">
+    <meta property="og:image:alt" content="xl3 - Excel 변환 로직은 Excel 파일 안에 산다.">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="xl3 - workbook template으로 Excel 변환 엔진 만들기">
-    <meta name="twitter:description" content="반복되는 Excel 변환 업무를 template workbook으로 정의합니다.">
+    <meta name="twitter:title" content="xl3 - Excel 변환 로직은 Excel 파일 안에 산다">
+    <meta name="twitter:description" content="변환 규칙이 코드가 아니라 template.xlsx 안에 살아 있습니다.">
     <meta name="twitter:image" content="https://xl3.io/og-image.png">
-    <meta name="twitter:image:alt" content="xl3 - workbook template으로 Excel 변환 엔진 만들기.">
+    <meta name="twitter:image:alt" content="xl3 - Excel 변환 로직은 Excel 파일 안에 산다.">
 
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23217846'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='24' font-weight='700' fill='white'%3Exl3%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -95,12 +95,13 @@
     <main id="top">
       <section class="hero !min-h-0 !grid-cols-[minmax(0,0.95fr)_minmax(250px,340px)] !items-center !gap-14 !py-16 lg:!py-20 max-lg:!grid-cols-1 max-lg:!gap-10 max-sm:!py-12">
         <div class="hero-copy">
-          <p class="kicker">TypeScript engine · workbook-defined workflow</p>
-          <h1 class="max-w-4xl text-[clamp(40px,6.2vw,78px)] leading-[1.1]">workbook template으로 Excel 변환 엔진을 만드세요.</h1>
+          <p class="kicker">Excel-to-Excel · 로직은 워크북 안에</p>
+          <h1 class="max-w-4xl text-[clamp(40px,6.2vw,78px)] leading-[1.1]">Excel 변환 로직을, Excel 파일 안에.</h1>
           <p class="lead">
-            xl3는 개발자가 반복되는 Excel 변환 업무를 template workbook으로
-            정의하고, 비개발자는 raw Excel을 올려 완성된 workbook을
-            내려받는 흐름을 만들 수 있게 합니다.
+            xl3는 변환 규칙을 코드가 아니라 <code>template.xlsx</code> 안에
+            넣습니다. 비개발자도 직접 열어 읽고 고칠 수 있습니다 —
+            <code>IF</code>, <code>SUM</code>, 열 참조처럼 평소 쓰던 Excel
+            문법 그대로니까요.
           </p>
           <div class="hero-links">
             <a class="button primary" href="#use">변환기 써보기</a>

@@ -11,8 +11,10 @@
 
 ## What is xl3?
 
-xl3 is a TypeScript library for making recurring Excel transformation rules
-portable as workbook files.
+xl3 puts Excel transformation logic **inside the Excel file**, not in code.
+Non-developers can read and edit the rules directly, because they are written
+with the same `IF`, `SUM`, and column references they already use day to day.
+Developers ship the engine; the workbook ships the workflow.
 
 The frame is simple:
 
