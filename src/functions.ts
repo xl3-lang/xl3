@@ -1,5 +1,14 @@
 import type { Row } from './types.js';
 
+// ADR-0007: a value is empty if it is missing (null/undefined) or a string
+// whose contents are entirely Unicode whitespace. Numbers (including 0),
+// booleans (including false), and dates are never empty.
+export function isEmpty(v: unknown): boolean {
+  if (v === null || v === undefined) return true;
+  if (typeof v === 'string') return v.trim() === '';
+  return false;
+}
+
 function toDate(v: unknown): Date | null {
   if (v instanceof Date) return v;
   if (typeof v === 'number') {
@@ -44,10 +53,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     return falseValue;
   },
 
-  IFEMPTY: (v, def) => {
-    if (v === null || v === undefined || v === '') return def;
-    return v;
-  },
+  IFEMPTY: (v, def) => (isEmpty(v) ? def : v),
 
   index: (obj, key) => {
     if (obj && typeof obj === 'object' && typeof key === 'string') {
@@ -96,10 +102,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const arr = rows as Row[];
     if (!Array.isArray(arr)) return 0;
     const f = field as string;
-    return arr.reduce((count, row) => {
-      const v = row[f];
-      return v === null || v === undefined || v === '' ? count : count + 1;
-    }, 0);
+    return arr.reduce((count, row) => (isEmpty(row[f]) ? count : count + 1), 0);
   },
 
   len: (v) => {

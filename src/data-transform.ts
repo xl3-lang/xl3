@@ -1,4 +1,5 @@
 import type { Row, Directive, FilterDirective, SortDirective } from './types.js';
+import { isEmpty } from './functions.js';
 
 export function applyDirectives(
   rows: Row[],
@@ -44,8 +45,11 @@ function evalFilter(
   const rawValue = row[filter.field];
 
   if (filter.op === 'in' || filter.op === '!in') {
+    // ADR-0007: an empty source-row value never matches `in` and always
+    // matches `!in`, regardless of list contents.
+    if (isEmpty(rawValue)) return filter.op === '!in';
     const list = filter.listRef ? listSheets[filter.listRef] ?? [] : [];
-    const strValue = String(rawValue ?? '');
+    const strValue = String(rawValue);
     const found = list.includes(strValue);
     return filter.op === 'in' ? found : !found;
   }

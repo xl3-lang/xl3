@@ -79,6 +79,29 @@ For row-number shorthand (`source_table = N`), gaps between the first and last
 non-empty column name cell are therefore errors after the source column span is
 inferred.
 
+## Empty Values
+
+A value is **empty** if it is missing — the source column does not exist
+on this row, or the cell is blank — or if it is a string whose contents
+are entirely Unicode whitespace.
+
+Numbers, including `0`, are never empty. Booleans, including `false`,
+are never empty. Dates are never empty. Non-empty strings are never
+empty. A formula whose cached result is the empty string is empty by
+this rule.
+
+The empty predicate governs every place the spec refers to an empty
+value:
+
+- `IFEMPTY(value, fallback)` returns `fallback` when `value` is empty.
+- `COUNT([field])` counts a row when its `[field]` value is non-empty.
+- A source row is empty when every cell in the source-table column span
+  is empty. Empty data rows are skipped before grouping and rendering.
+- List-sheet entries are read by dropping empty cells from the sheet's
+  first column.
+- A source-row value that is empty never matches `@filter [field] in
+  _Sheet`. The same value always matches `@filter [field] !in _Sheet`.
+
 ## List Sheets
 
 Any sheet whose name starts with `_` is a list sheet, except `_config`.
@@ -88,7 +111,10 @@ List sheets:
 - MAY be visible, hidden, or very hidden in the template.
 - MUST be removed from output workbooks.
 - Are read from their first column.
-- Ignore empty cells.
+- Each cell is converted to a string and trimmed of Unicode whitespace.
+  Cells empty after trimming (per [Empty Values](#empty-values)) are
+  skipped.
+- Order is preserved. Duplicate entries are not removed.
 - Are referenced by `@filter ... in _SheetName` and `@filter ... !in _SheetName`.
 
 Referencing a missing list sheet is an error.

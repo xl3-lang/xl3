@@ -1,0 +1,5 @@
+description: List sheets drop empty entries on read, and an empty source-row value never matches `@filter ... in _Sheet` per ADR-0007.
+spec_section: evaluation.md "Empty Values"; evaluation.md "List Sheets"; ADR-0007
+spec_version: "0.1"
+tags: [evaluation, list-sheet, filter, in, empty]
+verified_by: [hand]

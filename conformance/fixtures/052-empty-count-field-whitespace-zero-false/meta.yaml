@@ -1,0 +1,5 @@
+description: COUNT([field]) counts non-empty values per ADR-0007 — whitespace strings are empty, 0 and FALSE are non-empty.
+spec_section: evaluation.md "Empty Values"; language.md "Aggregates"; ADR-0007
+spec_version: "0.1"
+tags: [language, function, count, aggregate, empty]
+verified_by: [hand]

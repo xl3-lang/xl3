@@ -131,6 +131,11 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 047 | `aggregate-functions` | Core aggregates operate on the current rendered row set. |
 | 048 | `if-and-comparison-boundaries` | Comparison operators drive `IF()` and `@filter` behavior around the zero boundary. |
 | 049 | `filename-sanitization-warning` | Sanitizing a rendered filename emits a warning without changing output semantics. |
+| 050 | `empty-ifempty-whitespace-only` | IFEMPTY treats whitespace-only strings as empty per ADR-0007. |
+| 051 | `empty-ifempty-zero-not-empty` | IFEMPTY preserves the number 0; numbers are never empty per ADR-0007. |
+| 052 | `empty-count-field-whitespace-zero-false` | COUNT([field]) counts non-empty values per ADR-0007 — whitespace empty, 0 and FALSE non-empty. |
+| 053 | `empty-row-skip-whitespace-only` | A source row whose every cell is empty per ADR-0007 is skipped, including whitespace-only cells. |
+| 054 | `empty-list-membership` | List sheets drop empty entries on read; an empty source-row value never matches `@filter ... in _Sheet` per ADR-0007. |
 
 ## Status
 

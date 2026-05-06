@@ -1,5 +1,6 @@
 import ExcelJS from 'exceljs';
 import type { Row } from './types.js';
+import { isEmpty } from './functions.js';
 
 export interface SourceData {
   sheetName: string;
@@ -44,7 +45,9 @@ export async function readSource(
       const header = headers[c];
       const cell = row.getCell(table.leftCol + c);
       const val = parseCellValue(cell);
-      if (val !== '' && val !== null && val !== undefined) allEmpty = false;
+      // ADR-0007: a row is empty when every cell is empty by the empty
+      // predicate. Whitespace-only strings count as empty cells.
+      if (!isEmpty(val)) allEmpty = false;
       record[header] = val;
     }
 

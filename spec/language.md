@@ -87,7 +87,9 @@ Returns the second argument when the condition is true, otherwise the third argu
 {{ IFEMPTY([memo], "-") }}
 ```
 
-Returns the second argument when the first argument is empty, null, or missing. Otherwise returns the first argument.
+Returns the second argument when the first argument is empty per
+[Empty Values](./evaluation.md#empty-values). Otherwise returns the
+first argument.
 
 ### Aggregates
 
@@ -102,7 +104,8 @@ Aggregates operate on the current rendered row set.
 {{ MAX([date]) }}
 ```
 
-`COUNT()` counts rows. `COUNT([field])` counts non-empty values in that field.
+`COUNT()` counts rows. `COUNT([field])` counts rows whose `[field]`
+value is non-empty per [Empty Values](./evaluation.md#empty-values).
 
 ### Numeric Functions
 

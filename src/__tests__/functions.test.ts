@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { functions } from '../functions.js';
+import { functions, isEmpty } from '../functions.js';
 
 describe('TEXT', () => {
   it('formats the XTL 0.1 date token subset', () => {
@@ -22,21 +22,51 @@ describe('TEXT', () => {
   });
 });
 
+describe('isEmpty (ADR-0007)', () => {
+  it('treats null, undefined, "", and whitespace-only strings as empty', () => {
+    expect(isEmpty(null)).toBe(true);
+    expect(isEmpty(undefined)).toBe(true);
+    expect(isEmpty('')).toBe(true);
+    expect(isEmpty('   ')).toBe(true);
+    expect(isEmpty('\t\n  ')).toBe(true);
+  });
+
+  it('treats numbers (including 0), booleans, dates, and non-empty strings as non-empty', () => {
+    expect(isEmpty(0)).toBe(false);
+    expect(isEmpty(1)).toBe(false);
+    expect(isEmpty(false)).toBe(false);
+    expect(isEmpty(true)).toBe(false);
+    expect(isEmpty(new Date())).toBe(false);
+    expect(isEmpty('x')).toBe(false);
+    expect(isEmpty(' x ')).toBe(false);
+  });
+});
+
 describe('IFEMPTY', () => {
-  it('returns the fallback for empty values and preserves non-empty values', () => {
+  it('returns the fallback for empty values per ADR-0007', () => {
     expect(functions.IFEMPTY('', '-')).toBe('-');
-    expect(functions.IFEMPTY('hello', '-')).toBe('hello');
+    expect(functions.IFEMPTY('   ', '-')).toBe('-');
     expect(functions.IFEMPTY(null, '-')).toBe('-');
+    expect(functions.IFEMPTY(undefined, '-')).toBe('-');
+  });
+
+  it('preserves non-empty values, including 0 and false', () => {
+    expect(functions.IFEMPTY('hello', '-')).toBe('hello');
+    expect(functions.IFEMPTY(0, '-')).toBe(0);
+    expect(functions.IFEMPTY(false, '-')).toBe(false);
   });
 });
 
 describe('COUNT([field])', () => {
-  it('counts non-empty values in the provided row set', () => {
+  it('counts non-empty values in the provided row set per ADR-0007', () => {
     expect(functions.countRows([
       { Memo: 'hello' },
       { Memo: '' },
       { Memo: null },
+      { Memo: '   ' },
       { Memo: 'world' },
-    ], 'Memo')).toBe(2);
+      { Memo: 0 },
+      { Memo: false },
+    ], 'Memo')).toBe(4);
   });
 });

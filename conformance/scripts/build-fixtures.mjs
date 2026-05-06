@@ -2555,6 +2555,360 @@ async function build049() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 050 - empty-ifempty-whitespace-only
+//
+// Concept: IFEMPTY treats whitespace-only strings as empty per ADR-0007's
+// empty predicate.
+// Spec section: evaluation.md "Empty Values"; language.md "Functions /
+// IFEMPTY"; ADR-0007.
+// ---------------------------------------------------------------------------
+async function build050() {
+  const dir = join(FIXTURES, '050-empty-ifempty-whitespace-only');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'empty-ifempty-whitespace-only'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ IFEMPTY([Memo], "-") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'first';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = '   ';
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = '\t\n';
+    sh.getCell('A5').value = 'Delta';
+    sh.getCell('B5').value = 'second';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  // Per ADR-0007, "   " and "\t\n" are empty strings (Unicode whitespace
+  // trimmed → length 0). IFEMPTY returns the fallback "-" for those.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'first';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = '-';
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = '-';
+    sh.getCell('A5').value = 'Delta';
+    sh.getCell('B5').value = 'second';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 051 - empty-ifempty-zero-not-empty
+//
+// Concept: the number 0 is non-empty per ADR-0007. IFEMPTY passes 0
+// through and preserves its numeric type.
+// Spec section: evaluation.md "Empty Values"; language.md "Functions /
+// IFEMPTY"; ADR-0007.
+// ---------------------------------------------------------------------------
+async function build051() {
+  const dir = join(FIXTURES, '051-empty-ifempty-zero-not-empty');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'empty-ifempty-zero-not-empty'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ IFEMPTY([Amount], "-") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 0;
+    sh.getCell('A3').value = 'Beta';
+    // B3 left blank — empty cell.
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = 100;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  // Acme's Amount is the number 0 — non-empty, IFEMPTY passes it through.
+  // Beta's Amount cell is blank — empty, IFEMPTY returns the string "-".
+  // Gamma's Amount is 100 — passed through.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 0;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = '-';
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = 100;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 052 - empty-count-field-whitespace-zero-false
+//
+// Concept: COUNT([field]) counts rows whose field is non-empty per
+// ADR-0007. Whitespace-only strings are empty; 0 and FALSE are non-empty.
+// Spec section: evaluation.md "Empty Values"; language.md "Aggregates";
+// ADR-0007.
+// ---------------------------------------------------------------------------
+async function build052() {
+  const dir = join(FIXTURES, '052-empty-count-field-whitespace-zero-false');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'empty-count-field-whitespace-zero-false'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'NonEmptyMemos';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ COUNT([Memo]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — six rows; Memo values cover the empty/non-empty matrix.
+  // Customer is set on every row so no row is skipped by the empty-row rule.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = 'a';            // Memo blank — empty
+    sh.getCell('A3').value = 'b';
+    sh.getCell('B3').value = '';             // empty string — empty
+    sh.getCell('A4').value = 'c';
+    sh.getCell('B4').value = '   ';          // whitespace-only — empty
+    sh.getCell('A5').value = 'd';
+    sh.getCell('B5').value = 'x';            // non-empty string
+    sh.getCell('A6').value = 'e';
+    sh.getCell('B6').value = 0;              // number 0 — non-empty
+    sh.getCell('A7').value = 'f';
+    sh.getCell('B7').value = false;          // boolean false — non-empty
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  // COUNT([Memo]) over the rendered row set: 3 rows are non-empty
+  // (rows d/x, e/0, f/false). The aggregate value is the same on every
+  // rendered row.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'NonEmptyMemos';
+    sh.getCell('A2').value = 'a';
+    sh.getCell('B2').value = 3;
+    sh.getCell('A3').value = 'b';
+    sh.getCell('B3').value = 3;
+    sh.getCell('A4').value = 'c';
+    sh.getCell('B4').value = 3;
+    sh.getCell('A5').value = 'd';
+    sh.getCell('B5').value = 3;
+    sh.getCell('A6').value = 'e';
+    sh.getCell('B6').value = 3;
+    sh.getCell('A7').value = 'f';
+    sh.getCell('B7').value = 3;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 053 - empty-row-skip-whitespace-only
+//
+// Concept: a source row whose every cell is empty per ADR-0007 is
+// skipped before grouping and rendering. Whitespace-only cells count as
+// empty.
+// Spec section: evaluation.md "Empty Values"; evaluation.md "Source Data
+// Model" empty-row skip; ADR-0007.
+// ---------------------------------------------------------------------------
+async function build053() {
+  const dir = join(FIXTURES, '053-empty-row-skip-whitespace-only');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'empty-row-skip-whitespace-only'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Memo] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  // Row 3 has whitespace in every cell — skipped per ADR-0007.
+  // Row 5 has whitespace Customer + non-empty Memo — at least one cell is
+  // non-empty, so the row is kept; Customer renders as the original
+  // whitespace string (ADR-0007 only governs the *empty* predicate, not
+  // value preservation).
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'first';
+    sh.getCell('A3').value = '   ';
+    sh.getCell('B3').value = '\t  ';
+    sh.getCell('A4').value = 'Beta';
+    sh.getCell('B4').value = 'second';
+    sh.getCell('A5').value = '   ';
+    sh.getCell('B5').value = 'kept';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'first';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'second';
+    sh.getCell('A4').value = '   ';
+    sh.getCell('B4').value = 'kept';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 054 - empty-list-membership
+//
+// Concept: list-sheet reading drops empty cells per ADR-0007. A
+// source-row value that is empty never matches `@filter ... in
+// _Sheet`. Combined, an empty Customer never sneaks into membership
+// even when the list sheet originally contained an empty entry.
+// Spec section: evaluation.md "Empty Values"; evaluation.md "List
+// Sheets"; ADR-0007.
+// ---------------------------------------------------------------------------
+async function build054() {
+  const dir = join(FIXTURES, '054-empty-list-membership');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'empty-list-membership'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+
+    // List sheet — first column carries the allowed values. The
+    // whitespace and blank entries are dropped per ADR-0007 when read.
+    const list = wb.addWorksheet('_Allowed');
+    list.getCell('A1').value = 'Acme';
+    list.getCell('A2').value = '   ';
+    list.getCell('A3').value = '';
+    list.getCell('A4').value = 'Beta';
+
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Status';
+    sh.getCell('A2').value = '{{ @filter [Customer] in _Allowed }}';
+    sh.getCell('A3').value = '{{ [Customer] }}';
+    sh.getCell('B3').value = '{{ [Status] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  // Row 2: Acme/open — Customer matches Acme → kept.
+  // Row 3: ""/open — Customer is empty; never matches `in` per ADR-0007 → dropped.
+  // Row 4: Beta/open — matches Beta → kept.
+  // Row 5: "  "/open — Customer is whitespace-only (empty per ADR-0007);
+  //                    never matches `in` → dropped.
+  // Row 6: Charlie/open — not in _Allowed → dropped.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Status';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'open';
+    sh.getCell('A3').value = '';
+    sh.getCell('B3').value = 'open';
+    sh.getCell('A4').value = 'Beta';
+    sh.getCell('B4').value = 'open';
+    sh.getCell('A5').value = '   ';
+    sh.getCell('B5').value = 'open';
+    sh.getCell('A6').value = 'Charlie';
+    sh.getCell('B6').value = 'open';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  // Only Acme and Beta survive the filter. The list sheet is removed
+  // from output (existing rule).
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Status';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'open';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'open';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -2605,6 +2959,11 @@ const builders = [
   ['047', build047],
   ['048', build048],
   ['049', build049],
+  ['050', build050],
+  ['051', build051],
+  ['052', build052],
+  ['053', build053],
+  ['054', build054],
 ];
 
 const selected = new Set(process.argv.slice(2));

@@ -132,4 +132,28 @@ describe('readSource', () => {
     expect(source.rows).toEqual([{ Customer: 'Acme', Amount: 10, Region: 'Seoul' }]);
   });
 
+  it('skips rows whose every cell is empty by ADR-0007 (including whitespace-only)', async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Raw');
+    sheet.getCell('A1').value = 'Customer';
+    sheet.getCell('B1').value = 'Memo';
+
+    sheet.getCell('A2').value = 'Acme';
+    sheet.getCell('B2').value = 'first';
+
+    sheet.getCell('A3').value = '   ';
+    sheet.getCell('B3').value = '\t  ';
+
+    sheet.getCell('A4').value = 'Beta';
+    sheet.getCell('B4').value = '   '; // single non-empty cell keeps the row
+
+    const data = await workbook.xlsx.writeBuffer();
+
+    const source = await readSource(data as ArrayBuffer, 'Raw', { sourceTable: '1' });
+    expect(source.rows).toEqual([
+      { Customer: 'Acme', Memo: 'first' },
+      { Customer: 'Beta', Memo: '   ' },
+    ]);
+  });
+
 });

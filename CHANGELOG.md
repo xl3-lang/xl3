@@ -47,6 +47,11 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 - `@filter ... !in` and `COUNT([field])` now have conformance coverage.
 - Core aggregate functions now have conformance coverage on the rendered row set.
 - Comparison-boundary behavior and filename sanitization warnings now have conformance coverage.
+- ADR-0007 defines a single empty-value predicate that governs `IFEMPTY`,
+  `COUNT([field])`, the empty-data-row skip rule, and list-sheet
+  membership filters. Whitespace-only strings are now empty; numbers
+  (including `0`) and booleans (including `false`) are never empty.
+  Conformance fixtures 050–054 cover each surface.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 

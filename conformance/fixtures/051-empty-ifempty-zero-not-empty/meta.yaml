@@ -1,0 +1,5 @@
+description: IFEMPTY preserves the number 0 because numbers are never empty per ADR-0007.
+spec_section: evaluation.md "Empty Values"; language.md "Functions / IFEMPTY"; ADR-0007
+spec_version: "0.1"
+tags: [language, function, ifempty, empty]
+verified_by: [hand]

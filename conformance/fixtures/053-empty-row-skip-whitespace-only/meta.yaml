@@ -1,0 +1,5 @@
+description: A source row whose every cell is empty per ADR-0007 is skipped, including whitespace-only cells.
+spec_section: evaluation.md "Empty Values"; evaluation.md "Source Data Model"; ADR-0007
+spec_version: "0.1"
+tags: [evaluation, source-data, empty, row-skip]
+verified_by: [hand]
