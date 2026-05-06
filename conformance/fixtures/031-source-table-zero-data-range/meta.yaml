@@ -1,0 +1,6 @@
+description: source_table range whose end row equals the first row is valid and produces zero source rows.
+spec_section: evaluation.md#source-data-model
+spec_version: "0.1"
+tags: [config, source-table]
+verified_by: [manual-script]
+

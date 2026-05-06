@@ -1,0 +1,7 @@
+description: source_table reports an error for duplicate source column names.
+spec_section: evaluation.md#source-data-model
+spec_version: "0.1"
+tags: [config, source-table, error]
+verified_by: [manual-script]
+expected_error: 'source_table has duplicate header "Customer"'
+

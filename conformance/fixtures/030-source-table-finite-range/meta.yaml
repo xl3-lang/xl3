@@ -1,0 +1,6 @@
+description: source_table finite range stops at the declared end row.
+spec_section: evaluation.md#source-data-model
+spec_version: "0.1"
+tags: [config, source-table]
+verified_by: [manual-script]
+

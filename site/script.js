@@ -9,6 +9,7 @@ const rawFileInput = document.querySelector('#rawFile');
 const templateFileInput = document.querySelector('#templateFile');
 const convertButton = document.querySelector('#convertButton');
 const converterStatus = document.querySelector('#converterStatus');
+const converterPreview = document.querySelector('#converterPreview');
 const xl3ModuleUrl = isKorean ? '../dist/index.js' : './dist/index.js';
 const exampleBaseUrl = isKorean ? '../examples/' : './examples/';
 const exampleRawUrl = `${exampleBaseUrl}sample-raw.xlsx`;
@@ -32,6 +33,14 @@ const copy = {
     downloadedOne: 'Downloaded result workbook.',
     downloadedMany: (count) => `Downloaded ${count} result workbooks as a ZIP.`,
     failed: (message) => `Conversion failed: ${message}`,
+    previewLoading: 'Previewing the selected workflow...',
+    previewFailed: (message) => `Preview failed: ${message}`,
+    previewTitle: 'Before download',
+    previewSource: 'Source contract',
+    previewOutputs: 'Expected output',
+    previewWarnings: 'Warnings',
+    previewNoOutputs: 'No output files will be generated.',
+    previewSheetRows: (count) => `${count} row${count === 1 ? '' : 's'}`,
   },
   ko: {
     dataTitle: '템플릿이 raw 데이터의 모양을 선언합니다.',
@@ -50,6 +59,14 @@ const copy = {
     downloadedOne: '결과 workbook을 다운로드했습니다.',
     downloadedMany: (count) => `결과 workbook ${count}개를 ZIP으로 다운로드했습니다.`,
     failed: (message) => `변환 실패: ${message}`,
+    previewLoading: '선택한 workflow를 미리보는 중입니다...',
+    previewFailed: (message) => `미리보기 실패: ${message}`,
+    previewTitle: '다운로드 전 확인',
+    previewSource: 'Source contract',
+    previewOutputs: '예상 결과',
+    previewWarnings: 'Warnings',
+    previewNoOutputs: '생성될 결과 파일이 없습니다.',
+    previewSheetRows: (count) => `${count}행`,
   },
 };
 
@@ -282,7 +299,92 @@ function outputBlob(output) {
   );
 }
 
+function renderConverterPreview({ meta, result }) {
+  const sourceSheet = meta.source_sheet || (isKorean ? '첫 번째 worksheet' : 'first worksheet');
+  const sourceTable = meta.source_table || '1';
+  const files = result.files ?? [];
+  const warnings = result.warnings ?? [];
+  const outputMarkup = files.length
+    ? files.map((file) => `
+      <article class="preview-file">
+        <strong>${escapeHtml(file.filename || 'result.xlsx')}</strong>
+        <ul>
+          ${file.sheets.map((sheet) => `
+            <li>
+              <span>${escapeHtml(sheet.name)}</span>
+              <small>${escapeHtml(t.previewSheetRows(sheet.rowCount))}</small>
+            </li>
+          `).join('')}
+        </ul>
+      </article>
+    `).join('')
+    : `<div class="preview-empty">${escapeHtml(t.previewNoOutputs)}</div>`;
+  const warningMarkup = warnings.length
+    ? `<div class="preview-warnings">
+        <strong>${escapeHtml(t.previewWarnings)}</strong>
+        <ul>${warnings.map((warning) => `<li>${escapeHtml(warning)}</li>`).join('')}</ul>
+      </div>`
+    : '';
+
+  return `
+    <div class="preview-head">
+      <span>${escapeHtml(t.previewTitle)}</span>
+      <code>preview(template, raw)</code>
+    </div>
+    <div class="preview-grid">
+      <div class="preview-contract">
+        <strong>${escapeHtml(t.previewSource)}</strong>
+        <dl>
+          <div><dt>source_sheet</dt><dd>${escapeHtml(sourceSheet)}</dd></div>
+          <div><dt>source_table</dt><dd>${escapeHtml(sourceTable)}</dd></div>
+        </dl>
+      </div>
+      <div class="preview-output">
+        <strong>${escapeHtml(t.previewOutputs)}</strong>
+        ${outputMarkup}
+      </div>
+    </div>
+    ${warningMarkup}
+  `;
+}
+
+function setPreviewMessage(message, tone = 'muted') {
+  if (!converterPreview) return;
+  converterPreview.innerHTML = `<div class="preview-empty ${tone === 'error' ? 'is-error' : ''}">${escapeHtml(message)}</div>`;
+}
+
+let previewRunId = 0;
+
+async function updateConverterPreview() {
+  if (!converterPreview || !rawFileInput || !templateFileInput) return;
+  const runId = ++previewRunId;
+  setPreviewMessage(t.previewLoading);
+
+  try {
+    const { analyze, preview: previewWorkflow } = await loadXl3Module();
+    const rawFile = rawFileInput.files?.[0];
+    const templateFile = templateFileInput.files?.[0];
+    const [templateBuffer, rawBuffer] = await Promise.all([
+      fileOrExampleBuffer(templateFile, exampleTemplateUrl),
+      fileOrExampleBuffer(rawFile, exampleRawUrl),
+    ]);
+    const [meta, result] = await Promise.all([
+      analyze(templateBuffer),
+      previewWorkflow(templateBuffer.slice(0), rawBuffer),
+    ]);
+    if (runId !== previewRunId) return;
+    converterPreview.innerHTML = renderConverterPreview({ meta: meta.meta, result });
+  } catch (error) {
+    if (runId !== previewRunId) return;
+    const message = error instanceof Error ? error.message : String(error);
+    setPreviewMessage(t.previewFailed(message), 'error');
+  }
+}
+
 if (converterForm && rawFileInput && templateFileInput) {
+  rawFileInput.addEventListener('change', updateConverterPreview);
+  templateFileInput.addEventListener('change', updateConverterPreview);
+
   converterForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
@@ -320,4 +422,5 @@ if (converterForm && rawFileInput && templateFileInput) {
   });
 
   setConverterStatus(t.exampleReady);
+  updateConverterPreview();
 }

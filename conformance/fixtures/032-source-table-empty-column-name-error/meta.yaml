@@ -1,0 +1,7 @@
+description: source_table reports an error for an empty source column name inside the selected span.
+spec_section: evaluation.md#source-data-model
+spec_version: "0.1"
+tags: [config, source-table, error]
+verified_by: [manual-script]
+expected_error: "source_table header cell C3 is empty"
+

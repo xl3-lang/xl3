@@ -79,4 +79,25 @@ describe('readSource', () => {
       .rejects.toThrow('source_table has duplicate header "Customer"');
   });
 
+  it('rejects zero-based source_table row shorthand', async () => {
+    await expect(readSource(await workbookBuffer(), 'Raw', { sourceTable: '0' }))
+      .rejects.toThrow('source_table row numbers must be 1-based positive integers: 0');
+  });
+
+  it('rejects zero-based source_table range rows', async () => {
+    await expect(readSource(await workbookBuffer(), 'Raw', { sourceTable: 'A0:D' }))
+      .rejects.toThrow('source_table row numbers must be 1-based positive integers: A0:D');
+  });
+
+  it('rejects formula source_table column names without cached results', async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Raw');
+    sheet.getCell('A1').value = { formula: '"Customer"' };
+    sheet.getCell('A2').value = 'Acme';
+    const data = await workbook.xlsx.writeBuffer();
+
+    await expect(readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'A1:A' }))
+      .rejects.toThrow('Formula cell A1 has no cached result');
+  });
+
 });

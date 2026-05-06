@@ -14,7 +14,7 @@ conformance/
         ├── template.xlsx
         ├── data.xlsx
         ├── expected.xlsx        ← canonical expected output (single-file case)
-        ├── expected/            ← OR a directory of files (multi-file group case)
+        ├── expected/            ← OR a directory of files (multi-file or zero-output case)
         │   └── *.xlsx
         ├── no expected output   ← for expected_error fixtures
         ├── no static expected   ← for expected_dynamic fixtures
@@ -72,8 +72,9 @@ to `1`; fixtures that require canonical OOXML comparison declare
 | `skip_reason` | no | all fixtures | Temporary reason a known-broken fixture is skipped. |
 
 `expected_error` and `expected_dynamic` are mutually exclusive. Static-output
-fixtures use `expected.xlsx` or `expected/`; error and dynamic fixtures omit
-static expected outputs.
+fixtures use `expected.xlsx` or `expected/`; an empty `expected/` directory
+means zero output files. Error and dynamic fixtures omit static expected
+outputs.
 
 ## Fixture Catalog
 
@@ -108,6 +109,13 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 025 | `stage2-style-numfmt-preservation` | Stage 2 comparison verifies rendered cells preserve template style and numFmt. |
 | 026 | `stage2-splice-merge-style-preservation` | Stage 2 comparison verifies row expansion preserves both shifted merges and styled/number-formatted rendered cells. |
 | 027 | `stage2-cross-writer-canonicalization` | Stage 2 comparison verifies known OOXML writer differences canonicalize to the same workbook content. |
+| 028 | `source-table-row-shorthand` | `source_table = N` selects row `N` as source column names and reads rows below it. |
+| 029 | `source-table-open-range` | `source_table = B3:D` selects a column window and reads rows below through the used row end. |
+| 030 | `source-table-finite-range` | `source_table = B3:D4` stops reading at the declared end row. |
+| 031 | `source-table-zero-data-range` | `source_table = B3:D3` is valid and produces zero source rows. |
+| 032 | `source-table-empty-column-name-error` | Empty source column names inside the selected span report a stable error. |
+| 033 | `source-table-duplicate-column-name-error` | Duplicate source column names report a stable error. |
+| 034 | `source-table-invalid-selector-error` | Invalid selectors such as row zero report a stable error. |
 
 ## Status
 

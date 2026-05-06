@@ -10,7 +10,7 @@
 
 import ExcelJS from 'exceljs';
 import JSZip from 'jszip';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -1392,6 +1392,335 @@ async function build027() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 028 - source-table-row-shorthand
+//
+// Concept: source_table = N selects row N as the source column-name row and
+// reads rows below it through the worksheet's used row end.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build028() {
+  const dir = join(FIXTURES, '028-source-table-row-shorthand');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-table-row-shorthand'],
+      ['source_sheet', 'Data'],
+      ['source_table', '3'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'ignored';
+    sh.getCell('A2').value = 'also ignored';
+    sh.getCell('A3').value = 'Customer';
+    sh.getCell('B3').value = 'Amount';
+    sh.getCell('C3').value = 'Region';
+    sh.getCell('A4').value = 'Acme';
+    sh.getCell('B4').value = 10;
+    sh.getCell('C4').value = 'Seoul';
+    sh.getCell('A5').value = 'Beta';
+    sh.getCell('B5').value = 20;
+    sh.getCell('C5').value = 'Busan';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 10;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 20;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 029 - source-table-open-range
+//
+// Concept: source_table = B3:D selects B3:D3 as source column names and reads
+// rows below that column window through the worksheet's used row end.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build029() {
+  const dir = join(FIXTURES, '029-source-table-open-range');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-table-open-range'],
+      ['source_sheet', 'Data'],
+      ['source_table', 'B3:D'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('C1').value = 'Region';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Amount] }}';
+    sh.getCell('C2').value = '{{ [Region] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A3').value = 'outside-left';
+    sh.getCell('B3').value = 'Customer';
+    sh.getCell('C3').value = 'Amount';
+    sh.getCell('D3').value = 'Region';
+    sh.getCell('E3').value = 'outside-right';
+    sh.getCell('B4').value = 'Acme';
+    sh.getCell('C4').value = 10;
+    sh.getCell('D4').value = 'Seoul';
+    sh.getCell('E4').value = 'ignored';
+    sh.getCell('B5').value = 'Beta';
+    sh.getCell('C5').value = 20;
+    sh.getCell('D5').value = 'Busan';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('C1').value = 'Region';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 10;
+    sh.getCell('C2').value = 'Seoul';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 20;
+    sh.getCell('C3').value = 'Busan';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 030 - source-table-finite-range
+//
+// Concept: source_table = B3:D4 reads only data rows within the declared end
+// row, even when later worksheet rows contain values.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build030() {
+  const dir = join(FIXTURES, '030-source-table-finite-range');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-table-finite-range'],
+      ['source_sheet', 'Data'],
+      ['source_table', 'B3:D4'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('C1').value = 'Region';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Amount] }}';
+    sh.getCell('C2').value = '{{ [Region] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('B3').value = 'Customer';
+    sh.getCell('C3').value = 'Amount';
+    sh.getCell('D3').value = 'Region';
+    sh.getCell('B4').value = 'Acme';
+    sh.getCell('C4').value = 10;
+    sh.getCell('D4').value = 'Seoul';
+    sh.getCell('B5').value = 'Beta';
+    sh.getCell('C5').value = 20;
+    sh.getCell('D5').value = 'Busan';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('C1').value = 'Region';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 10;
+    sh.getCell('C2').value = 'Seoul';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 031 - source-table-zero-data-range
+//
+// Concept: source_table = B3:D3 is valid and has zero source data rows. Since
+// no source rows exist, conversion produces zero output files.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build031() {
+  const dir = join(FIXTURES, '031-source-table-zero-data-range');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-table-zero-data-range'],
+      ['source_sheet', 'Data'],
+      ['source_table', 'B3:D3'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('B3').value = 'Customer';
+    sh.getCell('C3').value = 'Amount';
+    sh.getCell('D3').value = 'Region';
+    sh.getCell('B4').value = 'Acme';
+    sh.getCell('C4').value = 10;
+    sh.getCell('D4').value = 'Seoul';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected/ empty directory means zero output files.
+  await mkdir(join(dir, 'expected'), { recursive: true });
+}
+
+// ---------------------------------------------------------------------------
+// 032 - source-table-empty-column-name-error
+//
+// Concept: empty source column names inside the selected span are errors.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build032() {
+  const dir = join(FIXTURES, '032-source-table-empty-column-name-error');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-table-empty-column-name-error'],
+      ['source_sheet', 'Data'],
+      ['source_table', 'B3:D'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('B3').value = 'Customer';
+    sh.getCell('D3').value = 'Region';
+    sh.getCell('B4').value = 'Acme';
+    sh.getCell('D4').value = 'Seoul';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 033 - source-table-duplicate-column-name-error
+//
+// Concept: duplicate source column names inside the selected span are errors.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build033() {
+  const dir = join(FIXTURES, '033-source-table-duplicate-column-name-error');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-table-duplicate-column-name-error'],
+      ['source_sheet', 'Data'],
+      ['source_table', 'A1:B'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Beta';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 034 - source-table-invalid-selector-error
+//
+// Concept: source_table selectors use 1-based positive row numbers. Row zero
+// is invalid.
+// Spec section: evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build034() {
+  const dir = join(FIXTURES, '034-source-table-invalid-selector-error');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-table-invalid-selector-error'],
+      ['source_sheet', 'Data'],
+      ['source_table', '0'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -1420,6 +1749,13 @@ const builders = [
   ['025', build025],
   ['026', build026],
   ['027', build027],
+  ['028', build028],
+  ['029', build029],
+  ['030', build030],
+  ['031', build031],
+  ['032', build032],
+  ['033', build033],
+  ['034', build034],
 ];
 
 const selected = new Set(process.argv.slice(2));

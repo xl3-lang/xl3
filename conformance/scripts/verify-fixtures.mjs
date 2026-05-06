@@ -100,7 +100,7 @@ for (const name of cases) {
 
   // Single-file fixture (expected.xlsx) ignores filename, compares content only.
   // Multi-file fixture (expected/) checks both filenames and content.
-  const isMultiFile = expectedFiles[0].filename !== 'expected.xlsx';
+  const isMultiFile = expectedFiles[0]?.filename !== 'expected.xlsx';
 
   const diffs = [];
 

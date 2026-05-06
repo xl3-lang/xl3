@@ -34,6 +34,9 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 - AUTHORING.md flags the Stage 2 ExcelJS round-trip caveat and points cross-
   writer canonicalizer coverage at the unit tests until an Excel-authored
   Stage 2 fixture lands.
+- `source_table` grammar is clarified and covered by conformance fixtures for
+  row shorthand, open ranges, finite ranges, zero data rows, and invalid source
+  column names.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 

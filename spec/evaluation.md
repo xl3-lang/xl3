@@ -33,7 +33,8 @@ A hidden sheet named `_config` MAY provide metadata and runtime settings.
 
 ## Source Data Model
 
-The source data model is an ordered list of rows. Each row is a mapping from header name to cell value.
+The source data model is an ordered list of rows. Each row is a mapping from
+source column name to cell value.
 
 `source_sheet` selects the worksheet. If omitted, the first worksheet is used.
 If `source_sheet` ends with `*`, it is a prefix pattern. The implementation MUST
@@ -51,13 +52,25 @@ take precedence over prefix matching.
 
 If `source_table` is omitted, it defaults to `1`.
 
+`N` MUST be a 1-based positive integer. Range forms MUST use absolute Excel A1
+coordinates with a left column, first row, right column, and optional end row.
+The left column MUST NOT be to the right of the right column. The optional end
+row MUST NOT be above the first row.
+
+When a range form includes an end row equal to the first row, such as
+`A1:D1`, the source table contains column names and zero data rows. This is
+valid.
+
 Column name rules:
 
 1. Source column name cell values are converted to strings and trimmed.
 2. Source column names are case-sensitive.
-3. Empty column names inside the selected source table are errors.
-4. Duplicate source column names are errors.
-5. Empty data rows are skipped.
+3. Rich-text source column name cells are read by concatenating text runs.
+4. Formula source column name cells use the cached formula result. If no cached
+   result is available, this is an error.
+5. Empty column names inside the selected source table are errors.
+6. Duplicate source column names are errors.
+7. Empty data rows are skipped.
 
 For row-number shorthand (`source_table = N`), gaps between the first and last
 non-empty column name cell are therefore errors after the source column span is

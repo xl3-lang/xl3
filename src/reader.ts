@@ -78,7 +78,11 @@ function parseSourceTable(
 ): SourceTable {
   const raw = value.trim();
   const rowOnly = raw.match(/^\d+$/);
-  if (rowOnly) return inferTableFromHeaderRow(sheet, Number(rowOnly[0]));
+  if (rowOnly) {
+    const headerRow = Number(rowOnly[0]);
+    assertPositiveRow(headerRow, keyName, value);
+    return inferTableFromHeaderRow(sheet, headerRow);
+  }
 
   const range = raw.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)?$/i);
   if (!range) {
@@ -89,11 +93,19 @@ function parseSourceTable(
   const headerRow = Number(range[2]);
   const rightCol = decodeColumn(range[3]!);
   const bottomRow = range[4] ? Number(range[4]) : undefined;
+  assertPositiveRow(headerRow, keyName, value);
+  if (bottomRow !== undefined) assertPositiveRow(bottomRow, keyName, value);
   if (leftCol > rightCol) throw new Error(`${keyName} has an invalid column range: ${value}`);
   if (bottomRow !== undefined && bottomRow < headerRow) {
     throw new Error(`${keyName} bottom row cannot be above the first selected row: ${value}`);
   }
   return { headerRow, leftCol, rightCol, bottomRow };
+}
+
+function assertPositiveRow(row: number, keyName: string, value: string): void {
+  if (!Number.isInteger(row) || row < 1) {
+    throw new Error(`${keyName} row numbers must be 1-based positive integers: ${value}`);
+  }
 }
 
 function inferTableFromHeaderRow(sheet: ExcelJS.Worksheet, headerRow: number): SourceTable {
@@ -143,7 +155,14 @@ function headerText(cell: ExcelJS.Cell): string {
       .trim();
   }
   if (typeof value === 'object' && 'result' in value) {
-    return String((value as { result: unknown }).result ?? '').trim();
+    const result = (value as { result: unknown }).result;
+    if (result === undefined && isFormulaValue(value)) {
+      throw new Error(`Formula cell ${cell.address} has no cached result`);
+    }
+    return String(result ?? '').trim();
+  }
+  if (typeof value === 'object' && isFormulaValue(value)) {
+    throw new Error(`Formula cell ${cell.address} has no cached result`);
   }
   return String(value).trim();
 }

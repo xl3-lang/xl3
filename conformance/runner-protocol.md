@@ -21,8 +21,11 @@ For each fixture, the runner reads:
 
 - `template.xlsx` — input template
 - `data.xlsx` — input source data
-- `expected.xlsx` (single-output case) **or** `expected/` directory of `.xlsx` files (multi-file group case)
+- `expected.xlsx` (single-output case) **or** `expected/` directory of `.xlsx` files (multi-file group case, including zero-output cases)
 - `meta.yaml` — fixture metadata
+
+Static fixtures that expect zero output files use an empty `expected/`
+directory.
 
 Error fixtures omit `expected.xlsx` and `expected/`. They declare
 `expected_error` in `meta.yaml`; the expected result is that the implementation
