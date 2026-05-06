@@ -40,6 +40,7 @@
     <meta name="twitter:image:alt" content="xl3 - Excel-to-Excel transformation, specified.">
 
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23217846'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='24' font-weight='700' fill='white'%3Exl3%3C/text%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="./styles.css?v=20260506">
 
     <script type="application/ld+json">
@@ -66,25 +67,27 @@
     </script>
   </head>
   <body>
-    <header class="site-header">
-      <a class="brand" href="#top" aria-label="xl3 home">
-        <span class="brand-mark">xl3</span>
-        <span class="brand-text">Excel-to-Excel transformation</span>
-      </a>
-      <nav class="site-nav" aria-label="Primary navigation">
-        <a href="#walkthrough">Walkthrough</a>
-        <a href="#standard">Standard</a>
-        <a href="#conformance">Conformance</a>
-        <a href="#use">Use</a>
-        <a href="./ko/">한국어</a>
-      </nav>
+    <header class="site-header px-0">
+      <div class="mx-auto flex min-h-[62px] w-[min(1160px,calc(100%_-_56px))] items-center justify-between gap-6 max-sm:w-[calc(100%_-_36px)]">
+        <a class="brand" href="#top" aria-label="xl3 home">
+          <span class="brand-mark">xl3</span>
+          <span class="brand-text">Excel-to-Excel transformation</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="#walkthrough">Walkthrough</a>
+          <a href="#standard">Standard</a>
+          <a href="#conformance">Reliability</a>
+          <a href="#use">Use</a>
+          <a href="./ko/">한국어</a>
+        </nav>
+      </div>
     </header>
 
     <main id="top">
-      <section class="hero">
+      <section class="hero !min-h-0 !grid-cols-[minmax(0,0.95fr)_minmax(240px,320px)] !items-center !gap-14 !py-20 lg:!py-24 max-lg:!grid-cols-1 max-lg:!gap-10 max-sm:!py-14">
         <div class="hero-copy">
           <p class="kicker">XTL 0.1 draft · TypeScript reference implementation</p>
-          <h1>Excel-to-Excel transformation, specified.</h1>
+          <h1 class="max-w-4xl text-[clamp(42px,7vw,88px)] leading-[1.02]">Excel-to-Excel transformation, specified.</h1>
           <p class="lead">
             xl3 defines a small, conformance-tested language for using Excel
             workbooks as templates. Templates are workbooks. Data is a workbook.
@@ -96,7 +99,7 @@
             <a class="button" href="https://www.npmjs.com/package/xl3">npm</a>
           </div>
         </div>
-        <aside class="principle-list" aria-label="xl3 principles">
+        <aside class="principle-list self-center rounded-lg border border-[var(--line)] bg-white/70 px-4 shadow-[0_16px_45px_rgba(31,42,35,0.08)]" aria-label="xl3 principles">
           <div><strong>Input</strong><span>data.xlsx</span></div>
           <div><strong>Template</strong><span>template.xlsx</span></div>
           <div><strong>Output</strong><span>result.xlsx</span></div>
@@ -105,9 +108,9 @@
       </section>
 
       <section id="walkthrough" class="walkthrough-section" aria-labelledby="walkthrough-title">
-        <div class="section-intro">
+        <div class="section-intro max-w-3xl">
           <p class="kicker">Interactive walkthrough</p>
-          <h2 id="walkthrough-title">The workbook is the unit of transformation.</h2>
+          <h2 id="walkthrough-title" class="text-[clamp(32px,4vw,54px)] leading-[1.12]">The workbook is the unit of transformation.</h2>
           <p>
             Scroll through the model. The example workbook on the right changes
             as each rule becomes active. The Excel visual stays familiar, but
@@ -115,31 +118,31 @@
           </p>
         </div>
 
-        <div class="walkthrough-layout">
+        <div class="walkthrough-layout !grid-cols-[minmax(260px,390px)_minmax(0,1fr)] !gap-10 max-lg:!grid-cols-1">
           <div class="steps" aria-label="xl3 model steps">
-            <article class="step is-active" data-step="data" tabindex="0">
-              <span class="step-index">01</span>
+            <article class="step is-active !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="data" tabindex="0">
+              <span class="step-index row-span-2 mt-1">01</span>
               <h3>Data is a workbook</h3>
               <p>Source rows come from a normal `.xlsx` file. The first row names the fields.</p>
             </article>
-            <article class="step" data-step="template" tabindex="0">
-              <span class="step-index">02</span>
+            <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="template" tabindex="0">
+              <span class="step-index row-span-2 mt-1">02</span>
               <h3>Templates are workbooks</h3>
               <p>Cells contain ordinary layout plus XTL expressions such as `{{ [Customer] }}`.</p>
             </article>
-            <article class="step" data-step="render" tabindex="0">
-              <span class="step-index">03</span>
+            <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="render" tabindex="0">
+              <span class="step-index row-span-2 mt-1">03</span>
               <h3>Rendering preserves Excel</h3>
               <p>The result workbook keeps the sheet structure, number formats, styles, and merged cells.</p>
             </article>
-            <article class="step" data-step="conformance" tabindex="0">
-              <span class="step-index">04</span>
-              <h3>Behavior is testable</h3>
-              <p>Stage 1 checks cell values. Stage 2 compares canonical OOXML for formatting and structure.</p>
+            <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="conformance" tabindex="0">
+              <span class="step-index row-span-2 mt-1">04</span>
+              <h3>The contract is testable</h3>
+              <p>Shared fixtures make workbook behavior visible, so implementations can agree on the same edge cases.</p>
             </article>
           </div>
 
-          <div class="preview-column">
+          <div class="preview-column lg:sticky lg:top-24">
             <div class="preview-caption">
               <span id="previewKind">data.xlsx</span>
               <strong id="previewTitle">A workbook supplies source rows.</strong>
@@ -153,10 +156,10 @@
       </section>
 
       <section id="standard" class="text-section">
-        <div class="text-grid">
+        <div class="text-grid !grid-cols-[minmax(240px,0.72fr)_minmax(0,1fr)] !gap-10 max-lg:!grid-cols-1">
           <div>
             <p class="kicker">Why a standard?</p>
-            <h2>Excel automation should not be defined by one implementation.</h2>
+            <h2 class="text-[clamp(30px,3.6vw,50px)] leading-[1.14]">Excel automation should not be defined by one implementation.</h2>
           </div>
           <div class="prose">
             <p>
@@ -175,39 +178,41 @@
       </section>
 
       <section id="conformance" class="conformance-section" aria-labelledby="conformance-title">
-        <div class="section-intro">
-          <p class="kicker">Conformance</p>
-          <h2 id="conformance-title">Formatting is part of the result.</h2>
+        <div class="section-intro max-w-3xl">
+          <p class="kicker">Reliability</p>
+          <h2 id="conformance-title" class="text-[clamp(32px,4vw,54px)] leading-[1.12]">The output should still feel like Excel.</h2>
           <p>
-            A value-only comparison is not enough for Excel. xl3 separates the
-            bootstrap cell-value stage from canonical OOXML comparison.
+            xl3 is designed for reports where layout, formatting, and workbook
+            structure matter just as much as substituted values. The public
+            conformance fixtures are the proof behind that promise, not the
+            first thing you need to learn.
           </p>
         </div>
-        <div class="stage-grid">
+        <div class="stage-grid !gap-4 max-lg:!grid-cols-1">
           <article>
-            <h3>Stage 1</h3>
-            <p>Compares worksheet names and observable cell values. Useful for language semantics.</p>
-            <code>npm run conformance</code>
+            <h3>Preserve the workbook</h3>
+            <p>Templates can keep sheet structure, styles, number formats, and merged cells while values are rendered from data.</p>
+            <code>styles · formats · merges</code>
           </article>
           <article>
-            <h3>Stage 2</h3>
-            <p>Compares canonical workbook packages, including styles, number formats, merges, and structure.</p>
-            <code>xl3-conformance --comparison-stage=2</code>
+            <h3>Make edge cases explicit</h3>
+            <p>Rounding, date handling, filenames, formulas, and formatting behavior are written down instead of hidden in one library.</p>
+            <code>spec + fixtures</code>
           </article>
           <article>
-            <h3>Current corpus</h3>
-            <p>The TypeScript reference implementation currently passes the XTL 0.1 fixture corpus.</p>
-            <code>27 / 27 fixtures</code>
+            <h3>Keep implementations aligned</h3>
+            <p>The TypeScript package is a reference implementation, and other implementations can be checked against the same corpus.</p>
+            <code>XTL 0.1 draft</code>
           </article>
         </div>
       </section>
 
       <section id="use" class="use-section" aria-labelledby="use-title">
-        <div class="section-intro">
+        <div class="section-intro max-w-3xl">
           <p class="kicker">Use it</p>
-          <h2 id="use-title">Small API, explicit contract.</h2>
+          <h2 id="use-title" class="text-[clamp(32px,4vw,54px)] leading-[1.12]">Small API, explicit contract.</h2>
         </div>
-        <div class="code-pair">
+        <div class="code-pair !grid-cols-[minmax(220px,0.62fr)_minmax(0,1fr)] max-lg:!grid-cols-1">
           <figure class="code-card">
             <figcaption class="code-card-head">
               <span class="window-dots" aria-hidden="true"><span></span><span></span><span></span></span>

@@ -13,8 +13,8 @@ const copy = {
     templateNote: 'XTL expressions live inside ordinary Excel cells.',
     renderTitle: 'The rendered result is still Excel.',
     renderNote: 'Values change, while workbook structure and formatting remain part of the contract.',
-    conformanceTitle: 'The behavior is checked by fixtures.',
-    conformanceNote: 'Stage 2 compares canonical OOXML so style and structure regressions are visible.',
+    conformanceTitle: 'The contract is backed by fixtures.',
+    conformanceNote: 'The same workbook cases can be reused by implementations in any language.',
   },
   ko: {
     dataTitle: 'workbook이 원본 row를 공급합니다.',
@@ -23,8 +23,8 @@ const copy = {
     templateNote: 'XTL 표현식은 평범한 Excel 셀 안에 그대로 들어갑니다.',
     renderTitle: '렌더링 결과 역시 Excel입니다.',
     renderNote: '값은 바뀌지만 workbook 구조와 서식은 계약의 일부로 남습니다.',
-    conformanceTitle: '동작은 fixture로 검증합니다.',
-    conformanceNote: 'Stage 2는 canonical OOXML을 비교해 스타일과 구조 회귀까지 잡아냅니다.',
+    conformanceTitle: '계약은 fixture로 뒷받침됩니다.',
+    conformanceNote: '같은 workbook 사례를 여러 언어의 구현에서 함께 재사용할 수 있습니다.',
   },
 };
 
@@ -93,18 +93,18 @@ const examples = {
     merges: [{ row: 2, col: 0, span: 3 }],
   },
   conformance: {
-    kind: 'conformance report',
+    kind: 'fixture corpus',
     title: t.conformanceTitle,
     note: t.conformanceNote,
-    workbookTitle: 'Stage 2',
-    workbookSubtitle: isKorean ? 'canonical OOXML comparison' : 'canonical OOXML comparison',
-    formula: '27 / 27 fixtures passed',
+    workbookTitle: 'XTL fixtures',
+    workbookSubtitle: isKorean ? '공유 workbook 동작 사례' : 'shared workbook behavior cases',
+    formula: '27 fixtures',
     sheetName: 'Report',
     rows: [
-      ['Fixture', 'Stage', 'Result'],
-      ['024 merge preservation', '2', 'PASS'],
-      ['025 style numFmt', '2', 'PASS'],
-      ['027 cross-writer canonicalization', '2', 'PASS'],
+      ['Fixture', 'Covers', 'Result'],
+      ['024 merge preservation', 'merged cells', 'PASS'],
+      ['025 style numFmt', 'formatting', 'PASS'],
+      ['027 cross-writer canonicalization', 'workbook structure', 'PASS'],
     ],
     classes: [
       ['header-cell', 'header-cell', 'header-cell'],
