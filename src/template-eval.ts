@@ -1,4 +1,4 @@
-import { functions } from './functions.js';
+import { functions, canonicalString } from './functions.js';
 
 /**
  * Evaluate a normalized template expression against a data context.
@@ -77,9 +77,11 @@ export function evalCell(
   }
 
   // Mixed: text {{ expr }} text {{ expr2 }} ...
+  // ADR-0009: each substituted value uses canonical string form for
+  // cross-impl-stable rendering of Booleans, numbers, and empty values.
   return cellTemplate.replace(/\{\{\s*(.+?)\s*\}\}/g, (_, expr) => {
     const result = evalExpression(expr.trim(), ctx);
-    return String(result ?? '');
+    return canonicalString(result);
   });
 }
 

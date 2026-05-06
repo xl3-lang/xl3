@@ -1,4 +1,5 @@
 import type { Row, GroupKey, SheetGroup, FileGroup, SheetTemplate } from './types.js';
+import { canonicalString } from './functions.js';
 export type { FileGroup };
 
 export interface GroupedData {
@@ -70,7 +71,10 @@ function extractKey(row: Row, keys: string[]): GroupKey {
   if (keys.length === 0) return { values: {} };
   const values: Record<string, string> = {};
   for (const k of keys) {
-    values[k] = String(row[k] ?? '');
+    // ADR-0009: group keys use canonical string form so Boolean and
+    // numeric columns produce stable, cross-impl group identifiers
+    // (Booleans uppercase, integers without decimal point).
+    values[k] = canonicalString(row[k]);
   }
   return { values };
 }

@@ -11,6 +11,7 @@ import type {
 import { normalizeTemplate } from './normalizer.js';
 import { evalCell } from './template-eval.js';
 import { applyDirectives } from './data-transform.js';
+import { canonicalString } from './functions.js';
 import type { FileGroup } from './grouper.js';
 import { ExcelJsWorkbookDocument, sanitizeFilename, sanitizeSheetName, type WorkbookDocument } from './excel-document.js';
 
@@ -420,7 +421,9 @@ export class Renderer {
   private renderString(tmpl: string, data: Record<string, string>): string {
     const normalized = normalizeTemplate(tmpl, this.columns);
     const ctx: Record<string, unknown> = { ...this.parsed.configVars, ...data };
-    return String(evalCell(normalized, ctx) ?? '');
+    // ADR-0009: stringify with canonical form so Booleans, numbers, and
+    // empty values render consistently across call sites.
+    return canonicalString(evalCell(normalized, ctx));
   }
 
   private renderFilenameDetail(key: GroupKey, fileGroup: FileGroup): { filename: string; warnings: string[] } {
@@ -440,7 +443,8 @@ export class Renderer {
       const firstRow = fileGroup.sheetGroups[0]?.rows[0];
       if (firstRow) {
         for (const [k, v] of Object.entries(firstRow)) {
-          data[k] = String(v ?? '');
+          // ADR-0009: filename-pattern context uses canonical string form.
+          data[k] = canonicalString(v);
         }
       }
     }
@@ -471,8 +475,10 @@ function renderCellValue(
   const numFmt = typeof style?.numFmt === 'string' ? style.numFmt : undefined;
   const singleExpression = isSingleExpression(normalizedTemplate);
 
-  if (!singleExpression) return String(value ?? '') as ExcelJS.CellValue;
-  if (numFmt === '@') return String(value ?? '') as ExcelJS.CellValue;
+  // ADR-0009: mixed-text cells and `@` text-format single-expression
+  // cells stringify via canonical form (Booleans uppercase, etc.).
+  if (!singleExpression) return canonicalString(value) as ExcelJS.CellValue;
+  if (numFmt === '@') return canonicalString(value) as ExcelJS.CellValue;
   if (numFmt && isDateNumFmt(numFmt)) return coerceDateValue(value, numFmt);
   if (numFmt && isNumericNumFmt(numFmt)) return coerceNumberValue(value, numFmt);
   return preserveValue(value);
