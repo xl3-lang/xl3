@@ -26,8 +26,8 @@ async function workbookBuffer(): Promise<ArrayBuffer> {
 }
 
 describe('readSource', () => {
-  it('uses source_header_range as the header row and column window', async () => {
-    const source = await readSource(await workbookBuffer(), 'Raw', 1, undefined, 'B3:D3');
+  it('uses source_table as the table start and column window', async () => {
+    const source = await readSource(await workbookBuffer(), 'Raw', { sourceTable: 'B3:D' });
 
     expect(source.headers).toEqual(['Customer', 'Amount', 'Region']);
     expect(source.rows).toEqual([
@@ -36,13 +36,47 @@ describe('readSource', () => {
     ]);
   });
 
-  it('requires source_header_range to be a single-row range', async () => {
-    await expect(readSource(await workbookBuffer(), 'Raw', 1, undefined, 'B3:D4'))
-      .rejects.toThrow('source_header_range must be a single-row Excel range');
+  it('accepts a source_table row shorthand', async () => {
+    const source = await readSource(await workbookBuffer(), 'Raw', { sourceTable: '3' });
+
+    expect(source.headers).toEqual(['Customer', 'Amount', 'Region', 'ignored']);
+    expect(source.rows[0]).toEqual({
+      Customer: 'Acme',
+      Amount: 1200,
+      Region: 'Seoul',
+      ignored: 'outside',
+    });
   });
 
-  it('rejects source_range and source_header_range together', async () => {
-    await expect(readSource(await workbookBuffer(), 'Raw', 1, 'B3:D5', 'B3:D3'))
-      .rejects.toThrow('source_range and source_header_range cannot both be set');
+  it('uses a finite source_table range when an end row is present', async () => {
+    const source = await readSource(await workbookBuffer(), 'Raw', { sourceTable: 'B3:D4' });
+
+    expect(source.rows).toEqual([
+      { Customer: 'Acme', Amount: 1200, Region: 'Seoul' },
+    ]);
   });
+
+  it('treats an explicit source_table end row as a hard boundary', async () => {
+    const source = await readSource(await workbookBuffer(), 'Raw', { sourceTable: 'B3:D3' });
+
+    expect(source.headers).toEqual(['Customer', 'Amount', 'Region']);
+    expect(source.rows).toEqual([]);
+  });
+
+  it('rejects empty headers inside the source_table span', async () => {
+    await expect(readSource(await workbookBuffer(), 'Raw', { sourceTable: 'B3:F' }))
+      .rejects.toThrow('source_table header cell F3 is empty');
+  });
+
+  it('rejects duplicate source_table headers', async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Raw');
+    sheet.getCell('A1').value = 'Customer';
+    sheet.getCell('B1').value = 'Customer';
+    const data = await workbook.xlsx.writeBuffer();
+
+    await expect(readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'A1:B' }))
+      .rejects.toThrow('source_table has duplicate header "Customer"');
+  });
+
 });

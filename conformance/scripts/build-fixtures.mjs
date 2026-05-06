@@ -87,7 +87,7 @@ async function build001() {
     addConfig(wb, [
       ['name', 'bracket-substitution'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('Report');
@@ -137,7 +137,7 @@ async function build002() {
     addConfig(wb, [
       ['name', 'if-function'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('Report');
@@ -201,7 +201,7 @@ async function build003() {
     addConfig(wb, [
       ['name', 'list-sheet-filter'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('Report');
@@ -268,7 +268,7 @@ async function build004() {
     addConfig(wb, [
       ['name', 'repeat-right-default'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('Report');
@@ -319,7 +319,7 @@ async function build005() {
     addConfig(wb, [
       ['name', 'round-half-away-from-zero'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -379,7 +379,7 @@ async function build006() {
     addConfig(wb, [
       ['name', 'filename-forbidden-chars'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', '{{ [Department] }}_report.xlsx'],
     ]);
     const sh = wb.addWorksheet('Report');
@@ -428,7 +428,7 @@ async function build007() {
     addConfig(wb, [
       ['name', 'filename-reserved-name'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', '{{ [Customer] }}.xlsx'],
     ]);
     const sh = wb.addWorksheet('Report');
@@ -471,7 +471,7 @@ async function build008() {
     addConfig(wb, [
       ['name', 'numfmt-numeric-string-coercion'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -516,7 +516,7 @@ async function build009() {
     addConfig(wb, [
       ['name', 'numfmt-date-string-coercion'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -561,7 +561,7 @@ async function build010() {
     addConfig(wb, [
       ['name', 'numfmt-text-format-coercion'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -607,7 +607,7 @@ async function build011() {
     addConfig(wb, [
       ['name', 'text-date-format'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -652,7 +652,7 @@ async function build012() {
     addConfig(wb, [
       ['name', 'text-number-format'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -704,7 +704,7 @@ async function build013() {
     addConfig(wb, [
       ['name', 'rich-text-template-expression'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -754,7 +754,7 @@ async function build014() {
     addConfig(wb, [
       ['name', 'source-formula-cached-result'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -802,7 +802,7 @@ async function build015() {
     addConfig(wb, [
       ['name', 'source-sheet-prefix-first-match'],
       ['source_sheet', 'Data_*'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -849,7 +849,7 @@ async function build016() {
     addConfig(wb, [
       ['name', 'text-number-negative-rounding'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -899,7 +899,7 @@ async function build017() {
     addConfig(wb, [
       ['name', 'source-sheet-prefix-no-match-error'],
       ['source_sheet', 'Missing_*'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -934,7 +934,7 @@ async function build018() {
     addConfig(wb, [
       ['name', 'source-formula-missing-cached-result-error'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -973,7 +973,7 @@ async function build019() {
     addConfig(wb, [
       ['name', 'filename-empty-basename-error'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', '{{ [Name] }}.xlsx'],
     ]);
     const sh = wb.addWorksheet('Report');
@@ -1010,7 +1010,7 @@ async function build020() {
     addConfig(wb, [
       ['name', 'filename-length-overflow-error'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', '{{ [Name] }}.xlsx'],
     ]);
     const sh = wb.addWorksheet('Report');
@@ -1047,7 +1047,7 @@ async function build021() {
     addConfig(wb, [
       ['name', 'numfmt-number-coercion-error'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -1083,7 +1083,7 @@ async function build022() {
     addConfig(wb, [
       ['name', 'numfmt-date-coercion-error'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -1119,7 +1119,7 @@ async function build023() {
     addConfig(wb, [
       ['name', 'today-utc-dynamic'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -1155,7 +1155,7 @@ async function build024() {
     addConfig(wb, [
       ['name', 'stage2-merge-preservation'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -1205,7 +1205,7 @@ async function build025() {
     addConfig(wb, [
       ['name', 'stage2-style-numfmt-preservation'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -1265,7 +1265,7 @@ async function build026() {
     addConfig(wb, [
       ['name', 'stage2-splice-merge-style-preservation'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');
@@ -1351,7 +1351,7 @@ async function build027() {
     addConfig(wb, [
       ['name', 'stage2-cross-writer-canonicalization'],
       ['source_sheet', 'Data'],
-      ['header_row', '1'],
+      ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('R');

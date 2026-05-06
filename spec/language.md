@@ -22,7 +22,7 @@ Source columns are referenced with bracket syntax:
 {{ [Units Per Case] }}
 ```
 
-The text inside `[` and `]` is the exact source header name after trimming surrounding whitespace. Column names MAY contain spaces, letters, numbers, and punctuation except `]` and line breaks.
+The text inside `[` and `]` is the exact source column name after trimming surrounding whitespace. Column names MAY contain spaces, letters, numbers, and punctuation except `]` and line breaks.
 
 Bare names such as `{{ Customer }}` are not source column references in cells. Bare names are reserved for sheet and file group keys.
 

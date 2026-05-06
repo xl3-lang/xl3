@@ -4,9 +4,7 @@ export interface TemplateMeta {
   name: string;
   description: string;
   source_sheet: string;
-  header_row: number;
-  source_range?: string;
-  source_header_range?: string;
+  source_table?: string;
   output_file_pattern: string;
   match_pattern: string;
 }

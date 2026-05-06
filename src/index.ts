@@ -45,9 +45,9 @@ async function prepareConversion(templateBuffer: ArrayBuffer, sourceBuffer: Arra
   const source = await readSource(
     sourceBuffer,
     parsed.meta.source_sheet,
-    parsed.meta.header_row,
-    parsed.meta.source_range,
-    parsed.meta.source_header_range,
+    {
+      sourceTable: parsed.meta.source_table,
+    },
   );
 
   return prepareConversionFromSourceData(parsed, source);

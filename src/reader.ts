@@ -7,12 +7,14 @@ export interface SourceData {
   rows: Row[];
 }
 
+export interface SourceReadOptions {
+  sourceTable?: string;
+}
+
 export async function readSource(
   buffer: ArrayBuffer,
   sheetPattern: string,
-  headerRow: number,
-  sourceRange?: string,
-  sourceHeaderRange?: string,
+  options: SourceReadOptions = {},
 ): Promise<SourceData> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer);
@@ -24,38 +26,23 @@ export async function readSource(
     );
   }
 
-  if (sourceRange && sourceHeaderRange) {
-    throw new Error('source_range and source_header_range cannot both be set');
-  }
-
-  const range = sourceRange ? parseSourceRange(sourceRange) : undefined;
-  const headerRange = sourceHeaderRange ? parseSourceHeaderRange(sourceHeaderRange) : undefined;
-  const effectiveHeaderRow = range?.top ?? headerRange?.top ?? headerRow;
-  const startCol = range?.left ?? headerRange?.left ?? 1;
-  const endCol = range?.right ?? headerRange?.right;
+  const table = resolveSourceTable(sheet, options);
 
   // Read headers
-  const headerRowData = sheet.getRow(effectiveHeaderRow);
-  const headers: string[] = [];
-  const lastHeaderCol = endCol ?? headerRowData.cellCount;
-  for (let colNumber = startCol; colNumber <= lastHeaderCol; colNumber++) {
-    headers.push(String(headerRowData.getCell(colNumber).value ?? '').trim());
-  }
+  const headers = readHeaders(sheet, table);
 
   // Read data rows
   const rows: Row[] = [];
-  const totalRows = range?.bottom ?? sheet.rowCount;
+  const totalRows = table.bottomRow ?? sheet.rowCount;
 
-  for (let r = effectiveHeaderRow + 1; r <= totalRows; r++) {
+  for (let r = table.headerRow + 1; r <= totalRows; r++) {
     const row = sheet.getRow(r);
     const record: Row = {};
     let allEmpty = true;
 
     for (let c = 0; c < headers.length; c++) {
       const header = headers[c];
-      if (!header) continue;
-
-      const cell = row.getCell(startCol + c);
+      const cell = row.getCell(table.leftCol + c);
       const val = parseCellValue(cell);
       if (val !== '' && val !== null && val !== undefined) allEmpty = false;
       record[header] = val;
@@ -67,52 +54,106 @@ export async function readSource(
 
   return {
     sheetName: sheet.name,
-    headers: headers.filter(Boolean),
+    headers,
     rows,
   };
 }
 
-interface SourceRange {
-  top: number;
-  left: number;
-  bottom: number;
-  right: number;
+interface SourceTable {
+  headerRow: number;
+  leftCol: number;
+  rightCol: number;
+  bottomRow?: number;
 }
 
-function parseSourceRange(range: string): SourceRange {
-  const parts = range.trim().split(':');
-  if (parts.length !== 2) {
-    throw new Error(`source_range must be an Excel range such as "B5:H200": ${range}`);
+function resolveSourceTable(sheet: ExcelJS.Worksheet, options: SourceReadOptions): SourceTable {
+  if (options.sourceTable) return parseSourceTable(sheet, options.sourceTable, 'source_table');
+  return inferTableFromHeaderRow(sheet, 1);
+}
+
+function parseSourceTable(
+  sheet: ExcelJS.Worksheet,
+  value: string,
+  keyName: string,
+): SourceTable {
+  const raw = value.trim();
+  const rowOnly = raw.match(/^\d+$/);
+  if (rowOnly) return inferTableFromHeaderRow(sheet, Number(rowOnly[0]));
+
+  const range = raw.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)?$/i);
+  if (!range) {
+    throw new Error(`${keyName} must be a row number or a table range such as "1", "A1:D", or "A1:D200": ${value}`);
   }
-  const start = decodeCellRef(parts[0]);
-  const end = decodeCellRef(parts[1]);
-  if (!start || !end || start.row > end.row || start.col > end.col) {
-    throw new Error(`source_range is invalid: ${range}`);
+
+  const leftCol = decodeColumn(range[1]!);
+  const headerRow = Number(range[2]);
+  const rightCol = decodeColumn(range[3]!);
+  const bottomRow = range[4] ? Number(range[4]) : undefined;
+  if (leftCol > rightCol) throw new Error(`${keyName} has an invalid column range: ${value}`);
+  if (bottomRow !== undefined && bottomRow < headerRow) {
+    throw new Error(`${keyName} bottom row cannot be above the first selected row: ${value}`);
+  }
+  return { headerRow, leftCol, rightCol, bottomRow };
+}
+
+function inferTableFromHeaderRow(sheet: ExcelJS.Worksheet, headerRow: number): SourceTable {
+  const row = sheet.getRow(headerRow);
+  const headerCols: number[] = [];
+  row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+    if (headerText(cell)) headerCols.push(colNumber);
+  });
+  if (headerCols.length === 0) {
+    throw new Error(`source_table row ${headerRow} has no headers`);
   }
   return {
-    top: start.row,
-    left: start.col,
-    bottom: end.row,
-    right: end.col,
+    headerRow,
+    leftCol: Math.min(...headerCols),
+    rightCol: Math.max(...headerCols),
   };
 }
 
-function parseSourceHeaderRange(range: string): SourceRange {
-  const parsed = parseSourceRange(range);
-  if (parsed.top !== parsed.bottom) {
-    throw new Error(`source_header_range must be a single-row Excel range such as "A1:D1": ${range}`);
+function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): string[] {
+  const row = sheet.getRow(table.headerRow);
+  const headers: string[] = [];
+  const seen = new Set<string>();
+
+  for (let colNumber = table.leftCol; colNumber <= table.rightCol; colNumber++) {
+    const cell = row.getCell(colNumber);
+    const header = headerText(cell);
+    if (!header) {
+      throw new Error(`source_table header cell ${cell.address} is empty`);
+    }
+    if (seen.has(header)) {
+      throw new Error(`source_table has duplicate header "${header}"`);
+    }
+    seen.add(header);
+    headers.push(header);
   }
-  return parsed;
+
+  return headers;
 }
 
-function decodeCellRef(ref: string): { row: number; col: number } | null {
-  const m = ref.trim().toUpperCase().match(/^([A-Z]+)(\d+)$/);
-  if (!m) return null;
+function headerText(cell: ExcelJS.Cell): string {
+  const value = cell.value;
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'object' && 'richText' in value) {
+    return (value as { richText: { text: string }[] }).richText
+      .map((r) => r.text)
+      .join('')
+      .trim();
+  }
+  if (typeof value === 'object' && 'result' in value) {
+    return String((value as { result: unknown }).result ?? '').trim();
+  }
+  return String(value).trim();
+}
+
+function decodeColumn(ref: string): number {
   let col = 0;
-  for (const ch of m[1]!) {
+  for (const ch of ref.trim().toUpperCase()) {
     col = col * 26 + (ch.charCodeAt(0) - 64);
   }
-  return { row: Number(m[2]), col };
+  return col;
 }
 
 function resolveSheet(

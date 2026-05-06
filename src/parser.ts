@@ -4,6 +4,11 @@ import { isDataExpression, isAggregateExpression, extractColumnRefs } from './no
 import { isDirectiveExpression, parseDirective } from './directive-parser.js';
 
 const CONFIG_SHEET = '_config';
+const REMOVED_SOURCE_CONFIG_KEYS = new Set([
+  'header_row',
+  'source_range',
+  'source_header_range',
+]);
 const VAR_PATTERN = /\{\{\s*(.+?)\s*\}\}/g;
 
 /** Flatten any ExcelJS cell value to a plain string. Rich text cells (mixed
@@ -253,7 +258,7 @@ export interface ConfigResult {
 
 export function readConfigSheet(workbook: ExcelJS.Workbook): ConfigResult {
   const meta: TemplateMeta = {
-    name: '', description: '', source_sheet: '', header_row: 1,
+    name: '', description: '', source_sheet: '',
     output_file_pattern: '', match_pattern: '',
   };
   const configVars: Record<string, string> = {};
@@ -271,11 +276,13 @@ export function readConfigSheet(workbook: ExcelJS.Workbook): ConfigResult {
         case 'name': meta.name = val; break;
         case 'description': meta.description = val; break;
         case 'source_sheet': meta.source_sheet = val; break;
-        case 'source_range': meta.source_range = val; break;
-        case 'source_header_range': meta.source_header_range = val; break;
-        case 'header_row': { const n = parseInt(val); if (!isNaN(n)) meta.header_row = n; break; }
+        case 'source_table': meta.source_table = val; break;
         case 'output_file_pattern': meta.output_file_pattern = val; break;
         case 'match_pattern': meta.match_pattern = val; break;
+        default:
+          if (REMOVED_SOURCE_CONFIG_KEYS.has(key)) {
+            throw new Error(`Config key "${key}" was removed. Use "source_table" instead.`);
+          }
       }
     }
   });
@@ -293,9 +300,7 @@ export function writeConfigSheet(workbook: ExcelJS.Workbook, meta: TemplateMeta)
     ['name', meta.name],
     ['description', meta.description],
     ['source_sheet', meta.source_sheet],
-    ['source_range', meta.source_range ?? ''],
-    ['source_header_range', meta.source_header_range ?? ''],
-    ['header_row', String(meta.header_row)],
+    ['source_table', meta.source_table ?? ''],
     ['output_file_pattern', meta.output_file_pattern],
     ['match_pattern', meta.match_pattern],
   ];

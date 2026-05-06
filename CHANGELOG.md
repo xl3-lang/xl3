@@ -51,7 +51,8 @@ Initial public draft.
 - Source column references use Excel-like bracket syntax: `{{ [Customer] }}`.
 - Excel-style functions: `IF`, `IFEMPTY`, `SUM`, `COUNT`, `AVERAGE`, `MIN`,
   `MAX`, `ROUND`, `ABS`, `TEXT`, `ROW`, and `TODAY`.
-- `_config.source_range` allows range-based source table reads such as `B5:H200`.
+- `_config.source_table` defines source table reads such as `1`, `A1:D`, or
+  `B5:H200`.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 

@@ -24,50 +24,44 @@ A hidden sheet named `_config` MAY provide metadata and runtime settings.
 | `name` | Template display name | `Order summary` |
 | `description` | Free text | `Monthly order summary` |
 | `source_sheet` | Source sheet name, or prefix pattern ending with `*` | `Orders`, `Data_*` |
-| `header_row` | 1-based source header row | `1` |
-| `source_range` | Optional Excel range. The first row is headers; remaining rows are data. | `B5:H200` |
-| `source_header_range` | Optional single-row Excel range. The cells are headers; rows below are data. | `A1:D1` |
+| `source_table` | Source table selector. The first selected row contains column names; rows below are data. | `1`, `A1:D`, `B5:H200` |
 | `output_file_pattern` | Output filename template | `{{ Customer }}_report.xlsx` |
 | `match_pattern` | Batch matching pattern | `Orders*` |
 | `_<name>` | User variable | `_title = Order Summary` |
 
-When `source_range` is present, it defines both the header row and source columns. In that case, `header_row` is ignored for source reading.
-
-`source_header_range` is useful when the source data has a fixed header span but
-an open-ended number of data rows. It defines the header row and source columns;
-rows below the header range are data rows through the end of the selected
-worksheet. `source_range` and `source_header_range` MUST NOT both be set.
+`source_table` is the only source table selector.
 
 ## Source Data Model
 
 The source data model is an ordered list of rows. Each row is a mapping from header name to cell value.
 
-By default:
-
-1. `source_sheet` selects the worksheet. If omitted, the first worksheet is used.
-2. `header_row` selects the header row.
-3. Rows below `header_row` are data rows.
-4. Empty data rows are skipped.
-
+`source_sheet` selects the worksheet. If omitted, the first worksheet is used.
 If `source_sheet` ends with `*`, it is a prefix pattern. The implementation MUST
 select the first worksheet, in workbook order, whose name starts with the prefix
 before `*`. If no worksheet matches, this is an error. Exact sheet-name matches
 take precedence over prefix matching.
 
-When `source_range` is set:
+`source_table` is interpreted within the selected worksheet:
 
-1. The range start row is the header row.
-2. The range start/end columns define the only source columns.
-3. Rows below the range start row, through the range end row, are data rows.
-4. Empty data rows inside the range are skipped.
+| Form | Meaning |
+|---|---|
+| `N` | Row `N` contains source column names. The source columns are the non-empty cells from the first non-empty cell through the last non-empty cell. Rows below `N` are data rows through the worksheet's used row end. |
+| `A1:D` | Cells `A1:D1` contain source column names. Rows below are data rows through the worksheet's used row end. |
+| `A1:D200` | Cells `A1:D1` contain source column names. Rows `2:200` in columns `A:D` are data rows. |
 
-When `source_header_range` is set:
+If `source_table` is omitted, it defaults to `1`.
 
-1. The range MUST be a single-row Excel range.
-2. The range row is the header row.
-3. The range start/end columns define the only source columns.
-4. Rows below the header row, through the end of the worksheet, are data rows.
+Column name rules:
+
+1. Source column name cell values are converted to strings and trimmed.
+2. Source column names are case-sensitive.
+3. Empty column names inside the selected source table are errors.
+4. Duplicate source column names are errors.
 5. Empty data rows are skipped.
+
+For row-number shorthand (`source_table = N`), gaps between the first and last
+non-empty column name cell are therefore errors after the source column span is
+inferred.
 
 ## List Sheets
 
@@ -202,9 +196,8 @@ The following conditions are errors:
 - Referencing a source column that does not exist.
 - Referencing a list sheet that does not exist.
 - Using an invalid directive.
-- Using an invalid `source_range`.
-- Using an invalid `source_header_range`.
-- Setting both `source_range` and `source_header_range`.
+- Using an invalid `source_table`.
+- Using empty or duplicate source column names.
 - Failing to coerce a single-expression cell value to its template cell format.
 - Producing an invalid output filename after sanitization rules are applied.
 - Calling `ROW()` outside a repeat block.

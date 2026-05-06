@@ -15,7 +15,7 @@ xl3 is a TypeScript library for turning recurring Excel transformation work into
 template workbooks.
 
 Developers define the reusable engine in code. The workbook-specific rules,
-source header mapping, layout, and output shape live inside `template.xlsx`.
+source table mapping, layout, and output shape live inside `template.xlsx`.
 Non-developers can then use a simple file flow: upload raw Excel, choose the
 approved template, download the finished workbook.
 
@@ -43,7 +43,7 @@ A template can contain ordinary Excel content, `_config`, and xl3 expressions:
 | `_config` key | Value |
 |---|---|
 | `source_sheet` | `Raw` |
-| `source_header_range` | `A1:D1` |
+| `source_table` | `1` |
 | `output_file_pattern` | `customer-renewal-report.xlsx` |
 
 | Cell | Template value |
@@ -98,14 +98,15 @@ workflow in the workbook.
 
 ## How it compares
 
-|  | xl3 | xltpl (Python) | JXLS (Java) | Plumsail | VBA macros | LLMs |
-|---|---|---|---|---|---|---|
-| Excel-as-template | ✅ | ✅ | ✅ (XML in cells) | ✅ | n/a | ❌ |
-| Browser-native | ✅ | ❌ | ❌ | ❌ | ❌ | partial |
-| Open spec | ✅ (XTL, CC-BY-4.0) | ❌ | ❌ | ❌ closed | n/a | ❌ |
-| Deterministic, reproducible | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Non-developer authoring | ✅ | ❌ | ❌ | ✅ | ⚠️ | ✅ |
-| Self-hostable / no vendor lock | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ |
+| Approach | Best at | Tradeoff |
+|---|---|---|
+| **xl3** | Building file-based Excel transformation engines where operators upload raw `.xlsx` files and download finished workbooks. Workflow rules stay in `template.xlsx`. | Alpha. The XTL surface is intentionally small and still evolving. |
+| Python/VBA scripts | Fast one-off automation close to existing spreadsheets. | Business rules tend to live in code or one maintainer's memory, which makes handoff and review harder. |
+| Power Query / Office Scripts / Power Automate | Microsoft 365 workflows, data shaping, and action automation inside the Excel ecosystem. | Strong platform fit, but workflows can become tenant/account/environment-specific rather than portable workbook artifacts. |
+| Spreadsheet SDKs such as SheetJS, ExcelJS, Aspose.Cells | Low-level or full-featured programmatic workbook generation. | Developers usually encode report-specific rules directly in application code. |
+| Template/report engines such as JXLS or xltpl | Server-side report generation from spreadsheet-like templates. | Useful, but often language/runtime-specific; operator-facing browser flows and workbook-level handoff are not the main product shape. |
+| Document-generation SaaS such as Plumsail, Formstack, Conga | Managed document workflows, integrations, approvals, and delivery. | Rules live in a vendor service, not primarily in a portable workbook template you can self-host. |
+| LLM-based spreadsheet generation | Ad hoc exploration and drafting. | Not a deterministic transformation contract for recurring operational work. |
 
 ## Install
 
@@ -131,16 +132,18 @@ You can try the browser flow on [xl3.io](https://xl3.io): run the attached
 sample files as-is, download the raw/template workbooks, or replace either file
 with your own.
 
-Templates can choose the source header cells in the hidden `_config` sheet:
+Templates choose the source table in the hidden `_config` sheet:
 
 | Key | Example | Meaning |
 |---|---|---|
 | `source_sheet` | `Raw` | source worksheet name, or prefix pattern ending with `*` |
-| `source_header_range` | `A1:D1` | header cells; rows below are read as data |
-| `source_range` | `A1:D200` | bounded source range; first row is headers |
+| `source_table` | `1` | row 1 contains column names; rows below are data |
+| `source_table` | `A1:D` | A1-D1 contain column names; rows below are data |
+| `source_table` | `A1:D200` | A1-D1 contain column names; A2-D200 are data |
 
-Use `source_header_range` when the header span is known but the data row count is
-open-ended. Do not set it together with `source_range`.
+Use `source_table = N` for the common case where row `N` contains the raw
+column names. Use a range form when the table starts in a later column or needs
+a bounded end row.
 
 ## Spec
 

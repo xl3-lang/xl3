@@ -139,7 +139,7 @@
           <h2 id="walkthrough-title" class="text-[clamp(32px,4vw,54px)] leading-[1.12]">Keep the engine in code, keep the workflow in the workbook.</h2>
           <p>
             Developers build the converter once. The recurring business rules,
-            source header mapping, layout, and output shape stay inside the
+            source table mapping, layout, and output shape stay inside the
             workbook template that teams can archive and hand over.
           </p>
         </div>
@@ -149,7 +149,7 @@
             <article class="step is-active !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="data" tabindex="0">
               <span class="step-index row-span-2 mt-1">01</span>
               <h3>Define the contract in Excel</h3>
-              <p>Use `_config`, `source_header_range`, and XTL expressions to describe how raw workbooks become reports.</p>
+              <p>Use `_config`, `source_table`, and XTL expressions to describe how raw workbooks become reports.</p>
             </article>
             <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="template" tabindex="0">
               <span class="step-index row-span-2 mt-1">02</span>
@@ -175,7 +175,7 @@
             </div>
             <div id="excelPreview" class="excel-window" aria-live="polite"></div>
             <div class="preview-notes" id="previewNotes">
-              Header row fields become XTL source columns.
+              source_table column names become XTL source columns.
             </div>
           </div>
         </div>
@@ -241,10 +241,9 @@
             <p class="kicker">Browser converter</p>
             <h3 class="!mb-3 text-2xl leading-tight">Upload raw data and a template, then download the finished workbook.</h3>
             <p class="mb-0 text-[15px] leading-7 text-[var(--muted)]">
-              To choose the raw workbook header cells, add
-              <code>source_header_range</code> such as <code>A1:D1</code> to the
-              template workbook's hidden <code>_config</code> sheet. Rows below
-              that range are read as data.
+              To choose the raw workbook table, add <code>source_table</code>
+              such as <code>1</code> or <code>A1:D</code> to the template
+              workbook's hidden <code>_config</code> sheet.
             </p>
           </div>
           <form id="converterForm" class="grid gap-3" aria-label="Browser workbook converter">
@@ -261,7 +260,7 @@
                 <span>Template Excel file</span>
                 <a href="./examples/sample-template.xlsx" download>Download sample</a>
               </span>
-              <span class="input-hint">Includes `_config.source_header_range = A1:D1`.</span>
+              <span class="input-hint">Includes `_config.source_table = 1`.</span>
               <input id="templateFile" class="rounded-md border border-[var(--line-strong)] bg-white px-3 py-2 text-sm font-normal" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
             </label>
             <button id="convertButton" class="button primary mt-1 w-full" type="submit">Run example and download</button>

@@ -17,7 +17,7 @@ const exampleTemplateUrl = `${exampleBaseUrl}sample-template.xlsx`;
 const copy = {
   en: {
     dataTitle: 'The template declares the source shape.',
-    dataNote: 'source_header_range tells the engine which raw cells are headers.',
+    dataNote: 'source_table tells the engine where the raw table starts and which columns belong to it.',
     templateTitle: 'Operators get a file-based workflow.',
     templateNote: 'The UI can stay simple: raw workbook in, template workbook in, result workbook out.',
     renderTitle: 'The output is a finished workbook.',
@@ -35,7 +35,7 @@ const copy = {
   },
   ko: {
     dataTitle: '템플릿이 raw 데이터의 모양을 선언합니다.',
-    dataNote: 'source_header_range가 어떤 raw 셀을 헤더로 읽을지 엔진에 알려줍니다.',
+    dataNote: 'source_table이 raw table의 시작 위치와 포함할 컬럼을 엔진에 알려줍니다.',
     templateTitle: '실무자는 파일 기반 흐름을 사용합니다.',
     templateNote: 'UI는 단순하게 유지할 수 있습니다. raw workbook과 template workbook을 넣고 결과를 받습니다.',
     renderTitle: '결과는 완성된 workbook입니다.',
@@ -62,12 +62,12 @@ const examples = {
     note: t.dataNote,
     workbookTitle: 'template.xlsx',
     workbookSubtitle: isKorean ? '업무 규칙이 들어 있는 workbook' : 'workbook with transformation rules',
-    formula: 'B2  source_header_range = A1:D1',
+    formula: 'B2  source_table = 1',
     sheetName: '_config',
     rows: [
       ['key', 'value', 'notes'],
       ['source_sheet', 'Raw', 'worksheet to read'],
-      ['source_header_range', 'A1:D1', 'headers and columns'],
+      ['source_table', '1', 'column names and data rows'],
     ],
     classes: [
       ['header-cell', 'header-cell', 'header-cell'],
