@@ -150,34 +150,34 @@
           <div class="steps" aria-label="xl3 model steps">
             <article class="step is-active !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="data" tabindex="0">
               <span class="step-index row-span-2 mt-1">01</span>
-              <h3>계약을 Excel 안에 정의합니다</h3>
-              <p>`_config`, `source_table`, XTL 표현식으로 원본 엑셀 파일이 보고서가 되는 규칙을 적습니다.</p>
+              <h3>변환 규칙을 엑셀 안에 적습니다</h3>
+              <p>`_config`와 `source_table`, XTL 표현식으로 원본 데이터를 보고서로 바꾸는 규칙을 엑셀 안에 적어 둡니다.</p>
             </article>
             <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="template" tabindex="0">
               <span class="step-index row-span-2 mt-1">02</span>
-              <h3>단순한 업로드 흐름으로 노출합니다</h3>
-              <p>비개발자는 raw Excel과 승인된 템플릿을 선택하고 변환기를 실행합니다.</p>
+              <h3>단순한 업로드 화면으로 공개합니다</h3>
+              <p>비개발자는 원본 Excel과 승인된 템플릿을 고르고 변환 버튼만 누르면 됩니다.</p>
             </article>
             <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="render" tabindex="0">
               <span class="step-index row-span-2 mt-1">03</span>
               <h3>완성된 엑셀 파일을 생성합니다</h3>
-              <p>값은 데이터에서 렌더링하고, 시트 구조와 숫자 형식, 스타일, 병합 셀은 유지합니다.</p>
+              <p>값은 원본 데이터로 채우고, 시트 구조와 숫자 형식, 스타일, 병합 셀은 그대로 둡니다.</p>
             </article>
             <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="conformance" tabindex="0">
               <span class="step-index row-span-2 mt-1">04</span>
               <h3>운영 규칙을 파일로 남깁니다</h3>
-              <p>템플릿은 반복되는 Excel 업무가 어떻게 동작하는지 담은 인수인계용 산출물이 됩니다.</p>
+              <p>템플릿에 반복 업무의 동작 방식이 그대로 담겨, 그 자체가 인수인계 가능한 파일이 됩니다.</p>
             </article>
           </div>
 
           <div class="preview-column lg:sticky lg:top-24">
             <div class="preview-caption">
               <span id="previewKind">data.xlsx</span>
-              <strong id="previewTitle">엑셀 파일이 원본 row를 공급합니다.</strong>
+              <strong id="previewTitle">템플릿이 원본 데이터의 모양을 지정합니다.</strong>
             </div>
             <div id="excelPreview" class="excel-window" aria-live="polite"></div>
             <div class="preview-notes" id="previewNotes">
-              source_table의 컬럼명이 XTL source column이 됩니다.
+              <code>source_table</code>의 컬럼명이 그대로 XTL의 컬럼 이름이 됩니다.
             </div>
           </div>
         </div>

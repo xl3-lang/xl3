@@ -468,19 +468,6 @@ h3 {
   background: var(--excel);
 }
 
-.excel-ribbon {
-  display: flex;
-  gap: 18px;
-  min-height: 38px;
-  align-items: center;
-  padding: 0 14px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-muted);
-  color: #59635e;
-  font-size: 12px;
-  font-weight: 680;
-}
-
 .formula-bar {
   display: grid;
   grid-template-columns: 70px 34px minmax(0, 1fr);
@@ -1116,7 +1103,6 @@ pre {
   }
 
   .excel-titlebar,
-  .excel-ribbon,
   .formula-bar,
   .sheet-tabs {
     min-width: 520px;

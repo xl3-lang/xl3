@@ -43,23 +43,23 @@ const copy = {
     previewSheetRows: (count) => `${count} row${count === 1 ? '' : 's'}`,
   },
   ko: {
-    dataTitle: '템플릿이 raw 데이터의 모양을 선언합니다.',
-    dataNote: 'source_table이 raw table의 시작 위치와 포함할 컬럼을 엔진에 알려줍니다.',
-    templateTitle: '실무자는 파일 기반 흐름을 사용합니다.',
-    templateNote: 'UI는 단순하게 유지할 수 있습니다. raw workbook과 template workbook을 넣고 결과를 받습니다.',
-    renderTitle: '결과는 완성된 workbook입니다.',
-    renderNote: '값은 바뀌지만 workbook 레이아웃, 스타일, 숫자 형식, 병합 셀은 유지됩니다.',
+    dataTitle: '템플릿이 원본 데이터의 모양을 지정합니다.',
+    dataNote: '`source_table`이 원본 테이블의 시작 위치와 포함할 컬럼을 엔진에 알려줍니다.',
+    templateTitle: '실무자는 파일을 올리고 결과를 받습니다.',
+    templateNote: 'UI는 단순하게 유지할 수 있습니다. 원본 엑셀 파일과 엑셀 템플릿을 넣고 결과를 받습니다.',
+    renderTitle: '결과는 완성된 엑셀 파일입니다.',
+    renderNote: '값은 바뀌지만 레이아웃, 스타일, 숫자 형식, 병합 셀은 그대로 유지됩니다.',
     conformanceTitle: '업무 흐름은 템플릿에 아카이빙됩니다.',
-    conformanceNote: 'workbook이 반복 작업을 담고 있으므로 검토, 버전 관리, 인수인계가 쉬워집니다.',
+    conformanceNote: '반복 작업을 엑셀 파일이 담고 있어, 검토와 버전 관리, 인수인계가 쉬워집니다.',
     exampleReady: '예시 파일이 첨부되어 있습니다. 그대로 실행하거나 원하는 파일로 교체하세요.',
     loadingExamples: '첨부된 예시 파일을 불러오는 중입니다...',
     loadingEngine: 'xl3 브라우저 엔진을 불러오는 중입니다...',
-    converting: 'workbook을 변환하는 중입니다...',
+    converting: '엑셀 파일을 변환하는 중입니다...',
     noOutputs: '변환은 끝났지만 템플릿이 출력 파일을 만들지 않았습니다.',
-    downloadedOne: '결과 workbook을 다운로드했습니다.',
-    downloadedMany: (count) => `결과 workbook ${count}개를 ZIP으로 다운로드했습니다.`,
+    downloadedOne: '결과 파일을 다운로드했습니다.',
+    downloadedMany: (count) => `결과 파일 ${count}개를 ZIP으로 다운로드했습니다.`,
     failed: (message) => `변환 실패: ${message}`,
-    previewLoading: '선택한 workflow를 미리보는 중입니다...',
+    previewLoading: '선택한 흐름을 미리보는 중입니다...',
     previewFailed: (message) => `미리보기 실패: ${message}`,
     previewTitle: '다운로드 전 확인',
     previewSource: 'Source contract',
@@ -78,7 +78,7 @@ const examples = {
     title: t.dataTitle,
     note: t.dataNote,
     workbookTitle: 'template.xlsx',
-    workbookSubtitle: isKorean ? '업무 규칙이 들어 있는 workbook' : 'workbook with transformation rules',
+    workbookSubtitle: isKorean ? '업무 규칙이 들어 있는 엑셀 파일' : 'workbook with transformation rules',
     formula: 'B2  source_table = 1',
     sheetName: '_config',
     rows: [
@@ -119,7 +119,7 @@ const examples = {
     title: t.renderTitle,
     note: t.renderNote,
     workbookTitle: 'result.xlsx',
-    workbookSubtitle: isKorean ? '서식까지 보존된 결과 workbook' : 'rendered workbook with formatting preserved',
+    workbookSubtitle: isKorean ? '서식까지 보존된 결과 엑셀 파일' : 'rendered workbook with formatting preserved',
     formula: 'B2  1,200.00',
     sheetName: 'Report',
     rows: [
@@ -200,9 +200,6 @@ function renderWorkbook(example) {
         <strong>${escapeHtml(example.workbookTitle)}</strong>
         <small>${escapeHtml(example.workbookSubtitle)}</small>
       </div>
-    </div>
-    <div class="excel-ribbon">
-      <span>Home</span><span>Insert</span><span>Formulas</span><span>Review</span>
     </div>
     <div class="formula-bar">
       <span class="name-box">B2</span>
