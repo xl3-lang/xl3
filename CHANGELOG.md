@@ -59,6 +59,15 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   Conformance fixtures 055–058 cover each branch. The unreachable Go-
   template-style `{{ if … }} … {{ end }}` block in the reference impl is
   removed (never spec-blessed, never used).
+- ADR-0009 defines a single comparison algorithm shared by `IF()`,
+  `@filter`, and `@sort`, plus a canonical string form used by `&`
+  concatenation, list-sheet reading, and the algorithm's string
+  fallback. The reference implementation drops the hardcoded
+  `localeCompare(_, 'ko')` Korean collation in favour of Unicode
+  code-point order. Booleans now stringify to `TRUE` / `FALSE`
+  (uppercase). Conformance fixtures 059–063 cover the numeric/string
+  fast path, code-point sort order, canonical-form concatenation, empty
+  concatenation, and empty-vs-value equality.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 

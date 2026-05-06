@@ -67,7 +67,54 @@ Comparison operators:
 <=
 ```
 
-Comparison operators are used in `IF()` and `@filter`.
+Comparison operators are used in `IF()` and `@filter`. They follow the
+algorithm in [Comparison and String Coercion](#comparison-and-string-coercion).
+
+## Comparison and String Coercion
+
+Comparison operators (`=`, `!=`, `>`, `<`, `>=`, `<=`) and the `&`
+concatenation operator share a single coercion model. Both `IF()`
+conditions and `@filter` directives use the comparison algorithm
+defined here. `@sort` uses the same algorithm.
+
+### Canonical string form
+
+The canonical string form of a value is:
+
+- An empty value (per [Empty Values](./evaluation.md#empty-values)) is
+  the empty string `""`.
+- A Boolean: `TRUE` or `FALSE` (uppercase).
+- A finite number: the shortest decimal representation that uniquely
+  identifies the value, using `.` as the decimal separator and no
+  scientific notation for magnitudes between `1e-4` and `1e21`.
+  Integers omit the trailing decimal point.
+- A string: the string itself.
+- A date: implementation-defined in XTL 0.1. Portable templates
+  SHOULD NOT rely on date concatenation or string-fallback comparison
+  of dates. Use `TEXT()` to produce a stable string instead.
+
+Non-finite numbers (`NaN`, `Infinity`, `-Infinity`) MUST NOT arise from
+spec-conformant operations. If they appear, they stringify to `""`.
+
+### Comparison algorithm
+
+Comparison operators apply, in order:
+
+1. If both operands are empty, they are equal. `=` is true; `!=` is
+   false; `>` and `<` are false; `>=` and `<=` are true.
+2. If exactly one operand is empty, `=` is false and `!=` is true.
+   For ordering, the empty value is less than any non-empty value.
+3. If both operands are numbers, or both are strings that parse as
+   finite numbers via "trim, then `Number()` without producing `NaN`",
+   compare numerically.
+4. If both operands are Booleans, compare with `FALSE < TRUE`.
+5. Otherwise, compare canonical string forms using Unicode code-point
+   order. No locale-aware collation is applied.
+
+### `&` concatenation
+
+`&` stringifies each operand to its canonical string form and joins the
+results in order. The result of `&` is always a string.
 
 ## Functions
 

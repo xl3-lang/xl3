@@ -1,5 +1,5 @@
 import type { Row, Directive, FilterDirective, SortDirective } from './types.js';
-import { isEmpty } from './functions.js';
+import { isEmpty, compareValues } from './functions.js';
 
 export function applyDirectives(
   rows: Row[],
@@ -54,38 +54,16 @@ function evalFilter(
     return filter.op === 'in' ? found : !found;
   }
 
-  const rowVal = toComparable(rawValue);
-  const filterVal = toComparable(filter.value);
-
-  // If both are numbers, compare numerically
-  const rowNum = typeof rowVal === 'number' ? rowVal : Number(rowVal);
-  const filterNum = typeof filterVal === 'number' ? filterVal : Number(filterVal);
-  const bothNumeric = !isNaN(rowNum) && !isNaN(filterNum);
-
+  // ADR-0009: shared comparison algorithm pins =, !=, >, <, >=, <= for
+  // both IF and @filter to the same rules.
+  const cmp = compareValues(rawValue, filter.value);
   switch (filter.op) {
-    case '=': return bothNumeric ? rowNum === filterNum : String(rowVal) === String(filterVal);
-    case '!=': return bothNumeric ? rowNum !== filterNum : String(rowVal) !== String(filterVal);
-    case '>': return bothNumeric ? rowNum > filterNum : String(rowVal) > String(filterVal);
-    case '<': return bothNumeric ? rowNum < filterNum : String(rowVal) < String(filterVal);
-    case '>=': return bothNumeric ? rowNum >= filterNum : String(rowVal) >= String(filterVal);
-    case '<=': return bothNumeric ? rowNum <= filterNum : String(rowVal) <= String(filterVal);
+    case '=': return cmp === 0;
+    case '!=': return cmp !== 0;
+    case '>': return cmp > 0;
+    case '<': return cmp < 0;
+    case '>=': return cmp >= 0;
+    case '<=': return cmp <= 0;
     default: return true;
   }
-}
-
-function compareValues(a: unknown, b: unknown): number {
-  const na = Number(a);
-  const nb = Number(b);
-
-  if (!isNaN(na) && !isNaN(nb)) return na - nb;
-
-  const sa = String(a ?? '');
-  const sb = String(b ?? '');
-  return sa.localeCompare(sb, 'ko');
-}
-
-function toComparable(v: unknown): string | number {
-  if (typeof v === 'number') return v;
-  if (v === null || v === undefined) return '';
-  return String(v);
 }

@@ -140,6 +140,11 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 056 | `if-truthy-string-zero-not-special` | ADR-0008 does not special-case the strings `"0"` or `"false"`; both are truthy. |
 | 057 | `if-truthy-boolean` | A Boolean source cell drives IF truthiness directly per ADR-0008. |
 | 058 | `if-comparison-result` | A comparison expression's Boolean result feeds IF truthiness directly per ADR-0008. |
+| 059 | `compare-numeric-string-vs-number` | Comparison parses numbers and numeric strings under the shared `compareValues` per ADR-0009. |
+| 060 | `compare-string-codepoint-order` | String fallback comparison uses Unicode code-point order — no locale-aware collation per ADR-0009. |
+| 061 | `concat-canonical-form` | `&` stringifies operands using the canonical string form per ADR-0009 (booleans uppercase, integers without decimal). |
+| 062 | `concat-empty-stringifies-to-empty` | `&` over an empty operand contributes the empty string per ADR-0009. |
+| 063 | `compare-empty-vs-value` | Two empty operands compare equal; exactly one empty makes `=` false per ADR-0009 rules 1 and 2. |
 
 ## Status
 

@@ -3158,6 +3158,309 @@ async function build058() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 059 - compare-numeric-string-vs-number
+//
+// Concept: ADR-0009's comparison algorithm parses both operands as
+// numbers when each is a number or a string parseable as a finite
+// number. `IF` and `@filter` route through the same shared algorithm.
+// Spec section: language.md "Comparison and String Coercion"; ADR-0009.
+// ---------------------------------------------------------------------------
+async function build059() {
+  const dir = join(FIXTURES, '059-compare-numeric-string-vs-number');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'compare-numeric-string-vs-number'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Tier';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ IF([Amount] > 100, "high", "low") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Amount column mixes string and numeric values to prove
+  // both flow through the same compareValues path.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = '150';      // string parseable as number
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 50;         // number
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = '100';      // boundary string — NOT > 100
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Tier';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'high';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'low';
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = 'low';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 060 - compare-string-codepoint-order
+//
+// Concept: ADR-0009 mandates Unicode code-point order for the string
+// fallback path of comparison. No locale-aware collation is applied.
+// Spec section: language.md "Comparison and String Coercion"; ADR-0009.
+// ---------------------------------------------------------------------------
+async function build060() {
+  const dir = join(FIXTURES, '060-compare-string-codepoint-order');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — sort by Customer ascending.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'compare-string-codepoint-order'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '{{ @sort [Customer] asc }}';
+    sh.getCell('A3').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  // ASCII A (0x41) < ASCII B (0x42) < CJK Hangul block (0xAC00..).
+  // Source rows authored deliberately out of order so the sort has work
+  // to do.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '가나';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('A4').value = '다라';
+    sh.getCell('A5').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — code-point order: ASCII letters first, then Hangul.
+  // 가 (U+AC00) < 다 (U+B2E4).
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('A4').value = '가나';
+    sh.getCell('A5').value = '다라';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 061 - concat-canonical-form
+//
+// Concept: ADR-0009 defines the canonical string form per type. `&`
+// stringifies each operand using the canonical form. Booleans are
+// uppercase, integers omit the decimal point.
+// Spec section: language.md "Comparison and String Coercion"; ADR-0009.
+// ---------------------------------------------------------------------------
+async function build061() {
+  const dir = join(FIXTURES, '061-concat-canonical-form');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'concat-canonical-form'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Summary';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Active] & " (" & [Count] & ")" }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Active';
+    sh.getCell('C1').value = 'Count';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = true;
+    sh.getCell('C2').value = 0;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = false;
+    sh.getCell('C3').value = 12;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  // canonicalString(true) = "TRUE"; canonicalString(0) = "0"; etc.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Summary';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'TRUE (0)';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'FALSE (12)';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 062 - concat-empty-stringifies-to-empty
+//
+// Concept: ADR-0009's canonical string form for an empty value (per
+// ADR-0007) is the empty string. `&` over an empty operand contributes
+// nothing.
+// Spec section: language.md "Comparison and String Coercion"; ADR-0009.
+// ---------------------------------------------------------------------------
+async function build062() {
+  const dir = join(FIXTURES, '062-concat-empty-stringifies-to-empty');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'concat-empty-stringifies-to-empty'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Bracketed';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ "[" & [Memo] & "]" }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = 'Acme';
+    // B2 left blank — empty.
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = '   '; // whitespace — empty per ADR-0007.
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = 'note';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Bracketed';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = '[]';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = '[]';
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = '[note]';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 063 - compare-empty-vs-value
+//
+// Concept: ADR-0009 rules 1 and 2 — two empty operands compare equal,
+// while exactly one empty operand makes `=` false. `@filter [Memo] = ""`
+// therefore matches rows whose Memo is empty per ADR-0007 (missing,
+// blank, or whitespace-only) and excludes rows with non-empty Memo.
+// Spec section: language.md "Comparison and String Coercion"; ADR-0009.
+// ---------------------------------------------------------------------------
+async function build063() {
+  const dir = join(FIXTURES, '063-compare-empty-vs-value');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'compare-empty-vs-value'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = '{{ @filter [Memo] = "" }}';
+    sh.getCell('A3').value = '{{ [Customer] }}';
+    sh.getCell('B3').value = '{{ [Memo] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = 'Acme';
+    // B2 blank — empty.
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'note';
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = '   ';
+    sh.getCell('A5').value = 'Delta';
+    sh.getCell('B5').value = 'memo';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — only Acme and Gamma survive: both Memo cells are
+  // empty per ADR-0007, so compareValues against the empty filter value
+  // returns 0 (rule 1). The renderer writes the source cell value as-is
+  // for `{{ [Memo] }}`, so Acme's B2 is the empty string from a blank
+  // source cell and Gamma's B3 keeps its whitespace.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = '';
+    sh.getCell('A3').value = 'Gamma';
+    sh.getCell('B3').value = '   ';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -3217,6 +3520,11 @@ const builders = [
   ['056', build056],
   ['057', build057],
   ['058', build058],
+  ['059', build059],
+  ['060', build060],
+  ['061', build061],
+  ['062', build062],
+  ['063', build063],
 ];
 
 const selected = new Set(process.argv.slice(2));

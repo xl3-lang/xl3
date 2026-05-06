@@ -1,0 +1,5 @@
+description: Two empty operands compare equal, exactly one empty makes `=` false per ADR-0009 rules 1 and 2.
+spec_section: language.md "Comparison and String Coercion"; ADR-0009
+spec_version: "0.1"
+tags: [directive, filter, comparison, empty]
+verified_by: [hand]

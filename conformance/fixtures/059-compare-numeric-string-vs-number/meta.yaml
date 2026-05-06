@@ -1,0 +1,5 @@
+description: Comparison parses numbers and numeric strings under the shared compareValues per ADR-0009.
+spec_section: language.md "Comparison and String Coercion"; ADR-0009
+spec_version: "0.1"
+tags: [language, comparison, if, numeric]
+verified_by: [hand]

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { functions, isEmpty, isTruthy } from '../functions.js';
+import {
+  functions,
+  isEmpty,
+  isTruthy,
+  canonicalString,
+  compareValues,
+} from '../functions.js';
 
 describe('TEXT', () => {
   it('formats the XTL 0.1 date token subset', () => {
@@ -93,6 +99,100 @@ describe('IF (ADR-0008)', () => {
   it('does not special-case the strings "0" or "false"', () => {
     expect(functions.IF('0', 'y', 'n')).toBe('y');
     expect(functions.IF('false', 'y', 'n')).toBe('y');
+  });
+});
+
+describe('canonicalString (ADR-0009)', () => {
+  it('renders empty values as the empty string', () => {
+    expect(canonicalString(null)).toBe('');
+    expect(canonicalString(undefined)).toBe('');
+    expect(canonicalString('')).toBe('');
+    expect(canonicalString('   ')).toBe('');
+  });
+
+  it('renders Booleans uppercase per Excel convention', () => {
+    expect(canonicalString(true)).toBe('TRUE');
+    expect(canonicalString(false)).toBe('FALSE');
+  });
+
+  it('renders numbers with shortest round-trippable form', () => {
+    expect(canonicalString(0)).toBe('0');
+    expect(canonicalString(1)).toBe('1');
+    expect(canonicalString(1.5)).toBe('1.5');
+    expect(canonicalString(-3.14)).toBe('-3.14');
+    expect(canonicalString(1234)).toBe('1234');
+  });
+
+  it('passes strings through verbatim', () => {
+    expect(canonicalString('hello')).toBe('hello');
+    expect(canonicalString('  hello  ')).toBe('  hello  ');
+  });
+});
+
+describe('compareValues (ADR-0009)', () => {
+  it('treats two empty values as equal', () => {
+    expect(compareValues('', '')).toBe(0);
+    expect(compareValues(null, '   ')).toBe(0);
+    expect(compareValues(undefined, null)).toBe(0);
+  });
+
+  it('orders empty values below non-empty values', () => {
+    expect(compareValues('', 'x')).toBe(-1);
+    expect(compareValues('x', '')).toBe(1);
+    expect(compareValues(null, 0)).toBe(-1);
+  });
+
+  it('compares numbers and numeric strings numerically', () => {
+    expect(compareValues(2, 10)).toBe(-1);
+    expect(compareValues('2', 10)).toBe(-1);
+    expect(compareValues('150', 100)).toBe(1);
+    expect(compareValues(5, 5)).toBe(0);
+  });
+
+  it('compares Booleans with FALSE < TRUE', () => {
+    expect(compareValues(false, true)).toBe(-1);
+    expect(compareValues(true, false)).toBe(1);
+    expect(compareValues(true, true)).toBe(0);
+  });
+
+  it('falls back to code-point string order for mixed/non-numeric types', () => {
+    // No locale collation: ASCII A (0x41) < CJK 가 (0xAC00).
+    expect(compareValues('Acme', '가나')).toBe(-1);
+    expect(compareValues('가나', 'Acme')).toBe(1);
+  });
+
+  it('uses canonical string forms in the fallback (TRUE/FALSE uppercase)', () => {
+    // "TRUE" < "x" because 'T' (0x54) < 'x' (0x78). canonicalString(true) = "TRUE".
+    expect(compareValues(true, 'x')).toBe(-1);
+  });
+});
+
+describe('eq/ne/gt/lt via compareValues (ADR-0009)', () => {
+  it('routes IF comparison ops through compareValues', () => {
+    expect(functions.eq('150', 150)).toBe(true);
+    expect(functions.gt('200', 150)).toBe(true);
+    expect(functions.lt(0, 1)).toBe(true);
+    expect(functions.eq(true, true)).toBe(true);
+    expect(functions.ne('TRUE', true)).toBe(false); // canonical string match
+  });
+
+  it('handles non-numeric mixed comparisons via canonical-string fallback', () => {
+    // "foo" is not numeric. "100" is. Mixed → fallback to string compare.
+    // canonicalString("foo") = "foo"; canonicalString(100) = "100".
+    // "100" < "foo" code-point order. So foo > 100 in fallback.
+    expect(functions.gt('foo', 100)).toBe(true);
+  });
+});
+
+describe('concat uses canonical string form (ADR-0009)', () => {
+  it('renders booleans uppercase and integers without trailing decimal', () => {
+    expect(functions.concat(true, ' (', 0, ')')).toBe('TRUE (0)');
+    expect(functions.concat(false, '/', true)).toBe('FALSE/TRUE');
+  });
+
+  it('renders empty values as the empty string', () => {
+    expect(functions.concat('[', null, ']')).toBe('[]');
+    expect(functions.concat('[', '   ', ']')).toBe('[]');
   });
 });
 

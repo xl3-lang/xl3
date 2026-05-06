@@ -1,0 +1,5 @@
+description: '`&` concatenation stringifies operands using the canonical string form per ADR-0009 — booleans uppercase, integers without decimal point.'
+spec_section: language.md "Comparison and String Coercion"; ADR-0009
+spec_version: "0.1"
+tags: [language, operator, concat, canonical-string]
+verified_by: [hand]

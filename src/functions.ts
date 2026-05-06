@@ -19,6 +19,65 @@ export function isTruthy(v: unknown): boolean {
   return true;
 }
 
+// ADR-0009: canonical string form. Empty → "". Boolean → "TRUE"/"FALSE".
+// Number → ECMAScript shortest round-trippable form (Number.prototype.toString
+// matches the spec's range guarantee for 1e-4..1e21). String → itself.
+// Dates are implementation-defined for XTL 0.1; portable templates should
+// not depend on `&` over dates.
+export function canonicalString(v: unknown): string {
+  if (isEmpty(v)) return '';
+  if (typeof v === 'boolean') return v ? 'TRUE' : 'FALSE';
+  if (typeof v === 'number') {
+    if (!Number.isFinite(v)) return '';
+    return String(v);
+  }
+  if (typeof v === 'string') return v;
+  // Dates: implementation-defined. Fall back to host String() so existing
+  // behavior is observable but not normative.
+  return String(v);
+}
+
+// ADR-0009: shared comparison algorithm used by IF, @filter, and @sort.
+// Returns -1, 0, or +1.
+export function compareValues(a: unknown, b: unknown): -1 | 0 | 1 {
+  const aEmpty = isEmpty(a);
+  const bEmpty = isEmpty(b);
+  if (aEmpty && bEmpty) return 0;
+  if (aEmpty) return -1;
+  if (bEmpty) return 1;
+
+  if (isNumberLike(a) && isNumberLike(b)) {
+    const na = toComparableNumber(a);
+    const nb = toComparableNumber(b);
+    return na < nb ? -1 : na > nb ? 1 : 0;
+  }
+
+  if (typeof a === 'boolean' && typeof b === 'boolean') {
+    if (a === b) return 0;
+    return a ? 1 : -1;
+  }
+
+  const sa = canonicalString(a);
+  const sb = canonicalString(b);
+  return sa < sb ? -1 : sa > sb ? 1 : 0;
+}
+
+function isNumberLike(v: unknown): boolean {
+  if (typeof v === 'number') return Number.isFinite(v);
+  if (typeof v === 'string') {
+    const trimmed = v.trim();
+    if (trimmed === '') return false;
+    const n = Number(trimmed);
+    return Number.isFinite(n);
+  }
+  return false;
+}
+
+function toComparableNumber(v: unknown): number {
+  if (typeof v === 'number') return v;
+  return Number(String(v).trim());
+}
+
 function toDate(v: unknown): Date | null {
   if (v instanceof Date) return v;
   if (typeof v === 'number') {
@@ -56,7 +115,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const d = toNumber(b);
     return d === 0 ? 0 : toNumber(a) / d;
   },
-  concat: (...parts) => parts.map((p) => String(p ?? '')).join(''),
+  concat: (...parts) => parts.map((p) => canonicalString(p)).join(''),
 
   IF: (condition, trueValue, falseValue) =>
     isTruthy(condition) ? trueValue : falseValue,
@@ -153,12 +212,13 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     return new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
   },
 
-  eq: (a, b) => String(a) === String(b),
-  ne: (a, b) => String(a) !== String(b),
-  gt: (a, b) => toNumber(a) > toNumber(b),
-  ge: (a, b) => toNumber(a) >= toNumber(b),
-  lt: (a, b) => toNumber(a) < toNumber(b),
-  le: (a, b) => toNumber(a) <= toNumber(b),
+  // ADR-0009: shared comparison algorithm.
+  eq: (a, b) => compareValues(a, b) === 0,
+  ne: (a, b) => compareValues(a, b) !== 0,
+  gt: (a, b) => compareValues(a, b) > 0,
+  ge: (a, b) => compareValues(a, b) >= 0,
+  lt: (a, b) => compareValues(a, b) < 0,
+  le: (a, b) => compareValues(a, b) <= 0,
 };
 
 function formatDate(d: Date, fmt: string): string {

@@ -111,9 +111,10 @@ List sheets:
 - MAY be visible, hidden, or very hidden in the template.
 - MUST be removed from output workbooks.
 - Are read from their first column.
-- Each cell is converted to a string and trimmed of Unicode whitespace.
-  Cells empty after trimming (per [Empty Values](#empty-values)) are
-  skipped.
+- Each cell is converted to its canonical string form per
+  [Comparison and String Coercion](./language.md#comparison-and-string-coercion)
+  and trimmed of Unicode whitespace. Cells empty after trimming (per
+  [Empty Values](#empty-values)) are skipped.
 - Order is preserved. Duplicate entries are not removed.
 - Are referenced by `@filter ... in _SheetName` and `@filter ... !in _SheetName`.
 
