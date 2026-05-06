@@ -114,6 +114,18 @@ const outputs = await convert(templateBuffer, dataBuffer);
 
 브라우저와 Node 18 이상에서 동작합니다.
 
+템플릿의 숨김 `_config` sheet에서 raw 파일의 헤더 셀을 지정할 수 있습니다.
+
+| Key | 예시 | 의미 |
+|---|---|---|
+| `source_sheet` | `Raw` | 원본 worksheet 이름, 또는 `*`로 끝나는 prefix pattern |
+| `source_header_range` | `A1:D1` | 헤더 셀 범위. 그 아래 행을 데이터로 읽음 |
+| `source_range` | `A1:D200` | 전체 원본 범위. 첫 행은 헤더, 나머지는 데이터 |
+
+헤더 범위는 고정되어 있고 데이터 행 수가 계속 달라지는 경우
+`source_header_range`를 쓰면 됩니다. `source_range`와 동시에 설정하면
+안 됩니다.
+
 ## Spec
 
 XTL spec은 언어 중립적이며 [`spec/`](./spec)에 있습니다. 이 저장소는 TypeScript

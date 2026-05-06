@@ -34,7 +34,7 @@ XTL 0.1 core includes:
 - Data directives: `@filter`, `@sort`, `@top`, and `@repeat right`.
 - List sheet filters with `_`-prefixed sheets: `@filter [Customer] in _IncludedCustomers`.
 - Sheet and file grouping.
-- `_config` metadata, including `source_sheet`, `header_row`, `source_range`, and `output_file_pattern`.
+- `_config` metadata, including `source_sheet`, `header_row`, `source_range`, `source_header_range`, and `output_file_pattern`.
 - Single-expression cell type preservation and template-format-based coercion.
 
 ## Reference Implementation

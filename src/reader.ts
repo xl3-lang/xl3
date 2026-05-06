@@ -12,6 +12,7 @@ export async function readSource(
   sheetPattern: string,
   headerRow: number,
   sourceRange?: string,
+  sourceHeaderRange?: string,
 ): Promise<SourceData> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer);
@@ -23,10 +24,15 @@ export async function readSource(
     );
   }
 
+  if (sourceRange && sourceHeaderRange) {
+    throw new Error('source_range and source_header_range cannot both be set');
+  }
+
   const range = sourceRange ? parseSourceRange(sourceRange) : undefined;
-  const effectiveHeaderRow = range?.top ?? headerRow;
-  const startCol = range?.left ?? 1;
-  const endCol = range?.right;
+  const headerRange = sourceHeaderRange ? parseSourceHeaderRange(sourceHeaderRange) : undefined;
+  const effectiveHeaderRow = range?.top ?? headerRange?.top ?? headerRow;
+  const startCol = range?.left ?? headerRange?.left ?? 1;
+  const endCol = range?.right ?? headerRange?.right;
 
   // Read headers
   const headerRowData = sheet.getRow(effectiveHeaderRow);
@@ -89,6 +95,14 @@ function parseSourceRange(range: string): SourceRange {
     bottom: end.row,
     right: end.col,
   };
+}
+
+function parseSourceHeaderRange(range: string): SourceRange {
+  const parsed = parseSourceRange(range);
+  if (parsed.top !== parsed.bottom) {
+    throw new Error(`source_header_range must be a single-row Excel range such as "A1:D1": ${range}`);
+  }
+  return parsed;
 }
 
 function decodeCellRef(ref: string): { row: number; col: number } | null {

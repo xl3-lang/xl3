@@ -114,6 +114,17 @@ const outputs = await convert(templateBuffer, dataBuffer);
 
 Runs in browsers and Node (≥18).
 
+Templates can choose the source header cells in the hidden `_config` sheet:
+
+| Key | Example | Meaning |
+|---|---|---|
+| `source_sheet` | `Raw` | source worksheet name, or prefix pattern ending with `*` |
+| `source_header_range` | `A1:D1` | header cells; rows below are read as data |
+| `source_range` | `A1:D200` | bounded source range; first row is headers |
+
+Use `source_header_range` when the header span is known but the data row count is
+open-ended. Do not set it together with `source_range`.
+
 ## Spec
 
 The XTL spec is language-neutral and lives in [`spec/`](./spec). This repo provides the TypeScript reference implementation. Other-language ports are welcome — see [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md).

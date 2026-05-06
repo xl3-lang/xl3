@@ -47,6 +47,7 @@ async function prepareConversion(templateBuffer: ArrayBuffer, sourceBuffer: Arra
     parsed.meta.source_sheet,
     parsed.meta.header_row,
     parsed.meta.source_range,
+    parsed.meta.source_header_range,
   );
 
   return prepareConversionFromSourceData(parsed, source);

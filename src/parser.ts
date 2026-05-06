@@ -272,6 +272,7 @@ export function readConfigSheet(workbook: ExcelJS.Workbook): ConfigResult {
         case 'description': meta.description = val; break;
         case 'source_sheet': meta.source_sheet = val; break;
         case 'source_range': meta.source_range = val; break;
+        case 'source_header_range': meta.source_header_range = val; break;
         case 'header_row': { const n = parseInt(val); if (!isNaN(n)) meta.header_row = n; break; }
         case 'output_file_pattern': meta.output_file_pattern = val; break;
         case 'match_pattern': meta.match_pattern = val; break;
@@ -293,6 +294,7 @@ export function writeConfigSheet(workbook: ExcelJS.Workbook, meta: TemplateMeta)
     ['description', meta.description],
     ['source_sheet', meta.source_sheet],
     ['source_range', meta.source_range ?? ''],
+    ['source_header_range', meta.source_header_range ?? ''],
     ['header_row', String(meta.header_row)],
     ['output_file_pattern', meta.output_file_pattern],
     ['match_pattern', meta.match_pattern],

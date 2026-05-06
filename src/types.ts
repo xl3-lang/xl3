@@ -6,6 +6,7 @@ export interface TemplateMeta {
   source_sheet: string;
   header_row: number;
   source_range?: string;
+  source_header_range?: string;
   output_file_pattern: string;
   match_pattern: string;
 }

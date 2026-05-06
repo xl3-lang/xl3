@@ -26,11 +26,17 @@ A hidden sheet named `_config` MAY provide metadata and runtime settings.
 | `source_sheet` | Source sheet name, or prefix pattern ending with `*` | `Orders`, `Data_*` |
 | `header_row` | 1-based source header row | `1` |
 | `source_range` | Optional Excel range. The first row is headers; remaining rows are data. | `B5:H200` |
+| `source_header_range` | Optional single-row Excel range. The cells are headers; rows below are data. | `A1:D1` |
 | `output_file_pattern` | Output filename template | `{{ Customer }}_report.xlsx` |
 | `match_pattern` | Batch matching pattern | `Orders*` |
 | `_<name>` | User variable | `_title = Order Summary` |
 
 When `source_range` is present, it defines both the header row and source columns. In that case, `header_row` is ignored for source reading.
+
+`source_header_range` is useful when the source data has a fixed header span but
+an open-ended number of data rows. It defines the header row and source columns;
+rows below the header range are data rows through the end of the selected
+worksheet. `source_range` and `source_header_range` MUST NOT both be set.
 
 ## Source Data Model
 
@@ -54,6 +60,14 @@ When `source_range` is set:
 2. The range start/end columns define the only source columns.
 3. Rows below the range start row, through the range end row, are data rows.
 4. Empty data rows inside the range are skipped.
+
+When `source_header_range` is set:
+
+1. The range MUST be a single-row Excel range.
+2. The range row is the header row.
+3. The range start/end columns define the only source columns.
+4. Rows below the header row, through the end of the worksheet, are data rows.
+5. Empty data rows are skipped.
 
 ## List Sheets
 
@@ -189,6 +203,8 @@ The following conditions are errors:
 - Referencing a list sheet that does not exist.
 - Using an invalid directive.
 - Using an invalid `source_range`.
+- Using an invalid `source_header_range`.
+- Setting both `source_range` and `source_header_range`.
 - Failing to coerce a single-expression cell value to its template cell format.
 - Producing an invalid output filename after sanitization rules are applied.
 - Calling `ROW()` outside a repeat block.
