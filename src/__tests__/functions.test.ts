@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { functions, isEmpty } from '../functions.js';
+import { functions, isEmpty, isTruthy } from '../functions.js';
 
 describe('TEXT', () => {
   it('formats the XTL 0.1 date token subset', () => {
@@ -54,6 +54,45 @@ describe('IFEMPTY', () => {
     expect(functions.IFEMPTY('hello', '-')).toBe('hello');
     expect(functions.IFEMPTY(0, '-')).toBe(0);
     expect(functions.IFEMPTY(false, '-')).toBe(false);
+  });
+});
+
+describe('isTruthy (ADR-0008)', () => {
+  it('treats false, 0, and empty values as falsy', () => {
+    expect(isTruthy(false)).toBe(false);
+    expect(isTruthy(0)).toBe(false);
+    expect(isTruthy('')).toBe(false);
+    expect(isTruthy('  ')).toBe(false);
+    expect(isTruthy(null)).toBe(false);
+    expect(isTruthy(undefined)).toBe(false);
+  });
+
+  it('treats every other value as truthy, including the strings "0" and "false"', () => {
+    expect(isTruthy(true)).toBe(true);
+    expect(isTruthy(1)).toBe(true);
+    expect(isTruthy(-1)).toBe(true);
+    expect(isTruthy('hello')).toBe(true);
+    expect(isTruthy('0')).toBe(true);
+    expect(isTruthy('false')).toBe(true);
+    expect(isTruthy('FALSE')).toBe(true);
+    expect(isTruthy(new Date())).toBe(true);
+  });
+});
+
+describe('IF (ADR-0008)', () => {
+  it('routes truthy and falsy values to the matching branch', () => {
+    expect(functions.IF(true, 'y', 'n')).toBe('y');
+    expect(functions.IF(false, 'y', 'n')).toBe('n');
+    expect(functions.IF(0, 'y', 'n')).toBe('n');
+    expect(functions.IF(1, 'y', 'n')).toBe('y');
+    expect(functions.IF('', 'y', 'n')).toBe('n');
+    expect(functions.IF('  ', 'y', 'n')).toBe('n');
+    expect(functions.IF('hello', 'y', 'n')).toBe('y');
+  });
+
+  it('does not special-case the strings "0" or "false"', () => {
+    expect(functions.IF('0', 'y', 'n')).toBe('y');
+    expect(functions.IF('false', 'y', 'n')).toBe('y');
   });
 });
 

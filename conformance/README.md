@@ -136,6 +136,10 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 052 | `empty-count-field-whitespace-zero-false` | COUNT([field]) counts non-empty values per ADR-0007 — whitespace empty, 0 and FALSE non-empty. |
 | 053 | `empty-row-skip-whitespace-only` | A source row whose every cell is empty per ADR-0007 is skipped, including whitespace-only cells. |
 | 054 | `empty-list-membership` | List sheets drop empty entries on read; an empty source-row value never matches `@filter ... in _Sheet` per ADR-0007. |
+| 055 | `if-truthy-zero-and-empty` | IF treats 0 and empty values as falsy; non-zero numbers, non-empty strings, and TRUE are truthy per ADR-0008. |
+| 056 | `if-truthy-string-zero-not-special` | ADR-0008 does not special-case the strings `"0"` or `"false"`; both are truthy. |
+| 057 | `if-truthy-boolean` | A Boolean source cell drives IF truthiness directly per ADR-0008. |
+| 058 | `if-comparison-result` | A comparison expression's Boolean result feeds IF truthiness directly per ADR-0008. |
 
 ## Status
 

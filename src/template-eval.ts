@@ -14,7 +14,7 @@ export function evalExpression(
   normalized: string,
   ctx: Record<string, unknown>,
 ): unknown {
-  const trimmed = normalized.trim();
+  const trimmed = stripOuterParens(normalized.trim());
 
   const bracketMatch = trimmed.match(/^\[([^\]\r\n]+)\]$/);
   if (bracketMatch) {
@@ -70,19 +70,6 @@ export function evalCell(
   cellTemplate: string,
   ctx: Record<string, unknown>,
 ): unknown {
-  // Check for {{ if ... }}...{{ end }} blocks
-  const ifMatch = cellTemplate.match(
-    /^\{\{\s*if\s+(.+?)\s*\}\}(.*?)\{\{\s*end\s*\}\}$/s,
-  );
-  if (ifMatch) {
-    const condition = evalExpression(ifMatch[1], ctx);
-    if (condition && condition !== 'false' && condition !== '0') {
-      // Recursively eval the inner content
-      return evalCell(ifMatch[2], ctx);
-    }
-    return '';
-  }
-
   // Single expression: {{ expr }} — must not contain }} inside
   const singleMatch = cellTemplate.match(/^\{\{\s*((?:(?!\}\}).)+)\s*\}\}$/);
   if (singleMatch) {
@@ -130,6 +117,33 @@ function resolveArg(arg: string, ctx: Record<string, unknown>): unknown {
 
 function getFunction(name: string): ((...args: unknown[]) => unknown) | undefined {
   return functions[name] ?? functions[name.toUpperCase()] ?? functions[name.toLowerCase()];
+}
+
+// Strip a redundant outer pair of parens, repeatedly. The outer pair is
+// redundant only when its closing `)` matches the leading `(`, i.e. when
+// paren depth returns to zero exactly at the final character. Without
+// this, expressions like `(index . "Value")` that arrive paren-wrapped
+// from the normalizer never reach the indexMatch branch below.
+function stripOuterParens(expr: string): string {
+  let s = expr.trim();
+  while (s.startsWith('(') && s.endsWith(')')) {
+    let depth = 0;
+    let outer = true;
+    for (let i = 0; i < s.length - 1; i++) {
+      const ch = s[i];
+      if (ch === '(') depth++;
+      else if (ch === ')') {
+        depth--;
+        if (depth === 0) {
+          outer = false;
+          break;
+        }
+      }
+    }
+    if (!outer) break;
+    s = s.slice(1, -1).trim();
+  }
+  return s;
 }
 
 function splitFunctionArgs(expr: string): string[] {

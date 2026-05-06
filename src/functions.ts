@@ -9,6 +9,16 @@ export function isEmpty(v: unknown): boolean {
   return false;
 }
 
+// ADR-0008: a value is truthy unless it is `false`, the number 0, or
+// empty per ADR-0007. Strings with non-whitespace content (including
+// "0" and "false") are truthy.
+export function isTruthy(v: unknown): boolean {
+  if (v === false) return false;
+  if (typeof v === 'number') return v !== 0;
+  if (isEmpty(v)) return false;
+  return true;
+}
+
 function toDate(v: unknown): Date | null {
   if (v instanceof Date) return v;
   if (typeof v === 'number') {
@@ -48,10 +58,8 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   },
   concat: (...parts) => parts.map((p) => String(p ?? '')).join(''),
 
-  IF: (condition, trueValue, falseValue) => {
-    if (condition && condition !== 'false' && condition !== '0') return trueValue;
-    return falseValue;
-  },
+  IF: (condition, trueValue, falseValue) =>
+    isTruthy(condition) ? trueValue : falseValue,
 
   IFEMPTY: (v, def) => (isEmpty(v) ? def : v),
 

@@ -33,12 +33,6 @@ export function normalizeTemplate(
     const trimmed = inner.trim();
     if (isGoKeyword(trimmed)) return `{{ ${trimmed} }}`;
 
-    // Handle "if expr"
-    if (trimmed.startsWith('if ')) {
-      const cond = trimmed.slice(3).trim();
-      return `{{ if ${normalizeCondition(cond, columns)} }}`;
-    }
-
     return `{{ ${normalizeInner(trimmed, columns)} }}`;
   });
 }

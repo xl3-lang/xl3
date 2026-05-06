@@ -2909,6 +2909,255 @@ async function build054() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 055 - if-truthy-zero-and-empty
+//
+// Concept: bare-value IF truthiness per ADR-0008. The number 0 and empty
+// values (per ADR-0007) are falsy; non-empty strings, non-zero numbers,
+// and TRUE are truthy.
+// Spec section: language.md "Functions / IF"; ADR-0008.
+// ---------------------------------------------------------------------------
+async function build055() {
+  const dir = join(FIXTURES, '055-if-truthy-zero-and-empty');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'if-truthy-zero-and-empty'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'Branch';
+    sh.getCell('A2').value = '{{ [Label] }}';
+    sh.getCell('B2').value = '{{ IF([Value], "y", "n") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — six rows covering each truthiness branch.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'Value';
+    sh.getCell('A2').value = 'zero-num';
+    sh.getCell('B2').value = 0;
+    sh.getCell('A3').value = 'one-num';
+    sh.getCell('B3').value = 1;
+    sh.getCell('A4').value = 'empty-str';
+    // B4 left blank — empty cell.
+    sh.getCell('A5').value = 'word';
+    sh.getCell('B5').value = 'x';
+    sh.getCell('A6').value = 'spaces';
+    sh.getCell('B6').value = '   ';
+    sh.getCell('A7').value = 'bool-true';
+    sh.getCell('B7').value = true;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  // ADR-0008: 0, "", "  " are falsy → "n". 1, "x", TRUE are truthy → "y".
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'Branch';
+    sh.getCell('A2').value = 'zero-num';
+    sh.getCell('B2').value = 'n';
+    sh.getCell('A3').value = 'one-num';
+    sh.getCell('B3').value = 'y';
+    sh.getCell('A4').value = 'empty-str';
+    sh.getCell('B4').value = 'n';
+    sh.getCell('A5').value = 'word';
+    sh.getCell('B5').value = 'y';
+    sh.getCell('A6').value = 'spaces';
+    sh.getCell('B6').value = 'n';
+    sh.getCell('A7').value = 'bool-true';
+    sh.getCell('B7').value = 'y';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 056 - if-truthy-string-zero-not-special
+//
+// Concept: ADR-0008 explicitly does not treat the strings "0" and
+// "false" as falsy. Strings with non-whitespace content are truthy.
+// Spec section: language.md "Functions / IF"; ADR-0008 Decision and
+// Consequences.
+// ---------------------------------------------------------------------------
+async function build056() {
+  const dir = join(FIXTURES, '056-if-truthy-string-zero-not-special');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'if-truthy-string-zero-not-special'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'Branch';
+    sh.getCell('A2').value = '{{ [Label] }}';
+    sh.getCell('B2').value = '{{ IF([Flag], "y", "n") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — three string flags that JavaScript's `Boolean()` would
+  // call truthy and the reference implementation used to special-case.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'Flag';
+    sh.getCell('A2').value = 'zero-string';
+    sh.getCell('B2').value = '0';
+    sh.getCell('A3').value = 'false-string';
+    sh.getCell('B3').value = 'false';
+    sh.getCell('A4').value = 'FALSE-string';
+    sh.getCell('B4').value = 'FALSE';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — every row picks the truthy branch.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'Branch';
+    sh.getCell('A2').value = 'zero-string';
+    sh.getCell('B2').value = 'y';
+    sh.getCell('A3').value = 'false-string';
+    sh.getCell('B3').value = 'y';
+    sh.getCell('A4').value = 'FALSE-string';
+    sh.getCell('B4').value = 'y';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 057 - if-truthy-boolean
+//
+// Concept: a Boolean source cell drives IF truthiness directly per
+// ADR-0008. TRUE picks the truthy branch; FALSE picks the falsy branch.
+// Spec section: language.md "Functions / IF"; ADR-0008.
+// ---------------------------------------------------------------------------
+async function build057() {
+  const dir = join(FIXTURES, '057-if-truthy-boolean');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'if-truthy-boolean'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'State';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ IF([Active], "active", "archived") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Active';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = true;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = false;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'State';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'active';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'archived';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 058 - if-comparison-result
+//
+// Concept: a comparison expression evaluates to a Boolean and feeds IF
+// truthiness directly per ADR-0008. The same algorithm pins both `IF`
+// and `@filter` (ADR-0009).
+// Spec section: language.md "Functions / IF"; ADR-0008.
+// ---------------------------------------------------------------------------
+async function build058() {
+  const dir = join(FIXTURES, '058-if-comparison-result');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'if-comparison-result'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'Tier';
+    sh.getCell('A2').value = '{{ [Label] }}';
+    sh.getCell('B2').value = '{{ IF([Amount] > 100, "high", "low") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'a';
+    sh.getCell('B2').value = 50;
+    sh.getCell('A3').value = 'b';
+    sh.getCell('B3').value = 150;
+    sh.getCell('A4').value = 'c';
+    sh.getCell('B4').value = 100; // boundary — NOT > 100
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'Tier';
+    sh.getCell('A2').value = 'a';
+    sh.getCell('B2').value = 'low';
+    sh.getCell('A3').value = 'b';
+    sh.getCell('B3').value = 'high';
+    sh.getCell('A4').value = 'c';
+    sh.getCell('B4').value = 'low';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -2964,6 +3213,10 @@ const builders = [
   ['052', build052],
   ['053', build053],
   ['054', build054],
+  ['055', build055],
+  ['056', build056],
+  ['057', build057],
+  ['058', build058],
 ];
 
 const selected = new Set(process.argv.slice(2));

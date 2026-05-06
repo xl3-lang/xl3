@@ -1,0 +1,5 @@
+description: IF treats 0 and empty values (per ADR-0007) as falsy; non-zero numbers, non-empty strings, and TRUE are truthy.
+spec_section: language.md "Functions / IF"; ADR-0008
+spec_version: "0.1"
+tags: [language, function, if, truthy]
+verified_by: [hand]

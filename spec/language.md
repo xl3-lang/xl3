@@ -79,7 +79,24 @@ Function names are case-insensitive. The spec writes them uppercase.
 {{ IF([quantity] > 100, "bulk", "normal") }}
 ```
 
-Returns the second argument when the condition is true, otherwise the third argument.
+Returns the second argument when the condition is **truthy**, otherwise
+returns the third argument.
+
+A value is **truthy** unless it is one of:
+
+- The Boolean `FALSE`.
+- The number `0`.
+- A value that is empty per
+  [Empty Values](./evaluation.md#empty-values) — missing, `null`, `""`,
+  or a whitespace-only string.
+
+There is no special-case treatment of the strings `"0"` or `"false"`.
+Strings with non-whitespace content are always truthy. Templates that
+need to interpret a stringly-typed flag MUST compare explicitly, for
+example `IF([flag] = "1", …)`.
+
+Comparison expressions evaluate to a Boolean and are truthy when the
+comparison holds.
 
 ### IFEMPTY
 

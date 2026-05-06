@@ -52,6 +52,13 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   membership filters. Whitespace-only strings are now empty; numbers
   (including `0`) and booleans (including `false`) are never empty.
   Conformance fixtures 050–054 cover each surface.
+- ADR-0008 defines truthiness for `IF()` and any future Boolean-valued
+  context. A value is truthy unless it is `false`, the number `0`, or
+  empty per ADR-0007. The reference implementation no longer
+  special-cases the strings `"0"` and `"false"`; both are truthy.
+  Conformance fixtures 055–058 cover each branch. The unreachable Go-
+  template-style `{{ if … }} … {{ end }}` block in the reference impl is
+  removed (never spec-blessed, never used).
 
 ## [0.1.0-alpha.0] - 2026-05-03
 
