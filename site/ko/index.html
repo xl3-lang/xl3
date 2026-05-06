@@ -109,11 +109,28 @@
             <a class="button" href="https://www.npmjs.com/package/xl3">npm</a>
           </div>
         </div>
-        <aside class="principle-list self-center rounded-lg border border-[var(--line)] bg-white/70 px-4 shadow-[0_16px_45px_rgba(31,42,35,0.08)]" aria-label="xl3 workflow">
-          <div><strong>Engine</strong><span>TypeScript API</span></div>
-          <div><strong>Rules</strong><span>template.xlsx</span></div>
-          <div><strong>Operator</strong><span>raw.xlsx upload</span></div>
-          <div><strong>Result</strong><span>finished .xlsx</span></div>
+        <aside class="flow-panel" aria-label="xl3 workflow">
+          <div class="flow-role">
+            <span>Developer</span>
+            <strong>엔진은 한 번 정의합니다</strong>
+          </div>
+          <div class="flow-stack" aria-label="Operator file flow">
+            <div class="flow-file">
+              <span>raw.xlsx</span>
+              <small>실무자 데이터</small>
+            </div>
+            <div class="flow-plus">+</div>
+            <div class="flow-file">
+              <span>template.xlsx</span>
+              <small>아카이빙된 규칙</small>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-result">
+              <span>finished workbook</span>
+              <small>실무자가 다운로드</small>
+            </div>
+          </div>
+          <code>convert(template, raw)</code>
         </aside>
       </section>
 

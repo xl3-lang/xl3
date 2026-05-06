@@ -218,6 +218,91 @@ h3 {
   font-size: 13px;
 }
 
+.flow-panel {
+  align-self: center;
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: 0 16px 45px rgba(31, 42, 35, 0.08);
+}
+
+.flow-role {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.flow-role span {
+  color: var(--excel-dark);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.flow-role strong {
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.32;
+}
+
+.flow-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.flow-file,
+.flow-result {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.flow-file span,
+.flow-result span {
+  color: #1f2a24;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.flow-file small,
+.flow-result small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.flow-plus,
+.flow-arrow {
+  color: var(--excel-dark);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 18px;
+  font-weight: 760;
+  line-height: 1;
+  text-align: center;
+}
+
+.flow-result {
+  border-color: #b9d5c4;
+  background: var(--excel-soft);
+}
+
+.flow-panel code {
+  display: block;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f7f8f5;
+  color: var(--excel-dark);
+  font-size: 12px;
+  overflow-x: auto;
+}
+
 .section-intro,
 .text-grid,
 .walkthrough-layout,

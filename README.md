@@ -1,7 +1,7 @@
 # xl3
 
-> Use an Excel workbook as the template. Feed it data from another Excel workbook.
-> Get a formatted Excel workbook back.
+> Build Excel transformation engines from workbook templates.
+> Operators upload raw Excel files and download finished workbooks.
 
 **Status:** alpha · XTL spec 0.1 (draft) · breaking changes possible until 1.0
 
@@ -11,51 +11,61 @@
 
 ## What is xl3?
 
-xl3 is an Excel-to-Excel templating engine.
+xl3 is a TypeScript library for turning recurring Excel transformation work into
+template workbooks.
 
-You design a normal `.xlsx` workbook as the template, write expressions such as
-`{{ [Customer] }}` or `{{ IF([Amount] > 1000, "VIP", "Standard") }}` inside
-cells, and feed xl3 another `.xlsx` workbook as data. xl3 renders a new workbook
-while preserving spreadsheet structure, styles, number formats, and merged
-cells.
+Developers define the reusable engine in code. The workbook-specific rules,
+source header mapping, layout, and output shape live inside `template.xlsx`.
+Non-developers can then use a simple file flow: upload raw Excel, choose the
+approved template, download the finished workbook.
 
-```
-data.xlsx       (your source data)
+```text
+raw.xlsx        (operator data)
        +
-template.xlsx   (your workbook template)
+template.xlsx   (workflow rules + workbook layout)
        ↓
-result.xlsx     (filled workbook, with formatting preserved)
+result.xlsx     (finished workbook)
 ```
 
-Templates are authored **in Excel itself**. Drop variables into cells, save the
-file, run xl3. No macros, no hidden scripts, no vendor cloud.
+Templates are authored **in Excel itself**. Put configuration in `_config`, add
+expressions such as `{{ [Account] }}` or
+`{{ IF([Renewal] > 10000, "Priority", "Standard") }}` to cells, save the file,
+and run xl3. No macros, no hidden scripts, no vendor cloud.
 
-Excel users design the document. Developers automate the data flow.
+The template becomes the handover artifact. It can be reviewed, versioned,
+archived, and passed to the next operator without asking them to read the
+automation code.
 
 ## Quick example
 
-A template can contain ordinary Excel content plus xl3 expressions:
+A template can contain ordinary Excel content, `_config`, and xl3 expressions:
+
+| `_config` key | Value |
+|---|---|
+| `source_sheet` | `Raw` |
+| `source_header_range` | `A1:D1` |
+| `output_file_pattern` | `customer-renewal-report.xlsx` |
 
 | Cell | Template value |
 |---|---|
-| A1 | `Customer` |
-| B1 | `Amount` |
-| A2 | `{{ [Customer] }}` |
-| B2 | `{{ TEXT([Amount], "#,##0.00") }}` |
+| A5 | `{{ [Account] }}` |
+| B5 | `{{ [Region] }}` |
+| C5 | `{{ [Renewal] }}` |
+| E5 | `{{ IF([Renewal] > 10000, "Priority", "Standard") }}` |
 
 Given this data workbook:
 
-| Customer | Amount |
-|---|---:|
-| Acme | 1200 |
-| Beta | 350 |
+| Account | Region | Renewal | Owner |
+|---|---|---:|---|
+| Acme Logistics | Seoul | 18400 | Mina |
+| Beta Works | Busan | 7200 | Joon |
 
 xl3 renders:
 
-| Customer | Amount |
-|---|---:|
-| Acme | 1,200.00 |
-| Beta | 350.00 |
+| Account | Region | Renewal | Owner | Tier |
+|---|---|---:|---|---|
+| Acme Logistics | Seoul | 18400 | Mina | Priority |
+| Beta Works | Busan | 7200 | Joon | Standard |
 
 The output is still an `.xlsx` workbook. Template formatting, number formats,
 and merged cells are part of the expected result, not incidental details.
@@ -64,24 +74,27 @@ See [`spec/`](./spec) for the language draft and [`conformance/`](./conformance)
 
 ## Why xl3 exists
 
-Many reporting workflows already live in spreadsheets: report forms, invoices,
-settlement sheets, exports, and internal operation templates. xl3 keeps that
-authoring model intact. The spreadsheet remains the template, while the
-transformation rules are explicit, deterministic, and testable.
+Many reporting workflows already live in spreadsheets: renewal reports,
+settlement sheets, invoice exports, internal operation templates. They are often
+automated with one-off Python scripts, VBA macros, or service-specific workflow
+steps. That works until the rules are scattered across code, accounts, and
+tribal knowledge.
 
-The goal is not to replace Excel with code. The goal is to keep Excel as the
-authoring tool and move repetitive data filling into a small, testable template
-language.
+xl3 separates the reusable engine from the workbook-specific contract. Keep
+deployment, validation, and integration in code; keep the recurring business
+workflow in the workbook.
 
 ## What xl3 emphasizes
 
-- **Excel in, Excel out.** Templates and source data are both `.xlsx` files.
-- **Templates are real spreadsheets.** Layout and formatting stay in the workbook.
-- **Formatting is part of the contract.** Styles, number formats, and merged cells
-  are covered by Stage 2 conformance tests.
-- **No macros.** Template behavior is represented by explicit cell expressions.
-- **Conformance-tested behavior.** The TypeScript reference implementation
-  currently passes the XTL 0.1 fixture corpus, including Stage 2 OOXML comparison.
+- **Operator-friendly flow.** Raw `.xlsx` in, approved template in, finished
+  workbook out.
+- **Rules travel with the workbook.** `_config`, expressions, layout, and output
+  shape are archived in `template.xlsx`.
+- **Developer-owned engine.** Use the TypeScript API in a browser page, internal
+  portal, CLI, or service endpoint.
+- **Excel stays Excel.** Styles, number formats, sheet structure, and merged
+  cells remain part of the result.
+- **No macros or vendor cloud.** Template behavior is explicit workbook content.
 
 ## How it compares
 
@@ -113,6 +126,10 @@ const outputs = await convert(templateBuffer, dataBuffer);
 ```
 
 Runs in browsers and Node (≥18).
+
+You can try the browser flow on [xl3.io](https://xl3.io): run the attached
+sample files as-is, download the raw/template workbooks, or replace either file
+with your own.
 
 Templates can choose the source header cells in the hidden `_config` sheet:
 

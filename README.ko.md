@@ -1,7 +1,7 @@
 # xl3
 
-> Excel 파일 자체를 템플릿으로 사용합니다. 다른 Excel 파일의 데이터를 넣으면,
-> 서식이 유지된 결과 Excel 파일이 나옵니다.
+> workbook template으로 Excel 변환 엔진을 만듭니다.
+> 실무자는 raw Excel을 올리고 완성된 workbook을 내려받습니다.
 
 **상태:** alpha · XTL spec 0.1 (draft) · 1.0 전까지 breaking change 가능
 
@@ -11,51 +11,60 @@
 
 ## xl3는 무엇인가요?
 
-xl3는 Excel-to-Excel 템플릿 엔진입니다.
+xl3는 반복되는 Excel 변환 업무를 template workbook으로 표현하고 실행하는
+TypeScript 라이브러리입니다.
 
-일반 `.xlsx` 파일을 템플릿으로 만들고, 셀 안에 `{{ [Customer] }}` 또는
-`{{ IF([Amount] > 1000, "VIP", "Standard") }}` 같은 표현식을 넣습니다.
-그 다음 xl3에 데이터 `.xlsx` 파일을 입력하면, 스프레드시트 구조, 스타일,
-숫자 형식, 병합 셀을 보존한 새 Excel 파일을 생성합니다.
+개발자는 재사용 가능한 엔진을 코드로 정의합니다. workbook별 업무 규칙,
+raw 헤더 매핑, 레이아웃, 출력 모양은 `template.xlsx` 안에 둡니다.
+비개발자는 단순한 파일 흐름을 사용합니다. raw Excel을 올리고, 승인된
+템플릿을 선택하고, 완성된 workbook을 내려받습니다.
 
 ```text
-data.xlsx       (원본 데이터)
+raw.xlsx        (실무자 데이터)
        +
-template.xlsx   (Excel 템플릿)
+template.xlsx   (업무 규칙 + workbook 레이아웃)
        ↓
-result.xlsx     (서식이 유지된 결과 파일)
+result.xlsx     (완성된 workbook)
 ```
 
-템플릿은 **Excel에서 직접 작성**합니다. 셀에 변수를 넣고, 저장하고,
-xl3를 실행하면 됩니다. 매크로도, 숨겨진 스크립트도, 벤더 클라우드도 필요하지
-않습니다.
+템플릿은 **Excel에서 직접 작성**합니다. `_config`에 설정을 넣고,
+`{{ [Account] }}` 또는 `{{ IF([Renewal] > 10000, "Priority", "Standard") }}`
+같은 표현식을 셀에 넣고, 저장하고, xl3를 실행하면 됩니다. 매크로도,
+숨겨진 스크립트도, 벤더 클라우드도 필요하지 않습니다.
 
-Excel 사용자는 문서를 설계하고, 개발자는 데이터 흐름을 자동화합니다.
+템플릿은 인수인계용 산출물이 됩니다. 자동화 코드를 읽지 않아도 검토하고,
+버전 관리하고, 보관하고, 다음 담당자에게 넘길 수 있습니다.
 
 ## 간단한 예시
 
-템플릿에는 일반 Excel 내용과 xl3 표현식을 함께 넣을 수 있습니다.
+템플릿에는 일반 Excel 내용, `_config`, xl3 표현식을 함께 넣을 수 있습니다.
+
+| `_config` key | 값 |
+|---|---|
+| `source_sheet` | `Raw` |
+| `source_header_range` | `A1:D1` |
+| `output_file_pattern` | `customer-renewal-report.xlsx` |
 
 | 셀 | 템플릿 값 |
 |---|---|
-| A1 | `Customer` |
-| B1 | `Amount` |
-| A2 | `{{ [Customer] }}` |
-| B2 | `{{ TEXT([Amount], "#,##0.00") }}` |
+| A5 | `{{ [Account] }}` |
+| B5 | `{{ [Region] }}` |
+| C5 | `{{ [Renewal] }}` |
+| E5 | `{{ IF([Renewal] > 10000, "Priority", "Standard") }}` |
 
 데이터 Excel 파일이 다음과 같다면:
 
-| Customer | Amount |
-|---|---:|
-| Acme | 1200 |
-| Beta | 350 |
+| Account | Region | Renewal | Owner |
+|---|---|---:|---|
+| Acme Logistics | Seoul | 18400 | Mina |
+| Beta Works | Busan | 7200 | Joon |
 
 xl3는 다음 결과를 렌더링합니다.
 
-| Customer | Amount |
-|---|---:|
-| Acme | 1,200.00 |
-| Beta | 350.00 |
+| Account | Region | Renewal | Owner | Tier |
+|---|---|---:|---|---|
+| Acme Logistics | Seoul | 18400 | Mina | Priority |
+| Beta Works | Busan | 7200 | Joon | Standard |
 
 출력은 여전히 `.xlsx` 파일입니다. 템플릿의 서식, 숫자 형식, 병합 셀은
 우연히 따라오는 부가 요소가 아니라 결과의 일부로 취급됩니다.
@@ -65,23 +74,26 @@ protocol은 [`conformance/`](./conformance)에 있습니다.
 
 ## 왜 xl3가 필요한가요?
 
-많은 보고 업무는 이미 스프레드시트 안에 있습니다. 보고서 양식, 인보이스,
-정산서, 데이터 export, 내부 운영용 템플릿이 모두 Excel로 돌아갑니다. xl3는
-이 작성 방식을 그대로 유지합니다. 스프레드시트는 템플릿으로 남고, 변환 규칙은
-명시적이고 결정적이며 테스트 가능한 형태가 됩니다.
+많은 보고 업무는 이미 스프레드시트 안에 있습니다. 리뉴얼 보고서, 정산서,
+인보이스 export, 내부 운영용 템플릿이 모두 Excel로 돌아갑니다. 이런 업무는
+Python script, VBA macro, 서비스별 workflow로 자동화되곤 합니다. 문제는
+업무 규칙이 코드, 계정, 담당자의 기억에 흩어지기 쉽다는 점입니다.
 
-목표는 Excel을 코드로 대체하는 것이 아닙니다. Excel을 작성 도구로 유지하면서,
-반복적인 데이터 채우기 작업을 작고 검증 가능한 템플릿 언어로 옮기는 것입니다.
+xl3는 재사용 가능한 엔진과 workbook별 변환 계약을 분리합니다. 배포, 검증,
+서비스 통합은 코드에서 관리하고, 반복되는 업무 흐름은 workbook 안에 둡니다.
 
 ## xl3가 강조하는 것
 
-- **Excel in, Excel out.** 템플릿과 원본 데이터가 모두 `.xlsx` 파일입니다.
-- **템플릿은 실제 스프레드시트입니다.** 레이아웃과 서식은 workbook 안에 남습니다.
-- **서식도 계약의 일부입니다.** 스타일, 숫자 형식, 병합 셀은 Stage 2 conformance
-  테스트로 검증됩니다.
-- **매크로가 없습니다.** 템플릿 동작은 명시적인 셀 표현식으로 표현됩니다.
-- **conformance로 검증됩니다.** TypeScript reference implementation은 현재
-  Stage 2 OOXML 비교를 포함한 XTL 0.1 fixture corpus를 통과합니다.
+- **실무자에게 단순한 흐름.** raw `.xlsx`와 승인된 템플릿을 넣으면 완성된
+  workbook이 나옵니다.
+- **규칙은 workbook과 함께 이동합니다.** `_config`, 표현식, 레이아웃, 출력
+  모양이 `template.xlsx` 안에 아카이빙됩니다.
+- **엔진은 개발자가 관리합니다.** TypeScript API를 브라우저 페이지, 내부 포털,
+  CLI, 서비스 endpoint에 연결할 수 있습니다.
+- **Excel은 계속 Excel입니다.** 스타일, 숫자 형식, 시트 구조, 병합 셀은 결과의
+  일부로 유지됩니다.
+- **매크로나 벤더 클라우드가 없습니다.** 템플릿 동작은 명시적인 workbook
+  콘텐츠입니다.
 
 ## 비교
 
@@ -113,6 +125,10 @@ const outputs = await convert(templateBuffer, dataBuffer);
 ```
 
 브라우저와 Node 18 이상에서 동작합니다.
+
+[xl3.io](https://xl3.io)에서 브라우저 흐름을 바로 시험해볼 수 있습니다.
+첨부된 예시 파일을 그대로 실행하거나, raw/template workbook을 내려받아
+확인하거나, 원하는 파일로 교체할 수 있습니다.
 
 템플릿의 숨김 `_config` sheet에서 raw 파일의 헤더 셀을 지정할 수 있습니다.
 
