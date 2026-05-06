@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>xl3 - Excel 변환을 명세로 정의하는 표준</title>
+    <title>xl3 - workbook template으로 Excel 변환 엔진 만들기</title>
     <meta
       name="description"
-      content="xl3는 Excel-to-Excel 변환을 위한 작고 검증된 템플릿 언어입니다. 템플릿도 workbook, 데이터도 workbook, 결과도 workbook입니다."
+      content="xl3는 개발자가 반복되는 Excel 변환 업무를 template workbook으로 정의하고, 비개발자는 raw Excel을 올려 완성된 workbook을 내려받는 흐름을 만들 수 있게 합니다."
     >
     <meta name="keywords" content="xl3, XTL, Excel 템플릿, Excel 자동화, OOXML, xlsx, workbook 변환, conformance, 명세">
     <meta name="author" content="xl3 contributors">
@@ -23,24 +23,32 @@
     <meta property="og:locale" content="ko_KR">
     <meta property="og:locale:alternate" content="en_US">
     <meta property="og:url" content="https://xl3.io/ko/">
-    <meta property="og:title" content="xl3 - Excel-to-Excel 변환을 명세로 정의합니다">
+    <meta property="og:title" content="xl3 - workbook template으로 Excel 변환 엔진 만들기">
     <meta
       property="og:description"
-      content="Excel workbook 템플릿을 위한 작고 검증된 언어. 템플릿도 workbook, 데이터도 workbook, 결과도 workbook입니다."
+      content="반복되는 Excel 변환 업무를 template workbook으로 정의하고, 비개발자가 raw Excel을 올려 결과 workbook을 받는 흐름을 만듭니다."
     >
     <meta property="og:image" content="https://xl3.io/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="xl3 - Excel-to-Excel transformation, specified.">
+    <meta property="og:image:alt" content="xl3 - workbook template으로 Excel 변환 엔진 만들기.">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="xl3 - Excel-to-Excel 변환을 명세로 정의합니다">
-    <meta name="twitter:description" content="Excel workbook 템플릿을 위한 작고 검증된 언어.">
+    <meta name="twitter:title" content="xl3 - workbook template으로 Excel 변환 엔진 만들기">
+    <meta name="twitter:description" content="반복되는 Excel 변환 업무를 template workbook으로 정의합니다.">
     <meta name="twitter:image" content="https://xl3.io/og-image.png">
-    <meta name="twitter:image:alt" content="xl3 - Excel-to-Excel transformation, specified.">
+    <meta name="twitter:image:alt" content="xl3 - workbook template으로 Excel 변환 엔진 만들기.">
 
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23217846'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='24' font-weight='700' fill='white'%3Exl3%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "exceljs": "https://esm.sh/exceljs@4.4.0",
+          "jszip": "https://esm.sh/jszip@3.10.1"
+        }
+      }
+    </script>
     <link rel="stylesheet" href="../styles.css?v=20260506">
 
     <script type="application/ld+json">
@@ -75,9 +83,9 @@
           <span class="brand-text">Excel-to-Excel transformation</span>
         </a>
         <nav class="site-nav" aria-label="Primary navigation">
-          <a href="#walkthrough">Walkthrough</a>
-          <a href="#standard">Standard</a>
-          <a href="#conformance">신뢰성</a>
+          <a href="#walkthrough">Workflow</a>
+          <a href="#standard">Handoff</a>
+          <a href="#conformance">운영</a>
           <a href="#use">Use</a>
           <a href="../">English</a>
         </nav>
@@ -85,37 +93,38 @@
     </header>
 
     <main id="top">
-      <section class="hero !min-h-0 !grid-cols-[minmax(0,0.95fr)_minmax(240px,320px)] !items-center !gap-14 !py-20 lg:!py-24 max-lg:!grid-cols-1 max-lg:!gap-10 max-sm:!py-14">
+      <section class="hero !min-h-0 !grid-cols-[minmax(0,0.95fr)_minmax(250px,340px)] !items-center !gap-14 !py-16 lg:!py-20 max-lg:!grid-cols-1 max-lg:!gap-10 max-sm:!py-12">
         <div class="hero-copy">
-          <p class="kicker">XTL 0.1 draft · TypeScript reference implementation</p>
-          <h1 class="max-w-4xl text-[clamp(42px,7vw,88px)] leading-[1.08]">Excel-to-Excel 변환을 명세로 정의합니다.</h1>
+          <p class="kicker">TypeScript engine · workbook-defined workflow</p>
+          <h1 class="max-w-4xl text-[clamp(40px,6.2vw,78px)] leading-[1.1]">workbook template으로 Excel 변환 엔진을 만드세요.</h1>
           <p class="lead">
-            xl3는 Excel workbook을 템플릿으로 쓰기 위한 작고 검증된
-            언어입니다. 템플릿도 workbook, 데이터도 workbook, 결과도
-            workbook입니다.
+            xl3는 개발자가 반복되는 Excel 변환 업무를 template workbook으로
+            정의하고, 비개발자는 raw Excel을 올려 완성된 workbook을
+            내려받는 흐름을 만들 수 있게 합니다.
           </p>
           <div class="hero-links">
-            <a class="button primary" href="#walkthrough">모델 보기</a>
+            <a class="button primary" href="#use">변환기 써보기</a>
+            <a class="button" href="#walkthrough">흐름 보기</a>
             <a class="button" href="https://github.com/jinyoung4478/xl3">GitHub</a>
             <a class="button" href="https://www.npmjs.com/package/xl3">npm</a>
           </div>
         </div>
-        <aside class="principle-list self-center rounded-lg border border-[var(--line)] bg-white/70 px-4 shadow-[0_16px_45px_rgba(31,42,35,0.08)]" aria-label="xl3 principles">
-          <div><strong>Input</strong><span>data.xlsx</span></div>
-          <div><strong>Template</strong><span>template.xlsx</span></div>
-          <div><strong>Output</strong><span>result.xlsx</span></div>
-          <div><strong>Contract</strong><span>spec + fixtures</span></div>
+        <aside class="principle-list self-center rounded-lg border border-[var(--line)] bg-white/70 px-4 shadow-[0_16px_45px_rgba(31,42,35,0.08)]" aria-label="xl3 workflow">
+          <div><strong>Engine</strong><span>TypeScript API</span></div>
+          <div><strong>Rules</strong><span>template.xlsx</span></div>
+          <div><strong>Operator</strong><span>raw.xlsx upload</span></div>
+          <div><strong>Result</strong><span>finished .xlsx</span></div>
         </aside>
       </section>
 
       <section id="walkthrough" class="walkthrough-section" aria-labelledby="walkthrough-title">
-        <div class="section-intro max-w-3xl">
-          <p class="kicker">Interactive walkthrough</p>
-          <h2 id="walkthrough-title" class="text-[clamp(32px,4vw,54px)] leading-[1.18]">변환의 단위는 workbook입니다.</h2>
+        <div class="section-intro">
+          <p class="kicker">Workflow model</p>
+          <h2 id="walkthrough-title" class="text-[clamp(32px,4vw,54px)] leading-[1.18]">엔진은 코드에, 업무 흐름은 workbook에 남깁니다.</h2>
           <p>
-            모델을 따라 스크롤해 보세요. 규칙이 하나씩 활성화될 때마다
-            오른쪽 예시 workbook이 바뀝니다. 화면은 익숙한 Excel 모습
-            그대로지만, 동작은 XTL과 conformance fixture로 정의됩니다.
+            개발자는 변환기를 한 번 만들고, 반복되는 업무 규칙과 raw 헤더
+            매핑, 레이아웃, 출력 모양은 아카이빙하고 인수인계할 수 있는
+            template workbook 안에 둡니다.
           </p>
         </div>
 
@@ -123,23 +132,23 @@
           <div class="steps" aria-label="xl3 model steps">
             <article class="step is-active !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="data" tabindex="0">
               <span class="step-index row-span-2 mt-1">01</span>
-              <h3>데이터는 workbook입니다</h3>
-              <p>원본 row는 평범한 `.xlsx` 파일에서 옵니다. 첫 row는 field 이름이 됩니다.</p>
+              <h3>계약을 Excel 안에 정의합니다</h3>
+              <p>`_config`, `source_header_range`, XTL 표현식으로 raw workbook이 보고서가 되는 규칙을 적습니다.</p>
             </article>
             <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="template" tabindex="0">
               <span class="step-index row-span-2 mt-1">02</span>
-              <h3>템플릿도 workbook입니다</h3>
-              <p>셀 안에는 일반 레이아웃과 `{{ [Customer] }}` 같은 XTL 표현식이 함께 들어갑니다.</p>
+              <h3>단순한 업로드 흐름으로 노출합니다</h3>
+              <p>비개발자는 raw Excel과 승인된 템플릿을 선택하고 변환기를 실행합니다.</p>
             </article>
             <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="render" tabindex="0">
               <span class="step-index row-span-2 mt-1">03</span>
-              <h3>렌더링은 Excel을 보존합니다</h3>
-              <p>결과 workbook은 시트 구조, 숫자 형식, 스타일, 병합 셀까지 그대로 유지합니다.</p>
+              <h3>완성된 workbook을 생성합니다</h3>
+              <p>값은 데이터에서 렌더링하고, 시트 구조와 숫자 형식, 스타일, 병합 셀은 유지합니다.</p>
             </article>
             <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="conformance" tabindex="0">
               <span class="step-index row-span-2 mt-1">04</span>
-              <h3>계약은 검증할 수 있습니다</h3>
-              <p>공유 fixture로 workbook 동작을 확인하므로, 구현이 달라도 같은 edge case에 맞출 수 있습니다.</p>
+              <h3>운영 규칙을 파일로 남깁니다</h3>
+              <p>템플릿은 반복되는 Excel 업무가 어떻게 동작하는지 담은 인수인계용 산출물이 됩니다.</p>
             </article>
           </div>
 
@@ -157,62 +166,101 @@
       </section>
 
       <section id="standard" class="text-section">
-        <div class="text-grid !grid-cols-[minmax(240px,0.72fr)_minmax(0,1fr)] !gap-10 max-lg:!grid-cols-1">
-          <div>
-            <p class="kicker">왜 표준인가요?</p>
-            <h2 class="text-[clamp(30px,3.6vw,50px)] leading-[1.2]">Excel 자동화의 동작이 특정 구현 하나에 좌우되어선 안 됩니다.</h2>
+        <div class="text-grid narrative-grid">
+          <div class="narrative-heading">
+            <p class="kicker">개발자가 쓰는 이유</p>
+            <h2 class="text-[clamp(30px,3.6vw,50px)] leading-[1.2]">반복 보고서 로직을 일회성 스크립트 밖으로 꺼냅니다.</h2>
           </div>
-          <div class="prose">
+          <div class="prose narrative-prose">
             <p>
-              Excel 자동화 도구는 많고 대체로 쓸 만하지만, 그 동작은 결국
-              특정 라이브러리가 우연히 구현한 모양 그대로로 굳어지곤 합니다.
-              그래서 다른 언어로 포팅하기 어렵고, edge case를 논의하기도
-              어렵습니다.
+              Python script, VBA macro, 서비스별 workflow로도 Excel 자동화는
+              가능합니다. 하지만 업무 규칙은 코드, 계정, 담당자의 기억에
+              흩어지기 쉽습니다.
             </p>
             <p>
-              xl3는 반대로 접근합니다. 명세(prose specification)가 먼저,
-              실행 가능한 fixture가 그다음, reference implementation은
-              마지막입니다. JavaScript package는 편의를 위한 도구일 뿐이고,
-              진짜 계약은 XTL과 conformance corpus입니다.
+              xl3는 재사용 가능한 엔진과 workbook별 변환 계약을 분리합니다.
+              개발자는 TypeScript 통합을 관리하고, 반복되는 Excel 업무는
+              template workbook이라는 파일 단위로 전달할 수 있습니다.
             </p>
           </div>
         </div>
       </section>
 
       <section id="conformance" class="conformance-section" aria-labelledby="conformance-title">
-        <div class="section-intro max-w-3xl">
-          <p class="kicker">신뢰성</p>
-          <h2 id="conformance-title" class="text-[clamp(32px,4vw,54px)] leading-[1.18]">결과물은 그대로 Excel이어야 합니다.</h2>
+        <div class="section-intro">
+          <p class="kicker">운영 관점</p>
+          <h2 id="conformance-title" class="text-[clamp(32px,4vw,54px)] leading-[1.18]">자동화를 넘어서 인수인계 가능한 형태로 만듭니다.</h2>
           <p>
-            xl3는 값 치환만이 아니라 레이아웃, 서식, workbook 구조까지
-            중요한 보고서 작업을 전제로 합니다. 공개 conformance fixture는
-            그 약속을 뒷받침하는 검증 자료이고, 처음부터 알아야 하는
-            개념은 아닙니다.
+            실제로 변환기를 실행하는 사람은 코드를 읽지 않아도 됩니다.
+            필요한 것은 안정적인 변환기, 승인된 템플릿, 예측 가능한 결과
+            workbook입니다.
           </p>
         </div>
         <div class="stage-grid !gap-4 max-lg:!grid-cols-1">
           <article>
-            <h3>workbook을 보존합니다</h3>
-            <p>템플릿의 시트 구조, 스타일, 숫자 형식, 병합 셀을 유지한 채 데이터에서 값을 렌더링합니다.</p>
-            <code>styles · formats · merges</code>
+            <h3>템플릿이 인수인계 문서입니다</h3>
+            <p>보고서 규칙은 검토하고, 버전 관리하고, 보관하고, 다음 담당자에게 넘길 수 있는 workbook 파일에 남습니다.</p>
+            <code>template.xlsx</code>
           </article>
           <article>
-            <h3>edge case를 명확히 합니다</h3>
-            <p>반올림, 날짜 처리, 파일명, 수식, 서식 동작을 특정 라이브러리의 우연한 구현에 숨기지 않습니다.</p>
-            <code>spec + fixtures</code>
+            <h3>실무자에게 단순합니다</h3>
+            <p>브라우저 페이지로 노출하면 raw 데이터를 올리고, 템플릿을 선택하고, 결과 workbook을 다운로드하면 됩니다.</p>
+            <code>raw.xlsx -&gt; result.xlsx</code>
           </article>
           <article>
-            <h3>구현을 맞춰 갑니다</h3>
-            <p>TypeScript package는 reference implementation이고, 다른 구현도 같은 corpus로 검증할 수 있습니다.</p>
-            <code>XTL 0.1 draft</code>
+            <h3>엔진은 개발자가 관리합니다</h3>
+            <p>배포, 검증, 서비스 통합은 코드에서 관리하고, 템플릿별 업무 규칙은 Excel 안에 둡니다.</p>
+            <code>convert(template, raw)</code>
           </article>
         </div>
       </section>
 
       <section id="use" class="use-section" aria-labelledby="use-title">
-        <div class="section-intro max-w-3xl">
+        <div class="section-intro">
           <p class="kicker">Use it</p>
-          <h2 id="use-title" class="text-[clamp(32px,4vw,54px)] leading-[1.18]">작은 API, 명확한 계약.</h2>
+          <h2 id="use-title" class="text-[clamp(32px,4vw,54px)] leading-[1.18]">실무자 흐름을 체험하고, 앱에 연결하세요.</h2>
+        </div>
+        <div class="converter-panel mx-auto mb-8 grid w-[min(1160px,calc(100%_-_56px))] grid-cols-[minmax(0,0.88fr)_minmax(320px,0.72fr)] gap-6 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[0_16px_45px_rgba(31,42,35,0.08)] max-lg:grid-cols-1 max-sm:w-[calc(100%_-_36px)]">
+          <div class="min-w-0">
+            <p class="kicker">Browser converter</p>
+            <h3 class="!mb-3 text-2xl leading-tight">raw 데이터와 템플릿을 올리면 결과 파일을 내려받습니다.</h3>
+            <p class="mb-0 text-[15px] leading-7 text-[var(--muted)]">
+              raw workbook의 헤더 셀을 지정하려면 템플릿 workbook의 숨김
+              <code>_config</code> sheet에 <code>source_header_range</code>를
+              <code>A1:D1</code>처럼 추가하세요. 해당 범위 아래 행을 데이터로 읽습니다.
+            </p>
+          </div>
+          <form id="converterForm" class="grid gap-3" aria-label="Browser workbook converter">
+            <label class="grid gap-2 text-sm font-semibold text-[#2f3833]">
+              <span class="file-label-row">
+                <span>Raw Excel file</span>
+                <a href="../examples/sample-raw.xlsx" download>예시 다운로드</a>
+              </span>
+              <span class="input-hint">기본 예시 파일이 첨부되어 있습니다. 필요할 때만 교체하세요.</span>
+              <input id="rawFile" class="rounded-md border border-[var(--line-strong)] bg-white px-3 py-2 text-sm font-normal" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+            </label>
+            <label class="grid gap-2 text-sm font-semibold text-[#2f3833]">
+              <span class="file-label-row">
+                <span>Template Excel file</span>
+                <a href="../examples/sample-template.xlsx" download>예시 다운로드</a>
+              </span>
+              <span class="input-hint">`_config.source_header_range = A1:D1` 설정이 들어 있습니다.</span>
+              <input id="templateFile" class="rounded-md border border-[var(--line-strong)] bg-white px-3 py-2 text-sm font-normal" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+            </label>
+            <button id="convertButton" class="button primary mt-1 w-full" type="submit">예시 실행하고 다운로드</button>
+            <p id="converterStatus" class="mb-0 min-h-5 text-sm leading-6 text-[var(--muted)]" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+        <div class="developer-api">
+          <div>
+            <p class="kicker">Developer API</p>
+            <h3>같은 workflow를 제품에 연결하세요.</h3>
+            <p>
+              데모 흐름을 내부 포털, CLI, 서비스 endpoint로 옮길 때 패키지를
+              사용하세요. 실무자 경험은 파일 기반으로 단순하게 유지하고,
+              배포와 검증은 앱에서 관리할 수 있습니다.
+            </p>
+          </div>
         </div>
         <div class="code-pair !grid-cols-[minmax(220px,0.62fr)_minmax(0,1fr)] max-lg:!grid-cols-1">
           <figure class="code-card">

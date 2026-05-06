@@ -4,27 +4,52 @@ const preview = document.querySelector('#excelPreview');
 const previewKind = document.querySelector('#previewKind');
 const previewTitle = document.querySelector('#previewTitle');
 const previewNotes = document.querySelector('#previewNotes');
+const converterForm = document.querySelector('#converterForm');
+const rawFileInput = document.querySelector('#rawFile');
+const templateFileInput = document.querySelector('#templateFile');
+const convertButton = document.querySelector('#convertButton');
+const converterStatus = document.querySelector('#converterStatus');
+const xl3ModuleUrl = isKorean ? '../dist/index.js' : './dist/index.js';
+const exampleBaseUrl = isKorean ? '../examples/' : './examples/';
+const exampleRawUrl = `${exampleBaseUrl}sample-raw.xlsx`;
+const exampleTemplateUrl = `${exampleBaseUrl}sample-template.xlsx`;
 
 const copy = {
   en: {
-    dataTitle: 'A workbook supplies source rows.',
-    dataNote: 'Header row fields become XTL source columns.',
-    templateTitle: 'A workbook defines the output document.',
-    templateNote: 'XTL expressions live inside ordinary Excel cells.',
-    renderTitle: 'The rendered result is still Excel.',
-    renderNote: 'Values change, while workbook structure and formatting remain part of the contract.',
-    conformanceTitle: 'The contract is backed by fixtures.',
-    conformanceNote: 'The same workbook cases can be reused by implementations in any language.',
+    dataTitle: 'The template declares the source shape.',
+    dataNote: 'source_header_range tells the engine which raw cells are headers.',
+    templateTitle: 'Operators get a file-based workflow.',
+    templateNote: 'The UI can stay simple: raw workbook in, template workbook in, result workbook out.',
+    renderTitle: 'The output is a finished workbook.',
+    renderNote: 'Values change while workbook layout, styles, formats, and merges remain useful.',
+    conformanceTitle: 'The workflow is archived in the template.',
+    conformanceNote: 'The workbook captures the recurring job so teams can review, version, and hand it over.',
+    exampleReady: 'Example files are attached. Run as-is, or replace either file.',
+    loadingExamples: 'Loading attached example files...',
+    loadingEngine: 'Loading the xl3 browser engine...',
+    converting: 'Converting workbook...',
+    noOutputs: 'Conversion finished, but the template did not produce an output file.',
+    downloadedOne: 'Downloaded result workbook.',
+    downloadedMany: (count) => `Downloaded ${count} result workbooks as a ZIP.`,
+    failed: (message) => `Conversion failed: ${message}`,
   },
   ko: {
-    dataTitle: 'workbook이 원본 row를 공급합니다.',
-    dataNote: 'Header row의 field가 그대로 XTL의 source column이 됩니다.',
-    templateTitle: 'workbook이 결과 문서의 모양을 정의합니다.',
-    templateNote: 'XTL 표현식은 평범한 Excel 셀 안에 그대로 들어갑니다.',
-    renderTitle: '렌더링 결과 역시 Excel입니다.',
-    renderNote: '값은 바뀌지만 workbook 구조와 서식은 계약의 일부로 남습니다.',
-    conformanceTitle: '계약은 fixture로 뒷받침됩니다.',
-    conformanceNote: '같은 workbook 사례를 여러 언어의 구현에서 함께 재사용할 수 있습니다.',
+    dataTitle: '템플릿이 raw 데이터의 모양을 선언합니다.',
+    dataNote: 'source_header_range가 어떤 raw 셀을 헤더로 읽을지 엔진에 알려줍니다.',
+    templateTitle: '실무자는 파일 기반 흐름을 사용합니다.',
+    templateNote: 'UI는 단순하게 유지할 수 있습니다. raw workbook과 template workbook을 넣고 결과를 받습니다.',
+    renderTitle: '결과는 완성된 workbook입니다.',
+    renderNote: '값은 바뀌지만 workbook 레이아웃, 스타일, 숫자 형식, 병합 셀은 유지됩니다.',
+    conformanceTitle: '업무 흐름은 템플릿에 아카이빙됩니다.',
+    conformanceNote: 'workbook이 반복 작업을 담고 있으므로 검토, 버전 관리, 인수인계가 쉬워집니다.',
+    exampleReady: '예시 파일이 첨부되어 있습니다. 그대로 실행하거나 원하는 파일로 교체하세요.',
+    loadingExamples: '첨부된 예시 파일을 불러오는 중입니다...',
+    loadingEngine: 'xl3 브라우저 엔진을 불러오는 중입니다...',
+    converting: 'workbook을 변환하는 중입니다...',
+    noOutputs: '변환은 끝났지만 템플릿이 출력 파일을 만들지 않았습니다.',
+    downloadedOne: '결과 workbook을 다운로드했습니다.',
+    downloadedMany: (count) => `결과 workbook ${count}개를 ZIP으로 다운로드했습니다.`,
+    failed: (message) => `변환 실패: ${message}`,
   },
 };
 
@@ -32,17 +57,17 @@ const t = isKorean ? copy.ko : copy.en;
 
 const examples = {
   data: {
-    kind: 'data.xlsx',
+    kind: '_config',
     title: t.dataTitle,
     note: t.dataNote,
-    workbookTitle: 'data.xlsx',
-    workbookSubtitle: isKorean ? '원본 row 공급용 workbook' : 'source row workbook',
-    formula: 'B2  1200',
-    sheetName: 'Data',
+    workbookTitle: 'template.xlsx',
+    workbookSubtitle: isKorean ? '업무 규칙이 들어 있는 workbook' : 'workbook with transformation rules',
+    formula: 'B2  source_header_range = A1:D1',
+    sheetName: '_config',
     rows: [
-      ['Customer', 'Amount', 'Region'],
-      ['Acme', '1200', 'Seoul'],
-      ['Beta', '350', 'Busan'],
+      ['key', 'value', 'notes'],
+      ['source_sheet', 'Raw', 'worksheet to read'],
+      ['source_header_range', 'A1:D1', 'headers and columns'],
     ],
     classes: [
       ['header-cell', 'header-cell', 'header-cell'],
@@ -51,24 +76,26 @@ const examples = {
     ],
   },
   template: {
-    kind: 'template.xlsx',
+    kind: 'operator flow',
     title: t.templateTitle,
     note: t.templateNote,
-    workbookTitle: 'template.xlsx',
-    workbookSubtitle: isKorean ? 'Excel에서 작성한 템플릿 workbook' : 'template authored in Excel',
-    formula: 'B2  {{ TEXT([Amount], "#,##0.00") }}',
-    sheetName: 'Report',
+    workbookTitle: 'converter.html',
+    workbookSubtitle: isKorean ? '비개발자용 변환 화면' : 'operator-facing converter',
+    formula: 'raw.xlsx + template.xlsx',
+    sheetName: 'Run',
     rows: [
-      ['Customer', 'Amount', 'Status'],
-      ['{{ [Customer] }}', '{{ TEXT([Amount], "#,##0.00") }}', '{{ IF([Amount] > 1000, "VIP", "Standard") }}'],
-      ['Prepared for finance review', '', ''],
+      ['Input', 'Selected file', 'Owner'],
+      ['Raw Excel', 'raw-may.xlsx', 'operator'],
+      ['Template Excel', 'approved-report.xlsx', 'developer/team'],
+      ['Action', 'Convert and download', 'operator'],
     ],
     classes: [
       ['header-cell', 'header-cell', 'header-cell'],
-      ['template-cell', 'template-cell selected', 'template-cell'],
+      ['', 'selected template-cell', ''],
+      ['', 'template-cell', ''],
       ['merged-note', 'merged-note', 'merged-note'],
     ],
-    merges: [{ row: 2, col: 0, span: 3 }],
+    merges: [{ row: 3, col: 0, span: 3 }],
   },
   render: {
     kind: 'result.xlsx',
@@ -93,18 +120,18 @@ const examples = {
     merges: [{ row: 2, col: 0, span: 3 }],
   },
   conformance: {
-    kind: 'fixture corpus',
+    kind: 'handover artifact',
     title: t.conformanceTitle,
     note: t.conformanceNote,
-    workbookTitle: 'XTL fixtures',
-    workbookSubtitle: isKorean ? '공유 workbook 동작 사례' : 'shared workbook behavior cases',
-    formula: '27 fixtures',
-    sheetName: 'Report',
+    workbookTitle: 'template.xlsx',
+    workbookSubtitle: isKorean ? '아카이빙 가능한 업무 규칙' : 'archivable workflow contract',
+    formula: 'rules travel with the workbook',
+    sheetName: 'Workflow',
     rows: [
-      ['Fixture', 'Covers', 'Result'],
-      ['024 merge preservation', 'merged cells', 'PASS'],
-      ['025 style numFmt', 'formatting', 'PASS'],
-      ['027 cross-writer canonicalization', 'workbook structure', 'PASS'],
+      ['What is preserved', 'Where it lives', 'Why it matters'],
+      ['Header mapping', '_config', 'repeatable runs'],
+      ['Output layout', 'report sheets', 'operator handoff'],
+      ['Transform rules', 'XTL cells', 'reviewable file'],
     ],
     classes: [
       ['header-cell', 'header-cell', 'header-cell'],
@@ -205,15 +232,92 @@ steps.forEach((step) => {
   });
 });
 
-const observer = new IntersectionObserver(
-  (entries) => {
-    const visible = entries
-      .filter((entry) => entry.isIntersecting)
-      .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-    if (visible) setActiveStep(visible.target.dataset.step);
-  },
-  { threshold: [0.45, 0.7] },
-);
-
-steps.forEach((step) => observer.observe(step));
 setActiveStep('data');
+
+let xl3ModulePromise;
+
+function loadXl3Module() {
+  xl3ModulePromise ??= import(xl3ModuleUrl);
+  return xl3ModulePromise;
+}
+
+function setConverterStatus(message, tone = 'muted') {
+  if (!converterStatus) return;
+  converterStatus.textContent = message;
+  converterStatus.style.color = tone === 'error' ? 'var(--red)' : 'var(--muted)';
+}
+
+function setConverterBusy(isBusy) {
+  if (!convertButton) return;
+  convertButton.disabled = isBusy;
+  convertButton.textContent = isBusy
+    ? (isKorean ? '변환 중...' : 'Converting...')
+    : (isKorean ? '예시 실행하고 다운로드' : 'Run example and download');
+}
+
+async function fileOrExampleBuffer(file, exampleUrl) {
+  if (file) return file.arrayBuffer();
+  const response = await fetch(exampleUrl);
+  if (!response.ok) {
+    throw new Error(`Could not load example file: ${exampleUrl}`);
+  }
+  return response.arrayBuffer();
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function outputBlob(output) {
+  return new Blob(
+    [output.data],
+    { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+  );
+}
+
+if (converterForm && rawFileInput && templateFileInput) {
+  converterForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const rawFile = rawFileInput.files?.[0];
+    const templateFile = templateFileInput.files?.[0];
+    setConverterBusy(true);
+    try {
+      setConverterStatus(t.loadingEngine);
+      const { convert, packageZip } = await loadXl3Module();
+
+      setConverterStatus(rawFile && templateFile ? t.converting : t.loadingExamples);
+      const [templateBuffer, rawBuffer] = await Promise.all([
+        fileOrExampleBuffer(templateFile, exampleTemplateUrl),
+        fileOrExampleBuffer(rawFile, exampleRawUrl),
+      ]);
+      setConverterStatus(t.converting);
+      const outputs = await convert(templateBuffer, rawBuffer);
+
+      if (outputs.length === 0) {
+        setConverterStatus(t.noOutputs, 'error');
+      } else if (outputs.length === 1) {
+        downloadBlob(outputBlob(outputs[0]), outputs[0].filename || 'result.xlsx');
+        setConverterStatus(t.downloadedOne);
+      } else {
+        const zipBlob = await packageZip(outputs);
+        downloadBlob(zipBlob, 'xl3-results.zip');
+        setConverterStatus(t.downloadedMany(outputs.length));
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setConverterStatus(t.failed(message), 'error');
+    } finally {
+      setConverterBusy(false);
+    }
+  });
+
+  setConverterStatus(t.exampleReady);
+}

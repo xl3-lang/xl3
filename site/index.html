@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>xl3 - Excel-to-Excel transformation, specified</title>
+    <title>xl3 - Build Excel transformation engines from workbook templates</title>
     <meta
       name="description"
-      content="xl3 defines a small, conformance-tested language for Excel-to-Excel transformation. Templates are workbooks, data is a workbook, and output is a workbook."
+      content="xl3 lets developers define recurring Excel workflows as template workbooks, then expose them as simple tools where operators upload raw Excel and download finished workbooks."
     >
     <meta name="keywords" content="xl3, XTL, Excel template, Excel to Excel, OOXML, xlsx, workbook transformation, conformance, spec">
     <meta name="author" content="xl3 contributors">
@@ -23,24 +23,32 @@
     <meta property="og:locale" content="en_US">
     <meta property="og:locale:alternate" content="ko_KR">
     <meta property="og:url" content="https://xl3.io/">
-    <meta property="og:title" content="xl3 - Excel-to-Excel transformation, specified">
+    <meta property="og:title" content="xl3 - Build Excel transformation engines from workbook templates">
     <meta
       property="og:description"
-      content="A small, conformance-tested language for Excel workbook templates. Templates are workbooks, data is a workbook, and output is a workbook."
+      content="Define recurring Excel workflows as template workbooks. Operators upload raw Excel and download finished workbooks."
     >
     <meta property="og:image" content="https://xl3.io/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="xl3 - Excel-to-Excel transformation, specified.">
+    <meta property="og:image:alt" content="xl3 - Build Excel transformation engines from workbook templates.">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="xl3 - Excel-to-Excel transformation, specified">
-    <meta name="twitter:description" content="A small, conformance-tested language for Excel workbook templates.">
+    <meta name="twitter:title" content="xl3 - Build Excel transformation engines from workbook templates">
+    <meta name="twitter:description" content="Define recurring Excel workflows as template workbooks.">
     <meta name="twitter:image" content="https://xl3.io/og-image.png">
-    <meta name="twitter:image:alt" content="xl3 - Excel-to-Excel transformation, specified.">
+    <meta name="twitter:image:alt" content="xl3 - Build Excel transformation engines from workbook templates.">
 
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23217846'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial,sans-serif' font-size='24' font-weight='700' fill='white'%3Exl3%3C/text%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "exceljs": "https://esm.sh/exceljs@4.4.0",
+          "jszip": "https://esm.sh/jszip@3.10.1"
+        }
+      }
+    </script>
     <link rel="stylesheet" href="./styles.css?v=20260506">
 
     <script type="application/ld+json">
@@ -74,8 +82,8 @@
           <span class="brand-text">Excel-to-Excel transformation</span>
         </a>
         <nav class="site-nav" aria-label="Primary navigation">
-          <a href="#walkthrough">Walkthrough</a>
-          <a href="#standard">Standard</a>
+          <a href="#walkthrough">Workflow</a>
+          <a href="#standard">Handoff</a>
           <a href="#conformance">Reliability</a>
           <a href="#use">Use</a>
           <a href="./ko/">한국어</a>
@@ -84,37 +92,38 @@
     </header>
 
     <main id="top">
-      <section class="hero !min-h-0 !grid-cols-[minmax(0,0.95fr)_minmax(240px,320px)] !items-center !gap-14 !py-20 lg:!py-24 max-lg:!grid-cols-1 max-lg:!gap-10 max-sm:!py-14">
+      <section class="hero !min-h-0 !grid-cols-[minmax(0,0.95fr)_minmax(250px,340px)] !items-center !gap-14 !py-16 lg:!py-20 max-lg:!grid-cols-1 max-lg:!gap-10 max-sm:!py-12">
         <div class="hero-copy">
-          <p class="kicker">XTL 0.1 draft · TypeScript reference implementation</p>
-          <h1 class="max-w-4xl text-[clamp(42px,7vw,88px)] leading-[1.02]">Excel-to-Excel transformation, specified.</h1>
+          <p class="kicker">TypeScript engine · workbook-defined workflow</p>
+          <h1 class="max-w-4xl text-[clamp(40px,6.2vw,78px)] leading-[1.05]">Build Excel transformation engines from workbook templates.</h1>
           <p class="lead">
-            xl3 defines a small, conformance-tested language for using Excel
-            workbooks as templates. Templates are workbooks. Data is a workbook.
-            The output is still a workbook.
+            xl3 lets developers define recurring Excel workflows as template
+            workbooks, then expose them as simple tools where non-developers
+            upload raw Excel files and download finished workbooks.
           </p>
           <div class="hero-links">
-            <a class="button primary" href="#walkthrough">Read the model</a>
+            <a class="button primary" href="#use">Try the converter</a>
+            <a class="button" href="#walkthrough">See the workflow</a>
             <a class="button" href="https://github.com/jinyoung4478/xl3">GitHub</a>
             <a class="button" href="https://www.npmjs.com/package/xl3">npm</a>
           </div>
         </div>
-        <aside class="principle-list self-center rounded-lg border border-[var(--line)] bg-white/70 px-4 shadow-[0_16px_45px_rgba(31,42,35,0.08)]" aria-label="xl3 principles">
-          <div><strong>Input</strong><span>data.xlsx</span></div>
-          <div><strong>Template</strong><span>template.xlsx</span></div>
-          <div><strong>Output</strong><span>result.xlsx</span></div>
-          <div><strong>Contract</strong><span>spec + fixtures</span></div>
+        <aside class="principle-list self-center rounded-lg border border-[var(--line)] bg-white/70 px-4 shadow-[0_16px_45px_rgba(31,42,35,0.08)]" aria-label="xl3 workflow">
+          <div><strong>Engine</strong><span>TypeScript API</span></div>
+          <div><strong>Rules</strong><span>template.xlsx</span></div>
+          <div><strong>Operator</strong><span>raw.xlsx upload</span></div>
+          <div><strong>Result</strong><span>finished .xlsx</span></div>
         </aside>
       </section>
 
       <section id="walkthrough" class="walkthrough-section" aria-labelledby="walkthrough-title">
-        <div class="section-intro max-w-3xl">
-          <p class="kicker">Interactive walkthrough</p>
-          <h2 id="walkthrough-title" class="text-[clamp(32px,4vw,54px)] leading-[1.12]">The workbook is the unit of transformation.</h2>
+        <div class="section-intro">
+          <p class="kicker">Workflow model</p>
+          <h2 id="walkthrough-title" class="text-[clamp(32px,4vw,54px)] leading-[1.12]">Keep the engine in code, keep the workflow in the workbook.</h2>
           <p>
-            Scroll through the model. The example workbook on the right changes
-            as each rule becomes active. The Excel visual stays familiar, but
-            the behavior is defined by XTL and checked by conformance fixtures.
+            Developers build the converter once. The recurring business rules,
+            source header mapping, layout, and output shape stay inside the
+            workbook template that teams can archive and hand over.
           </p>
         </div>
 
@@ -122,23 +131,23 @@
           <div class="steps" aria-label="xl3 model steps">
             <article class="step is-active !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="data" tabindex="0">
               <span class="step-index row-span-2 mt-1">01</span>
-              <h3>Data is a workbook</h3>
-              <p>Source rows come from a normal `.xlsx` file. The first row names the fields.</p>
+              <h3>Define the contract in Excel</h3>
+              <p>Use `_config`, `source_header_range`, and XTL expressions to describe how raw workbooks become reports.</p>
             </article>
             <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="template" tabindex="0">
               <span class="step-index row-span-2 mt-1">02</span>
-              <h3>Templates are workbooks</h3>
-              <p>Cells contain ordinary layout plus XTL expressions such as `{{ [Customer] }}`.</p>
+              <h3>Expose a simple upload flow</h3>
+              <p>Non-developers choose a raw Excel file and the approved template, then run the converter.</p>
             </article>
             <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="render" tabindex="0">
               <span class="step-index row-span-2 mt-1">03</span>
-              <h3>Rendering preserves Excel</h3>
-              <p>The result workbook keeps the sheet structure, number formats, styles, and merged cells.</p>
+              <h3>Generate finished workbooks</h3>
+              <p>The output keeps sheet structure, number formats, styles, and merged cells while values are rendered from data.</p>
             </article>
             <article class="step !grid !min-h-0 !grid-cols-[44px_minmax(0,1fr)] !gap-x-4 !rounded-lg !border !border-l-[3px] !border-[var(--line)] !p-4" data-step="conformance" tabindex="0">
               <span class="step-index row-span-2 mt-1">04</span>
-              <h3>The contract is testable</h3>
-              <p>Shared fixtures make workbook behavior visible, so implementations can agree on the same edge cases.</p>
+              <h3>Archive the operating rules</h3>
+              <p>The template becomes the handover artifact: a portable file that captures how the recurring Excel job works.</p>
             </article>
           </div>
 
@@ -156,61 +165,102 @@
       </section>
 
       <section id="standard" class="text-section">
-        <div class="text-grid !grid-cols-[minmax(240px,0.72fr)_minmax(0,1fr)] !gap-10 max-lg:!grid-cols-1">
-          <div>
-            <p class="kicker">Why a standard?</p>
-            <h2 class="text-[clamp(30px,3.6vw,50px)] leading-[1.14]">Excel automation should not be defined by one implementation.</h2>
+        <div class="text-grid narrative-grid">
+          <div class="narrative-heading">
+            <p class="kicker">Why developers use it</p>
+            <h2 class="text-[clamp(30px,3.6vw,50px)] leading-[1.14]">Move recurring report logic out of one-off scripts.</h2>
           </div>
-          <div class="prose">
+          <div class="prose narrative-prose">
             <p>
-              Many Excel automation tools are useful, but their behavior is often
-              whatever a single library happens to do. That makes ports difficult
-              and makes edge cases hard to discuss.
+              Python scripts, VBA macros, and service-specific workflows can
+              automate Excel, but the business rules often end up scattered
+              across code, accounts, and tribal knowledge.
             </p>
             <p>
-              xl3 takes the opposite route: prose specification first, executable
-              fixtures second, reference implementation third. The JavaScript
-              package is useful, but the intended contract is XTL plus the
-              conformance corpus.
+              xl3 separates the reusable engine from the workbook-specific
+              contract. Developers maintain the TypeScript integration, while
+              each recurring Excel job can travel as a template workbook.
             </p>
           </div>
         </div>
       </section>
 
       <section id="conformance" class="conformance-section" aria-labelledby="conformance-title">
-        <div class="section-intro max-w-3xl">
-          <p class="kicker">Reliability</p>
-          <h2 id="conformance-title" class="text-[clamp(32px,4vw,54px)] leading-[1.12]">The output should still feel like Excel.</h2>
+        <div class="section-intro">
+          <p class="kicker">Operational fit</p>
+          <h2 id="conformance-title" class="text-[clamp(32px,4vw,54px)] leading-[1.12]">Built for handoff, not just automation.</h2>
           <p>
-            xl3 is designed for reports where layout, formatting, and workbook
-            structure matter just as much as substituted values. The public
-            conformance fixtures are the proof behind that promise, not the
-            first thing you need to learn.
+            The people running the workflow should not need to read code. They
+            need a stable converter, an approved template, and a predictable
+            result workbook.
           </p>
         </div>
         <div class="stage-grid !gap-4 max-lg:!grid-cols-1">
           <article>
-            <h3>Preserve the workbook</h3>
-            <p>Templates can keep sheet structure, styles, number formats, and merged cells while values are rendered from data.</p>
-            <code>styles · formats · merges</code>
+            <h3>Template as handover</h3>
+            <p>Report rules live in a workbook file that can be reviewed, versioned, archived, and passed to the next operator.</p>
+            <code>template.xlsx</code>
           </article>
           <article>
-            <h3>Make edge cases explicit</h3>
-            <p>Rounding, date handling, filenames, formulas, and formatting behavior are written down instead of hidden in one library.</p>
-            <code>spec + fixtures</code>
+            <h3>Operator-friendly run</h3>
+            <p>The runtime can be exposed as a browser page: upload raw data, select the template, download the workbook.</p>
+            <code>raw.xlsx -&gt; result.xlsx</code>
           </article>
           <article>
-            <h3>Keep implementations aligned</h3>
-            <p>The TypeScript package is a reference implementation, and other implementations can be checked against the same corpus.</p>
-            <code>XTL 0.1 draft</code>
+            <h3>Developer-owned engine</h3>
+            <p>Keep deployment, validation, and integration in code while template-specific workflow rules stay in Excel.</p>
+            <code>convert(template, raw)</code>
           </article>
         </div>
       </section>
 
       <section id="use" class="use-section" aria-labelledby="use-title">
-        <div class="section-intro max-w-3xl">
+        <div class="section-intro">
           <p class="kicker">Use it</p>
-          <h2 id="use-title" class="text-[clamp(32px,4vw,54px)] leading-[1.12]">Small API, explicit contract.</h2>
+          <h2 id="use-title" class="text-[clamp(32px,4vw,54px)] leading-[1.12]">Try the operator flow, then wire it into your app.</h2>
+        </div>
+        <div class="converter-panel mx-auto mb-8 grid w-[min(1160px,calc(100%_-_56px))] grid-cols-[minmax(0,0.88fr)_minmax(320px,0.72fr)] gap-6 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[0_16px_45px_rgba(31,42,35,0.08)] max-lg:grid-cols-1 max-sm:w-[calc(100%_-_36px)]">
+          <div class="min-w-0">
+            <p class="kicker">Browser converter</p>
+            <h3 class="!mb-3 text-2xl leading-tight">Upload raw data and a template, then download the finished workbook.</h3>
+            <p class="mb-0 text-[15px] leading-7 text-[var(--muted)]">
+              To choose the raw workbook header cells, add
+              <code>source_header_range</code> such as <code>A1:D1</code> to the
+              template workbook's hidden <code>_config</code> sheet. Rows below
+              that range are read as data.
+            </p>
+          </div>
+          <form id="converterForm" class="grid gap-3" aria-label="Browser workbook converter">
+            <label class="grid gap-2 text-sm font-semibold text-[#2f3833]">
+              <span class="file-label-row">
+                <span>Raw Excel file</span>
+                <a href="./examples/sample-raw.xlsx" download>Download sample</a>
+              </span>
+              <span class="input-hint">Default sample is attached. Replace it only if you want.</span>
+              <input id="rawFile" class="rounded-md border border-[var(--line-strong)] bg-white px-3 py-2 text-sm font-normal" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+            </label>
+            <label class="grid gap-2 text-sm font-semibold text-[#2f3833]">
+              <span class="file-label-row">
+                <span>Template Excel file</span>
+                <a href="./examples/sample-template.xlsx" download>Download sample</a>
+              </span>
+              <span class="input-hint">Includes `_config.source_header_range = A1:D1`.</span>
+              <input id="templateFile" class="rounded-md border border-[var(--line-strong)] bg-white px-3 py-2 text-sm font-normal" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+            </label>
+            <button id="convertButton" class="button primary mt-1 w-full" type="submit">Run example and download</button>
+            <p id="converterStatus" class="mb-0 min-h-5 text-sm leading-6 text-[var(--muted)]" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+        <div class="developer-api">
+          <div>
+            <p class="kicker">Developer API</p>
+            <h3>Wire the same workflow into your product.</h3>
+            <p>
+              Use the package when the demo flow needs to become an internal
+              portal, a CLI, or a service endpoint. The operator experience can
+              stay file-based while your app owns deployment and validation.
+            </p>
+          </div>
         </div>
         <div class="code-pair !grid-cols-[minmax(220px,0.62fr)_minmax(0,1fr)] max-lg:!grid-cols-1">
           <figure class="code-card">

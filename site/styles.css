@@ -190,6 +190,11 @@ h3 {
   color: #ffffff;
 }
 
+.button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
 .principle-list {
   border-top: 1px solid var(--line);
 }
@@ -540,6 +545,22 @@ h3 {
   gap: 56px;
 }
 
+.narrative-grid {
+  grid-template-columns: minmax(0, 760px);
+  gap: 22px;
+  justify-content: start;
+}
+
+.narrative-heading {
+  max-width: 760px;
+}
+
+.narrative-prose {
+  max-width: 780px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+
 .prose {
   color: #3f4944;
   font-size: 17px;
@@ -591,6 +612,60 @@ pre {
 
 .use-section {
   background: #ffffff;
+}
+
+.input-hint {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.file-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.file-label-row a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--excel-dark);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.input-hint {
+  margin-top: -4px;
+  font-weight: 500;
+}
+
+.developer-api {
+  width: min(1160px, calc(100% - 56px));
+  margin: 48px auto 18px;
+}
+
+.developer-api > div {
+  max-width: 760px;
+}
+
+.developer-api h3 {
+  margin-bottom: 10px;
+  font-size: clamp(26px, 3vw, 38px);
+  line-height: 1.16;
+}
+
+.developer-api p:not(.kicker) {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.7;
 }
 
 .code-pair {
@@ -709,6 +784,10 @@ pre {
     position: static;
   }
 
+  .preview-notes {
+    min-height: auto;
+  }
+
   .stage-grid p {
     min-height: auto;
   }
@@ -729,23 +808,55 @@ pre {
   .walkthrough-layout,
   .stage-grid,
   .code-pair,
+  .developer-api,
   .site-footer {
-    width: min(100% - 36px, 1160px);
+    width: calc(100% - 36px);
   }
 
   .hero {
-    padding: 64px 0 48px;
+    padding: 52px 0 42px;
+  }
+
+  .lead {
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  .hero-links {
+    margin-top: 24px;
+  }
+
+  .button {
+    width: 100%;
+  }
+
+  .principle-list div {
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .steps {
+    gap: 10px;
   }
 
   .walkthrough-section,
   .text-section,
   .conformance-section,
   .use-section {
-    padding: 64px 0;
+    padding: 56px 0;
   }
 
   .step {
     min-height: auto;
+  }
+
+  .step h3 {
+    font-size: 16px;
+  }
+
+  .step p {
+    font-size: 14px;
+    line-height: 1.55;
   }
 
   .preview-caption {
@@ -760,5 +871,41 @@ pre {
 
   .formula-bar {
     grid-template-columns: 54px 30px minmax(0, 1fr);
+  }
+
+  .excel-titlebar,
+  .excel-ribbon,
+  .formula-bar,
+  .sheet-tabs {
+    min-width: 520px;
+  }
+
+  .sheet-grid {
+    min-width: 520px;
+    font-size: 12px;
+  }
+
+  .sheet-grid th,
+  .sheet-grid td {
+    height: 42px;
+    padding: 6px 7px;
+  }
+
+  .sheet-grid thead th:not(:first-child) {
+    width: 160px;
+  }
+
+  .stage-grid article {
+    padding: 18px;
+  }
+
+  .file-label-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .code-card {
+    border-radius: 8px;
   }
 }
