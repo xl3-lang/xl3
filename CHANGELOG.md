@@ -71,6 +71,13 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   059–063 cover the numeric/string fast path, code-point sort order,
   canonical-form concatenation, empty concatenation, and empty-vs-value
   equality.
+- ADR-0007 amendment: "Unicode whitespace" matches ECMAScript
+  `String.prototype.trim` (Unicode `\s`); zero-width characters
+  (U+200B, U+FEFF) are explicitly **not** whitespace.
+- ADR-0009 amendments: numeric comparison uses IEEE 754 equality
+  (`0.1 + 0.2 = 0.3` is false; templates needing tolerance MUST
+  `ROUND()`), and the Unicode minus sign (U+2212) is not parsed as a
+  number. Conformance fixture 064 covers the Unicode-minus fallback.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 

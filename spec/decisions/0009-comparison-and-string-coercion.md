@@ -113,7 +113,10 @@ Comparison operators in `IF()` and `@filter` apply, in order:
    the empty value is *less than* any non-empty value.
 3. **Both numeric:** if both operands are numbers, or both are strings
    that parse as finite numbers via the rule "trim, then `Number()`
-   without producing `NaN`," compare numerically.
+   without producing `NaN`," compare numerically. Numeric comparison
+   uses IEEE 754 equality, not canonical-string equality, so
+   `0.1 + 0.2 = 0.3` is **false**. Templates that need tolerance MUST
+   round explicitly via `ROUND()`.
 4. **Both Booleans:** compare with `FALSE < TRUE`.
 5. **Otherwise:** compare canonical string forms using Unicode
    code-point order. No locale-aware collation is applied.
@@ -172,6 +175,11 @@ result.
   operand is empty, both numeric, or both Boolean. The fall-through to
   canonical string ordering is total. A separate ADR may revisit if
   authors hit this often enough to want a strict-mode check.
+- The Unicode minus sign (U+2212) is **not** parsed as a number by the
+  "trim, then `Number()`" rule. A row whose Amount string is `"−5"`
+  (U+2212) compared against the number `-5` falls through to
+  canonical-string comparison and does not match. Authors pasting from
+  Word/PDF should normalize to ASCII `-` (U+002D) upstream.
 
 ## References
 

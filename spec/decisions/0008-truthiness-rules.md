@@ -130,6 +130,11 @@ comparison algorithm itself.
   removed from the reference implementation. Any future block-style
   conditional belongs in a dedicated ADR; XTL 0.1 has only `IF()`.
 - This ADR does not change the comparison algorithm; that is ADR-0009.
+- An aggregate over a zero-row source set returns `0` (`COUNT()`,
+  `SUM`) or otherwise propagates the empty / zero input. Per ADR-0008
+  the result is falsy. A separate spec gap concerns whether the
+  output workbook is produced at all when there are zero source rows
+  to drive any data block; that is deferred to a future ADR.
 
 ## References
 

@@ -3461,6 +3461,68 @@ async function build063() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 064 - compare-unicode-minus-not-numeric
+//
+// Concept: ADR-0009's "trim, then Number()" rule does not accept the
+// Unicode minus sign (U+2212). A row whose value is "−5" (U+2212)
+// compared against the number -5 therefore falls through to the
+// canonical-string fallback and does not match.
+// Spec section: language.md "Comparison and String Coercion"; ADR-0009
+// Consequences.
+// ---------------------------------------------------------------------------
+async function build064() {
+  const dir = join(FIXTURES, '064-compare-unicode-minus-not-numeric');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — filter rows whose Amount equals -5 (number).
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'compare-unicode-minus-not-numeric'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = '{{ @filter [Amount] = -5 }}';
+    sh.getCell('A3').value = '{{ [Customer] }}';
+    sh.getCell('B3').value = '{{ [Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — three rows: ASCII-minus number, Unicode-minus string,
+  // and a non-matching value.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = -5;          // numeric -5 — matches.
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = '−5';   // string "−5" with U+2212 — NO match.
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = 5;           // numeric 5 — NO match.
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — only Acme survives the filter. Beta's Unicode-minus
+  // string falls into rule 5 (string fallback) and "−5" != "-5" by
+  // code-point comparison.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = -5;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -3525,6 +3587,7 @@ const builders = [
   ['061', build061],
   ['062', build062],
   ['063', build063],
+  ['064', build064],
 ];
 
 const selected = new Set(process.argv.slice(2));

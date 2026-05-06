@@ -74,6 +74,15 @@ A value `v` is **empty** if and only if:
 2. `v` is a string and, after trimming Unicode whitespace at both ends,
    has length zero.
 
+"Unicode whitespace" matches the set recognized by ECMAScript
+`String.prototype.trim` — equivalent to the Unicode-mode `\s`
+character class. It includes ASCII space, tab, newlines, NBSP
+(U+00A0), the ideographic space (U+3000), and other code points with
+the `White_Space` property. **Zero-width characters** such as
+zero-width space (U+200B) and zero-width no-break space (U+FEFF) are
+**not** whitespace; a string consisting only of zero-width characters
+is non-empty.
+
 All other values — numbers (including `0`), booleans (including `false`),
 dates, and non-empty strings — are **non-empty**.
 

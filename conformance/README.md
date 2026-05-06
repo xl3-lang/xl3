@@ -145,6 +145,7 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 061 | `concat-canonical-form` | `&` stringifies operands using the canonical string form per ADR-0009 (booleans uppercase, integers without decimal). |
 | 062 | `concat-empty-stringifies-to-empty` | `&` over an empty operand contributes the empty string per ADR-0009. |
 | 063 | `compare-empty-vs-value` | Two empty operands compare equal; exactly one empty makes `=` false per ADR-0009 rules 1 and 2. |
+| 064 | `compare-unicode-minus-not-numeric` | A string with Unicode minus (U+2212) is not parsed as a number; comparison falls through to the canonical-string fallback per ADR-0009. |
 
 ## Status
 
