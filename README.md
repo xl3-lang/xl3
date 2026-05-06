@@ -1,7 +1,7 @@
 # xl3
 
-> Build Excel transformation engines from workbook templates.
-> Operators upload raw Excel files and download finished workbooks.
+> Excel conversion, inside Excel, in Excel syntax.
+> Keep recurring Excel transformation rules inside workbook templates.
 
 **Status:** alpha · XTL spec 0.1 (draft) · breaking changes possible until 1.0
 
@@ -11,30 +11,35 @@
 
 ## What is xl3?
 
-xl3 is a TypeScript library for turning recurring Excel transformation work into
-template workbooks.
+xl3 is a TypeScript library for making recurring Excel transformation rules
+portable as workbook files.
 
-Developers define the reusable engine in code. The workbook-specific rules,
-source table mapping, layout, and output shape live inside `template.xlsx`.
-Non-developers can then use a simple file flow: upload raw Excel, choose the
-approved template, download the finished workbook.
+The frame is simple:
+
+- Who: operators and analysts who should not need to read code
+- What: recurring Excel transformation rules
+- How: template workbooks, `source_table`, and familiar Excel formulas
 
 ```text
-raw.xlsx        (operator data)
+raw.xlsx        (input data)
        +
-template.xlsx   (workflow rules + workbook layout)
+template.xlsx   (workflow contract)
        ↓
 result.xlsx     (finished workbook)
 ```
 
-Templates are authored **in Excel itself**. Put configuration in `_config`, add
-expressions such as `{{ [Account] }}` or
+Developers own the engine in code. Operators use a file-based flow:
+upload raw Excel, choose the approved template, and download the finished
+workbook.
+
+Templates are authored **in Excel itself**. Put configuration in `_config`,
+add expressions such as `{{ [Account] }}` or
 `{{ IF([Renewal] > 10000, "Priority", "Standard") }}` to cells, save the file,
 and run xl3. No macros, no hidden scripts, no vendor cloud.
 
-The template becomes the handover artifact. It can be reviewed, versioned,
-archived, and passed to the next operator without asking them to read the
-automation code.
+The template is the handover artifact. It can be reviewed, versioned, archived,
+and passed to the next operator without asking them to read the automation
+code.
 
 ## Quick example
 
@@ -86,15 +91,16 @@ workflow in the workbook.
 
 ## What xl3 emphasizes
 
-- **Operator-friendly flow.** Raw `.xlsx` in, approved template in, finished
+- **A file-based workflow.** Raw `.xlsx` in, approved template in, finished
   workbook out.
-- **Rules travel with the workbook.** `_config`, expressions, layout, and output
-  shape are archived in `template.xlsx`.
+- **Rules travel with the workbook.** `_config`, expressions, layout, and
+  output shape are archived in `template.xlsx`.
 - **Developer-owned engine.** Use the TypeScript API in a browser page, internal
   portal, CLI, or service endpoint.
 - **Excel stays Excel.** Styles, number formats, sheet structure, and merged
   cells remain part of the result.
-- **No macros or vendor cloud.** Template behavior is explicit workbook content.
+- **No macros or vendor cloud.** Template behavior is explicit workbook
+  content.
 
 ## How it compares
 
