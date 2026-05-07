@@ -9,6 +9,7 @@ import type {
   DataBlock,
   InputSpec,
   InputType,
+  SourceSpec,
 } from './types.js';
 import { isDataExpression, isAggregateExpression, extractColumnRefs } from './normalizer.js';
 import { isDirectiveExpression, parseDirective } from './directive-parser.js';
@@ -55,6 +56,7 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
   const { meta, configVars } = readConfigSheet(workbook);
   const inputs = readInputsSheet(workbook);
   const listSheets = readListsSheet(workbook);
+  const sources = readSourcesSheet(workbook);
 
   // ADR-0011: input names MUST NOT collide with __config__ author-defined values.
   for (const input of inputs) {
@@ -136,14 +138,16 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
           // Close previous block
           if (currentBlock) { blocks.push(currentBlock); currentBlock = null; }
           // Start new horizontal block
+          const repeatDirectives = [...pendingDirectives, directive];
           currentBlock = {
             direction: 'right',
             startRow: 0,
             endRow: 0,
             templateColStart: 0,
             templateColEnd: 0,
-            directives: [...pendingDirectives, directive],
+            directives: repeatDirectives,
             directiveRows: [...pendingDirectiveRows, rowNumber],
+            source: extractSourceFromDirectives(repeatDirectives, 'default'),
           };
           pendingDirectives = [];
           pendingDirectiveRows = [];
@@ -152,6 +156,7 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
           if (currentBlock) {
             currentBlock.directives.push(directive);
             currentBlock.directiveRows.push(rowNumber);
+            if (directive.kind === 'source') currentBlock.source = directive.name;
           } else {
             pendingDirectives.push(directive);
             pendingDirectiveRows.push(rowNumber);
@@ -191,14 +196,16 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
 
         // If no current block, start a 'down' block with any pending directives
         if (!currentBlock) {
+          const downDirectives = [...pendingDirectives];
           currentBlock = {
             direction: 'down',
             startRow: 0,
             endRow: 0,
             templateColStart: 0,
             templateColEnd: 0,
-            directives: [...pendingDirectives],
+            directives: downDirectives,
             directiveRows: [...pendingDirectiveRows],
+            source: extractSourceFromDirectives(downDirectives, 'default'),
           };
           pendingDirectives = [];
           pendingDirectiveRows = [];
@@ -268,6 +275,16 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
     }
   }
 
+  // ADR-0012: validate every @source directive references a declared source.
+  const sourceNames = new Set<string>(['default', ...sources.map((s) => s.name)]);
+  for (const st of sheetTemplates) {
+    for (const block of st.blocks) {
+      if (block.source !== 'default' && !sourceNames.has(block.source)) {
+        throw new Error(`Source "${block.source}" is not declared in __sources__`);
+      }
+    }
+  }
+
   return {
     meta,
     variables: deduplicateVars(allVars),
@@ -276,9 +293,17 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
     listSheets,
     configVars,
     inputs,
+    sources,
     workbook,
     warnings: [],
   };
+}
+
+function extractSourceFromDirectives(directives: Directive[], fallback: string): string {
+  for (const d of directives) {
+    if (d.kind === 'source') return d.name;
+  }
+  return fallback;
 }
 
 const VALID_INPUT_TYPES: ReadonlySet<InputType> = new Set([
@@ -409,6 +434,61 @@ export function readConfigSheet(workbook: ExcelJS.Workbook): ConfigResult {
   });
 
   return { meta, configVars };
+}
+
+// ADR-0012: read the __sources__ sheet. Row 1 holds the header; each
+// subsequent row declares one external data source.
+export function readSourcesSheet(workbook: ExcelJS.Workbook): SourceSpec[] {
+  const sheet = workbook.getWorksheet('__sources__');
+  if (!sheet) return [];
+
+  const header = sheet.getRow(1);
+  const headerMap: Record<string, number> = {};
+  header.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+    const key = String(cell.value ?? '').trim().toLowerCase();
+    if (key) headerMap[key] = colNumber;
+  });
+  const nameCol = headerMap['name'];
+  const sheetCol = headerMap['sheet'];
+  if (!nameCol || !sheetCol) {
+    throw new Error('__sources__ sheet must have at least `name` and `sheet` columns in row 1');
+  }
+  const tableCol = headerMap['table'];
+  const descCol = headerMap['description'];
+
+  const sources: SourceSpec[] = [];
+  const seen = new Set<string>();
+  const totalRows = sheet.rowCount;
+  for (let r = 2; r <= totalRows; r++) {
+    const row = sheet.getRow(r);
+    const name = String(row.getCell(nameCol).value ?? '').trim();
+    const sheetName = String(row.getCell(sheetCol).value ?? '').trim();
+    if (!name && !sheetName) continue; // skip blank rows
+    if (!name || !sheetName) {
+      throw new Error(`__sources__ row ${r} missing required name/sheet`);
+    }
+    if (!/^[A-Za-z0-9_]+$/.test(name)) {
+      throw new Error(`__sources__ row ${r} has invalid name "${name}"; use letters, digits, and underscore only`);
+    }
+    if (name.startsWith('__') || name === 'default') {
+      throw new Error(`__sources__ row ${r} has invalid name "${name}"; reserved`);
+    }
+    if (seen.has(name)) {
+      throw new Error(`__sources__ has duplicate source name "${name}"`);
+    }
+    seen.add(name);
+
+    const table = tableCol ? String(row.getCell(tableCol).value ?? '').trim() : '';
+    const description = descCol ? String(row.getCell(descCol).value ?? '').trim() : '';
+    sources.push({
+      name,
+      sheet: sheetName,
+      table: table || '1',
+      description: description || undefined,
+    });
+  }
+
+  return sources;
 }
 
 // ADR-0011: read the __lists__ sheet. Row 1 holds list names (one per

@@ -84,6 +84,18 @@ function addLists(wb, lists, opts = {}) {
   });
 }
 
+// ADR-0012: __sources__ sheet — one row per source with name/sheet/table.
+function addSources(wb, rows, opts = {}) {
+  const sh = wb.addWorksheet('__sources__', { state: opts.state ?? 'hidden' });
+  const headers = ['name', 'sheet', 'table', 'description'];
+  headers.forEach((h, i) => { sh.getCell(1, i + 1).value = h; });
+  rows.forEach((row, rIdx) => {
+    headers.forEach((h, cIdx) => {
+      if (row[h] !== undefined) sh.getCell(rIdx + 2, cIdx + 1).value = row[h];
+    });
+  });
+}
+
 // ---------------------------------------------------------------------------
 // 001 - bracket-substitution
 //
@@ -3744,6 +3756,299 @@ async function build068() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 069 - source-multi-declaration
+//
+// Concept: a `__sources__` sheet declares an additional named source
+// alongside the implicit default source. Aggregates over the named
+// source operate on its full row set.
+// Spec section: evaluation.md "External Data Sources"; ADR-0012.
+// ---------------------------------------------------------------------------
+async function build069() {
+  const dir = join(FIXTURES, '069-source-multi-declaration');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-multi-declaration'],
+      ['source_sheet', 'Customers'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Renewals', sheet: 'Renewals', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'TotalRenewal';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ SUM(Renewals[Amount]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — two sheets: Customers (default), Renewals (named).
+  {
+    const wb = new ExcelJS.Workbook();
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Customer';
+    cust.getCell('A2').value = 'Acme';
+    cust.getCell('A3').value = 'Beta';
+
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('B1').value = 'Amount';
+    ren.getCell('A2').value = 'Acme';
+    ren.getCell('B2').value = 100;
+    ren.getCell('A3').value = 'Beta';
+    ren.getCell('B3').value = 200;
+    ren.getCell('A4').value = 'Acme';
+    ren.getCell('B4').value = 50;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  // SUM(Renewals[Amount]) = 100 + 200 + 50 = 350 over Renewals' full set,
+  // independent of which Customers row is rendering.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'TotalRenewal';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 350;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 350;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 070 - source-aggregate-cross-source
+//
+// Concept: COUNT/AVG/MIN/MAX over a named source operate on its full
+// row set, not the active block's rows.
+// Spec section: language.md "Functions / Aggregates"; ADR-0012.
+// ---------------------------------------------------------------------------
+async function build070() {
+  const dir = join(FIXTURES, '070-source-aggregate-cross-source');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-aggregate-cross-source'],
+      ['source_sheet', 'Customers'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Renewals', sheet: 'Renewals', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'RenewalCount';
+    sh.getCell('C1').value = 'MinAmount';
+    sh.getCell('D1').value = 'MaxAmount';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ COUNT(Renewals[Account]) }}';
+    sh.getCell('C2').value = '{{ MIN(Renewals[Amount]) }}';
+    sh.getCell('D2').value = '{{ MAX(Renewals[Amount]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Customer';
+    cust.getCell('A2').value = 'Acme';
+
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('B1').value = 'Amount';
+    ren.getCell('A2').value = 'Acme';
+    ren.getCell('B2').value = 50;
+    ren.getCell('A3').value = 'Beta';
+    ren.getCell('B3').value = 200;
+    ren.getCell('A4').value = 'Gamma';
+    ren.getCell('B4').value = 130;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  // COUNT(Renewals[Account]) = 3, MIN = 50, MAX = 200.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'RenewalCount';
+    sh.getCell('C1').value = 'MinAmount';
+    sh.getCell('D1').value = 'MaxAmount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 3;
+    sh.getCell('C2').value = 50;
+    sh.getCell('D2').value = 200;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 071 - source-directive-active
+//
+// Concept: the @source directive scopes a data block to a named
+// source. Inside that block, [Column] resolves to the named source's
+// current row.
+// Spec section: evaluation.md "External Data Sources"; ADR-0012.
+// ---------------------------------------------------------------------------
+async function build071() {
+  const dir = join(FIXTURES, '071-source-directive-active');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-directive-active'],
+      ['source_sheet', 'Customers'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Renewals', sheet: 'Renewals', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = '{{ @source Renewals }}';
+    sh.getCell('A3').value = '{{ [Account] }}';
+    sh.getCell('B3').value = '{{ [Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Customer';
+    cust.getCell('A2').value = 'Acme';
+
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('B1').value = 'Amount';
+    ren.getCell('A2').value = 'Acme';
+    ren.getCell('B2').value = 50;
+    ren.getCell('A3').value = 'Beta';
+    ren.getCell('B3').value = 200;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — block iterates over Renewals' rows; [Account] and
+  // [Amount] resolve to current Renewals row.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 50;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 200;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 072 - source-undeclared-error
+//
+// Concept: referencing an undeclared source via @source is a parse-time
+// error.
+// Spec section: evaluation.md "External Data Sources"; ADR-0012.
+// ---------------------------------------------------------------------------
+async function build072() {
+  const dir = join(FIXTURES, '072-source-undeclared-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — no __sources__ sheet, but @source Renewals used.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-undeclared-error'],
+      ['source_sheet', 'Customers'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = '{{ @source Renewals }}';
+    sh.getCell('A3').value = '{{ [Account] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Customer';
+    cust.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // No expected.xlsx — meta.yaml asserts expected_error.
+}
+
+// ---------------------------------------------------------------------------
+// 073 - source-row-cross-error
+//
+// Concept: row-level reference to a non-active source's column is an
+// error. Aggregates over the same source remain valid.
+// Spec section: evaluation.md "External Data Sources"; ADR-0012.
+// ---------------------------------------------------------------------------
+async function build073() {
+  const dir = join(FIXTURES, '073-source-row-cross-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — Renewals[Amount] referenced at row level inside the
+  // default block.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-row-cross-error'],
+      ['source_sheet', 'Customers'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Renewals', sheet: 'Renewals', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'CrossRef';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ Renewals[Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Customer';
+    cust.getCell('A2').value = 'Acme';
+
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('B1').value = 'Amount';
+    ren.getCell('A2').value = 'Acme';
+    ren.getCell('B2').value = 100;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // No expected.xlsx — meta.yaml asserts expected_error.
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -3813,6 +4118,11 @@ const builders = [
   ['066', build066],
   ['067', build067],
   ['068', build068],
+  ['069', build069],
+  ['070', build070],
+  ['071', build071],
+  ['072', build072],
+  ['073', build073],
 ];
 
 const selected = new Set(process.argv.slice(2));

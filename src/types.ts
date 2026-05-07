@@ -29,6 +29,17 @@ export interface ConvertOptions {
   inputs?: Record<string, unknown>;
 }
 
+// ADR-0012: an external data source declaration parsed from
+// `__sources__`. The implicit default source uses the special name
+// "default" and is configured via `__config__.source_sheet` and
+// `source_table`; it is not represented here.
+export interface SourceSpec {
+  name: string;
+  sheet: string;
+  table: string;
+  description?: string;
+}
+
 export interface TemplateVariable {
   expression: string;
   columns: string[];
@@ -64,7 +75,18 @@ export interface RepeatDirective {
   colSpan: number;
 }
 
-export type Directive = FilterDirective | SortDirective | TopDirective | RepeatDirective;
+// ADR-0012: scopes the surrounding data block to a named source.
+export interface SourceDirective {
+  kind: 'source';
+  name: string;
+}
+
+export type Directive =
+  | FilterDirective
+  | SortDirective
+  | TopDirective
+  | RepeatDirective
+  | SourceDirective;
 
 // --- Template types ---
 
@@ -76,6 +98,9 @@ export interface DataBlock {
   templateColEnd: number;
   directives: Directive[];
   directiveRows: number[];
+  // ADR-0012: source name this block iterates over. Defaults to
+  // "default" (the implicit `__config__.source_sheet`-driven source).
+  source: string;
 }
 
 export interface SheetTemplate {
@@ -101,6 +126,8 @@ export interface TemplateModel {
   // Populated by the convert/preview entry points; absent before
   // resolution.
   resolvedInputs?: Record<string, string>;
+  // ADR-0012: external data source declarations from `__sources__`.
+  sources: SourceSpec[];
   warnings: string[];
 }
 

@@ -1,16 +1,27 @@
 const TEMPLATE_BLOCK_RE = /\{\{(.*?)\}\}/g;
 // ADR-0011: bracket field detection must not match the structured-ref
-// form `__sheet__[key]` or `Source[Column]` (future). The bracket is a
+// form `__sheet__[key]` or `Source[Column]`. The bracket is a
 // source-column reference only when not preceded by a word char.
 const BRACKET_FIELD_RE = /(?<!\w)\[([^\]\r\n]+)\]/g;
 const HAS_BRACKET_FIELD_RE = /(?<!\w)\[([^\]\r\n]+)\]/;
 const BRACKET_OPERAND_RE = /^\[([^\]\r\n]+)\]$/;
+// ADR-0012: structured-ref form `Source[Column]`. Captures source
+// name and column. Source names start with a letter (so reserved
+// `__sheet__[key]` is excluded).
+const SOURCE_BRACKET_RE = /^([A-Za-z][A-Za-z0-9_]*)\[([^\]\r\n]+)\]$/;
 
 const GO_KEYWORDS = ['else', 'end', 'define ', 'template ', 'block '];
 const EXCEL_AGGREGATE_NAMES = new Set(['SUM', 'AVERAGE', 'AVG', 'MIN', 'MAX']);
 
 export function isDataExpression(expr: string): boolean {
-  return HAS_BRACKET_FIELD_RE.test(expr);
+  // Bare `[Field]` not preceded by a word char (excludes `__sheet__[key]`).
+  if (HAS_BRACKET_FIELD_RE.test(expr)) return true;
+  // ADR-0012: `Source[Field]` where Source starts with a letter and
+  // is not preceded by a word char. The boundary check excludes
+  // matches inside `__sheet__[key]` like `inputs__[` within
+  // `__inputs__[month]`.
+  if (/(?<!\w)[A-Za-z]\w*\[[^\]\r\n]+\]/.test(expr)) return true;
+  return false;
 }
 
 export function isAggregateExpression(expr: string): boolean {
@@ -57,6 +68,10 @@ function normalizeInner(expr: string, columns: Set<string>): string {
     return `${fn} ${normalizeValueArg(arith.left, columns)} ${normalizeValueArg(arith.right, columns)}`;
   }
 
+  // ADR-0012: top-level Source[Column] cell expression.
+  const sourced = expr.match(SOURCE_BRACKET_RE);
+  if (sourced) return `sourceCell "${sourced[1]}" "${sourced[2].trim()}"`;
+
   const bracket = expr.match(BRACKET_OPERAND_RE);
   if (bracket) return `index . "${bracket[1].trim()}"`;
 
@@ -70,7 +85,9 @@ function normalizeAggregate(expr: string): string {
     const name = call.name.toUpperCase();
     if (name === 'COUNT' && call.args.length === 0) return 'len .Rows';
     if (name === 'COUNT' && call.args.length === 1) {
-      return `countRows .Rows "${fieldNameFromOperand(call.args[0])}"`;
+      const ref = parseFieldRef(call.args[0]);
+      const rowsExpr = ref?.source ? `(sourceRows "${ref.source}")` : '.Rows';
+      return `countRows ${rowsExpr} "${ref?.field ?? fieldNameFromOperand(call.args[0])}"`;
     }
     const rowsFn: Record<string, string> = {
       SUM: 'sumRows',
@@ -80,10 +97,22 @@ function normalizeAggregate(expr: string): string {
       MAX: 'maxRows',
     };
     if (rowsFn[name] && call.args.length === 1) {
-      return `${rowsFn[name]} .Rows "${fieldNameFromOperand(call.args[0])}"`;
+      const ref = parseFieldRef(call.args[0]);
+      const rowsExpr = ref?.source ? `(sourceRows "${ref.source}")` : '.Rows';
+      return `${rowsFn[name]} ${rowsExpr} "${ref?.field ?? fieldNameFromOperand(call.args[0])}"`;
     }
   }
   return e;
+}
+
+// ADR-0012: extract (source?, field) from `[Field]` or `Source[Field]`.
+function parseFieldRef(arg: string): { source?: string; field: string } | null {
+  const a = arg.trim();
+  const sourced = a.match(SOURCE_BRACKET_RE);
+  if (sourced) return { source: sourced[1], field: sourced[2].trim() };
+  const bare = a.match(BRACKET_OPERAND_RE);
+  if (bare) return { field: bare[1].trim() };
+  return null;
 }
 
 function normalizeConcatenation(
@@ -122,6 +151,10 @@ function findArithmeticOp(
 
 function normalizeOperand(op: string, columns: Set<string>): string {
   void columns;
+  // ADR-0012: Source[Column] in row context — emits a tagged form so
+  // template-eval can verify it matches the active source at runtime.
+  const sourced = op.match(SOURCE_BRACKET_RE);
+  if (sourced) return `(sourceCell "${sourced[1]}" "${sourced[2].trim()}")`;
   const bracket = op.match(BRACKET_OPERAND_RE);
   if (bracket) return `(index . "${bracket[1].trim()}")`;
   return op;

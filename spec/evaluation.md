@@ -60,6 +60,61 @@ for author-defined values.
 Templates that need *per-run* values use the `__inputs__` sheet
 instead (see [Inputs](#inputs)).
 
+## External Data Sources
+
+A template MAY declare additional named data sources beyond the
+default by providing the reserved sheet `__sources__`. Row 1 is the
+header; each subsequent row declares one source.
+
+| Column | Required | Meaning |
+|---|---|---|
+| `name` | yes | Source name. Letters, digits, and underscores only. MUST NOT start with `__` and MUST NOT be `default` (reserved for the implicit source). |
+| `sheet` | yes | Source worksheet name in the data workbook, or prefix pattern ending with `*`. |
+| `table` | no | Source-table selector for that sheet, defaulting to `1`. Same syntax as `source_table` in `__config__`. |
+| `description` | no | Free-form note. |
+
+Implementations MUST identify columns by header text, case-insensitive.
+
+The implicit **default** source — declared via `source_sheet` and
+`source_table` rows in `__config__` — is always named `default`. It
+cannot be redeclared in `__sources__`.
+
+### Cell references
+
+`[Column]` continues to mean "the active source's current row's
+column." `Source[Column]` is the structured-reference form for a
+named source:
+
+```
+{{ [Account] }}                   active source's current row
+{{ Customers[Account] }}          Customers' current row (only when active)
+{{ SUM(Renewals[Amount]) }}       aggregate over Renewals' full row set
+```
+
+Row-level `Source[Column]` is valid only when `Source` is the active
+source for the surrounding data block. Inside an aggregate function,
+`Source[Column]` always operates on `Source`'s full row set
+independent of the active block.
+
+### `@source` directive
+
+A data block MAY scope its iteration to a named source:
+
+```
+{{ @source Customers }}
+{{ @filter [Region] = "Seoul" }}
+{{ @repeat }}
+{{ [Account] }}
+{{ [Region] }}
+```
+
+Without `@source`, the active source is `default`. `@source` MUST
+appear before `@filter`/`@sort`/`@top` directives of the same block
+(it determines which row set those operate on).
+
+Referencing an undeclared source — either via `@source <Unknown>` or
+via `Unknown[Column]` — is an error.
+
 ## Inputs
 
 A template MAY declare runtime inputs by providing a reserved sheet

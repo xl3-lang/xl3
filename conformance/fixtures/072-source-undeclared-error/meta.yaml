@@ -1,0 +1,6 @@
+description: '@source referencing a source not declared in `__sources__` is a parse-time error per ADR-0012.'
+spec_section: evaluation.md "External Data Sources"; ADR-0012
+spec_version: "0.1"
+tags: [directive, source, sources, error]
+verified_by: [hand]
+expected_error: 'Source "Renewals" is not declared in __sources__'

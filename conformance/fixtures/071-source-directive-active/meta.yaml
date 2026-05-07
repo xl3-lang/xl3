@@ -1,0 +1,5 @@
+description: '@source SourceName scopes a data block; inside the block, [Column] resolves to that source per ADR-0012.'
+spec_section: evaluation.md "External Data Sources"; ADR-0012
+spec_version: "0.1"
+tags: [directive, source, sources]
+verified_by: [hand]

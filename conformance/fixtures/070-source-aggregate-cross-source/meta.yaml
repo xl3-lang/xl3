@@ -1,0 +1,5 @@
+description: COUNT/MIN/MAX over a named source operate on its full row set per ADR-0012.
+spec_section: language.md "Functions / Aggregates"; ADR-0012
+spec_version: "0.1"
+tags: [language, function, aggregate, sources]
+verified_by: [hand]

@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs';
-import type { Row } from './types.js';
+import type { Row, SourceSpec } from './types.js';
 import { isEmpty } from './functions.js';
 
 export interface SourceData {
@@ -19,7 +19,34 @@ export async function readSource(
 ): Promise<SourceData> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer);
+  return readSourceFromWorkbook(workbook, sheetPattern, options);
+}
 
+// ADR-0012: read all named sources declared in `__sources__`, plus the
+// default source from `__config__`. Returns a record keyed by source
+// name; the default source uses the special name "default".
+export async function readAllSources(
+  buffer: ArrayBuffer,
+  defaultSheetPattern: string,
+  defaultOptions: SourceReadOptions,
+  sources: SourceSpec[],
+): Promise<Record<string, SourceData>> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+
+  const out: Record<string, SourceData> = {};
+  out['default'] = readSourceFromWorkbook(workbook, defaultSheetPattern, defaultOptions);
+  for (const spec of sources) {
+    out[spec.name] = readSourceFromWorkbook(workbook, spec.sheet, { sourceTable: spec.table });
+  }
+  return out;
+}
+
+function readSourceFromWorkbook(
+  workbook: ExcelJS.Workbook,
+  sheetPattern: string,
+  options: SourceReadOptions,
+): SourceData {
   const sheet = resolveSheet(workbook, sheetPattern);
   if (!sheet) {
     throw new Error(
@@ -28,14 +55,10 @@ export async function readSource(
   }
 
   const table = resolveSourceTable(sheet, options);
-
-  // Read headers
   const headers = readHeaders(sheet, table);
 
-  // Read data rows
   const rows: Row[] = [];
   const totalRows = table.bottomRow ?? sheet.rowCount;
-
   for (let r = table.headerRow + 1; r <= totalRows; r++) {
     const row = sheet.getRow(r);
     const record: Row = {};
@@ -45,8 +68,6 @@ export async function readSource(
       const header = headers[c];
       const cell = row.getCell(table.leftCol + c);
       const val = parseCellValue(cell);
-      // ADR-0007: a row is empty when every cell is empty by the empty
-      // predicate. Whitespace-only strings count as empty cells.
       if (!isEmpty(val)) allEmpty = false;
       record[header] = val;
     }
@@ -55,11 +76,7 @@ export async function readSource(
     rows.push(record);
   }
 
-  return {
-    sheetName: sheet.name,
-    headers,
-    rows,
-  };
+  return { sheetName: sheet.name, headers, rows };
 }
 
 interface SourceTable {

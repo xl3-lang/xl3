@@ -150,6 +150,11 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 066 | `input-text-host-supplied` | Host-supplied input flows through cells, sheet names, and the output filename pattern (ADR-0010). |
 | 067 | `input-missing-required-error` | A required `_inputs` declaration (no default) that the host omits is an error (ADR-0010). |
 | 068 | `input-select-host-supplied` | A `select` input accepts a host value listed in the declared pipe-separated options (ADR-0010). |
+| 069 | `source-multi-declaration` | A `__sources__` sheet declares an additional named source; aggregates over it operate on its full row set per ADR-0012. |
+| 070 | `source-aggregate-cross-source` | COUNT/MIN/MAX over a named source operate on its full row set per ADR-0012. |
+| 071 | `source-directive-active` | `@source SourceName` scopes a data block; inside it `[Column]` resolves to that source per ADR-0012. |
+| 072 | `source-undeclared-error` | `@source` referencing a source not declared in `__sources__` is a parse-time error per ADR-0012. |
+| 073 | `source-row-cross-error` | Row-level reference to a non-active source's column is an error per ADR-0012. |
 
 ## Status
 

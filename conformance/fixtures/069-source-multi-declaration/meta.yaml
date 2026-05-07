@@ -1,0 +1,5 @@
+description: A `__sources__` sheet declares an additional named source; aggregates over it operate on its full row set (ADR-0012).
+spec_section: evaluation.md "External Data Sources"; ADR-0012
+spec_version: "0.1"
+tags: [evaluation, sources, aggregate]
+verified_by: [hand]

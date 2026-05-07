@@ -13,6 +13,7 @@ import { evalCell } from './template-eval.js';
 import { applyDirectives } from './data-transform.js';
 import { canonicalString } from './functions.js';
 import type { FileGroup } from './grouper.js';
+import type { SourceData } from './reader.js';
 import { ExcelJsWorkbookDocument, sanitizeFilename, sanitizeSheetName, type WorkbookDocument } from './excel-document.js';
 
 const VAR_PATTERN = /\{\{.*?\}\}/;
@@ -32,11 +33,13 @@ export class Renderer {
   private parsed: ParsedTemplate;
   private columns: Set<string>;
   private listSheets: Record<string, string[]>;
+  private sources: Record<string, SourceData>;
 
-  constructor(parsed: ParsedTemplate, columns: Set<string>) {
+  constructor(parsed: ParsedTemplate, columns: Set<string>, sources: Record<string, SourceData> = {}) {
     this.parsed = parsed;
     this.columns = columns;
     this.listSheets = parsed.listSheets;
+    this.sources = sources;
   }
 
   /** Generate a preview-safe filename for a file group (no full render). */
@@ -164,9 +167,16 @@ export class Renderer {
       let rowShift = 0; // accumulated row shift from 'down' blocks inserting rows
 
       for (const block of adjustedBlocks) {
-        const blockDirectives = block.directives.filter((d) => d.kind !== 'repeat');
-        const filteredRows = applyDirectives(sg.rows, blockDirectives, this.listSheets);
-        const staticCtx = this.buildStaticContext(fileKey, { ...sg, rows: filteredRows });
+        const blockDirectives = block.directives.filter(
+          (d) => d.kind !== 'repeat' && d.kind !== 'source',
+        );
+        // ADR-0012: a block scoped to a non-default source iterates that
+        // source's full row set rather than the file/sheet group rows.
+        const blockRows = block.source === 'default'
+          ? sg.rows
+          : (this.sources[block.source]?.rows ?? []);
+        const filteredRows = applyDirectives(blockRows, blockDirectives, this.listSheets);
+        const staticCtx = this.buildStaticContext(fileKey, { ...sg, rows: filteredRows }, block.source);
 
         if (block.direction === 'right') {
           this.renderDataCols(sheet, block, filteredRows, staticCtx, rowShift);
@@ -184,7 +194,7 @@ export class Renderer {
               dataEndRow: shiftedBlock.endRow,
               directiveRows: [],
             };
-            this.renderDataRows(document, sheet, asSt, filteredRows);
+            this.renderDataRows(document, sheet, asSt, filteredRows, block.source);
             const templateRowCount = shiftedBlock.endRow - shiftedBlock.startRow + 1;
             rowShift += filteredRows.length - templateRowCount;
           }
@@ -226,8 +236,12 @@ export class Renderer {
         directiveRows: [],
       };
 
-      const filteredRows = applyDirectives(sg.rows, st.directives, this.listSheets);
-      const staticCtx = this.buildStaticContext(fileKey, { ...sg, rows: filteredRows });
+      // ADR-0012: pick the active source from the (single) down block;
+      // legacy templates default to `default`.
+      const activeSource = st.blocks.find((b) => b.direction === 'down')?.source ?? 'default';
+      const blockRows = activeSource === 'default' ? sg.rows : (this.sources[activeSource]?.rows ?? []);
+      const filteredRows = applyDirectives(blockRows, st.directives, this.listSheets);
+      const staticCtx = this.buildStaticContext(fileKey, { ...sg, rows: filteredRows }, activeSource);
 
       // Render static rows
       sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
@@ -251,7 +265,7 @@ export class Renderer {
         return;
       }
 
-      this.renderDataRows(document, sheet, adjustedSt, filteredRows);
+      this.renderDataRows(document, sheet, adjustedSt, filteredRows, activeSource);
     }
   }
 
@@ -260,6 +274,7 @@ export class Renderer {
     sheet: ExcelJS.Worksheet,
     st: SheetTemplate,
     dataRows: Row[],
+    activeSource = 'default',
   ) {
     const templateRowCount = st.dataEndRow - st.dataStartRow + 1;
 
@@ -294,7 +309,7 @@ export class Renderer {
     }
 
     // 3. Render each data record
-    const reservedCtx = this.reservedSheetCtx();
+    const reservedCtx = { ...this.reservedSheetCtx(), __activeSource__: activeSource };
     for (let i = 0; i < dataRows.length; i++) {
       const rowData = { ...reservedCtx, ...dataRows[i], __rownum: i + 1, Rows: dataRows };
 
@@ -410,20 +425,29 @@ export class Renderer {
 
   // ADR-0011: reserved-sheet contents live under namespaced keys in
   // ctx so cell expressions can resolve `{{ __config__[key] }}` etc.
+  // ADR-0012: __sources__ exposes named source row sets so cross-source
+  // aggregates like `SUM(Customers[Amount])` can resolve at eval time.
   private reservedSheetCtx(): Record<string, unknown> {
     return {
       __config__: this.parsed.configVars,
       __inputs__: this.parsed.resolvedInputs ?? {},
       __lists__: this.parsed.listSheets,
+      __sources__: this.sources,
     };
   }
 
-  private buildStaticContext(fileKey: GroupKey, sg: SheetGroup): Record<string, unknown> {
+  private buildStaticContext(
+    fileKey: GroupKey,
+    sg: SheetGroup,
+    activeSource = 'default',
+  ): Record<string, unknown> {
     const ctx: Record<string, unknown> = this.reservedSheetCtx();
     // Group keys (overlay)
     for (const [k, v] of Object.entries(fileKey.values)) ctx[k] = v;
     for (const [k, v] of Object.entries(sg.key.values)) ctx[k] = v;
     ctx['Rows'] = sg.rows;
+    // ADR-0012: active source for the surrounding data block.
+    ctx['__activeSource__'] = activeSource;
     return ctx;
   }
 

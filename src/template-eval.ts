@@ -12,6 +12,9 @@ import { functions, canonicalString } from './functions.js';
  */
 // ADR-0011: structured-ref to a reserved sheet, e.g. __config__[title].
 const RESERVED_REF_RE = /^__([a-z]+)__\[([^\]\r\n]+)\]$/;
+// ADR-0012: tagged forms emitted by the normalizer for source refs.
+const SOURCE_CELL_RE = /^sourceCell\s+"([^"]+)"\s+"([^"]+)"$/;
+const SOURCE_ROWS_RE = /^sourceRows\s+"([^"]+)"$/;
 
 function lookupReservedRef(
   trimmed: string,
@@ -24,9 +27,44 @@ function lookupReservedRef(
   const obj = ctx[ns];
   if (obj && typeof obj === 'object') {
     const value = (obj as Record<string, unknown>)[key];
+    // Source data has a `.rows` property — return whole object so
+    // downstream sourceRows/sourceCell can introspect.
     return value ?? '';
   }
   return '';
+}
+
+// ADR-0012: resolve `sourceCell "Name" "Column"` → current row's column
+// from the named source. Errors when Name is not the active source.
+function lookupSourceCell(
+  trimmed: string,
+  ctx: Record<string, unknown>,
+): unknown | undefined {
+  const m = trimmed.match(SOURCE_CELL_RE);
+  if (!m) return undefined;
+  const source = m[1]!;
+  const column = m[2]!;
+  const active = ctx['__activeSource__'];
+  if (active === source) return ctx[column] ?? '';
+  throw new Error(
+    `Cannot reference ${source}[${column}] outside an active @source ${source} block`,
+  );
+}
+
+// ADR-0012: resolve `sourceRows "Name"` → array of all rows for that source.
+function lookupSourceRows(
+  trimmed: string,
+  ctx: Record<string, unknown>,
+): unknown[] | undefined {
+  const m = trimmed.match(SOURCE_ROWS_RE);
+  if (!m) return undefined;
+  const name = m[1]!;
+  const ns = ctx['__sources__'];
+  if (ns && typeof ns === 'object') {
+    const src = (ns as Record<string, { rows?: unknown[] }>)[name];
+    if (src && Array.isArray(src.rows)) return src.rows;
+  }
+  throw new Error(`Source "${name}" is not declared in __sources__`);
 }
 
 export function evalExpression(
@@ -37,6 +75,12 @@ export function evalExpression(
 
   const reserved = lookupReservedRef(trimmed, ctx);
   if (reserved !== undefined) return reserved;
+
+  const sourceCell = lookupSourceCell(trimmed, ctx);
+  if (sourceCell !== undefined) return sourceCell;
+
+  const sourceRows = lookupSourceRows(trimmed, ctx);
+  if (sourceRows !== undefined) return sourceRows;
 
   const bracketMatch = trimmed.match(/^\[([^\]\r\n]+)\]$/);
   if (bracketMatch) {
@@ -122,6 +166,13 @@ function resolveArg(arg: string, ctx: Record<string, unknown>): unknown {
   // ADR-0011: __config__[key] / __inputs__[key] / etc. as a function arg.
   const reserved = lookupReservedRef(arg, ctx);
   if (reserved !== undefined) return reserved;
+
+  // ADR-0012: Source[Column] / sourceRows / sourceCell as function arg.
+  const sourceCell = lookupSourceCell(arg, ctx);
+  if (sourceCell !== undefined) return sourceCell;
+
+  const sourceRows = lookupSourceRows(arg, ctx);
+  if (sourceRows !== undefined) return sourceRows;
 
   const bracketMatch = arg.match(/^\[([^\]\r\n]+)\]$/);
   if (bracketMatch) {

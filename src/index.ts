@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { parseTemplate, populateColumnRefs } from './parser.js';
-import { readSource, columnSet } from './reader.js';
+import { readAllSources, columnSet } from './reader.js';
 import type { SourceData } from './reader.js';
 import { groupRows } from './grouper.js';
 import { Renderer } from './renderer.js';
@@ -33,22 +33,24 @@ export { toTemplateModel } from './template-model.js';
 interface PreparedConversion {
   parsed: ParsedTemplate;
   source: SourceData;
+  sources: Record<string, SourceData>;
   columns: Set<string>;
   grouped: ReturnType<typeof groupRows>;
   renderer: Renderer;
 }
 
-function prepareConversionFromSourceData(
+function prepareConversionFromSources(
   parsed: ParsedTemplate,
-  source: SourceData,
+  sources: Record<string, SourceData>,
 ): PreparedConversion {
-  const columns = columnSet(source.headers);
+  const defaultSource = sources['default']!;
+  const columns = columnSet(defaultSource.headers);
   populateColumnRefs(parsed, columns);
 
-  const grouped = groupRows(source.rows, parsed.fileGroupKeys, parsed.sheetTemplates);
-  const renderer = new Renderer(parsed, columns);
+  const grouped = groupRows(defaultSource.rows, parsed.fileGroupKeys, parsed.sheetTemplates);
+  const renderer = new Renderer(parsed, columns, sources);
 
-  return { parsed, source, columns, grouped, renderer };
+  return { parsed, source: defaultSource, sources, columns, grouped, renderer };
 }
 
 /** Shared first stage: parse template + read source + resolve columns + group. */
@@ -59,15 +61,15 @@ async function prepareConversion(
 ) {
   const parsed = await parseTemplate(templateBuffer);
   applyResolvedInputs(parsed, options);
-  const source = await readSource(
+  // ADR-0012: read default + all named sources upfront.
+  const sources = await readAllSources(
     sourceBuffer,
     parsed.meta.source_sheet,
-    {
-      sourceTable: parsed.meta.source_table,
-    },
+    { sourceTable: parsed.meta.source_table },
+    parsed.sources,
   );
 
-  return prepareConversionFromSourceData(parsed, source);
+  return prepareConversionFromSources(parsed, sources);
 }
 
 // ADR-0010 / ADR-0011: resolve runtime inputs and stash them on the

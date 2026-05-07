@@ -8,6 +8,20 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0012 introduces a **multi-source data model**. Templates can
+  declare additional named data sources in a new reserved sheet
+  `__sources__` (columns: `name`, `sheet`, `table`, `description`).
+  Cells reference a named source's current-row column via the Excel
+  structured-ref form `Customers[Account]`. The `@source <Name>`
+  directive scopes a data block to a named source so its `[Column]`
+  shorthand resolves there. Aggregate functions
+  (`SUM`/`COUNT`/`AVERAGE`/`MIN`/`MAX`) accept a source-prefixed
+  bracket and operate on that source's full row set
+  (`SUM(Renewals[Amount])`). Row-level cross-source references and
+  source joins are intentionally deferred to ADR-0013/0014.
+  Conformance fixtures 069–073 cover declaration, cross-source
+  aggregates, the directive, undeclared-source errors, and the
+  row-context cross-source error.
 - **BREAKING (ADR-0011): reserved sheet naming + unified reference syntax.**
   - Reserved system sheets are now dunder-wrapped: `_config` →
     `__config__`, `_inputs` (ADR-0010) → `__inputs__`. New reserved

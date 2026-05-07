@@ -1,6 +1,7 @@
 import type { Directive, FilterOp } from './types.js';
 
-const DIRECTIVE_RE = /^@(filter|sort|top|repeat)\b/i;
+const DIRECTIVE_RE = /^@(filter|sort|top|repeat|source)\b/i;
+const SOURCE_NAME_RE = /^[A-Za-z0-9_]+$/;
 
 export function isDirectiveExpression(expr: string): boolean {
   return DIRECTIVE_RE.test(expr.trim());
@@ -14,8 +15,16 @@ export function parseDirective(expr: string): Directive | null {
   if (lower.startsWith('@sort ')) return parseSort(trimmed.slice(6).trim());
   if (lower.startsWith('@top ')) return parseTop(trimmed.slice(5).trim());
   if (lower.startsWith('@repeat ')) return parseRepeat(trimmed.slice(8).trim());
+  if (lower.startsWith('@source ')) return parseSource(trimmed.slice(8).trim());
 
   return null;
+}
+
+function parseSource(body: string): Directive | null {
+  const name = body.trim();
+  if (!SOURCE_NAME_RE.test(name)) return null;
+  if (name.startsWith('__')) return null;
+  return { kind: 'source', name };
 }
 
 function parseFilter(body: string): Directive | null {
