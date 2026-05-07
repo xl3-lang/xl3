@@ -10,11 +10,33 @@ import { functions, canonicalString } from './functions.js';
  *   if condition             → conditional (handled at cell level)
  *   len .Rows               → ctx.Rows.length
  */
+// ADR-0011: structured-ref to a reserved sheet, e.g. __config__[title].
+const RESERVED_REF_RE = /^__([a-z]+)__\[([^\]\r\n]+)\]$/;
+
+function lookupReservedRef(
+  trimmed: string,
+  ctx: Record<string, unknown>,
+): unknown {
+  const m = trimmed.match(RESERVED_REF_RE);
+  if (!m) return undefined;
+  const ns = `__${m[1]}__`;
+  const key = m[2]!.trim();
+  const obj = ctx[ns];
+  if (obj && typeof obj === 'object') {
+    const value = (obj as Record<string, unknown>)[key];
+    return value ?? '';
+  }
+  return '';
+}
+
 export function evalExpression(
   normalized: string,
   ctx: Record<string, unknown>,
 ): unknown {
   const trimmed = stripOuterParens(normalized.trim());
+
+  const reserved = lookupReservedRef(trimmed, ctx);
+  if (reserved !== undefined) return reserved;
 
   const bracketMatch = trimmed.match(/^\[([^\]\r\n]+)\]$/);
   if (bracketMatch) {
@@ -97,6 +119,10 @@ function resolveArg(arg: string, ctx: Record<string, unknown>): unknown {
     return ctx['Rows'] ?? [];
   }
 
+  // ADR-0011: __config__[key] / __inputs__[key] / etc. as a function arg.
+  const reserved = lookupReservedRef(arg, ctx);
+  if (reserved !== undefined) return reserved;
+
   const bracketMatch = arg.match(/^\[([^\]\r\n]+)\]$/);
   if (bracketMatch) {
     return ctx[bracketMatch[1]!.trim()] ?? '';
@@ -153,10 +179,11 @@ function splitFunctionArgs(expr: string): string[] {
   let current = '';
   let inQuote = false;
   let parenDepth = 0;
+  let bracketDepth = 0;
 
   for (let i = 0; i < expr.length; i++) {
     const ch = expr[i];
-    if (ch === '"' && parenDepth === 0) {
+    if (ch === '"' && parenDepth === 0 && bracketDepth === 0) {
       inQuote = !inQuote;
       current += ch;
     } else if (ch === '(' && !inQuote) {
@@ -165,7 +192,13 @@ function splitFunctionArgs(expr: string): string[] {
     } else if (ch === ')' && !inQuote) {
       parenDepth--;
       current += ch;
-    } else if (ch === ' ' && !inQuote && parenDepth === 0) {
+    } else if (ch === '[' && !inQuote) {
+      bracketDepth++;
+      current += ch;
+    } else if (ch === ']' && !inQuote) {
+      bracketDepth--;
+      current += ch;
+    } else if (ch === ' ' && !inQuote && parenDepth === 0 && bracketDepth === 0) {
       if (current) { args.push(current); current = ''; }
     } else {
       current += ch;

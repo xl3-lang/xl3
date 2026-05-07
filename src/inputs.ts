@@ -1,10 +1,11 @@
 import type { InputSpec } from './types.js';
 import { canonicalString } from './functions.js';
 
-// ADR-0010: resolve host-provided runtime inputs against the
-// declarations parsed from the `_inputs` sheet. Returns the resolved
-// values keyed by `_<name>` so they can be merged into `configVars`
-// (the existing user-variable namespace).
+// ADR-0010 / ADR-0011: resolve host-provided runtime inputs against
+// the declarations parsed from the `__inputs__` sheet. Returns the
+// resolved values keyed by the bare input name (no underscore prefix).
+// The renderer exposes them under the `__inputs__` namespace in ctx,
+// so templates reference them via `{{ __inputs__[name] }}`.
 //
 // Errors are thrown with stable substrings so conformance fixtures can
 // match them:
@@ -36,7 +37,7 @@ export function resolveInputs(
     }
 
     const stored = coerceInput(spec, raw);
-    resolved[`_${spec.name}`] = stored;
+    resolved[spec.name] = stored;
   }
 
   return resolved;

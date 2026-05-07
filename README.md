@@ -34,7 +34,7 @@ Developers own the engine in code. Operators use a file-based flow:
 upload raw Excel, choose the approved template, and download the finished
 workbook.
 
-Templates are authored **in Excel itself**. Put configuration in `_config`,
+Templates are authored **in Excel itself**. Put configuration in `__config__`,
 add expressions such as `{{ [Account] }}` or
 `{{ IF([Renewal] > 10000, "Priority", "Standard") }}` to cells, save the file,
 and run xl3. No macros, no hidden scripts, no vendor cloud.
@@ -45,9 +45,9 @@ code.
 
 ## Quick example
 
-A template can contain ordinary Excel content, `_config`, and xl3 expressions:
+A template can contain ordinary Excel content, `__config__`, and xl3 expressions:
 
-| `_config` key | Value |
+| `__config__` key | Value |
 |---|---|
 | `source_sheet` | `Raw` |
 | `source_table` | `1` |
@@ -95,7 +95,7 @@ workflow in the workbook.
 
 - **A file-based workflow.** Raw `.xlsx` in, approved template in, finished
   workbook out.
-- **Rules travel with the workbook.** `_config`, expressions, layout, and
+- **Rules travel with the workbook.** `__config__`, expressions, layout, and
   output shape are archived in `template.xlsx`.
 - **Developer-owned engine.** Use the TypeScript API in a browser page, internal
   portal, CLI, or service endpoint.
@@ -140,7 +140,7 @@ You can try the browser flow on [xl3.io](https://xl3.io): run the attached
 sample files as-is, download the raw/template workbooks, or replace either file
 with your own.
 
-Templates choose the source table in the hidden `_config` sheet:
+Templates choose the source table in the hidden `__config__` sheet:
 
 | Key | Example | Meaning |
 |---|---|---|

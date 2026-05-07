@@ -81,13 +81,13 @@ const t = isKorean ? copy.ko : copy.en;
 
 const examples = {
   data: {
-    kind: '_config',
+    kind: '__config__',
     title: t.dataTitle,
     note: t.dataNote,
     workbookTitle: 'template.xlsx',
     workbookSubtitle: isKorean ? '업무 규칙이 들어 있는 엑셀 파일' : 'workbook with transformation rules',
     formula: 'B2  source_table = 1',
-    sheetName: '_config',
+    sheetName: '__config__',
     rows: [
       ['key', 'value', 'notes'],
       ['source_sheet', 'Raw', 'worksheet to read'],
@@ -153,7 +153,7 @@ const examples = {
     sheetName: 'Workflow',
     rows: [
       ['What is preserved', 'Where it lives', 'Why it matters'],
-      ['Header mapping', '_config', 'repeatable runs'],
+      ['Header mapping', '__config__', 'repeatable runs'],
       ['Output layout', 'report sheets', 'operator handoff'],
       ['Transform rules', 'XTL cells', 'reviewable file'],
     ],

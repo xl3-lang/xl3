@@ -97,6 +97,10 @@ export interface TemplateModel {
   listSheets: Record<string, string[]>;
   configVars: Record<string, string>;
   inputs: InputSpec[];
+  // ADR-0011: host-supplied input values resolved against `inputs`.
+  // Populated by the convert/preview entry points; absent before
+  // resolution.
+  resolvedInputs?: Record<string, string>;
   warnings: string[];
 }
 

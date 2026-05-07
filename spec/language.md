@@ -219,7 +219,7 @@ outside core conformance. Portable templates MUST use only the table above.
 {{ TEXT(TODAY(), "YYYY-MM-DD") }}
 ```
 
-`ROW()` returns the 1-based row index inside the current repeat block. Calling `ROW()` outside a repeat block is an error. `TODAY()` returns the UTC date at render time. Implementations MUST NOT use the host runtime's local timezone; templates that need a locale-specific date should compute it in the source workbook or pass it through `_config` as a user variable.
+`ROW()` returns the 1-based row index inside the current repeat block. Calling `ROW()` outside a repeat block is an error. `TODAY()` returns the UTC date at render time. Implementations MUST NOT use the host runtime's local timezone; templates that need a locale-specific date should compute it in the source workbook or pass it through `__config__` as an author-defined value.
 
 ## Directives
 

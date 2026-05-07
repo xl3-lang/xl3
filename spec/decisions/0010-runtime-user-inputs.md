@@ -1,9 +1,15 @@
 # ADR 0010 - Runtime user inputs
 
-- **Status:** accepted
+- **Status:** accepted (sheet renamed by ADR-0011)
 - **Date:** 2026-05-07
 - **Spec target:** XTL 0.1 draft
 - **Affects:** evaluation.md, language.md
+
+> **Note (2026-05-07):** ADR-0011 renamed the reserved sheet `_inputs`
+> → `__inputs__` and replaced the `{{ _<name> }}` cell-reference
+> syntax with `{{ __inputs__[name] }}`. The decision text below
+> reflects the original 0010 wording; the current spec is in
+> `evaluation.md` and the impl uses the renamed forms.
 
 ## Context
 

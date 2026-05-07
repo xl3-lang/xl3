@@ -64,10 +64,23 @@ async function rewriteZipXml(zip, name, transform) {
 }
 
 function addConfig(wb, entries) {
-  const sh = wb.addWorksheet('_config', { state: 'hidden' });
+  const sh = wb.addWorksheet('__config__', { state: 'hidden' });
   entries.forEach(([k, v], i) => {
     sh.getCell(i + 1, 1).value = k;
     sh.getCell(i + 1, 2).value = v;
+  });
+}
+
+// ADR-0011: __lists__ sheet — header row holds list names; columns
+// below hold values.
+function addLists(wb, lists, opts = {}) {
+  const sh = wb.addWorksheet('__lists__', { state: opts.state ?? 'hidden' });
+  const names = Object.keys(lists);
+  names.forEach((name, col) => {
+    sh.getCell(1, col + 1).value = name;
+    lists[name].forEach((value, row) => {
+      sh.getCell(row + 2, col + 1).value = value;
+    });
   });
 }
 
@@ -111,7 +124,7 @@ async function build001() {
   //   - phase 7: expand repeat blocks (A2 detected as data block, 2 rows -> 2 rendered rows)
   //   - phase 8: evaluate static/data cells
   //   - single-expression cell preserves source value type (string -> string)
-  //   - phase 9: _config and directive rows removed
+  //   - phase 9: __config__ and directive rows removed
   {
     const wb = new ExcelJS.Workbook();
     const sh = wb.addWorksheet('Report');
@@ -188,8 +201,9 @@ async function build002() {
 // ---------------------------------------------------------------------------
 // 003 - list-sheet-filter
 //
-// Concept: @filter [field] in _ListSheet keeps only rows whose field value
-// appears in the list sheet's first column. List sheet is removed from output.
+// Concept: @filter [field] in __lists__[name] keeps only rows whose field
+// value appears in the named list. The __lists__ sheet is removed from
+// output.
 // Spec section: language.md "Directives / Filter"; evaluation.md "List Sheets".
 // ---------------------------------------------------------------------------
 async function build003() {
@@ -207,13 +221,11 @@ async function build003() {
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'Amount';
-    sh.getCell('A2').value = '{{ @filter [Customer] in _Allowed }}'; // directive row
+    sh.getCell('A2').value = '{{ @filter [Customer] in __lists__[Allowed] }}'; // directive row
     sh.getCell('A3').value = '{{ [Customer] }}';
     sh.getCell('B3').value = '{{ [Amount] }}';
 
-    const list = wb.addWorksheet('_Allowed');
-    list.getCell('A1').value = 'Acme';
-    list.getCell('A2').value = 'Beta';
+    addLists(wb, { Allowed: ['Acme', 'Beta'] }, { state: 'visible' });
 
     await writeBook(wb, join(dir, 'template.xlsx'));
   }
@@ -235,9 +247,9 @@ async function build003() {
 
   // expected.xlsx
   // Reasoning per spec:
-  //   - filter directive row keeps Acme, Beta (in _Allowed); drops Charlie
+  //   - filter directive row keeps Acme, Beta (in __lists__[Allowed]); drops Charlie
   //   - directive row is removed from output
-  //   - _Allowed list sheet is removed from output
+  //   - __lists__ sheet is removed from output
   //   - rendered rows occupy A2..B3 of the Report sheet
   {
     const wb = new ExcelJS.Workbook();
@@ -1978,6 +1990,11 @@ async function build040() {
   await mkdir(dir, { recursive: true });
 
   // template.xlsx
+  // ADR-0011: lists are consolidated into the single __lists__ reserved
+  // sheet. The fixture's contract — that the list sheet is removed
+  // from output regardless of its visibility state — applies to that
+  // single sheet. We use `veryHidden` (the strongest state) to lock in
+  // the most restrictive variant.
   {
     const wb = new ExcelJS.Workbook();
     addConfig(wb, [
@@ -1989,16 +2006,15 @@ async function build040() {
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'Amount';
-    sh.getCell('A2').value = '{{ @filter [Customer] in _Allowed }}';
-    sh.getCell('A3').value = '{{ [Customer] }}';
-    sh.getCell('B3').value = '{{ [Amount] }}';
+    sh.getCell('A2').value = '{{ @filter [Customer] in __lists__[Allowed] }}';
+    sh.getCell('A3').value = '{{ @filter [Customer] !in __lists__[Excluded] }}';
+    sh.getCell('A4').value = '{{ [Customer] }}';
+    sh.getCell('B4').value = '{{ [Amount] }}';
 
-    const allowed = wb.addWorksheet('_Allowed', { state: 'hidden' });
-    allowed.getCell('A1').value = 'Acme';
-    allowed.getCell('A2').value = 'Beta';
-
-    const excluded = wb.addWorksheet('_Excluded', { state: 'veryHidden' });
-    excluded.getCell('A1').value = 'Gamma';
+    addLists(wb, {
+      Allowed: ['Acme', 'Beta'],
+      Excluded: ['Gamma'],
+    }, { state: 'veryHidden' });
 
     await writeBook(wb, join(dir, 'template.xlsx'));
   }
@@ -2255,13 +2271,11 @@ async function build045() {
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'Amount';
-    sh.getCell('A2').value = '{{ @filter [Customer] !in _Excluded }}';
+    sh.getCell('A2').value = '{{ @filter [Customer] !in __lists__[Excluded] }}';
     sh.getCell('A3').value = '{{ [Customer] }}';
     sh.getCell('B3').value = '{{ [Amount] }}';
 
-    const excluded = wb.addWorksheet('_Excluded');
-    excluded.getCell('A1').value = 'Beta';
-    excluded.getCell('A2').value = 'Charlie';
+    addLists(wb, { Excluded: ['Beta', 'Charlie'] }, { state: 'visible' });
 
     await writeBook(wb, join(dir, 'template.xlsx'));
   }
@@ -2851,18 +2865,15 @@ async function build054() {
       ['output_file_pattern', 'output.xlsx'],
     ]);
 
-    // List sheet — first column carries the allowed values. The
-    // whitespace and blank entries are dropped per ADR-0007 when read.
-    const list = wb.addWorksheet('_Allowed');
-    list.getCell('A1').value = 'Acme';
-    list.getCell('A2').value = '   ';
-    list.getCell('A3').value = '';
-    list.getCell('A4').value = 'Beta';
+    // __lists__ sheet — column "Allowed" carries the allowed values.
+    // The whitespace and blank entries are dropped per ADR-0007 when
+    // read.
+    addLists(wb, { Allowed: ['Acme', '   ', '', 'Beta'] }, { state: 'visible' });
 
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'Status';
-    sh.getCell('A2').value = '{{ @filter [Customer] in _Allowed }}';
+    sh.getCell('A2').value = '{{ @filter [Customer] in __lists__[Allowed] }}';
     sh.getCell('A3').value = '{{ [Customer] }}';
     sh.getCell('B3').value = '{{ [Status] }}';
     await writeBook(wb, join(dir, 'template.xlsx'));
@@ -3524,7 +3535,7 @@ async function build064() {
 }
 
 function addInputs(wb, header, rows) {
-  const sh = wb.addWorksheet('_inputs', { state: 'hidden' });
+  const sh = wb.addWorksheet('__inputs__', { state: 'hidden' });
   header.forEach((h, i) => {
     sh.getCell(1, i + 1).value = h;
   });
@@ -3538,9 +3549,9 @@ function addInputs(wb, header, rows) {
 // ---------------------------------------------------------------------------
 // 065 - input-text-default-applied
 //
-// Concept: a `_inputs` sheet declares a text input with a default. When
+// Concept: a `__inputs__` sheet declares a text input with a default. When
 // the host omits the input, the default flows into the expression
-// context as `_<name>` and templates render it.
+// context as `__inputs__[name]` and templates render it.
 // Spec section: evaluation.md "Inputs"; ADR-0010.
 // ---------------------------------------------------------------------------
 async function build065() {
@@ -3560,7 +3571,7 @@ async function build065() {
       ['month', 'text', '2026-05', 'Report month'],
     ]);
     const sh = wb.addWorksheet('Report');
-    sh.getCell('A1').value = 'Report month: {{ _month }}';
+    sh.getCell('A1').value = 'Report month: {{ __inputs__[month] }}';
     sh.getCell('A2').value = 'Customer';
     sh.getCell('A3').value = '{{ [Customer] }}';
     await writeBook(wb, join(dir, 'template.xlsx'));
@@ -3608,13 +3619,13 @@ async function build066() {
       ['name', 'input-text-host-supplied'],
       ['source_sheet', 'Data'],
       ['source_table', '1'],
-      ['output_file_pattern', '{{ _region }}_report.xlsx'],
+      ['output_file_pattern', '{{ __inputs__[region] }}_report.xlsx'],
     ]);
     addInputs(wb, ['name', 'type', 'label'], [
       ['region', 'text', 'Region'],
     ]);
     const sh = wb.addWorksheet('Report');
-    sh.getCell('A1').value = 'Region: {{ _region }}';
+    sh.getCell('A1').value = 'Region: {{ __inputs__[region] }}';
     sh.getCell('A2').value = 'Customer';
     sh.getCell('A3').value = '{{ [Customer] }}';
     await writeBook(wb, join(dir, 'template.xlsx'));
@@ -3666,7 +3677,7 @@ async function build067() {
       ['region', 'text', 'Region'],
     ]);
     const sh = wb.addWorksheet('Report');
-    sh.getCell('A1').value = '{{ _region }}';
+    sh.getCell('A1').value = '{{ __inputs__[region] }}';
     await writeBook(wb, join(dir, 'template.xlsx'));
   }
 
@@ -3710,7 +3721,7 @@ async function build068() {
     );
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Region';
-    sh.getCell('A2').value = '{{ _region }}';
+    sh.getCell('A2').value = '{{ __inputs__[region] }}';
     await writeBook(wb, join(dir, 'template.xlsx'));
   }
 

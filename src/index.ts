@@ -70,15 +70,15 @@ async function prepareConversion(
   return prepareConversionFromSourceData(parsed, source);
 }
 
-// ADR-0010: resolve runtime inputs and merge them into the parsed
-// template's configVars, which already carries the `_<name>`
-// user-variable namespace through to the renderer ctx.
+// ADR-0010 / ADR-0011: resolve runtime inputs and stash them on the
+// parsed template. The renderer exposes them under the `__inputs__`
+// namespace in ctx so cells reference them via `{{ __inputs__[name] }}`.
 function applyResolvedInputs(parsed: ParsedTemplate, options?: ConvertOptions): void {
-  if (parsed.inputs.length === 0 && !options?.inputs) return;
-  const resolved = resolveInputs(parsed.inputs, options?.inputs);
-  for (const [k, v] of Object.entries(resolved)) {
-    parsed.configVars[k] = v;
+  if (parsed.inputs.length === 0 && !options?.inputs) {
+    parsed.resolvedInputs = {};
+    return;
   }
+  parsed.resolvedInputs = resolveInputs(parsed.inputs, options?.inputs);
 }
 
 async function renderPreparedConversion(prepared: PreparedConversion): Promise<OutputFile[]> {

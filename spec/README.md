@@ -11,7 +11,7 @@ Both inputs and outputs are Office Open XML `.xlsx` files, making XTL independen
 ## Documents
 
 - [Language](./language.md) — template syntax, expressions, functions, directives, and group keys.
-- [Evaluation](./evaluation.md) — source data model, `_config`, render phases, list sheets, cell semantics, and errors.
+- [Evaluation](./evaluation.md) — source data model, reserved sheets (`__config__`, `__inputs__`, `__lists__`), render phases, cell semantics, and errors.
 - [Stability](./STABILITY.md) — versioning, conformance, and compatibility policy.
 - [License](./LICENSE) — XTL spec license.
 
@@ -34,7 +34,7 @@ XTL 0.1 core includes:
 - Data directives: `@filter`, `@sort`, `@top`, and `@repeat right`.
 - List sheet filters with `_`-prefixed sheets: `@filter [Customer] in _IncludedCustomers`.
 - Sheet and file grouping.
-- `_config` metadata, including `source_sheet`, `source_table`, and `output_file_pattern`.
+- `__config__` metadata, including `source_sheet`, `source_table`, and `output_file_pattern`.
 - Single-expression cell type preservation and template-format-based coercion.
 
 ## Reference Implementation

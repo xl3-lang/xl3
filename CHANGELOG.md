@@ -8,6 +8,26 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- **BREAKING (ADR-0011): reserved sheet naming + unified reference syntax.**
+  - Reserved system sheets are now dunder-wrapped: `_config` →
+    `__config__`, `_inputs` (ADR-0010) → `__inputs__`. New reserved
+    sheet `__lists__` consolidates user-defined membership lists; the
+    old `_<name>` arbitrary list-sheet pattern is retired.
+  - User-defined values inside `__config__` no longer require a `_`
+    prefix on the key; access them via `{{ __config__[key] }}`.
+  - The `{{ _<name> }}` cell-reference syntax is fully retired.
+    Templates now use `{{ __config__[name] }}`, `{{ __inputs__[name] }}`,
+    or `{{ __lists__[name] }}` (the last only inside `@filter ... in/!in`).
+  - Filter directive form is now `@filter [field] in __lists__[name]`.
+  - Author-created sheet names matching `^__[a-z]+__$` are reserved
+    and rejected at parse time.
+  - The `__sources__` reserved sheet name is reserved for a future ADR
+    (multi-source data model).
+  - All conformance fixtures, the runner protocol's meta.yaml shape,
+    and the browser site are migrated to the new naming.
+
+
+
 - Stage 1 `xl3-conformance` runner with cell-value comparison.
 - Bootstrap conformance fixtures covering substitution, `IF`, list-sheet filters,
   repeat-right defaults, `ROUND`, filename sanitization, and numFmt coercion.

@@ -1,6 +1,9 @@
 const TEMPLATE_BLOCK_RE = /\{\{(.*?)\}\}/g;
-const BRACKET_FIELD_RE = /\[([^\]\r\n]+)\]/g;
-const HAS_BRACKET_FIELD_RE = /\[([^\]\r\n]+)\]/;
+// ADR-0011: bracket field detection must not match the structured-ref
+// form `__sheet__[key]` or `Source[Column]` (future). The bracket is a
+// source-column reference only when not preceded by a word char.
+const BRACKET_FIELD_RE = /(?<!\w)\[([^\]\r\n]+)\]/g;
+const HAS_BRACKET_FIELD_RE = /(?<!\w)\[([^\]\r\n]+)\]/;
 const BRACKET_OPERAND_RE = /^\[([^\]\r\n]+)\]$/;
 
 const GO_KEYWORDS = ['else', 'end', 'define ', 'template ', 'block '];

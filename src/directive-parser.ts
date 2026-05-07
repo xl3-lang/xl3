@@ -27,10 +27,12 @@ function parseFilter(body: string): Directive | null {
   const op = filterMatch[2].toLowerCase() as FilterOp;
   const rest = filterMatch[3].trim();
 
-  // Handle in / !in with list reference (e.g., _MyList)
+  // ADR-0011: `in` / `!in` references the consolidated `__lists__`
+  // sheet via structured-ref form: `__lists__[fruits]`.
   if (op === 'in' || op === '!in') {
-    if (!rest.startsWith('_')) return null;
-    return { kind: 'filter', field, op, value: '', listRef: rest };
+    const listMatch = rest.match(/^__lists__\[([^\]\r\n]+)\]$/);
+    if (!listMatch) return null;
+    return { kind: 'filter', field, op, value: '', listRef: listMatch[1]!.trim() };
   }
 
   // Handle value (quoted or bare)

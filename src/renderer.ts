@@ -294,8 +294,9 @@ export class Renderer {
     }
 
     // 3. Render each data record
+    const reservedCtx = this.reservedSheetCtx();
     for (let i = 0; i < dataRows.length; i++) {
-      const rowData = { ...dataRows[i], __rownum: i + 1, Rows: dataRows };
+      const rowData = { ...reservedCtx, ...dataRows[i], __rownum: i + 1, Rows: dataRows };
 
       // A data record might span multiple template rows
       for (let j = 0; j < templateRowCount; j++) {
@@ -407,11 +408,19 @@ export class Renderer {
     }
   }
 
+  // ADR-0011: reserved-sheet contents live under namespaced keys in
+  // ctx so cell expressions can resolve `{{ __config__[key] }}` etc.
+  private reservedSheetCtx(): Record<string, unknown> {
+    return {
+      __config__: this.parsed.configVars,
+      __inputs__: this.parsed.resolvedInputs ?? {},
+      __lists__: this.parsed.listSheets,
+    };
+  }
+
   private buildStaticContext(fileKey: GroupKey, sg: SheetGroup): Record<string, unknown> {
-    const ctx: Record<string, unknown> = {};
-    // Config vars first (lowest priority)
-    for (const [k, v] of Object.entries(this.parsed.configVars)) ctx[k] = v;
-    // Group keys override
+    const ctx: Record<string, unknown> = this.reservedSheetCtx();
+    // Group keys (overlay)
     for (const [k, v] of Object.entries(fileKey.values)) ctx[k] = v;
     for (const [k, v] of Object.entries(sg.key.values)) ctx[k] = v;
     ctx['Rows'] = sg.rows;
@@ -420,7 +429,7 @@ export class Renderer {
 
   private renderString(tmpl: string, data: Record<string, string>): string {
     const normalized = normalizeTemplate(tmpl, this.columns);
-    const ctx: Record<string, unknown> = { ...this.parsed.configVars, ...data };
+    const ctx: Record<string, unknown> = { ...this.reservedSheetCtx(), ...data };
     // ADR-0009: stringify with canonical form so Booleans, numbers, and
     // empty values render consistently across call sites.
     return canonicalString(evalCell(normalized, ctx));

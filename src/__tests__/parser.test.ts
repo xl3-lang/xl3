@@ -7,7 +7,7 @@ describe('readConfigSheet', () => {
     'rejects removed source config key %s',
     (key) => {
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('_config');
+      const sheet = workbook.addWorksheet('__config__');
       sheet.getCell('A1').value = key;
       sheet.getCell('B1').value = '1';
 

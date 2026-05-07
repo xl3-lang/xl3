@@ -37,17 +37,18 @@ describe('parseDirective: filter', () => {
     });
   });
 
-  it('parses in / !in with a list-sheet reference', () => {
-    expect(parseDirective('@filter [Customer] in _Allowed')).toEqual({
-      kind: 'filter', field: 'Customer', op: 'in', value: '', listRef: '_Allowed',
+  it('parses in / !in with a __lists__ structured reference', () => {
+    expect(parseDirective('@filter [Customer] in __lists__[Allowed]')).toEqual({
+      kind: 'filter', field: 'Customer', op: 'in', value: '', listRef: 'Allowed',
     });
-    expect(parseDirective('@filter [Customer] !in _Excluded')).toEqual({
-      kind: 'filter', field: 'Customer', op: '!in', value: '', listRef: '_Excluded',
+    expect(parseDirective('@filter [Customer] !in __lists__[Excluded]')).toEqual({
+      kind: 'filter', field: 'Customer', op: '!in', value: '', listRef: 'Excluded',
     });
   });
 
-  it('rejects in / !in without a `_`-prefixed list ref', () => {
+  it('rejects in / !in without the __lists__[name] structured form', () => {
     expect(parseDirective('@filter [Customer] in NotAList')).toBeNull();
+    expect(parseDirective('@filter [Customer] in _Allowed')).toBeNull();
   });
 });
 

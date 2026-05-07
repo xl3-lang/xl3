@@ -13,8 +13,17 @@ import type {
 import { isDataExpression, isAggregateExpression, extractColumnRefs } from './normalizer.js';
 import { isDirectiveExpression, parseDirective } from './directive-parser.js';
 
-const CONFIG_SHEET = '_config';
-const INPUTS_SHEET = '_inputs';
+const CONFIG_SHEET = '__config__';
+const INPUTS_SHEET = '__inputs__';
+const LISTS_SHEET = '__lists__';
+const SOURCES_SHEET = '__sources__';
+const RESERVED_SHEETS: ReadonlySet<string> = new Set([
+  CONFIG_SHEET,
+  INPUTS_SHEET,
+  LISTS_SHEET,
+  SOURCES_SHEET,
+]);
+const RESERVED_SHEET_RE = /^__[a-z]+__$/;
 const REMOVED_SOURCE_CONFIG_KEYS = new Set([
   'header_row',
   'source_range',
@@ -45,39 +54,36 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
 
   const { meta, configVars } = readConfigSheet(workbook);
   const inputs = readInputsSheet(workbook);
+  const listSheets = readListsSheet(workbook);
 
-  // ADR-0010: input names MUST NOT collide with `_config` user variables.
+  // ADR-0011: input names MUST NOT collide with __config__ author-defined values.
   for (const input of inputs) {
-    const ref = `_${input.name}`;
-    if (Object.prototype.hasOwnProperty.call(configVars, ref)) {
+    if (Object.prototype.hasOwnProperty.call(configVars, input.name)) {
       throw new Error(
-        `_inputs name "${input.name}" conflicts with the _config user variable "${ref}"`,
+        `__inputs__ name "${input.name}" conflicts with the __config__ author-defined value "${input.name}"`,
+      );
+    }
+  }
+
+  // ADR-0011: reject any sheet whose name matches the reserved
+  // dunder-wrapped pattern but is not one of the four known reserved
+  // sheets. Authors must not invent new __<name>__ sheets.
+  for (const worksheet of workbook.worksheets) {
+    if (RESERVED_SHEETS.has(worksheet.name)) continue;
+    if (RESERVED_SHEET_RE.test(worksheet.name)) {
+      throw new Error(
+        `Sheet "${worksheet.name}" matches the reserved __<name>__ pattern but is not a known reserved sheet`,
       );
     }
   }
 
   const allVars: TemplateVariable[] = [];
   const sheetTemplates: SheetTemplate[] = [];
-  const listSheets: Record<string, string[]> = {};
 
   const fileGroupKeys = extractGroupKeys(meta.output_file_pattern);
 
   for (const worksheet of workbook.worksheets) {
-    if (worksheet.name === CONFIG_SHEET) continue;
-    if (worksheet.name === INPUTS_SHEET) continue;
-
-    // `_`-prefixed list sheets must be parsed even when hidden — they only
-    // exist to back `@filter ... in _list` references and should not show up
-    // as tabs in the output workbook.
-    if (worksheet.name.startsWith('_')) {
-      const values: string[] = [];
-      worksheet.eachRow({ includeEmpty: false }, (row) => {
-        const val = String(row.getCell(1).value ?? '').trim();
-        if (val) values.push(val);
-      });
-      listSheets[worksheet.name] = values;
-      continue;
-    }
+    if (RESERVED_SHEETS.has(worksheet.name)) continue;
 
     if (worksheet.state === 'hidden' || worksheet.state === 'veryHidden') continue;
 
@@ -284,9 +290,9 @@ const VALID_INPUT_TYPES: ReadonlySet<InputType> = new Set([
 
 const NAME_RE = /^[A-Za-z0-9_]+$/;
 
-// ADR-0010: parse the optional `_inputs` sheet. The first row is the
-// header; each subsequent row declares one input. Columns are
-// identified by header text, case-insensitive.
+// ADR-0010 / ADR-0011: parse the optional `__inputs__` sheet. The
+// first row is the header; each subsequent row declares one input.
+// Columns are identified by header text, case-insensitive.
 export function readInputsSheet(workbook: ExcelJS.Workbook): InputSpec[] {
   const sheet = workbook.getWorksheet(INPUTS_SHEET);
   if (!sheet) return [];
@@ -301,7 +307,7 @@ export function readInputsSheet(workbook: ExcelJS.Workbook): InputSpec[] {
   const nameCol = headerMap['name'];
   const typeCol = headerMap['type'];
   if (!nameCol || !typeCol) {
-    throw new Error('_inputs sheet must have at least `name` and `type` columns in row 1');
+    throw new Error('__inputs__ sheet must have at least `name` and `type` columns in row 1');
   }
   const defaultCol = headerMap['default'];
   const labelCol = headerMap['label'];
@@ -317,17 +323,17 @@ export function readInputsSheet(workbook: ExcelJS.Workbook): InputSpec[] {
     const name = String(row.getCell(nameCol).value ?? '').trim();
     if (!name) continue; // skip empty rows
     if (!NAME_RE.test(name)) {
-      throw new Error(`_inputs row ${r} has invalid name "${name}"; use letters, digits, and underscore only`);
+      throw new Error(`__inputs__ row ${r} has invalid name "${name}"; use letters, digits, and underscore only`);
     }
     if (seen.has(name)) {
-      throw new Error(`_inputs has duplicate name "${name}"`);
+      throw new Error(`__inputs__ has duplicate name "${name}"`);
     }
     seen.add(name);
 
     const typeRaw = String(row.getCell(typeCol).value ?? '').trim().toLowerCase();
     if (!VALID_INPUT_TYPES.has(typeRaw as InputType)) {
       throw new Error(
-        `_inputs row ${r} has invalid type "${typeRaw}"; expected one of text, number, date, select`,
+        `__inputs__ row ${r} has invalid type "${typeRaw}"; expected one of text, number, date, select`,
       );
     }
     const type = typeRaw as InputType;
@@ -340,14 +346,14 @@ export function readInputsSheet(workbook: ExcelJS.Workbook): InputSpec[] {
     let options: string[] | undefined;
     if (type === 'select') {
       if (!optionsRaw) {
-        throw new Error(`_inputs row ${r} (name "${name}", type select) requires an options column with pipe-separated values`);
+        throw new Error(`__inputs__ row ${r} (name "${name}", type select) requires an options column with pipe-separated values`);
       }
       options = optionsRaw.split('|').map((s) => s.trim()).filter((s) => s.length > 0);
       if (options.length === 0) {
-        throw new Error(`_inputs row ${r} (name "${name}") has empty options`);
+        throw new Error(`__inputs__ row ${r} (name "${name}") has empty options`);
       }
       if (defaultRaw && !options.includes(defaultRaw)) {
-        throw new Error(`_inputs row ${r} (name "${name}") default "${defaultRaw}" is not in options`);
+        throw new Error(`__inputs__ row ${r} (name "${name}") default "${defaultRaw}" is not in options`);
       }
     }
 
@@ -383,25 +389,61 @@ export function readConfigSheet(workbook: ExcelJS.Workbook): ConfigResult {
   sheet.eachRow((row) => {
     const key = String(row.getCell(1).value ?? '').trim();
     const val = String(row.getCell(2).value ?? '').trim();
-    if (key.startsWith('_')) {
-      configVars[key] = val;
-    } else {
-      switch (key) {
-        case 'name': meta.name = val; break;
-        case 'description': meta.description = val; break;
-        case 'source_sheet': meta.source_sheet = val; break;
-        case 'source_table': meta.source_table = val; break;
-        case 'output_file_pattern': meta.output_file_pattern = val; break;
-        case 'match_pattern': meta.match_pattern = val; break;
-        default:
-          if (REMOVED_SOURCE_CONFIG_KEYS.has(key)) {
-            throw new Error(`Config key "${key}" was removed. Use "source_table" instead.`);
-          }
-      }
+    if (!key) return;
+    switch (key) {
+      case 'name': meta.name = val; break;
+      case 'description': meta.description = val; break;
+      case 'source_sheet': meta.source_sheet = val; break;
+      case 'source_table': meta.source_table = val; break;
+      case 'output_file_pattern': meta.output_file_pattern = val; break;
+      case 'match_pattern': meta.match_pattern = val; break;
+      default:
+        if (REMOVED_SOURCE_CONFIG_KEYS.has(key)) {
+          throw new Error(`Config key "${key}" was removed. Use "source_table" instead.`);
+        }
+        // ADR-0011: any non-system key is an author-defined value
+        // accessed via {{ __config__[key] }}. The leading-`_` prefix
+        // convention is retired.
+        configVars[key] = val;
     }
   });
 
   return { meta, configVars };
+}
+
+// ADR-0011: read the __lists__ sheet. Row 1 holds list names (one per
+// column); each column below is the values of that list. Empty cells
+// are skipped per ADR-0007.
+export function readListsSheet(workbook: ExcelJS.Workbook): Record<string, string[]> {
+  const sheet = workbook.getWorksheet(LISTS_SHEET);
+  if (!sheet) return {};
+
+  const lists: Record<string, string[]> = {};
+  const header = sheet.getRow(1);
+  const colNames: { col: number; name: string }[] = [];
+  header.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+    const name = String(cell.value ?? '').trim();
+    if (!name) return;
+    if (lists[name] !== undefined) {
+      throw new Error(`__lists__ has duplicate list name "${name}"`);
+    }
+    lists[name] = [];
+    colNames.push({ col: colNumber, name });
+  });
+
+  const totalRows = sheet.rowCount;
+  for (let r = 2; r <= totalRows; r++) {
+    const row = sheet.getRow(r);
+    for (const { col, name } of colNames) {
+      const raw = row.getCell(col).value;
+      if (raw === null || raw === undefined) continue;
+      const text = String(raw).trim();
+      if (text === '') continue;
+      lists[name]!.push(text);
+    }
+  }
+
+  return lists;
 }
 
 export function writeConfigSheet(workbook: ExcelJS.Workbook, meta: TemplateMeta) {

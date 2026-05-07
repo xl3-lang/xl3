@@ -15,9 +15,29 @@ and produces one or more `.xlsx` output files.
 
 The template workbook defines the output workbook shape, template expressions, grouping rules, directives, and configuration. The source workbook provides tabular data.
 
+## Reserved Sheets
+
+xl3 defines four reserved sheet names. Any sheet whose name matches
+the dunder-wrapped pattern `__<name>__` is reserved for engine use.
+Authors MUST NOT create sheets with that shape; everything else is
+template content.
+
+| Sheet | Purpose |
+|---|---|
+| `__config__` | Single configuration object — engine metadata + author-defined values |
+| `__inputs__` | Runtime input declarations (collection; see [Inputs](#inputs)) |
+| `__sources__` | External data source declarations (reserved for a future ADR) |
+| `__lists__` | Author-defined membership lists (collection; see [List Sheets](#list-sheets)) |
+
+References to reserved-sheet contents from cell expressions use Excel
+structured-reference form `__sheet__[key]` — the same form used for
+multi-source columns in a future ADR. The legacy `_<name>` reference
+syntax is retired in this version.
+
 ## Template Configuration
 
-A hidden sheet named `_config` MAY provide metadata and runtime settings.
+A hidden sheet named `__config__` MAY provide metadata and author-
+defined values. Column A holds the key, column B holds the value.
 
 | Key | Meaning | Example |
 |---|---|---|
@@ -25,25 +45,30 @@ A hidden sheet named `_config` MAY provide metadata and runtime settings.
 | `description` | Free text | `Monthly order summary` |
 | `source_sheet` | Source sheet name, or prefix pattern ending with `*` | `Orders`, `Data_*` |
 | `source_table` | Source table selector. The first selected row contains column names; rows below are data. | `1`, `A1:D`, `B5:H200` |
-| `output_file_pattern` | Output filename template | `{{ Customer }}_report.xlsx` |
+| `output_file_pattern` | Output filename template | `{{ __config__[customer] }}_report.xlsx` |
 | `match_pattern` | Batch matching pattern | `Orders*` |
-| `_<name>` | User variable (static) | `_title = Order Summary` |
+| any other key | Author-defined value | `title = Q2 Sales` |
 
 `source_table` is the only source table selector.
 
-User variables declared with `_<name>` rows in `_config` are static —
-their values are part of the template file. Templates that need
-per-run values use the `_inputs` sheet instead (see [Inputs](#inputs)).
+Author-defined values use any key not listed in the system table
+above. They are referenced from cells via `{{ __config__[key] }}`.
+For example, a row `title = Q2 Sales` is referenced as
+`{{ __config__[title] }}`. Authors MUST NOT reuse system key names
+for author-defined values.
+
+Templates that need *per-run* values use the `__inputs__` sheet
+instead (see [Inputs](#inputs)).
 
 ## Inputs
 
 A template MAY declare runtime inputs by providing a reserved sheet
-named `_inputs`. The first row is a header; each subsequent row
+named `__inputs__`. The first row is a header; each subsequent row
 declares one input.
 
 | Column | Required | Meaning |
 |---|---|---|
-| `name` | yes | Input name. Must be a non-empty string. The value flows into the expression context as `_<name>`. |
+| `name` | yes | Input name. Must consist of letters, digits, and underscores only. |
 | `type` | yes | One of `text`, `number`, `date`, `select`. |
 | `default` | no | If non-empty, used when the host omits the input. The default value is parsed by the input's `type`. |
 | `label` | no | Human-facing prompt text. Hosts SHOULD use it as the form label. |
@@ -56,12 +81,12 @@ Columns beyond those listed above are reserved and MUST be ignored.
 An input is **required** when its row has no `default`. Hosts MUST
 supply every required input; omitting one is an error.
 
-Input values flow into the expression context using the same `_<name>`
-binding as `_config` user variables. Templates reference them with
-`{{ _name }}`.
+Resolved input values are referenced from cells via
+`{{ __inputs__[name] }}`. For example, an input declared with
+`name = month` is referenced as `{{ __inputs__[month] }}`.
 
-Input names MUST NOT collide with `_config` user variable names; this
-is an error at parse time.
+Input names MUST NOT collide with author-defined values declared as
+non-system rows in `__config__`; this is an error at parse time.
 
 Inputs are coerced from host-supplied values:
 
@@ -151,27 +176,47 @@ value:
 
 ## List Sheets
 
-Any sheet whose name starts with `_` is a list sheet, except `_config`.
+A template MAY declare named membership lists by providing a reserved
+sheet named `__lists__`. Row 1 is the header; each header cell is the
+name of one list. Below row 1, each column holds that list's values.
 
-List sheets:
+```
+__lists__:
+| fruits | allowed_status | excluded_regions |
+|--------|----------------|------------------|
+| apple  | open           | test             |
+| banana | pending        | internal         |
+| cherry | reviewing      |                  |
+```
+
+The `__lists__` sheet:
 
 - MAY be visible, hidden, or very hidden in the template.
 - MUST be removed from output workbooks.
-- Are read from their first column.
 - Each cell is converted to its canonical string form per
   [Comparison and String Coercion](./language.md#comparison-and-string-coercion)
   and trimmed of Unicode whitespace. Cells empty after trimming (per
   [Empty Values](#empty-values)) are skipped.
-- Order is preserved. Duplicate entries are not removed.
-- Are referenced by `@filter ... in _SheetName` and `@filter ... !in _SheetName`.
+- Order within each column is preserved. Duplicate entries are not removed.
 
-Referencing a missing list sheet is an error.
+Lists are referenced from filter directives:
+
+```
+{{ @filter [Fruit] in __lists__[fruits] }}
+{{ @filter [Status] !in __lists__[allowed_status] }}
+```
+
+`__lists__[name]` is a list array. It is valid only inside `@filter
+... in` and `@filter ... !in`; using it elsewhere is an error.
+
+Referencing a list name not declared in `__lists__` (or referencing
+`__lists__[name]` when no `__lists__` sheet exists) is an error.
 
 ## Render Phases
 
 Implementations MUST render in this conceptual order:
 
-1. Parse `_config`, list sheets, sheet templates, directives, and variables.
+1. Parse `__config__`, `__inputs__`, `__lists__`, sheet templates, directives, and variables.
 2. Read source rows.
 3. Resolve source columns referenced by template expressions.
 4. Split source rows into file groups from `output_file_pattern`.
@@ -179,7 +224,7 @@ Implementations MUST render in this conceptual order:
 6. Apply directives to the current row set.
 7. Expand repeat blocks.
 8. Evaluate static cells and data cells.
-9. Remove `_config`, list sheets, and directive rows from output.
+9. Remove reserved `__<name>__` sheets and directive rows from output.
 10. Write output files.
 
 The exact implementation strategy may differ, but observable output MUST match this order.
