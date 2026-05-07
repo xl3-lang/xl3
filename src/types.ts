@@ -181,8 +181,20 @@ export interface PreviewFile {
   sheets: PreviewSheet[];
 }
 
+// ADR-0012 (preview surfacing): a snapshot of one source's shape for
+// the host UI to display.
+export interface PreviewSource {
+  name: string;
+  sheet: string;
+  table: string;
+  description?: string;
+  rowCount: number;
+  headers: string[];
+}
+
 export interface PreviewResult {
   files: PreviewFile[];
   inputs: InputSpec[];
+  sources: PreviewSource[];
   warnings: string[];
 }

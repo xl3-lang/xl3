@@ -106,9 +106,34 @@ function buildPreviewWarnings(parsed: TemplateModel, columns: Set<string>): stri
 }
 
 function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
-  const { parsed, columns, grouped, renderer } = prepared;
+  const { parsed, sources, columns, grouped, renderer } = prepared;
   const warnings = buildPreviewWarnings(parsed, columns);
   const inputs = parsed.inputs;
+
+  // ADR-0012/0014 surface: every source the engine has loaded — the
+  // implicit `default` plus any declared in `__sources__` — with its
+  // row count and headers. Hosts use this to show operators what data
+  // is available.
+  const previewSources = Object.entries(sources).map(([name, data]) => {
+    if (name === 'default') {
+      return {
+        name,
+        sheet: parsed.meta.source_sheet || data.sheetName,
+        table: parsed.meta.source_table ?? '1',
+        rowCount: data.rows.length,
+        headers: data.headers,
+      };
+    }
+    const spec = parsed.sources.find((s) => s.name === name);
+    return {
+      name,
+      sheet: spec?.sheet ?? data.sheetName,
+      table: spec?.table ?? '1',
+      description: spec?.description,
+      rowCount: data.rows.length,
+      headers: data.headers,
+    };
+  });
 
   const files = grouped.fileGroups.map((fg) => {
     const sheets: { name: string; rowCount: number }[] = [];
@@ -142,7 +167,7 @@ function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
     return { filename: renderer.previewFilename(fg), sheets };
   });
 
-  return { files, inputs, warnings };
+  return { files, inputs, sources: previewSources, warnings };
 }
 
 /** Run full conversion: template + source → output files. */

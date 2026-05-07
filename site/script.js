@@ -45,6 +45,10 @@ const copy = {
     inputsHeading: 'Template inputs',
     inputsHint: 'Values your template asks for at runtime.',
     inputsRequired: 'required',
+    sourcesHeading: 'Data sources',
+    sourcesDefaultLabel: 'default (from `__config__`)',
+    sourcesNamedLabel: 'declared in `__sources__`',
+    sourcesRowCount: (count) => `${count} row${count === 1 ? '' : 's'}`,
   },
   ko: {
     dataTitle: '템플릿이 원본 데이터의 모양을 지정합니다.',
@@ -74,6 +78,10 @@ const copy = {
     inputsHeading: '템플릿 입력값',
     inputsHint: '템플릿이 변환할 때마다 묻는 값입니다.',
     inputsRequired: '필수',
+    sourcesHeading: '데이터 소스',
+    sourcesDefaultLabel: '기본 (`__config__`에서)',
+    sourcesNamedLabel: '`__sources__`에 선언됨',
+    sourcesRowCount: (count) => `${count}행`,
   },
 };
 
@@ -308,6 +316,24 @@ function renderConverterPreview({ meta, result }) {
   const sourceTable = meta.source_table || '1';
   const files = result.files ?? [];
   const warnings = result.warnings ?? [];
+  const sources = result.sources ?? [];
+
+  const sourceListMarkup = sources.length
+    ? `<div class="preview-sources">
+        <strong>${escapeHtml(t.sourcesHeading)}</strong>
+        <ul>
+          ${sources.map((src) => {
+            const label = src.name === 'default' ? t.sourcesDefaultLabel : t.sourcesNamedLabel;
+            return `
+              <li>
+                <code>${escapeHtml(src.name)}</code>
+                <span class="src-meta">${escapeHtml(src.sheet)}${src.table ? `[${escapeHtml(src.table)}]` : ''}</span>
+                <small>${escapeHtml(label)} · ${escapeHtml(t.sourcesRowCount(src.rowCount))}</small>
+              </li>`;
+          }).join('')}
+        </ul>
+      </div>`
+    : '';
   const outputMarkup = files.length
     ? files.map((file) => `
       <article class="preview-file">
@@ -342,6 +368,7 @@ function renderConverterPreview({ meta, result }) {
           <div><dt>source_sheet</dt><dd>${escapeHtml(sourceSheet)}</dd></div>
           <div><dt>source_table</dt><dd>${escapeHtml(sourceTable)}</dd></div>
         </dl>
+        ${sourceListMarkup}
       </div>
       <div class="preview-output">
         <strong>${escapeHtml(t.previewOutputs)}</strong>

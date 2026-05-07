@@ -808,6 +808,56 @@ pre {
   font-size: 13px;
 }
 
+.preview-sources {
+  margin-top: 14px;
+}
+
+.preview-sources > strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.preview-sources ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.preview-sources li {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #f8faf7;
+  font-size: 13px;
+}
+
+.preview-sources li code {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.preview-sources li .src-meta {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.preview-sources li small {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 .preview-file ul,
 .preview-warnings ul {
   display: grid;
