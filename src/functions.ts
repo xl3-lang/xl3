@@ -62,6 +62,30 @@ export function compareValues(a: unknown, b: unknown): -1 | 0 | 1 {
   return sa < sb ? -1 : sa > sb ? 1 : 0;
 }
 
+// ADR-0013 (impl-only): cache lookup indexes per (rows-array, column).
+// The cache lives only for the duration the rows array is reachable
+// and is reused across repeat XLOOKUP calls within the same conversion.
+const xlookupIndexCache = new WeakMap<Row[], Map<string, Map<string, Row>>>();
+
+function getOrBuildLookupIndex(rows: Row[], col: string): Map<string, Row> {
+  let perCol = xlookupIndexCache.get(rows);
+  if (!perCol) {
+    perCol = new Map();
+    xlookupIndexCache.set(rows, perCol);
+  }
+  let idx = perCol.get(col);
+  if (idx) return idx;
+  idx = new Map();
+  for (const row of rows) {
+    const v = row[col];
+    if (isEmpty(v)) continue;
+    const key = canonicalString(v);
+    if (!idx.has(key)) idx.set(key, row);
+  }
+  perCol.set(col, idx);
+  return idx;
+}
+
 function isNumberLike(v: unknown): boolean {
   if (typeof v === 'number') return Number.isFinite(v);
   if (typeof v === 'string') {
@@ -176,6 +200,10 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   // `lookupCol` column equals `lookupValue` (per ADR-0009), and return
   // that row's `returnCol`. With 5 args, the 5th is the fallback when
   // no row matches; with 4 args, no-match is an error.
+  //
+  // Performance: indexes the row set by `lookupCol` on first use and
+  // caches the index per `rows` array via WeakMap. Repeat XLOOKUP
+  // calls over the same source/column become O(1) instead of O(N).
   xlookupRows: (...args) => {
     const rows = args[0] as Row[];
     const lookupValue = args[1];
@@ -184,11 +212,23 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const hasFallback = args.length >= 5;
     const fallback = args[4];
     const arr = Array.isArray(rows) ? rows : [];
-    for (const row of arr) {
-      if (compareValues(row[lookupCol], lookupValue) === 0) {
-        return row[returnCol] ?? '';
+    // Empty lookup keys aren't indexed (the index drops empty rows);
+    // fall back to a linear scan so the spec's "empty equals empty"
+    // semantic still works for the rare templates that need it.
+    if (isEmpty(lookupValue)) {
+      for (const row of arr) {
+        if (compareValues(row[lookupCol], lookupValue) === 0) {
+          return row[returnCol] ?? '';
+        }
       }
+      if (hasFallback) return fallback;
+      throw new Error(
+        `XLOOKUP: no row matches where [${lookupCol}] equals ${canonicalString(lookupValue)}`,
+      );
     }
+    const idx = getOrBuildLookupIndex(arr, lookupCol);
+    const matched = idx.get(canonicalString(lookupValue));
+    if (matched) return matched[returnCol] ?? '';
     if (hasFallback) return fallback;
     throw new Error(
       `XLOOKUP: no row matches where [${lookupCol}] equals ${canonicalString(lookupValue)}`,
