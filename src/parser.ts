@@ -14,6 +14,7 @@ import type {
 } from './types.js';
 import { isDataExpression, isAggregateExpression, extractColumnRefs } from './normalizer.js';
 import { isDirectiveExpression, parseDirective } from './directive-parser.js';
+import { xtlError } from './error-codes.js';
 
 const CONFIG_SHEET = '__config__';
 const INPUTS_SHEET = '__inputs__';
@@ -62,7 +63,8 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
   // ADR-0011: input names MUST NOT collide with __config__ author-defined values.
   for (const input of inputs) {
     if (Object.prototype.hasOwnProperty.call(configVars, input.name)) {
-      throw new Error(
+      throw xtlError(
+        'xl3/inputs/conflict-config',
         `__inputs__ name "${input.name}" conflicts with the __config__ author-defined value "${input.name}"`,
       );
     }
@@ -74,7 +76,8 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
   for (const worksheet of workbook.worksheets) {
     if (RESERVED_SHEETS.has(worksheet.name)) continue;
     if (RESERVED_SHEET_RE.test(worksheet.name)) {
-      throw new Error(
+      throw xtlError(
+        'xl3/sheet/reserved-name',
         `Sheet "${worksheet.name}" matches the reserved __<name>__ pattern but is not a known reserved sheet`,
       );
     }
@@ -272,7 +275,8 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
   for (const st of sheetTemplates) {
     for (const d of st.directives) {
       if (d.kind === 'filter' && d.listRef && !listSheets[d.listRef]) {
-        throw new Error(
+        throw xtlError(
+          'xl3/lists/missing-reference',
           `Sheet "${st.originalName}" references missing list sheet "${d.listRef}" in a filter.`,
         );
       }
@@ -284,17 +288,24 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
   for (const st of sheetTemplates) {
     for (const block of st.blocks) {
       if (block.source !== 'default' && !sourceNames.has(block.source)) {
-        throw new Error(`Source "${block.source}" is not declared in __sources__`);
+        throw xtlError(
+          'xl3/source/undeclared',
+          `Source "${block.source}" is not declared in __sources__`,
+        );
       }
       // ADR-0014: validate @join references declared sources and that the
       // primary side of the on-clause matches the block's active source.
       if (block.join) {
         const j = block.join;
         if (!sourceNames.has(j.joinedSource)) {
-          throw new Error(`@join source "${j.joinedSource}" must be declared in __sources__`);
+          throw xtlError(
+            'xl3/join/undeclared-source',
+            `@join source "${j.joinedSource}" must be declared in __sources__`,
+          );
         }
         if (j.primarySource !== block.source) {
-          throw new Error(
+          throw xtlError(
+            'xl3/join/bad-on-clause',
             `@join key columns must reference the joined and primary sources (block source is "${block.source}", on-clause primary is "${j.primarySource}")`,
           );
         }

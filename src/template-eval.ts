@@ -1,4 +1,5 @@
 import { functions, canonicalString } from './functions.js';
+import { xtlError } from './error-codes.js';
 
 /**
  * Evaluate a normalized template expression against a data context.
@@ -55,7 +56,8 @@ function lookupSourceCell(
       return (joinedRow as Record<string, unknown>)[column] ?? '';
     }
   }
-  throw new Error(
+  throw xtlError(
+    'xl3/source/row-cross-block',
     `Cannot reference ${source}[${column}] outside an active @source ${source} or @join ${source} block`,
   );
 }
@@ -73,7 +75,7 @@ function lookupSourceRows(
     const src = (ns as Record<string, { rows?: unknown[] }>)[name];
     if (src && Array.isArray(src.rows)) return src.rows;
   }
-  throw new Error(`Source "${name}" is not declared in __sources__`);
+  throw xtlError('xl3/source/undeclared', `Source "${name}" is not declared in __sources__`);
 }
 
 export function evalExpression(
@@ -100,7 +102,7 @@ export function evalExpression(
   if (trimmed === '__ROW__') {
     const r = ctx['__rownum'];
     if (r === undefined) {
-      throw new Error('ROW() called outside a repeat block');
+      throw xtlError('xl3/cell/row-outside-repeat', 'ROW() called outside a repeat block');
     }
     return r;
   }

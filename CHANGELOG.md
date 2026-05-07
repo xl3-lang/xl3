@@ -8,6 +8,15 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0015 adds **structured error codes** alongside the English
+  messages. Spec-defined errors now carry a stable `error.code` like
+  `xl3/source/undeclared` or `xl3/inputs/missing-required`. Hosts use
+  the code for localization and programmatic dispatch; the English
+  message remains the conformance contract. The reference impl
+  exports `xtlError` / `isXtlError` / `XtlErrorCode` and wires codes
+  through parser / inputs / template-eval / functions throw sites.
+  Conformance protocol gains an optional `expected_error_code` in
+  meta.yaml; six existing error fixtures now assert codes.
 - ADR-0014 adds **`@join` block-level source pairing**. A data block
   may add one `@join SourceName on SourceName[k] = PrimarySource[k]`
   directive after `@source`. The engine pairs each primary row with

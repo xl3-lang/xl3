@@ -4,3 +4,4 @@ spec_version: "0.1"
 tags: [language, function, xlookup, sources, error]
 verified_by: [hand]
 expected_error: 'XLOOKUP: no row matches'
+expected_error_code: 'xl3/xlookup/no-match'

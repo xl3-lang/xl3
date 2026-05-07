@@ -34,6 +34,7 @@ export interface FixtureMeta {
   verified_by: string[];
   expected_warnings: string[];
   expected_error?: string;
+  expected_error_code?: string;
   expected_dynamic?: string;
   dynamic_cells: DynamicCellAssertion[];
   comparison_stage: ComparisonStage;
@@ -169,7 +170,12 @@ async function runOne(
       };
     }
     if (meta.expected_error) {
-      return await runExpectedErrorFixture(name, start, tmpl, data, meta.expected_error, meta.inputs);
+      return await runExpectedErrorFixture(
+        name, start, tmpl, data,
+        meta.expected_error,
+        meta.expected_error_code,
+        meta.inputs,
+      );
     }
     if (meta.expected_dynamic) {
       return await runDynamicFixture(name, start, tmpl, data, meta, runnerStart);
@@ -334,6 +340,7 @@ async function runExpectedErrorFixture(
   tmpl: Buffer,
   data: Buffer,
   expectedError: string,
+  expectedCode: string | undefined,
   inputs: FixtureInputAssignment[],
 ): Promise<FixtureResult> {
   try {
@@ -348,15 +355,26 @@ async function runExpectedErrorFixture(
     };
   } catch (e) {
     const actual = (e as Error).message;
-    if (actual.includes(expectedError)) {
-      return { fixture: name, status: 'pass', duration_ms: Date.now() - start };
+    const actualCode = (e as { code?: string }).code;
+    if (!actual.includes(expectedError)) {
+      return {
+        fixture: name,
+        status: 'fail',
+        duration_ms: Date.now() - start,
+        diff: `expected error containing ${JSON.stringify(expectedError)}, got ${JSON.stringify(actual)}`,
+      };
     }
-    return {
-      fixture: name,
-      status: 'fail',
-      duration_ms: Date.now() - start,
-      diff: `expected error containing ${JSON.stringify(expectedError)}, got ${JSON.stringify(actual)}`,
-    };
+    // ADR-0015: when expected_error_code is declared, the thrown error
+    // MUST carry a matching `.code`.
+    if (expectedCode && actualCode !== expectedCode) {
+      return {
+        fixture: name,
+        status: 'fail',
+        duration_ms: Date.now() - start,
+        diff: `expected error code ${JSON.stringify(expectedCode)}, got ${JSON.stringify(actualCode ?? '(none)')}`,
+      };
+    }
+    return { fixture: name, status: 'pass', duration_ms: Date.now() - start };
   }
 }
 
@@ -991,7 +1009,8 @@ export function parseMeta(text: string): FixtureMeta {
     } else if (
       key === 'description' || key === 'spec_section' ||
       key === 'spec_version' || key === 'skip_reason' ||
-      key === 'expected_error' || key === 'expected_dynamic'
+      key === 'expected_error' || key === 'expected_error_code' ||
+      key === 'expected_dynamic'
     ) {
       meta[key] = stripQuotes(value);
     } else if (key === 'comparison_stage') {

@@ -4,3 +4,4 @@ spec_version: "0.1"
 tags: [directive, join, sources, error]
 verified_by: [hand]
 expected_error: '@join key columns must reference the joined and primary sources'
+expected_error_code: 'xl3/join/bad-on-clause'

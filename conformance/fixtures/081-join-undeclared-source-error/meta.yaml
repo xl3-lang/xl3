@@ -4,3 +4,4 @@ spec_version: "0.1"
 tags: [directive, join, sources, error]
 verified_by: [hand]
 expected_error: '@join source "Customers" must be declared in __sources__'
+expected_error_code: 'xl3/join/undeclared-source'

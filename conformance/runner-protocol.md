@@ -52,6 +52,7 @@ Optional fields:
 verified_by: [hand | excel-formulas | manual-script | reference-impl]
 expected_warnings: [string, ...]   # warnings the impl should emit
 expected_error: string             # expected error message substring; no expected output is required
+expected_error_code: string        # optional ADR-0015 stable error code (e.g. "xl3/source/undeclared")
 expected_dynamic: string           # dynamic assertion kind; no expected output is required
 comparison_stage: 1 | 2            # minimum comparison stage for static-output fixtures; default is 1
 skip_reason: string                # if fixture is currently broken

@@ -1,4 +1,5 @@
 import type { Row } from './types.js';
+import { xtlError } from './error-codes.js';
 
 // ADR-0007: a value is empty if it is missing (null/undefined) or a string
 // whose contents are entirely Unicode whitespace. Numbers (including 0),
@@ -222,7 +223,8 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
         }
       }
       if (hasFallback) return fallback;
-      throw new Error(
+      throw xtlError(
+        'xl3/xlookup/no-match',
         `XLOOKUP: no row matches where [${lookupCol}] equals ${canonicalString(lookupValue)}`,
       );
     }
@@ -230,7 +232,8 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const matched = idx.get(canonicalString(lookupValue));
     if (matched) return matched[returnCol] ?? '';
     if (hasFallback) return fallback;
-    throw new Error(
+    throw xtlError(
+      'xl3/xlookup/no-match',
       `XLOOKUP: no row matches where [${lookupCol}] equals ${canonicalString(lookupValue)}`,
     );
   },

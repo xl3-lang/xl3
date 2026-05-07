@@ -22,13 +22,17 @@ export type {
   ParsedTemplate,
   OutputFile,
   PreviewResult,
+  PreviewSource,
   ConvertOptions,
   InputSpec,
   InputType,
+  SourceSpec,
 } from './types.js';
 export { readConfigSheet, writeConfigSheet, readInputsSheet } from './parser.js';
 export { batchMatch } from './matcher.js';
 export { toTemplateModel } from './template-model.js';
+export { xtlError, isXtlError } from './error-codes.js';
+export type { XtlError, XtlErrorCode } from './error-codes.js';
 
 interface PreparedConversion {
   parsed: ParsedTemplate;

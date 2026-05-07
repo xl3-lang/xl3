@@ -4,3 +4,4 @@ spec_version: "0.1"
 tags: [directive, source, sources, error]
 verified_by: [hand]
 expected_error: 'Source "Renewals" is not declared in __sources__'
+expected_error_code: 'xl3/source/undeclared'
