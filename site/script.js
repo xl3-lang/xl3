@@ -10,6 +10,7 @@ const templateFileInput = document.querySelector('#templateFile');
 const convertButton = document.querySelector('#convertButton');
 const converterStatus = document.querySelector('#converterStatus');
 const converterPreview = document.querySelector('#converterPreview');
+const inputsContainer = document.querySelector('#inputsContainer');
 const xl3ModuleUrl = isKorean ? '../dist/index.js' : './dist/index.js';
 const exampleBaseUrl = isKorean ? '../examples/' : './examples/';
 const exampleRawUrl = `${exampleBaseUrl}sample-raw.xlsx`;
@@ -41,6 +42,9 @@ const copy = {
     previewWarnings: 'Warnings',
     previewNoOutputs: 'No output files will be generated.',
     previewSheetRows: (count) => `${count} row${count === 1 ? '' : 's'}`,
+    inputsHeading: 'Template inputs',
+    inputsHint: 'Values your template asks for at runtime.',
+    inputsRequired: 'required',
   },
   ko: {
     dataTitle: '템플릿이 원본 데이터의 모양을 지정합니다.',
@@ -67,6 +71,9 @@ const copy = {
     previewWarnings: 'Warnings',
     previewNoOutputs: '생성될 결과 파일이 없습니다.',
     previewSheetRows: (count) => `${count}행`,
+    inputsHeading: '템플릿 입력값',
+    inputsHint: '템플릿이 변환할 때마다 묻는 값입니다.',
+    inputsRequired: '필수',
   },
 };
 
@@ -352,6 +359,90 @@ function setPreviewMessage(message, tone = 'muted') {
 
 let previewRunId = 0;
 
+// ADR-0010: cache the template's declared inputs so the form survives
+// debounce-style re-previews and the form snapshot matches the
+// most-recently-loaded template.
+let currentInputSpecs = [];
+const inputValues = new Map();
+
+function renderInputsForm(specs) {
+  if (!inputsContainer) return;
+  if (!specs || specs.length === 0) {
+    inputsContainer.innerHTML = '';
+    return;
+  }
+
+  // Drop cached values for inputs that no longer exist.
+  for (const key of Array.from(inputValues.keys())) {
+    if (!specs.find((s) => s.name === key)) inputValues.delete(key);
+  }
+  // Seed defaults for new inputs.
+  for (const spec of specs) {
+    if (!inputValues.has(spec.name) && spec.default !== undefined) {
+      inputValues.set(spec.name, spec.default);
+    }
+  }
+
+  const fields = specs.map((spec) => {
+    const id = `xl3-input-${spec.name}`;
+    const labelText = spec.label || spec.name;
+    const hintParts = [];
+    if (spec.required) hintParts.push(t.inputsRequired);
+    if (spec.description) hintParts.push(spec.description);
+    const hintMarkup = hintParts.length
+      ? `<span class="input-hint">${escapeHtml(hintParts.join(' · '))}</span>`
+      : '';
+    const value = inputValues.get(spec.name) ?? '';
+
+    let control;
+    if (spec.type === 'select') {
+      const options = (spec.options ?? [])
+        .map((opt) => `<option value="${escapeHtml(opt)}"${opt === value ? ' selected' : ''}>${escapeHtml(opt)}</option>`)
+        .join('');
+      control = `<select id="${id}" data-input-name="${escapeHtml(spec.name)}" class="rounded-md border border-[var(--line-strong)] bg-white px-3 py-2 text-sm font-normal">${options}</select>`;
+    } else {
+      const inputType = spec.type === 'number' ? 'number' : spec.type === 'date' ? 'date' : 'text';
+      control = `<input id="${id}" data-input-name="${escapeHtml(spec.name)}" type="${inputType}" value="${escapeHtml(value)}" class="rounded-md border border-[var(--line-strong)] bg-white px-3 py-2 text-sm font-normal">`;
+    }
+
+    return `
+      <label class="grid gap-2 text-sm font-semibold text-[#2f3833]" for="${id}">
+        <span>${escapeHtml(labelText)}</span>
+        ${hintMarkup}
+        ${control}
+      </label>`;
+  });
+
+  inputsContainer.innerHTML = `
+    <div class="text-sm font-semibold text-[#2f3833]">${escapeHtml(t.inputsHeading)}</div>
+    <div class="text-[12px] leading-5 text-[var(--muted)]">${escapeHtml(t.inputsHint)}</div>
+    ${fields.join('')}
+  `;
+
+  // Re-attach value tracking after innerHTML replace. `change` fires on
+  // blur/select-commit and triggers a preview refresh so the user sees
+  // their value flowing through into rendered cells.
+  inputsContainer.querySelectorAll('[data-input-name]').forEach((el) => {
+    el.addEventListener('input', () => {
+      inputValues.set(el.dataset.inputName, el.value);
+    });
+    el.addEventListener('change', () => {
+      inputValues.set(el.dataset.inputName, el.value);
+      updateConverterPreview();
+    });
+  });
+}
+
+function collectInputValues() {
+  const out = {};
+  if (!inputsContainer) return out;
+  inputsContainer.querySelectorAll('[data-input-name]').forEach((el) => {
+    const name = el.dataset.inputName;
+    if (name && el.value !== '') out[name] = el.value;
+  });
+  return out;
+}
+
 async function updateConverterPreview() {
   if (!converterPreview || !rawFileInput || !templateFileInput) return;
   const runId = ++previewRunId;
@@ -365,10 +456,16 @@ async function updateConverterPreview() {
       fileOrExampleBuffer(templateFile, exampleTemplateUrl),
       fileOrExampleBuffer(rawFile, exampleRawUrl),
     ]);
-    const [meta, result] = await Promise.all([
-      analyze(templateBuffer),
-      previewWorkflow(templateBuffer.slice(0), rawBuffer),
-    ]);
+    const meta = await analyze(templateBuffer);
+    if (runId !== previewRunId) return;
+
+    // Render the inputs form *before* preview() so the user sees fields
+    // even if preview throws on missing-required-input.
+    currentInputSpecs = meta.inputs ?? [];
+    renderInputsForm(currentInputSpecs);
+
+    const inputs = collectInputValues();
+    const result = await previewWorkflow(templateBuffer.slice(0), rawBuffer, { inputs });
     if (runId !== previewRunId) return;
     converterPreview.innerHTML = renderConverterPreview({ meta: meta.meta, result });
   } catch (error) {
@@ -398,7 +495,8 @@ if (converterForm && rawFileInput && templateFileInput) {
         fileOrExampleBuffer(rawFile, exampleRawUrl),
       ]);
       setConverterStatus(t.converting);
-      const outputs = await convert(templateBuffer, rawBuffer);
+      const inputs = collectInputValues();
+      const outputs = await convert(templateBuffer, rawBuffer, { inputs });
 
       if (outputs.length === 0) {
         setConverterStatus(t.noOutputs, 'error');
