@@ -10,6 +10,7 @@ import type {
   InputSpec,
   InputType,
   SourceSpec,
+  JoinDirective,
 } from './types.js';
 import { isDataExpression, isAggregateExpression, extractColumnRefs } from './normalizer.js';
 import { isDirectiveExpression, parseDirective } from './directive-parser.js';
@@ -148,6 +149,7 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
             directives: repeatDirectives,
             directiveRows: [...pendingDirectiveRows, rowNumber],
             source: extractSourceFromDirectives(repeatDirectives, 'default'),
+            join: extractJoinFromDirectives(repeatDirectives),
           };
           pendingDirectives = [];
           pendingDirectiveRows = [];
@@ -157,6 +159,7 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
             currentBlock.directives.push(directive);
             currentBlock.directiveRows.push(rowNumber);
             if (directive.kind === 'source') currentBlock.source = directive.name;
+            if (directive.kind === 'join') currentBlock.join = directive;
           } else {
             pendingDirectives.push(directive);
             pendingDirectiveRows.push(rowNumber);
@@ -206,6 +209,7 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
             directives: downDirectives,
             directiveRows: [...pendingDirectiveRows],
             source: extractSourceFromDirectives(downDirectives, 'default'),
+            join: extractJoinFromDirectives(downDirectives),
           };
           pendingDirectives = [];
           pendingDirectiveRows = [];
@@ -282,6 +286,19 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
       if (block.source !== 'default' && !sourceNames.has(block.source)) {
         throw new Error(`Source "${block.source}" is not declared in __sources__`);
       }
+      // ADR-0014: validate @join references declared sources and that the
+      // primary side of the on-clause matches the block's active source.
+      if (block.join) {
+        const j = block.join;
+        if (!sourceNames.has(j.joinedSource)) {
+          throw new Error(`@join source "${j.joinedSource}" must be declared in __sources__`);
+        }
+        if (j.primarySource !== block.source) {
+          throw new Error(
+            `@join key columns must reference the joined and primary sources (block source is "${block.source}", on-clause primary is "${j.primarySource}")`,
+          );
+        }
+      }
     }
   }
 
@@ -304,6 +321,13 @@ function extractSourceFromDirectives(directives: Directive[], fallback: string):
     if (d.kind === 'source') return d.name;
   }
   return fallback;
+}
+
+function extractJoinFromDirectives(directives: Directive[]): JoinDirective | undefined {
+  for (const d of directives) {
+    if (d.kind === 'join') return d;
+  }
+  return undefined;
 }
 
 const VALID_INPUT_TYPES: ReadonlySet<InputType> = new Set([

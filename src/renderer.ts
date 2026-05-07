@@ -168,14 +168,17 @@ export class Renderer {
 
       for (const block of adjustedBlocks) {
         const blockDirectives = block.directives.filter(
-          (d) => d.kind !== 'repeat' && d.kind !== 'source',
+          (d) => d.kind !== 'repeat' && d.kind !== 'source' && d.kind !== 'join',
         );
         // ADR-0012: a block scoped to a non-default source iterates that
         // source's full row set rather than the file/sheet group rows.
         const blockRows = block.source === 'default'
           ? sg.rows
           : (this.sources[block.source]?.rows ?? []);
-        const filteredRows = applyDirectives(blockRows, blockDirectives, this.listSheets);
+        const directiveFiltered = applyDirectives(blockRows, blockDirectives, this.listSheets);
+        // ADR-0014: apply inner join — keep only primary rows with a
+        // matching joined row, and stash the paired row for ctx assembly.
+        const filteredRows = this.applyJoin(directiveFiltered, block);
         const staticCtx = this.buildStaticContext(fileKey, { ...sg, rows: filteredRows }, block.source);
 
         if (block.direction === 'right') {
@@ -238,9 +241,12 @@ export class Renderer {
 
       // ADR-0012: pick the active source from the (single) down block;
       // legacy templates default to `default`.
-      const activeSource = st.blocks.find((b) => b.direction === 'down')?.source ?? 'default';
+      const downBlock = st.blocks.find((b) => b.direction === 'down');
+      const activeSource = downBlock?.source ?? 'default';
       const blockRows = activeSource === 'default' ? sg.rows : (this.sources[activeSource]?.rows ?? []);
-      const filteredRows = applyDirectives(blockRows, st.directives, this.listSheets);
+      const directiveFiltered = applyDirectives(blockRows, st.directives, this.listSheets);
+      // ADR-0014: apply inner join when the block has one.
+      const filteredRows = this.applyJoin(directiveFiltered, downBlock);
       const staticCtx = this.buildStaticContext(fileKey, { ...sg, rows: filteredRows }, activeSource);
 
       // Render static rows
@@ -434,6 +440,37 @@ export class Renderer {
       __lists__: this.parsed.listSheets,
       __sources__: this.sources,
     };
+  }
+
+  // ADR-0014: filter primary rows to only those with a matching joined
+  // row (inner semantics). Each surviving primary row carries its
+  // matched joined row in `__joinedRow__` for the renderer to expose
+  // through ctx at row eval time.
+  private applyJoin(rows: Row[], block: DataBlock | undefined): Row[] {
+    const join = block?.join;
+    if (!join) return rows;
+    const joinedRows = this.sources[join.joinedSource]?.rows ?? [];
+    // Build an index by the joined-source key for O(1) match lookup.
+    const index = new Map<string, Row>();
+    for (const r of joinedRows) {
+      const v = r[join.joinedKey];
+      if (v === null || v === undefined) continue;
+      const key = canonicalString(v);
+      if (!index.has(key)) index.set(key, r);
+    }
+    const matched: Row[] = [];
+    for (const primary of rows) {
+      const v = primary[join.primaryKey];
+      if (v === null || v === undefined) continue;
+      const key = canonicalString(v);
+      const joined = index.get(key);
+      if (!joined) continue; // inner: drop unmatched
+      matched.push({
+        ...primary,
+        __joinedRow__: { [join.joinedSource]: joined },
+      });
+    }
+    return matched;
   }
 
   private buildStaticContext(

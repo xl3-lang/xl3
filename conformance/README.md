@@ -160,6 +160,10 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 076 | `xlookup-no-match-error` | 3-arg XLOOKUP without a fallback errors when no row matches per ADR-0013. |
 | 077 | `xlookup-source-mismatch-error` | XLOOKUP arg 2 and arg 3 must reference the same source per ADR-0013. |
 | 078 | `xlookup-bare-bracket-error` | XLOOKUP arg 2 / arg 3 require a source-prefixed bracket reference per ADR-0013. |
+| 079 | `join-basic-inner` | `@join` pairs each primary row with the first matching joined row per ADR-0014. |
+| 080 | `join-no-match-dropped` | `@join` uses inner semantics — primary rows without a match are dropped per ADR-0014. |
+| 081 | `join-undeclared-source-error` | `@join` referencing a source not declared in `__sources__` is a parse-time error per ADR-0014. |
+| 082 | `join-bad-on-clause-error` | `@join` on-clause must reference the joined source and the block's primary source per ADR-0014. |
 
 ## Status
 

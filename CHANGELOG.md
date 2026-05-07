@@ -8,6 +8,16 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0014 adds **`@join` block-level source pairing**. A data block
+  may add one `@join SourceName on SourceName[k] = PrimarySource[k]`
+  directive after `@source`. The engine pairs each primary row with
+  the first matching joined row (inner-join semantics, first-match);
+  unmatched primary rows are dropped. Inside the block, `[Column]` and
+  `<PrimarySource>[Column]` resolve to the primary's row;
+  `<JoinedSource>[Column]` resolves to the paired joined row. Multiple
+  joins, left-join semantics, and multi-row matches are out of scope
+  for XTL 0.1. Conformance fixtures 079–082 cover the happy path,
+  inner-drop, undeclared-source error, and bad on-clause error.
 - ADR-0013 adds **XLOOKUP** for cross-source lookup. Mirrors Excel's
   signature: `XLOOKUP(lookup_value, lookup_array, return_array,
   [if_not_found])`. Arrays must be `Source[Column]` from the same

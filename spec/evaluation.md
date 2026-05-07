@@ -115,6 +115,31 @@ appear before `@filter`/`@sort`/`@top` directives of the same block
 Referencing an undeclared source — either via `@source <Unknown>` or
 via `Unknown[Column]` — is an error.
 
+### `@join` directive
+
+A data block MAY add **one** `@join` directive immediately after
+`@source` to pair each primary-source row with a row of a second
+source:
+
+```
+{{ @source Renewals }}
+{{ @join Customers on Customers[Account] = Renewals[Account] }}
+{{ @repeat }}
+{{ [Account] }} | {{ Customers[Name] }} | {{ [Amount] }}
+```
+
+For each primary row, the engine finds the **first** matching joined
+row (per [Comparison Algorithm](./language.md#comparison-algorithm))
+and renders the pair. If no match is found, the primary row is
+**dropped** (inner-join semantics).
+
+Inside the block, `[Column]` and `<PrimarySource>[Column]` resolve
+to the primary row; `<JoinedSource>[Column]` resolves to the paired
+joined row. References to other sources at row level remain an error.
+
+Multiple `@join` directives, left-join semantics, and multi-row
+matches are out of scope for XTL 0.1.
+
 ## Inputs
 
 A template MAY declare runtime inputs by providing a reserved sheet

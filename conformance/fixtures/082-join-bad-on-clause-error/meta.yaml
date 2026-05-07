@@ -1,0 +1,6 @@
+description: '@join on-clause must reference the joined source and the block''s primary source per ADR-0014.'
+spec_section: evaluation.md "@join directive"; ADR-0014
+spec_version: "0.1"
+tags: [directive, join, sources, error]
+verified_by: [hand]
+expected_error: '@join key columns must reference the joined and primary sources'

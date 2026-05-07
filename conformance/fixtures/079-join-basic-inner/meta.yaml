@@ -1,0 +1,5 @@
+description: '@join pairs each primary row with the first matching joined row; inside the block, [Column] is primary and JoinedSource[Column] is the paired joined row per ADR-0014.'
+spec_section: evaluation.md "@join directive"; ADR-0014
+spec_version: "0.1"
+tags: [directive, join, sources]
+verified_by: [hand]

@@ -1,0 +1,5 @@
+description: '@join uses inner semantics — primary rows without a matching joined row are dropped per ADR-0014.'
+spec_section: evaluation.md "@join directive"; ADR-0014
+spec_version: "0.1"
+tags: [directive, join, sources]
+verified_by: [hand]

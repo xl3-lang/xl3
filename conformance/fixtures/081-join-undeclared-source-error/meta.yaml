@@ -1,0 +1,6 @@
+description: '@join referencing a source not declared in `__sources__` is a parse-time error per ADR-0014.'
+spec_section: evaluation.md "@join directive"; ADR-0014
+spec_version: "0.1"
+tags: [directive, join, sources, error]
+verified_by: [hand]
+expected_error: '@join source "Customers" must be declared in __sources__'

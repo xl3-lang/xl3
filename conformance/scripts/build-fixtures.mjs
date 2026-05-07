@@ -4321,6 +4321,234 @@ async function build078() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 079 - join-basic-inner
+//
+// Concept: @join pairs each primary row with the first matching joined
+// row. Inside the block, [Column] resolves to the primary's row and
+// JoinedSource[Column] resolves to the paired joined row.
+// Spec section: evaluation.md "@join directive"; ADR-0014.
+// ---------------------------------------------------------------------------
+async function build079() {
+  const dir = join(FIXTURES, '079-join-basic-inner');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'join-basic-inner'],
+      ['source_sheet', 'Renewals'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Customers', sheet: 'Customers', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = '{{ @join Customers on Customers[Account] = default[Account] }}';
+    sh.getCell('A3').value = '{{ [Account] }}';
+    sh.getCell('B3').value = '{{ Customers[Name] }}';
+    sh.getCell('C3').value = '{{ [Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('B1').value = 'Amount';
+    ren.getCell('A2').value = 'Acme';
+    ren.getCell('B2').value = 100;
+    ren.getCell('A3').value = 'Beta';
+    ren.getCell('B3').value = 200;
+
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Account';
+    cust.getCell('B1').value = 'Name';
+    cust.getCell('A2').value = 'Acme';
+    cust.getCell('B2').value = 'Acme Logistics';
+    cust.getCell('A3').value = 'Beta';
+    cust.getCell('B3').value = 'Beta Works';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Acme Logistics';
+    sh.getCell('C2').value = 100;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'Beta Works';
+    sh.getCell('C3').value = 200;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 080 - join-no-match-dropped
+//
+// Concept: inner-join semantics drop primary rows that don't match any
+// joined row.
+// Spec section: evaluation.md "@join directive"; ADR-0014.
+// ---------------------------------------------------------------------------
+async function build080() {
+  const dir = join(FIXTURES, '080-join-no-match-dropped');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'join-no-match-dropped'],
+      ['source_sheet', 'Renewals'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Customers', sheet: 'Customers', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = '{{ @join Customers on Customers[Account] = default[Account] }}';
+    sh.getCell('A3').value = '{{ [Account] }}';
+    sh.getCell('B3').value = '{{ Customers[Name] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Gamma is in Renewals but not Customers; should be dropped.
+  {
+    const wb = new ExcelJS.Workbook();
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('A2').value = 'Acme';
+    ren.getCell('A3').value = 'Gamma';
+    ren.getCell('A4').value = 'Beta';
+
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Account';
+    cust.getCell('B1').value = 'Name';
+    cust.getCell('A2').value = 'Acme';
+    cust.getCell('B2').value = 'Acme Logistics';
+    cust.getCell('A3').value = 'Beta';
+    cust.getCell('B3').value = 'Beta Works';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — only Acme + Beta survive (Gamma dropped).
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Acme Logistics';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'Beta Works';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 081 - join-undeclared-source-error
+//
+// Concept: @join referencing a source not declared in __sources__ is a
+// parse-time error.
+// Spec section: evaluation.md "@join directive"; ADR-0014.
+// ---------------------------------------------------------------------------
+async function build081() {
+  const dir = join(FIXTURES, '081-join-undeclared-source-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — no __sources__ for "Customers".
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'join-undeclared-source-error'],
+      ['source_sheet', 'Renewals'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = '{{ @join Customers on Customers[Account] = default[Account] }}';
+    sh.getCell('A3').value = '{{ [Account] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 082 - join-bad-on-clause-error
+//
+// Concept: the @join on-clause must reference both the joined source
+// and the block's primary source.
+// Spec section: evaluation.md "@join directive"; ADR-0014.
+// ---------------------------------------------------------------------------
+async function build082() {
+  const dir = join(FIXTURES, '082-join-bad-on-clause-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — on-clause references Customers and Regions, but
+  // the block's primary source is `default` (Renewals).
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'join-bad-on-clause-error'],
+      ['source_sheet', 'Renewals'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Customers', sheet: 'Customers', table: '1' },
+      { name: 'Regions', sheet: 'Regions', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    // primary side of on-clause is Regions, not the block's primary (default).
+    sh.getCell('A2').value = '{{ @join Customers on Customers[Account] = Regions[Account] }}';
+    sh.getCell('A3').value = '{{ [Account] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('A2').value = 'Acme';
+
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Account';
+    cust.getCell('B1').value = 'Name';
+    cust.getCell('A2').value = 'Acme';
+    cust.getCell('B2').value = 'Acme Logistics';
+
+    const reg = wb.addWorksheet('Regions');
+    reg.getCell('A1').value = 'Account';
+    reg.getCell('A2').value = 'KR';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -4400,6 +4628,10 @@ const builders = [
   ['076', build076],
   ['077', build077],
   ['078', build078],
+  ['079', build079],
+  ['080', build080],
+  ['081', build081],
+  ['082', build082],
 ];
 
 const selected = new Set(process.argv.slice(2));

@@ -81,12 +81,23 @@ export interface SourceDirective {
   name: string;
 }
 
+// ADR-0014: pair the primary source's row with one row of the joined
+// source whose `joinedKey` column equals the primary's `primaryKey`.
+export interface JoinDirective {
+  kind: 'join';
+  joinedSource: string;
+  joinedKey: string;
+  primarySource: string;
+  primaryKey: string;
+}
+
 export type Directive =
   | FilterDirective
   | SortDirective
   | TopDirective
   | RepeatDirective
-  | SourceDirective;
+  | SourceDirective
+  | JoinDirective;
 
 // --- Template types ---
 
@@ -101,6 +112,9 @@ export interface DataBlock {
   // ADR-0012: source name this block iterates over. Defaults to
   // "default" (the implicit `__config__.source_sheet`-driven source).
   source: string;
+  // ADR-0014: optional single join — pairs each primary row with one
+  // matching joined row.
+  join?: JoinDirective;
 }
 
 export interface SheetTemplate {

@@ -34,8 +34,10 @@ function lookupReservedRef(
   return '';
 }
 
-// ADR-0012: resolve `sourceCell "Name" "Column"` → current row's column
-// from the named source. Errors when Name is not the active source.
+// ADR-0012/0014: resolve `sourceCell "Name" "Column"` → current row's
+// column from the named source. The named source must be either the
+// active source for the surrounding block OR a joined source (per
+// ADR-0014). Otherwise this is an error.
 function lookupSourceCell(
   trimmed: string,
   ctx: Record<string, unknown>,
@@ -46,8 +48,15 @@ function lookupSourceCell(
   const column = m[2]!;
   const active = ctx['__activeSource__'];
   if (active === source) return ctx[column] ?? '';
+  const joined = ctx['__joinedRow__'];
+  if (joined && typeof joined === 'object') {
+    const joinedRow = (joined as Record<string, unknown>)[source];
+    if (joinedRow && typeof joinedRow === 'object') {
+      return (joinedRow as Record<string, unknown>)[column] ?? '';
+    }
+  }
   throw new Error(
-    `Cannot reference ${source}[${column}] outside an active @source ${source} block`,
+    `Cannot reference ${source}[${column}] outside an active @source ${source} or @join ${source} block`,
   );
 }
 

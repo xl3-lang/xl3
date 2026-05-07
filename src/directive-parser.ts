@@ -1,6 +1,6 @@
 import type { Directive, FilterOp } from './types.js';
 
-const DIRECTIVE_RE = /^@(filter|sort|top|repeat|source)\b/i;
+const DIRECTIVE_RE = /^@(filter|sort|top|repeat|source|join)\b/i;
 const SOURCE_NAME_RE = /^[A-Za-z0-9_]+$/;
 
 export function isDirectiveExpression(expr: string): boolean {
@@ -16,6 +16,7 @@ export function parseDirective(expr: string): Directive | null {
   if (lower.startsWith('@top ')) return parseTop(trimmed.slice(5).trim());
   if (lower.startsWith('@repeat ')) return parseRepeat(trimmed.slice(8).trim());
   if (lower.startsWith('@source ')) return parseSource(trimmed.slice(8).trim());
+  if (lower.startsWith('@join ')) return parseJoin(trimmed.slice(6).trim());
 
   return null;
 }
@@ -25,6 +26,46 @@ function parseSource(body: string): Directive | null {
   if (!SOURCE_NAME_RE.test(name)) return null;
   if (name.startsWith('__')) return null;
   return { kind: 'source', name };
+}
+
+const JOIN_RE = /^([A-Za-z0-9_]+)\s+on\s+([A-Za-z0-9_]+)\[([^\]]+)\]\s*=\s*([A-Za-z0-9_]+)\[([^\]]+)\]$/i;
+
+function parseJoin(body: string): Directive | null {
+  const m = body.match(JOIN_RE);
+  if (!m) return null;
+  const joinedSource = m[1]!;
+  const lhsSource = m[2]!;
+  const lhsKey = m[3]!.trim();
+  const rhsSource = m[4]!;
+  const rhsKey = m[5]!.trim();
+  if (joinedSource.startsWith('__') || lhsSource.startsWith('__') || rhsSource.startsWith('__')) {
+    return null;
+  }
+  // The on-clause must reference both the joined source and the primary.
+  // We accept either ordering (`Customers[k] = Renewals[k]` or vice versa).
+  // The directive normalizes so `joinedSource` matches the named one in
+  // the leading `@join <Name>`.
+  let joinedKey: string;
+  let primarySource: string;
+  let primaryKey: string;
+  if (lhsSource === joinedSource) {
+    joinedKey = lhsKey;
+    primarySource = rhsSource;
+    primaryKey = rhsKey;
+  } else if (rhsSource === joinedSource) {
+    joinedKey = rhsKey;
+    primarySource = lhsSource;
+    primaryKey = lhsKey;
+  } else {
+    return null;
+  }
+  return {
+    kind: 'join',
+    joinedSource,
+    joinedKey,
+    primarySource,
+    primaryKey,
+  };
 }
 
 function parseFilter(body: string): Directive | null {
