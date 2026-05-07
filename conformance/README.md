@@ -146,6 +146,10 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 062 | `concat-empty-stringifies-to-empty` | `&` over an empty operand contributes the empty string per ADR-0009. |
 | 063 | `compare-empty-vs-value` | Two empty operands compare equal; exactly one empty makes `=` false per ADR-0009 rules 1 and 2. |
 | 064 | `compare-unicode-minus-not-numeric` | A string with Unicode minus (U+2212) is not parsed as a number; comparison falls through to the canonical-string fallback per ADR-0009. |
+| 065 | `input-text-default-applied` | A `_inputs` text input default fills in when the host omits the value (ADR-0010). |
+| 066 | `input-text-host-supplied` | Host-supplied input flows through cells, sheet names, and the output filename pattern (ADR-0010). |
+| 067 | `input-missing-required-error` | A required `_inputs` declaration (no default) that the host omits is an error (ADR-0010). |
+| 068 | `input-select-host-supplied` | A `select` input accepts a host value listed in the declared pipe-separated options (ADR-0010). |
 
 ## Status
 

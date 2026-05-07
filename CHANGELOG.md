@@ -78,6 +78,18 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   (`0.1 + 0.2 = 0.3` is false; templates needing tolerance MUST
   `ROUND()`), and the Unicode minus sign (U+2212) is not parsed as a
   number. Conformance fixture 064 covers the Unicode-minus fallback.
+- ADR-0010 introduces runtime user inputs. Templates declare
+  per-run values in a new `_inputs` sheet (columns: `name`, `type`,
+  `default`, `label`, `description`, `options`); hosts call
+  `convert(template, source, { inputs })` and `preview(...)` with the
+  same option, or `readTemplateInputs(template)` to introspect the
+  declarations. Coercion follows ADR-0007/0009/0003 (text/number/date)
+  plus a `select` enum. Missing required inputs and invalid values are
+  errors with stable diagnostic substrings. The runner protocol gains
+  an `inputs:` meta.yaml block. Conformance fixtures 065–068 cover
+  default fallback, host-supplied values flowing into cells and
+  filename patterns, the missing-required error, and `select`
+  validation.
 
 ## [0.1.0-alpha.0] - 2026-05-03
 

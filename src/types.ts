@@ -9,6 +9,26 @@ export interface TemplateMeta {
   match_pattern: string;
 }
 
+// ADR-0010: a runtime input declaration parsed from the `_inputs`
+// sheet. Hosts surface these to operators and pass collected values
+// back through ConvertOptions.inputs.
+export type InputType = 'text' | 'number' | 'date' | 'select';
+
+export interface InputSpec {
+  name: string;
+  type: InputType;
+  required: boolean;
+  default?: string;
+  label?: string;
+  description?: string;
+  options?: string[]; // populated when type === 'select'
+}
+
+export interface ConvertOptions {
+  /** Host-provided values for inputs declared in the template's `_inputs` sheet. */
+  inputs?: Record<string, unknown>;
+}
+
 export interface TemplateVariable {
   expression: string;
   columns: string[];
@@ -76,6 +96,7 @@ export interface TemplateModel {
   sheetTemplates: SheetTemplate[];
   listSheets: Record<string, string[]>;
   configVars: Record<string, string>;
+  inputs: InputSpec[];
   warnings: string[];
 }
 
@@ -117,5 +138,6 @@ export interface PreviewFile {
 
 export interface PreviewResult {
   files: PreviewFile[];
+  inputs: InputSpec[];
   warnings: string[];
 }

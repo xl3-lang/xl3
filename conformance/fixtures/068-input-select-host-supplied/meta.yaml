@@ -1,0 +1,8 @@
+description: A `select` input accepts a host value listed in the declared pipe-separated options (ADR-0010).
+spec_section: evaluation.md "Inputs"; ADR-0010
+spec_version: "0.1"
+tags: [evaluation, inputs, select]
+verified_by: [hand]
+inputs:
+  - name: region
+    value: Busan

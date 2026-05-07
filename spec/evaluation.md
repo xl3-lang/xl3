@@ -27,9 +27,56 @@ A hidden sheet named `_config` MAY provide metadata and runtime settings.
 | `source_table` | Source table selector. The first selected row contains column names; rows below are data. | `1`, `A1:D`, `B5:H200` |
 | `output_file_pattern` | Output filename template | `{{ Customer }}_report.xlsx` |
 | `match_pattern` | Batch matching pattern | `Orders*` |
-| `_<name>` | User variable | `_title = Order Summary` |
+| `_<name>` | User variable (static) | `_title = Order Summary` |
 
 `source_table` is the only source table selector.
+
+User variables declared with `_<name>` rows in `_config` are static —
+their values are part of the template file. Templates that need
+per-run values use the `_inputs` sheet instead (see [Inputs](#inputs)).
+
+## Inputs
+
+A template MAY declare runtime inputs by providing a reserved sheet
+named `_inputs`. The first row is a header; each subsequent row
+declares one input.
+
+| Column | Required | Meaning |
+|---|---|---|
+| `name` | yes | Input name. Must be a non-empty string. The value flows into the expression context as `_<name>`. |
+| `type` | yes | One of `text`, `number`, `date`, `select`. |
+| `default` | no | If non-empty, used when the host omits the input. The default value is parsed by the input's `type`. |
+| `label` | no | Human-facing prompt text. Hosts SHOULD use it as the form label. |
+| `description` | no | Optional longer-form help. |
+| `options` | no | Required when `type = select`. Pipe-separated allowed values, e.g. `Seoul\|Busan\|Daegu`. |
+
+Implementations MUST identify columns by header text, case-insensitive.
+Columns beyond those listed above are reserved and MUST be ignored.
+
+An input is **required** when its row has no `default`. Hosts MUST
+supply every required input; omitting one is an error.
+
+Input values flow into the expression context using the same `_<name>`
+binding as `_config` user variables. Templates reference them with
+`{{ _name }}`.
+
+Input names MUST NOT collide with `_config` user variable names; this
+is an error at parse time.
+
+Inputs are coerced from host-supplied values:
+
+- `text` — passes the host string through. Non-string host values
+  stringify via canonical string form (see
+  [Comparison and String Coercion](./language.md#comparison-and-string-coercion)).
+- `number` — parsed via "trim, then `Number()` without producing
+  `NaN`." Failure is an error.
+- `date` — coerced by the same rules as date-format single-expression
+  cells. Failure is an error.
+- `select` — host value MUST equal one of the declared `options` after
+  canonical-string-form normalization. Failure is an error.
+
+Coerced input values participate in `IF()`, `@filter`, `&`,
+comparisons, and `TEXT()` like any other value.
 
 ## Source Data Model
 

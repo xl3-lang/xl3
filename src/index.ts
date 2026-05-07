@@ -6,15 +6,27 @@ import { groupRows } from './grouper.js';
 import { Renderer } from './renderer.js';
 import { applyDirectives } from './data-transform.js';
 import { toTemplateModel } from './template-model.js';
+import { resolveInputs } from './inputs.js';
 import type {
   OutputFile,
   PreviewResult,
   ParsedTemplate,
   TemplateModel,
+  ConvertOptions,
+  InputSpec,
 } from './types.js';
 
-export type { TemplateMeta, TemplateModel, ParsedTemplate, OutputFile, PreviewResult } from './types.js';
-export { readConfigSheet, writeConfigSheet } from './parser.js';
+export type {
+  TemplateMeta,
+  TemplateModel,
+  ParsedTemplate,
+  OutputFile,
+  PreviewResult,
+  ConvertOptions,
+  InputSpec,
+  InputType,
+} from './types.js';
+export { readConfigSheet, writeConfigSheet, readInputsSheet } from './parser.js';
 export { batchMatch } from './matcher.js';
 export { toTemplateModel } from './template-model.js';
 
@@ -40,8 +52,13 @@ function prepareConversionFromSourceData(
 }
 
 /** Shared first stage: parse template + read source + resolve columns + group. */
-async function prepareConversion(templateBuffer: ArrayBuffer, sourceBuffer: ArrayBuffer) {
+async function prepareConversion(
+  templateBuffer: ArrayBuffer,
+  sourceBuffer: ArrayBuffer,
+  options?: ConvertOptions,
+) {
   const parsed = await parseTemplate(templateBuffer);
+  applyResolvedInputs(parsed, options);
   const source = await readSource(
     sourceBuffer,
     parsed.meta.source_sheet,
@@ -51,6 +68,17 @@ async function prepareConversion(templateBuffer: ArrayBuffer, sourceBuffer: Arra
   );
 
   return prepareConversionFromSourceData(parsed, source);
+}
+
+// ADR-0010: resolve runtime inputs and merge them into the parsed
+// template's configVars, which already carries the `_<name>`
+// user-variable namespace through to the renderer ctx.
+function applyResolvedInputs(parsed: ParsedTemplate, options?: ConvertOptions): void {
+  if (parsed.inputs.length === 0 && !options?.inputs) return;
+  const resolved = resolveInputs(parsed.inputs, options?.inputs);
+  for (const [k, v] of Object.entries(resolved)) {
+    parsed.configVars[k] = v;
+  }
 }
 
 async function renderPreparedConversion(prepared: PreparedConversion): Promise<OutputFile[]> {
@@ -78,6 +106,7 @@ function buildPreviewWarnings(parsed: TemplateModel, columns: Set<string>): stri
 function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
   const { parsed, columns, grouped, renderer } = prepared;
   const warnings = buildPreviewWarnings(parsed, columns);
+  const inputs = parsed.inputs;
 
   const files = grouped.fileGroups.map((fg) => {
     const sheets: { name: string; rowCount: number }[] = [];
@@ -111,15 +140,16 @@ function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
     return { filename: renderer.previewFilename(fg), sheets };
   });
 
-  return { files, warnings };
+  return { files, inputs, warnings };
 }
 
 /** Run full conversion: template + source → output files. */
 export async function convert(
   templateBuffer: ArrayBuffer,
   sourceBuffer: ArrayBuffer,
+  options?: ConvertOptions,
 ): Promise<OutputFile[]> {
-  const prepared = await prepareConversion(templateBuffer, sourceBuffer);
+  const prepared = await prepareConversion(templateBuffer, sourceBuffer, options);
   return renderPreparedConversion(prepared);
 }
 
@@ -127,9 +157,19 @@ export async function convert(
 export async function preview(
   templateBuffer: ArrayBuffer,
   sourceBuffer: ArrayBuffer,
+  options?: ConvertOptions,
 ): Promise<PreviewResult> {
-  const prepared = await prepareConversion(templateBuffer, sourceBuffer);
+  const prepared = await prepareConversion(templateBuffer, sourceBuffer, options);
   return buildPreviewFromPrepared(prepared);
+}
+
+/** Inspect a template's runtime input declarations without running a
+ *  conversion. Hosts can use this to render an input form. */
+export async function readTemplateInputs(
+  templateBuffer: ArrayBuffer,
+): Promise<InputSpec[]> {
+  const parsed = await parseTemplate(templateBuffer);
+  return parsed.inputs;
 }
 
 /** Analyze a template file and return its parsed metadata. */

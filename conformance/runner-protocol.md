@@ -55,7 +55,15 @@ expected_error: string             # expected error message substring; no expect
 expected_dynamic: string           # dynamic assertion kind; no expected output is required
 comparison_stage: 1 | 2            # minimum comparison stage for static-output fixtures; default is 1
 skip_reason: string                # if fixture is currently broken
+inputs:                            # host-supplied runtime inputs (ADR-0010)
+  - name: region
+    value: Seoul
 ```
+
+The `inputs` block lists name/value pairs that the runner passes to
+the implementation as runtime inputs (per ADR-0010's `_inputs` sheet).
+Runners MUST forward these values to the implementation's conversion
+entry point. Templates without an `_inputs` sheet ignore the field.
 
 Stage-gating metadata:
 

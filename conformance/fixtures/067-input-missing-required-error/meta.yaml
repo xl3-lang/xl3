@@ -1,0 +1,6 @@
+description: A required `_inputs` declaration (no default) that the host omits is an error (ADR-0010).
+spec_section: evaluation.md "Inputs"; ADR-0010
+spec_version: "0.1"
+tags: [evaluation, inputs, error]
+verified_by: [hand]
+expected_error: 'missing required input "region"'

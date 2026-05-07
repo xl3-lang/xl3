@@ -21,6 +21,11 @@ export interface DynamicCellAssertion {
   format: string;
 }
 
+export interface FixtureInputAssignment {
+  name: string;
+  value: string;
+}
+
 export interface FixtureMeta {
   description: string;
   spec_section: string;
@@ -33,6 +38,7 @@ export interface FixtureMeta {
   dynamic_cells: DynamicCellAssertion[];
   comparison_stage: ComparisonStage;
   skip_reason?: string;
+  inputs: FixtureInputAssignment[];
 }
 
 export type FixtureStatus = 'pass' | 'fail' | 'skip' | 'error';
@@ -163,7 +169,7 @@ async function runOne(
       };
     }
     if (meta.expected_error) {
-      return await runExpectedErrorFixture(name, start, tmpl, data, meta.expected_error);
+      return await runExpectedErrorFixture(name, start, tmpl, data, meta.expected_error, meta.inputs);
     }
     if (meta.expected_dynamic) {
       return await runDynamicFixture(name, start, tmpl, data, meta, runnerStart);
@@ -187,7 +193,9 @@ async function runOne(
       };
     }
 
-    const out = await convert(toArrayBuffer(tmpl), toArrayBuffer(data));
+    const out = await convert(toArrayBuffer(tmpl), toArrayBuffer(data), {
+      inputs: inputsAsRecord(meta.inputs),
+    });
     const actualWarnings = out.flatMap((f) => f.warnings ?? []);
     const warningDiff = diffWarnings(actualWarnings, meta.expected_warnings);
     if (warningDiff) {
@@ -273,7 +281,9 @@ async function runDynamicFixture(
 
   const expectedExample = formatUtcToday(runnerStart, meta.dynamic_cells[0]!.format);
   try {
-    const out = await convert(toArrayBuffer(tmpl), toArrayBuffer(data));
+    const out = await convert(toArrayBuffer(tmpl), toArrayBuffer(data), {
+      inputs: inputsAsRecord(meta.inputs),
+    });
     if (out.length !== 1) {
       return {
         fixture: name,
@@ -324,9 +334,12 @@ async function runExpectedErrorFixture(
   tmpl: Buffer,
   data: Buffer,
   expectedError: string,
+  inputs: FixtureInputAssignment[],
 ): Promise<FixtureResult> {
   try {
-    await convert(toArrayBuffer(tmpl), toArrayBuffer(data));
+    await convert(toArrayBuffer(tmpl), toArrayBuffer(data), {
+      inputs: inputsAsRecord(inputs),
+    });
     return {
       fixture: name,
       status: 'fail',
@@ -960,6 +973,7 @@ export function parseMeta(text: string): FixtureMeta {
     expected_warnings: [],
     dynamic_cells: [],
     comparison_stage: 1,
+    inputs: [],
   };
   const lines = text.split('\n');
   for (let i = 0; i < lines.length; i++) {
@@ -984,9 +998,56 @@ export function parseMeta(text: string): FixtureMeta {
       meta.comparison_stage = parseComparisonStage(value);
     } else if (key === 'dynamic_cells') {
       meta.dynamic_cells = parseDynamicCells(lines.slice(i + 1));
+    } else if (key === 'inputs') {
+      meta.inputs = parseInputs(lines.slice(i + 1));
     }
   }
   return meta;
+}
+
+function parseInputs(lines: string[]): FixtureInputAssignment[] {
+  const inputs: FixtureInputAssignment[] = [];
+  let current: Partial<FixtureInputAssignment> | null = null;
+
+  const flush = () => {
+    if (current?.name !== undefined && current.value !== undefined) {
+      inputs.push({ name: current.name, value: current.value });
+    }
+  };
+
+  for (const raw of lines) {
+    if (!raw.startsWith(' ') && raw.trim()) break;
+    const line = raw.replace(/#.*$/, '').trimEnd();
+    if (!line.trim()) continue;
+    const trimmed = line.trim();
+    if (trimmed.startsWith('- ')) {
+      flush();
+      current = {};
+      const rest = trimmed.slice(2).trim();
+      if (rest) assignInputField(current, rest);
+    } else if (current) {
+      assignInputField(current, trimmed);
+    }
+  }
+  flush();
+  return inputs;
+}
+
+function assignInputField(input: Partial<FixtureInputAssignment>, line: string) {
+  const idx = line.indexOf(':');
+  if (idx < 0) return;
+  const key = line.slice(0, idx).trim();
+  const value = stripQuotes(line.slice(idx + 1).trim());
+  if (key === 'name' || key === 'value') {
+    input[key] = value;
+  }
+}
+
+function inputsAsRecord(items: FixtureInputAssignment[]): Record<string, unknown> | undefined {
+  if (items.length === 0) return undefined;
+  const out: Record<string, unknown> = {};
+  for (const it of items) out[it.name] = it.value;
+  return out;
 }
 
 function parseComparisonStage(v: string): ComparisonStage {

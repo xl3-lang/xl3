@@ -3523,6 +3523,216 @@ async function build064() {
   }
 }
 
+function addInputs(wb, header, rows) {
+  const sh = wb.addWorksheet('_inputs', { state: 'hidden' });
+  header.forEach((h, i) => {
+    sh.getCell(1, i + 1).value = h;
+  });
+  rows.forEach((row, rIdx) => {
+    row.forEach((v, cIdx) => {
+      sh.getCell(rIdx + 2, cIdx + 1).value = v;
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 065 - input-text-default-applied
+//
+// Concept: a `_inputs` sheet declares a text input with a default. When
+// the host omits the input, the default flows into the expression
+// context as `_<name>` and templates render it.
+// Spec section: evaluation.md "Inputs"; ADR-0010.
+// ---------------------------------------------------------------------------
+async function build065() {
+  const dir = join(FIXTURES, '065-input-text-default-applied');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'input-text-default-applied'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addInputs(wb, ['name', 'type', 'default', 'label'], [
+      ['month', 'text', '2026-05', 'Report month'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Report month: {{ _month }}';
+    sh.getCell('A2').value = 'Customer';
+    sh.getCell('A3').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — default fills in.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Report month: 2026-05';
+    sh.getCell('A2').value = 'Customer';
+    sh.getCell('A3').value = 'Acme';
+    sh.getCell('A4').value = 'Beta';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 066 - input-text-host-supplied
+//
+// Concept: when the host supplies a value for a declared input, that
+// value flows through the expression context (overriding any default)
+// and reaches every reference site, including sheet names and the
+// output filename pattern.
+// Spec section: evaluation.md "Inputs"; ADR-0010.
+// ---------------------------------------------------------------------------
+async function build066() {
+  const dir = join(FIXTURES, '066-input-text-host-supplied');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'input-text-host-supplied'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', '{{ _region }}_report.xlsx'],
+    ]);
+    addInputs(wb, ['name', 'type', 'label'], [
+      ['region', 'text', 'Region'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Region: {{ _region }}';
+    sh.getCell('A2').value = 'Customer';
+    sh.getCell('A3').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — single-file output named after the supplied input.
+  {
+    const outDir = join(dir, 'expected');
+    await mkdir(outDir, { recursive: true });
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Region: Seoul';
+    sh.getCell('A2').value = 'Customer';
+    sh.getCell('A3').value = 'Acme';
+    await writeBook(wb, join(outDir, 'Seoul_report.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 067 - input-missing-required-error
+//
+// Concept: a required input (no default declared) that the host omits
+// is an error.
+// Spec section: evaluation.md "Inputs"; ADR-0010.
+// ---------------------------------------------------------------------------
+async function build067() {
+  const dir = join(FIXTURES, '067-input-missing-required-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — region is required; no default.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'input-missing-required-error'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addInputs(wb, ['name', 'type', 'label'], [
+      ['region', 'text', 'Region'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ _region }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — minimal source.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // No expected.xlsx — the meta.yaml declares the expected_error.
+}
+
+// ---------------------------------------------------------------------------
+// 068 - input-select-host-supplied
+//
+// Concept: a `select` input restricts host values to the declared
+// pipe-separated options. A valid choice flows through like any other
+// text input.
+// Spec section: evaluation.md "Inputs"; ADR-0010.
+// ---------------------------------------------------------------------------
+async function build068() {
+  const dir = join(FIXTURES, '068-input-select-host-supplied');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'input-select-host-supplied'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addInputs(
+      wb,
+      ['name', 'type', 'options', 'label'],
+      [['region', 'select', 'Seoul|Busan|Daegu', 'Region']],
+    );
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('A2').value = '{{ _region }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('A2').value = 'Busan';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -3588,6 +3798,10 @@ const builders = [
   ['062', build062],
   ['063', build063],
   ['064', build064],
+  ['065', build065],
+  ['066', build066],
+  ['067', build067],
+  ['068', build068],
 ];
 
 const selected = new Set(process.argv.slice(2));

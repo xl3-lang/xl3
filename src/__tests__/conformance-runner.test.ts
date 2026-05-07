@@ -20,7 +20,23 @@ verified_by: [manual-script]
       expected_warnings: [],
       dynamic_cells: [],
       comparison_stage: 1,
+      inputs: [],
     });
+  });
+
+  it('parses inputs as a list of name/value entries', () => {
+    const text = `
+description: x
+inputs:
+  - name: month
+    value: "2026-05"
+  - name: region
+    value: Seoul
+`;
+    expect(parseMeta(text).inputs).toEqual([
+      { name: 'month', value: '2026-05' },
+      { name: 'region', value: 'Seoul' },
+    ]);
   });
 
   it('strips matching outer quotes from values', () => {

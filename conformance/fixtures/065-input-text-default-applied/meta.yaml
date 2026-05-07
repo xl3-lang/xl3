@@ -1,0 +1,5 @@
+description: A `_inputs` text input default fills in when the host omits the value (ADR-0010).
+spec_section: evaluation.md "Inputs"; ADR-0010
+spec_version: "0.1"
+tags: [evaluation, inputs, default]
+verified_by: [hand]

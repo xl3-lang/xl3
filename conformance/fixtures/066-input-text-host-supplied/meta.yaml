@@ -1,0 +1,8 @@
+description: Host-supplied input flows through cells, sheet names, and the output filename pattern (ADR-0010).
+spec_section: evaluation.md "Inputs"; ADR-0010
+spec_version: "0.1"
+tags: [evaluation, inputs, host-supplied]
+verified_by: [hand]
+inputs:
+  - name: region
+    value: Seoul

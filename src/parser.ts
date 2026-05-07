@@ -1,9 +1,20 @@
 import ExcelJS from 'exceljs';
-import type { TemplateMeta, TemplateVariable, SheetTemplate, ParsedTemplate, TemplateModel, Directive, DataBlock } from './types.js';
+import type {
+  TemplateMeta,
+  TemplateVariable,
+  SheetTemplate,
+  ParsedTemplate,
+  TemplateModel,
+  Directive,
+  DataBlock,
+  InputSpec,
+  InputType,
+} from './types.js';
 import { isDataExpression, isAggregateExpression, extractColumnRefs } from './normalizer.js';
 import { isDirectiveExpression, parseDirective } from './directive-parser.js';
 
 const CONFIG_SHEET = '_config';
+const INPUTS_SHEET = '_inputs';
 const REMOVED_SOURCE_CONFIG_KEYS = new Set([
   'header_row',
   'source_range',
@@ -33,6 +44,17 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
   await workbook.xlsx.load(buffer);
 
   const { meta, configVars } = readConfigSheet(workbook);
+  const inputs = readInputsSheet(workbook);
+
+  // ADR-0010: input names MUST NOT collide with `_config` user variables.
+  for (const input of inputs) {
+    const ref = `_${input.name}`;
+    if (Object.prototype.hasOwnProperty.call(configVars, ref)) {
+      throw new Error(
+        `_inputs name "${input.name}" conflicts with the _config user variable "${ref}"`,
+      );
+    }
+  }
 
   const allVars: TemplateVariable[] = [];
   const sheetTemplates: SheetTemplate[] = [];
@@ -42,6 +64,7 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
 
   for (const worksheet of workbook.worksheets) {
     if (worksheet.name === CONFIG_SHEET) continue;
+    if (worksheet.name === INPUTS_SHEET) continue;
 
     // `_`-prefixed list sheets must be parsed even when hidden — they only
     // exist to back `@filter ... in _list` references and should not show up
@@ -246,9 +269,100 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
     sheetTemplates,
     listSheets,
     configVars,
+    inputs,
     workbook,
     warnings: [],
   };
+}
+
+const VALID_INPUT_TYPES: ReadonlySet<InputType> = new Set([
+  'text',
+  'number',
+  'date',
+  'select',
+]);
+
+const NAME_RE = /^[A-Za-z0-9_]+$/;
+
+// ADR-0010: parse the optional `_inputs` sheet. The first row is the
+// header; each subsequent row declares one input. Columns are
+// identified by header text, case-insensitive.
+export function readInputsSheet(workbook: ExcelJS.Workbook): InputSpec[] {
+  const sheet = workbook.getWorksheet(INPUTS_SHEET);
+  if (!sheet) return [];
+
+  const header = sheet.getRow(1);
+  const headerMap: Record<string, number> = {};
+  header.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+    const key = String(cell.value ?? '').trim().toLowerCase();
+    if (key) headerMap[key] = colNumber;
+  });
+
+  const nameCol = headerMap['name'];
+  const typeCol = headerMap['type'];
+  if (!nameCol || !typeCol) {
+    throw new Error('_inputs sheet must have at least `name` and `type` columns in row 1');
+  }
+  const defaultCol = headerMap['default'];
+  const labelCol = headerMap['label'];
+  const descCol = headerMap['description'];
+  const optionsCol = headerMap['options'];
+
+  const inputs: InputSpec[] = [];
+  const seen = new Set<string>();
+
+  const totalRows = sheet.rowCount;
+  for (let r = 2; r <= totalRows; r++) {
+    const row = sheet.getRow(r);
+    const name = String(row.getCell(nameCol).value ?? '').trim();
+    if (!name) continue; // skip empty rows
+    if (!NAME_RE.test(name)) {
+      throw new Error(`_inputs row ${r} has invalid name "${name}"; use letters, digits, and underscore only`);
+    }
+    if (seen.has(name)) {
+      throw new Error(`_inputs has duplicate name "${name}"`);
+    }
+    seen.add(name);
+
+    const typeRaw = String(row.getCell(typeCol).value ?? '').trim().toLowerCase();
+    if (!VALID_INPUT_TYPES.has(typeRaw as InputType)) {
+      throw new Error(
+        `_inputs row ${r} has invalid type "${typeRaw}"; expected one of text, number, date, select`,
+      );
+    }
+    const type = typeRaw as InputType;
+
+    const defaultRaw = defaultCol ? String(row.getCell(defaultCol).value ?? '').trim() : '';
+    const label = labelCol ? String(row.getCell(labelCol).value ?? '').trim() : '';
+    const description = descCol ? String(row.getCell(descCol).value ?? '').trim() : '';
+    const optionsRaw = optionsCol ? String(row.getCell(optionsCol).value ?? '').trim() : '';
+
+    let options: string[] | undefined;
+    if (type === 'select') {
+      if (!optionsRaw) {
+        throw new Error(`_inputs row ${r} (name "${name}", type select) requires an options column with pipe-separated values`);
+      }
+      options = optionsRaw.split('|').map((s) => s.trim()).filter((s) => s.length > 0);
+      if (options.length === 0) {
+        throw new Error(`_inputs row ${r} (name "${name}") has empty options`);
+      }
+      if (defaultRaw && !options.includes(defaultRaw)) {
+        throw new Error(`_inputs row ${r} (name "${name}") default "${defaultRaw}" is not in options`);
+      }
+    }
+
+    inputs.push({
+      name,
+      type,
+      required: defaultRaw === '',
+      default: defaultRaw === '' ? undefined : defaultRaw,
+      label: label || undefined,
+      description: description || undefined,
+      options,
+    });
+  }
+
+  return inputs;
 }
 
 export interface ConfigResult {
