@@ -4049,6 +4049,278 @@ async function build073() {
   // No expected.xlsx — meta.yaml asserts expected_error.
 }
 
+// ---------------------------------------------------------------------------
+// 074 - xlookup-basic
+//
+// Concept: 3-arg XLOOKUP returns the corresponding return-array value
+// for the first row whose lookup-array matches the lookup value.
+// Every row is expected to match (no fallback path tested here).
+// Spec section: language.md "XLOOKUP"; ADR-0013.
+// ---------------------------------------------------------------------------
+async function build074() {
+  const dir = join(FIXTURES, '074-xlookup-basic');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'xlookup-basic'],
+      ['source_sheet', 'Renewals'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Customers', sheet: 'Customers', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    sh.getCell('B2').value = '{{ XLOOKUP([Account], Customers[Account], Customers[Name]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('A2').value = 'Acme';
+    ren.getCell('A3').value = 'Beta';
+
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Account';
+    cust.getCell('B1').value = 'Name';
+    cust.getCell('A2').value = 'Acme';
+    cust.getCell('B2').value = 'Acme Logistics';
+    cust.getCell('A3').value = 'Beta';
+    cust.getCell('B3').value = 'Beta Works';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Acme Logistics';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'Beta Works';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 075 - xlookup-fallback
+//
+// Concept: 4-arg XLOOKUP returns the fallback when no row matches.
+// Spec section: language.md "XLOOKUP"; ADR-0013.
+// ---------------------------------------------------------------------------
+async function build075() {
+  const dir = join(FIXTURES, '075-xlookup-fallback');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'xlookup-fallback'],
+      ['source_sheet', 'Renewals'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Customers', sheet: 'Customers', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Tier';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    sh.getCell('B2').value = '{{ XLOOKUP([Account], Customers[Account], Customers[Tier], "Standard") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Gamma exists in Renewals but not Customers.
+  {
+    const wb = new ExcelJS.Workbook();
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('A2').value = 'Acme';
+    ren.getCell('A3').value = 'Gamma';
+
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Account';
+    cust.getCell('B1').value = 'Tier';
+    cust.getCell('A2').value = 'Acme';
+    cust.getCell('B2').value = 'Priority';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — Gamma's lookup misses; fallback "Standard" returned.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Tier';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Priority';
+    sh.getCell('A3').value = 'Gamma';
+    sh.getCell('B3').value = 'Standard';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 076 - xlookup-no-match-error
+//
+// Concept: 3-arg XLOOKUP without fallback errors when no row matches.
+// Spec section: language.md "XLOOKUP"; ADR-0013.
+// ---------------------------------------------------------------------------
+async function build076() {
+  const dir = join(FIXTURES, '076-xlookup-no-match-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'xlookup-no-match-error'],
+      ['source_sheet', 'Renewals'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Customers', sheet: 'Customers', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Tier';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    sh.getCell('B2').value = '{{ XLOOKUP([Account], Customers[Account], Customers[Tier]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Gamma is in Renewals but not Customers.
+  {
+    const wb = new ExcelJS.Workbook();
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('A2').value = 'Gamma';
+
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Account';
+    cust.getCell('B1').value = 'Tier';
+    cust.getCell('A2').value = 'Acme';
+    cust.getCell('B2').value = 'Priority';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 077 - xlookup-source-mismatch-error
+//
+// Concept: XLOOKUP arg 2 and arg 3 must reference the same source.
+// Spec section: language.md "XLOOKUP"; ADR-0013.
+// ---------------------------------------------------------------------------
+async function build077() {
+  const dir = join(FIXTURES, '077-xlookup-source-mismatch-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'xlookup-source-mismatch-error'],
+      ['source_sheet', 'Renewals'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Customers', sheet: 'Customers', table: '1' },
+      { name: 'Regions', sheet: 'Regions', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Bad';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    // arg 2 is from Customers, arg 3 is from Regions — sources differ → error.
+    sh.getCell('B2').value = '{{ XLOOKUP([Account], Customers[Account], Regions[Name]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('A2').value = 'Acme';
+
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Account';
+    cust.getCell('B1').value = 'Name';
+    cust.getCell('A2').value = 'Acme';
+    cust.getCell('B2').value = 'Acme Logistics';
+
+    const reg = wb.addWorksheet('Regions');
+    reg.getCell('A1').value = 'Code';
+    reg.getCell('B1').value = 'Name';
+    reg.getCell('A2').value = 'KR';
+    reg.getCell('B2').value = 'South Korea';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 078 - xlookup-bare-bracket-error
+//
+// Concept: XLOOKUP arg 2 and arg 3 require source-prefixed bracket
+// references; bare `[Column]` is an error.
+// Spec section: language.md "XLOOKUP"; ADR-0013.
+// ---------------------------------------------------------------------------
+async function build078() {
+  const dir = join(FIXTURES, '078-xlookup-bare-bracket-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'xlookup-bare-bracket-error'],
+      ['source_sheet', 'Renewals'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Customers', sheet: 'Customers', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Bad';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    // arg 2 is bare [Column], not Source[Column] → error.
+    sh.getCell('B2').value = '{{ XLOOKUP([Account], [Account], Customers[Name]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('A2').value = 'Acme';
+
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Account';
+    cust.getCell('B1').value = 'Name';
+    cust.getCell('A2').value = 'Acme';
+    cust.getCell('B2').value = 'Acme Logistics';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -4123,6 +4395,11 @@ const builders = [
   ['071', build071],
   ['072', build072],
   ['073', build073],
+  ['074', build074],
+  ['075', build075],
+  ['076', build076],
+  ['077', build077],
+  ['078', build078],
 ];
 
 const selected = new Set(process.argv.slice(2));

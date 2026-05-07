@@ -172,6 +172,29 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     return arr.reduce((count, row) => (isEmpty(row[f]) ? count : count + 1), 0);
   },
 
+  // ADR-0013: XLOOKUP — find the first row in `rows` where the
+  // `lookupCol` column equals `lookupValue` (per ADR-0009), and return
+  // that row's `returnCol`. With 5 args, the 5th is the fallback when
+  // no row matches; with 4 args, no-match is an error.
+  xlookupRows: (...args) => {
+    const rows = args[0] as Row[];
+    const lookupValue = args[1];
+    const lookupCol = args[2] as string;
+    const returnCol = args[3] as string;
+    const hasFallback = args.length >= 5;
+    const fallback = args[4];
+    const arr = Array.isArray(rows) ? rows : [];
+    for (const row of arr) {
+      if (compareValues(row[lookupCol], lookupValue) === 0) {
+        return row[returnCol] ?? '';
+      }
+    }
+    if (hasFallback) return fallback;
+    throw new Error(
+      `XLOOKUP: no row matches where [${lookupCol}] equals ${canonicalString(lookupValue)}`,
+    );
+  },
+
   len: (v) => {
     if (Array.isArray(v)) return v.length;
     return 0;

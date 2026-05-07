@@ -1,0 +1,5 @@
+description: 4-arg XLOOKUP returns the fallback when no row matches per ADR-0013.
+spec_section: language.md "XLOOKUP"; ADR-0013
+spec_version: "0.1"
+tags: [language, function, xlookup, sources, fallback]
+verified_by: [hand]

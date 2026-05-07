@@ -115,6 +115,35 @@ function parseFieldRef(arg: string): { source?: string; field: string } | null {
   return null;
 }
 
+// ADR-0013: XLOOKUP(value, Source[lookupCol], Source[returnCol], [fallback])
+// is rewritten so the runtime function can do the search.
+function normalizeXlookup(args: string[], columns: Set<string>): string {
+  const refLookup = parseFieldRef(args[1]);
+  const refReturn = parseFieldRef(args[2]);
+  if (!refLookup?.source) {
+    throw new Error(
+      `XLOOKUP arg 2 must be a source-prefixed bracket reference like Customers[Account]`,
+    );
+  }
+  if (!refReturn?.source) {
+    throw new Error(
+      `XLOOKUP arg 3 must be a source-prefixed bracket reference like Customers[Name]`,
+    );
+  }
+  if (refLookup.source !== refReturn.source) {
+    throw new Error(
+      `XLOOKUP arg 2 source "${refLookup.source}" and arg 3 source "${refReturn.source}" must match`,
+    );
+  }
+  const lookupValue = normalizeValueArg(args[0], columns);
+  const rowsExpr = `(sourceRows "${refLookup.source}")`;
+  const head = `xlookupRows ${rowsExpr} ${lookupValue} "${refLookup.field}" "${refReturn.field}"`;
+  if (args.length === 4) {
+    return `${head} ${normalizeValueArg(args[3], columns)}`;
+  }
+  return head;
+}
+
 function normalizeConcatenation(
   expr: string,
   columns: Set<string>,
@@ -211,6 +240,9 @@ function normalizeFunctionCall(
   }
   if (upper === 'IF' && args.length === 3) {
     return `IF (${normalizeCondition(args[0], columns)}) ${normalizeValueArg(args[1], columns)} ${normalizeValueArg(args[2], columns)}`;
+  }
+  if (upper === 'XLOOKUP' && (args.length === 3 || args.length === 4)) {
+    return normalizeXlookup(args, columns);
   }
   if ((upper === 'IFEMPTY' || upper === 'IFBLANK') && args.length === 2) {
     return `IFEMPTY ${normalizeValueArg(args[0], columns)} ${normalizeValueArg(args[1], columns)}`;

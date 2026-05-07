@@ -155,6 +155,11 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 071 | `source-directive-active` | `@source SourceName` scopes a data block; inside it `[Column]` resolves to that source per ADR-0012. |
 | 072 | `source-undeclared-error` | `@source` referencing a source not declared in `__sources__` is a parse-time error per ADR-0012. |
 | 073 | `source-row-cross-error` | Row-level reference to a non-active source's column is an error per ADR-0012. |
+| 074 | `xlookup-basic` | 3-arg XLOOKUP returns the matched return-array column for the first row whose lookup-array matches per ADR-0013. |
+| 075 | `xlookup-fallback` | 4-arg XLOOKUP returns the fallback when no row matches per ADR-0013. |
+| 076 | `xlookup-no-match-error` | 3-arg XLOOKUP without a fallback errors when no row matches per ADR-0013. |
+| 077 | `xlookup-source-mismatch-error` | XLOOKUP arg 2 and arg 3 must reference the same source per ADR-0013. |
+| 078 | `xlookup-bare-bracket-error` | XLOOKUP arg 2 / arg 3 require a source-prefixed bracket reference per ADR-0013. |
 
 ## Status
 

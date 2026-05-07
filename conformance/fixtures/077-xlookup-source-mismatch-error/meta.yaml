@@ -1,0 +1,6 @@
+description: XLOOKUP arg 2 and arg 3 must reference the same source per ADR-0013.
+spec_section: language.md "XLOOKUP"; ADR-0013
+spec_version: "0.1"
+tags: [language, function, xlookup, sources, error]
+verified_by: [hand]
+expected_error: 'must match'

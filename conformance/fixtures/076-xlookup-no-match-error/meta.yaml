@@ -1,0 +1,6 @@
+description: 3-arg XLOOKUP without a fallback errors when no row matches per ADR-0013.
+spec_section: language.md "XLOOKUP"; ADR-0013
+spec_version: "0.1"
+tags: [language, function, xlookup, sources, error]
+verified_by: [hand]
+expected_error: 'XLOOKUP: no row matches'

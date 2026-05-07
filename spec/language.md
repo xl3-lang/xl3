@@ -159,6 +159,28 @@ Returns the second argument when the first argument is empty per
 [Empty Values](./evaluation.md#empty-values). Otherwise returns the
 first argument.
 
+### XLOOKUP
+
+```text
+{{ XLOOKUP([Account], Customers[Account], Customers[Name]) }}
+{{ XLOOKUP([Account], Customers[Account], Customers[Name], "(unknown)") }}
+```
+
+Looks up `lookup_value` in `lookup_array` and returns the
+corresponding value from `return_array`. The arrays MUST be source-
+prefixed bracket references (e.g. `Customers[Account]`) and MUST
+come from the same source.
+
+The function walks the source's rows in workbook order and returns
+the first row whose `lookup_array` column equals `lookup_value` per
+the [Comparison Algorithm](#comparison-algorithm). If no row matches:
+
+- If a fourth argument is provided, return it.
+- Otherwise this is an error.
+
+XTL 0.1 supports exact match only — no wildcards, approximate match,
+or reverse search.
+
 ### Aggregates
 
 Aggregates operate on the current rendered row set.

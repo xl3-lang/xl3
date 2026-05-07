@@ -1,0 +1,6 @@
+description: XLOOKUP arg 2 / arg 3 require a source-prefixed bracket reference; bare `[Column]` is an error per ADR-0013.
+spec_section: language.md "XLOOKUP"; ADR-0013
+spec_version: "0.1"
+tags: [language, function, xlookup, sources, error]
+verified_by: [hand]
+expected_error: 'must be a source-prefixed bracket reference'

@@ -8,6 +8,14 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0013 adds **XLOOKUP** for cross-source lookup. Mirrors Excel's
+  signature: `XLOOKUP(lookup_value, lookup_array, return_array,
+  [if_not_found])`. Arrays must be `Source[Column]` from the same
+  source; row-level cross-source lookup is now first-class. No-match
+  without a fallback is an error with a stable diagnostic. Wildcard,
+  approximate, and reverse-search modes are intentionally out of
+  scope. Conformance fixtures 074–078 cover happy path, fallback,
+  no-match error, source-mismatch error, and bare-bracket-arg error.
 - ADR-0012 introduces a **multi-source data model**. Templates can
   declare additional named data sources in a new reserved sheet
   `__sources__` (columns: `name`, `sheet`, `table`, `description`).
