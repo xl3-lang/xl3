@@ -1,0 +1,7 @@
+description: At most one `@source` directive per data block per ADR-0029. Duplicates raise xl3/directive/invalid-syntax.
+spec_section: ADR-0029 §"Composition rules"
+spec_version: "0.1"
+tags: [adr-0029, directive, source, error]
+verified_by: [hand]
+expected_error: 'Duplicate @source'
+expected_error_code: 'xl3/directive/invalid-syntax'

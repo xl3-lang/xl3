@@ -1,0 +1,5 @@
+description: Source rows with hidden=true are included in iteration per ADR-0029. Authors filter explicitly via `@filter` for visibility-aware filtering.
+spec_section: ADR-0029 §"Hidden rows in source"
+spec_version: "0.1"
+tags: [adr-0029, source, hidden]
+verified_by: [hand]

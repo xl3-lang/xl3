@@ -1,0 +1,5 @@
+description: Function names are case-insensitive per ADR-0029. `IF`, `if`, `If` all resolve identically.
+spec_section: ADR-0029 §"Function name case-insensitivity"; language.md "Functions"
+spec_version: "0.1"
+tags: [adr-0029, function, case]
+verified_by: [hand]

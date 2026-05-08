@@ -6,6 +6,24 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Added
+
+- ADR-0029 "Directive composition + source edge semantics". Closes
+  four spec gaps in one ADR:
+  - **Duplicate `@source`** in a data block now raises
+    `xl3/directive/invalid-syntax`. Previously last-wins silently.
+  - **Duplicate `@join`** raises the same code (multi-join remains
+    out of scope per ADR-0014).
+  - **Self-join** (`@join S on S[a]=S[b]` where `S` is the active
+    source) raises `xl3/join/bad-on-clause`. Previously produced
+    zero rows silently. Tree / hierarchy walks remain out of scope.
+  - **Function name case-insensitivity** is now normatively pinned
+    (`if`, `If`, `IF` all work). Fixture 116.
+  - **Hidden source rows** are normatively included in iteration.
+    Authors filter explicitly via `@filter` for visibility-aware
+    behavior. Fixture 117.
+- 4 new conformance fixtures (114–117).
+
 ## [0.3.0] - 2026-05-09
 
 Spec-audit minor release. Three new ADRs (0026, 0027, 0028) close

@@ -1,0 +1,7 @@
+description: `@join` cannot reference the same source as the active `@source` block. Self-joins are out of scope for XTL 0.x per ADR-0029.
+spec_section: ADR-0029 §"Composition rules"
+spec_version: "0.1"
+tags: [adr-0029, directive, join, error]
+verified_by: [hand]
+expected_error: 'cannot reference the same source on both sides'
+expected_error_code: 'xl3/join/bad-on-clause'
