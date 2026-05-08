@@ -9,9 +9,11 @@ import {
 
 describe('TEXT', () => {
   it('formats the XTL 0.1 date token subset', () => {
-    expect(functions.TEXT(new Date(2026, 4, 3, 9, 8, 7), 'YYYY-MM-DD HH:mm:ss'))
+    // ADR-0017: dates are read in UTC (matching ExcelJS' timezone-naive
+    // representation), so test inputs use Date.UTC(...) too.
+    expect(functions.TEXT(new Date(Date.UTC(2026, 4, 3, 9, 8, 7)), 'YYYY-MM-DD HH:mm:ss'))
       .toBe('2026-05-03 09:08:07');
-    expect(functions.TEXT(new Date(2026, 4, 3), 'YY/MM/dd')).toBe('26/05/03');
+    expect(functions.TEXT(new Date(Date.UTC(2026, 4, 3)), 'YY/MM/dd')).toBe('26/05/03');
   });
 
   it('formats the XTL 0.1 numeric subset', () => {

@@ -25,6 +25,8 @@ export type XtlErrorCode =
   | 'xl3/source/missing-header'
   | 'xl3/source/missing-required'
   | 'xl3/source/row-cross-block'
+  | 'xl3/source/unknown-column'
+  | 'xl3/sources/not-a-dictionary'
   // Reserved sheets (ADR-0011)
   | 'xl3/sheet/reserved-name'
   | 'xl3/sheet/duplicate-list-name'

@@ -37,13 +37,17 @@ export function canonicalString(v: unknown): string {
   return String(v);
 }
 
+// ADR-0017: Date canonical form uses UTC accessors so the output is
+// independent of the host machine's timezone. ExcelJS represents
+// timezone-naive Excel dates at UTC midnight, so UTC matches the
+// authored wall-clock value.
 function canonicalDateString(d: Date): string {
-  const y = String(d.getFullYear()).padStart(4, '0');
-  const mo = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const h = d.getHours();
-  const mi = d.getMinutes();
-  const s = d.getSeconds();
+  const y = String(d.getUTCFullYear()).padStart(4, '0');
+  const mo = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const h = d.getUTCHours();
+  const mi = d.getUTCMinutes();
+  const s = d.getUTCSeconds();
   const date = `${y}-${mo}-${dd}`;
   if (h === 0 && mi === 0 && s === 0) return date;
   return `${date}T${String(h).padStart(2, '0')}:${String(mi).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
@@ -105,6 +109,20 @@ function getOrBuildLookupIndex(rows: Row[], col: string): Map<string, Row> {
   return idx;
 }
 
+// Validate that `field` is a real column in `rows` so a typo like
+// `Renewals[Amout]` errors instead of silently aggregating to 0. Uses
+// the first row's keys (the reader writes every declared header to
+// every row, so this matches the source's full header set).
+function assertField(rows: Row[], field: string, sourceHint?: string): void {
+  if (rows.length === 0) return;
+  if (field in rows[0]!) return;
+  const where = sourceHint ? ` of source "${sourceHint}"` : '';
+  throw xtlError(
+    'xl3/source/unknown-column',
+    `Column "${field}"${where} does not exist`,
+  );
+}
+
 function isNumberLike(v: unknown): boolean {
   if (typeof v === 'number') return Number.isFinite(v);
   if (typeof v === 'string') {
@@ -124,17 +142,19 @@ function toComparableNumber(v: unknown): number {
 function toDate(v: unknown): Date | null {
   if (v instanceof Date) return v;
   if (typeof v === 'number') {
-    // Excel serial number (days since 1900-01-01, with the 1900 leap year bug)
+    // Excel serial number (days since 1900-01-01, with the 1900 leap year bug).
+    // ADR-0017: store at UTC midnight so formatting via UTC accessors
+    // is timezone-independent.
     if (v > 25569 && v < 100000) {
       const ms = (v - 25569) * 86400000;
-      const d = new Date(ms);
-      // Compensate for local timezone offset so formatting uses UTC date
-      return new Date(d.getTime() + d.getTimezoneOffset() * 60000);
+      return new Date(ms);
     }
     return null;
   }
   if (typeof v === 'string' && v.trim()) {
-    const d = new Date(v + (v.includes('T') ? '' : 'T00:00:00'));
+    // ADR-0017: append `Z` to anchor at UTC. Bare ISO strings without
+    // an offset would otherwise be parsed in local time.
+    const d = new Date(v + (v.includes('T') ? 'Z' : 'T00:00:00Z'));
     if (!isNaN(d.getTime())) return d;
   }
   return null;
@@ -177,6 +197,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const arr = rows as Row[];
     if (!Array.isArray(arr)) return 0;
     const f = field as string;
+    assertField(arr, f);
     return arr.reduce((sum, row) => sum + toNumber(row[f]), 0);
   },
 
@@ -184,6 +205,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const arr = rows as Row[];
     if (!Array.isArray(arr)) return 0;
     const f = field as string;
+    assertField(arr, f);
     if (arr.length === 0) return 0;
     return arr.reduce((sum, row) => sum + toNumber(row[f]), 0) / arr.length;
   },
@@ -192,6 +214,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const arr = rows as Row[];
     if (!Array.isArray(arr) || arr.length === 0) return 0;
     const f = field as string;
+    assertField(arr, f);
     return arr.reduce(
       (min, row) => Math.min(min, toNumber(row[f])),
       Infinity,
@@ -202,6 +225,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const arr = rows as Row[];
     if (!Array.isArray(arr) || arr.length === 0) return 0;
     const f = field as string;
+    assertField(arr, f);
     return arr.reduce(
       (max, row) => Math.max(max, toNumber(row[f])),
       -Infinity,
@@ -212,6 +236,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const arr = rows as Row[];
     if (!Array.isArray(arr)) return 0;
     const f = field as string;
+    assertField(arr, f);
     return arr.reduce((count, row) => (isEmpty(row[f]) ? count : count + 1), 0);
   },
 
@@ -231,6 +256,8 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const hasFallback = args.length >= 5;
     const fallback = args[4];
     const arr = Array.isArray(rows) ? rows : [];
+    assertField(arr, lookupCol);
+    assertField(arr, returnCol);
     // Empty lookup keys aren't indexed (the index drops empty rows);
     // fall back to a linear scan so the spec's "empty equals empty"
     // semantic still works for the rare templates that need it.
@@ -292,8 +319,12 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     // existing date formatters (which read local accessors, consistent with
     // how source Excel dates flow through toDate) produce the UTC calendar
     // date in any host timezone.
+    // ADR-0017: build the Date from UTC components so the canonical
+    // string form (which uses UTC accessors) reads back the same day.
+    // Using `new Date(y, m, d)` would produce a local-midnight Date
+    // that shifts a day in any non-UTC timezone.
     const now = new Date();
-    return new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   },
 
   // ADR-0009: shared comparison algorithm.
@@ -306,12 +337,14 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
 };
 
 function formatDate(d: Date, fmt: string): string {
-  const y = d.getFullYear();
-  const M = d.getMonth() + 1;
-  const D = d.getDate();
-  const H = d.getHours();
-  const m = d.getMinutes();
-  const s = d.getSeconds();
+  // ADR-0017: read date components in UTC to match canonicalDateString
+  // and the timezone-naive Excel cell value.
+  const y = d.getUTCFullYear();
+  const M = d.getUTCMonth() + 1;
+  const D = d.getUTCDate();
+  const H = d.getUTCHours();
+  const m = d.getUTCMinutes();
+  const s = d.getUTCSeconds();
   return fmt
     .replace('YYYY', String(y))
     .replace('YY', String(y).slice(-2))

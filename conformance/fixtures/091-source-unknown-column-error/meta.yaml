@@ -1,0 +1,7 @@
+description: Source[Column] referring to a column that is not declared in that source is an error (catches typos like Renewals[Amout]).
+spec_section: evaluation.md "External Data Sources"; ADR-0012/0017
+spec_version: "0.1"
+tags: [language, sources, error]
+verified_by: [hand]
+expected_error: 'Column "Amout" does not exist'
+expected_error_code: 'xl3/source/unknown-column'

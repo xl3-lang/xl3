@@ -94,11 +94,12 @@ function coerceDate(name: string, raw: unknown): string {
       const y = Number(m[1]);
       const month = m[2] ? Number(m[2]) : 1;
       const day = m[3] ? Number(m[3]) : 1;
-      const d = new Date(y, month - 1, day);
+      // ADR-0017: validate in UTC for timezone-independence.
+      const d = new Date(Date.UTC(y, month - 1, day));
       if (
-        d.getFullYear() === y &&
-        d.getMonth() === month - 1 &&
-        d.getDate() === day
+        d.getUTCFullYear() === y &&
+        d.getUTCMonth() === month - 1 &&
+        d.getUTCDate() === day
       ) {
         // Preserve the host's literal string when possible — many
         // numFmt-coercion paths re-parse the ISO form, but a host that
@@ -123,8 +124,9 @@ function coerceSelect(spec: InputSpec, raw: unknown): string {
 }
 
 function formatDateIso(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  // ADR-0017: UTC accessors for timezone-independence.
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }

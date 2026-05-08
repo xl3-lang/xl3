@@ -634,14 +634,17 @@ function buildDate(
   const h = Number(hour);
   const min = Number(minute);
   const sec = Number(second);
-  const out = new Date(y, m - 1, d, h, min, sec);
+  // ADR-0017: build the Date in UTC so the canonical-string form
+  // (which uses UTC accessors) reads back the same wall-clock value
+  // regardless of host timezone.
+  const out = new Date(Date.UTC(y, m - 1, d, h, min, sec));
   if (
-    out.getFullYear() !== y ||
-    out.getMonth() !== m - 1 ||
-    out.getDate() !== d ||
-    out.getHours() !== h ||
-    out.getMinutes() !== min ||
-    out.getSeconds() !== sec
+    out.getUTCFullYear() !== y ||
+    out.getUTCMonth() !== m - 1 ||
+    out.getUTCDate() !== d ||
+    out.getUTCHours() !== h ||
+    out.getUTCMinutes() !== min ||
+    out.getUTCSeconds() !== sec
   ) {
     return null;
   }
@@ -657,14 +660,16 @@ function excelSerialToDate(serial: number): Date {
   const seconds = totalSeconds % 60;
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor(totalSeconds / 60) % 60;
-  return new Date(
+  // ADR-0017: build in UTC so the day/time round-trips identically
+  // regardless of host timezone.
+  return new Date(Date.UTC(
     dateInfo.getUTCFullYear(),
     dateInfo.getUTCMonth(),
     dateInfo.getUTCDate(),
     hours,
     minutes,
     seconds,
-  );
+  ));
 }
 
 function isDateNumFmt(numFmt: string | undefined): boolean {

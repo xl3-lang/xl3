@@ -31,8 +31,14 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
   }
 
   removeAuxiliarySheets() {
+    // ADR-0011: reserved sheets are dunder-wrapped (`__config__`,
+    // `__inputs__`, `__sources__`, `__lists__`). Pre-ADR-0011 templates
+    // also used a leading-underscore convention, but those names are no
+    // longer spec-legal — author-created `__name__` and `_name` sheets
+    // are rejected at parse time, so anything matching here is one of
+    // the four reserved dunders that should not appear in output.
     for (const ws of [...this.workbook.worksheets]) {
-      if (ws.name.startsWith('_')) {
+      if (/^__[a-z]+__$/.test(ws.name)) {
         this.workbook.removeWorksheet(ws.id);
       }
     }

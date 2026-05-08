@@ -24,12 +24,21 @@ function lookupReservedRef(
   const m = trimmed.match(RESERVED_REF_RE);
   if (!m) return undefined;
   const ns = `__${m[1]}__`;
+  // ADR-0012: `__sources__` is a declaration sheet, not a value
+  // dictionary. Source data is reached via `Source[Column]` (which the
+  // normalizer rewrites to a tagged sourceCell/sourceRows form), never
+  // via `__sources__[Name]`. Reject this form so authors get a clean
+  // error instead of leaking the internal source descriptor.
+  if (ns === '__sources__') {
+    throw xtlError(
+      'xl3/sources/not-a-dictionary',
+      `__sources__ is a declaration sheet, not a value dictionary; use the source name directly (e.g., ${m[2]!.trim()}[Column])`,
+    );
+  }
   const key = m[2]!.trim();
   const obj = ctx[ns];
   if (obj && typeof obj === 'object') {
     const value = (obj as Record<string, unknown>)[key];
-    // Source data has a `.rows` property — return whole object so
-    // downstream sourceRows/sourceCell can introspect.
     return value ?? '';
   }
   return '';
@@ -48,17 +57,41 @@ function lookupSourceCell(
   const source = m[1]!;
   const column = m[2]!;
   const active = ctx['__activeSource__'];
-  if (active === source) return ctx[column] ?? '';
+  if (active === source) {
+    assertSourceColumn(ctx, source, column);
+    return ctx[column] ?? '';
+  }
   const joined = ctx['__joinedRow__'];
   if (joined && typeof joined === 'object') {
     const joinedRow = (joined as Record<string, unknown>)[source];
     if (joinedRow && typeof joinedRow === 'object') {
+      assertSourceColumn(ctx, source, column);
       return (joinedRow as Record<string, unknown>)[column] ?? '';
     }
   }
   throw xtlError(
     'xl3/source/row-cross-block',
     `Cannot reference ${source}[${column}] outside an active @source ${source} or @join ${source} block`,
+  );
+}
+
+// Validate that `column` is a declared header of the named source.
+// Falls through silently if source metadata isn't on ctx (e.g., unit
+// tests that bypass renderer wiring) — runtime aggregators provide a
+// second line of defense via `assertField`.
+function assertSourceColumn(
+  ctx: Record<string, unknown>,
+  source: string,
+  column: string,
+): void {
+  const sources = ctx['__sources__'];
+  if (!sources || typeof sources !== 'object') return;
+  const src = (sources as Record<string, { headers?: string[] }>)[source];
+  if (!src || !Array.isArray(src.headers)) return;
+  if (src.headers.includes(column)) return;
+  throw xtlError(
+    'xl3/source/unknown-column',
+    `Column "${column}" of source "${source}" does not exist`,
   );
 }
 
@@ -110,7 +143,12 @@ export function evalExpression(
   // index . "fieldName"
   const indexMatch = trimmed.match(/^index\s+\.\s+"([^"]+)"$/);
   if (indexMatch) {
-    return ctx[indexMatch[1]] ?? '';
+    const field = indexMatch[1]!;
+    const active = ctx['__activeSource__'];
+    if (typeof active === 'string') {
+      assertSourceColumn(ctx, active, field);
+    }
+    return ctx[field] ?? '';
   }
 
   // len .Rows

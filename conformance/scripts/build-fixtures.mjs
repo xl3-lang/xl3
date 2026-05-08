@@ -564,7 +564,7 @@ async function build009() {
     const wb = new ExcelJS.Workbook();
     const sh = wb.addWorksheet('R');
     sh.getCell('A1').value = 'OrderDate';
-    sh.getCell('A2').value = new Date(2026, 4, 3);
+    sh.getCell('A2').value = new Date(Date.UTC(2026, 4, 3));
     sh.getCell('A2').numFmt = 'yyyy-mm-dd';
     await writeBook(wb, join(dir, 'expected.xlsx'));
   }
@@ -645,7 +645,7 @@ async function build011() {
     const wb = new ExcelJS.Workbook();
     const sh = wb.addWorksheet('Data');
     sh.getCell('A1').value = 'OrderDate';
-    sh.getCell('A2').value = new Date(2026, 4, 3);
+    sh.getCell('A2').value = new Date(Date.UTC(2026, 4, 3));
     sh.getCell('A2').numFmt = 'yyyy-mm-dd';
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
@@ -4851,10 +4851,10 @@ async function build087() {
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'Signup';
     sh.getCell('A2').value = 'Acme';
-    sh.getCell('B2').value = new Date(2026, 4, 8);          // midnight → YYYY-MM-DD
+    sh.getCell('B2').value = new Date(Date.UTC(2026, 4, 8));          // midnight → YYYY-MM-DD
     sh.getCell('B2').numFmt = 'yyyy-mm-dd';
     sh.getCell('A3').value = 'Beta';
-    sh.getCell('B3').value = new Date(2026, 4, 8, 9, 30, 0); // datetime → ISO
+    sh.getCell('B3').value = new Date(Date.UTC(2026, 4, 8, 9, 30, 0)); // datetime → ISO
     sh.getCell('B3').numFmt = 'yyyy-mm-dd hh:mm:ss';
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
@@ -4908,10 +4908,10 @@ async function build088() {
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'Signup';
     sh.getCell('A2').value = 'Acme';
-    sh.getCell('B2').value = new Date(2026, 4, 8);
+    sh.getCell('B2').value = new Date(Date.UTC(2026, 4, 8));
     sh.getCell('B2').numFmt = 'yyyy-mm-dd';
     sh.getCell('A3').value = 'Beta';
-    sh.getCell('B3').value = new Date(2026, 4, 9);
+    sh.getCell('B3').value = new Date(Date.UTC(2026, 4, 9));
     sh.getCell('B3').numFmt = 'yyyy-mm-dd';
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
@@ -5041,6 +5041,53 @@ async function build090() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 091 - source-unknown-column-error
+//
+// Concept: a Source[Column] reference where the column is not declared
+// in that source's headers is an error per ADR-0017. Catches typos like
+// `Renewals[Amout]` instead of silently aggregating to 0 / blank.
+// Spec section: evaluation.md "External Data Sources"; ADR-0012/0017.
+// ---------------------------------------------------------------------------
+async function build091() {
+  const dir = join(FIXTURES, '091-source-unknown-column-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — `Renewals[Amout]` (typo) inside SUM aggregate.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-unknown-column-error'],
+      ['source_sheet', 'Customers'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Renewals', sheet: 'Renewals', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Total';
+    sh.getCell('A2').value = '{{ SUM(Renewals[Amout]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Renewals has Account/Amount, NOT Amout.
+  {
+    const wb = new ExcelJS.Workbook();
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Customer';
+    cust.getCell('A2').value = 'Acme';
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('B1').value = 'Amount';
+    ren.getCell('A2').value = 'Acme';
+    ren.getCell('B2').value = 100;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // No expected.xlsx — meta.yaml asserts expected_error.
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -5132,6 +5179,7 @@ const builders = [
   ['088', build088],
   ['089', build089],
   ['090', build090],
+  ['091', build091],
 ];
 
 const selected = new Set(process.argv.slice(2));
