@@ -5,3 +5,4 @@ tags: [config, source-table, error]
 verified_by: [manual-script]
 expected_error: "Formula cell B3 has no cached result"
 
+expected_error_code: 'xl3/cell/formula-no-cache'

@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { xtlError } from './error-codes.js';
 
 export interface WorkbookDocument {
   removeAuxiliarySheets(): void;
@@ -177,7 +178,8 @@ export function sanitizeFilename(rendered: string): SanitizedFilename {
   // 4. Empty filename or empty basename → error.
   const finalParts = splitFilename(s);
   if (s === '' || finalParts.base === '') {
-    throw new Error(
+    throw xtlError(
+      'xl3/filename/empty',
       `Output filename "${rendered}" sanitized to an empty string and is invalid.`,
     );
   }
@@ -185,7 +187,8 @@ export function sanitizeFilename(rendered: string): SanitizedFilename {
   // 5. Length cap (UTF-8 bytes).
   const byteLen = new TextEncoder().encode(s).length;
   if (byteLen > 255) {
-    throw new Error(
+    throw xtlError(
+      'xl3/filename/too-long',
       `Output filename "${s}" is ${byteLen} bytes; exceeds the 255-byte limit.`,
     );
   }

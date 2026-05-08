@@ -4,3 +4,4 @@ spec_version: "0.1"
 tags: [config, source-sheet, prefix, error]
 verified_by: [manual-script]
 expected_error: 'Source sheet "Missing_*" was not found'
+expected_error_code: 'xl3/source/sheet-missing'

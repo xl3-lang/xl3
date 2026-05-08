@@ -4,3 +4,4 @@ spec_version: "0.1"
 tags: [filename, sanitization, error]
 verified_by: [manual-script]
 expected_error: "exceeds the 255-byte limit"
+expected_error_code: 'xl3/filename/too-long'

@@ -4,3 +4,4 @@ spec_version: "0.1"
 tags: [filename, sanitization, error]
 verified_by: [manual-script]
 expected_error: 'Output filename ".xlsx" sanitized to an empty string and is invalid.'
+expected_error_code: 'xl3/filename/empty'

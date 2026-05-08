@@ -4,3 +4,4 @@ spec_version: "0.1"
 tags: [numfmt, coercion, numeric, error]
 verified_by: [manual-script]
 expected_error: 'Value cannot be coerced to a number for cell format "0.00": not-a-number'
+expected_error_code: 'xl3/cell/numfmt-coercion'

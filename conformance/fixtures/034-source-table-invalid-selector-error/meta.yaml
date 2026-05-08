@@ -5,3 +5,4 @@ tags: [config, source-table, error]
 verified_by: [manual-script]
 expected_error: "source_table row numbers must be 1-based positive integers"
 
+expected_error_code: 'xl3/config/invalid-source-table'

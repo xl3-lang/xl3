@@ -12,6 +12,7 @@ import { normalizeTemplate } from './normalizer.js';
 import { evalCell } from './template-eval.js';
 import { applyDirectives } from './data-transform.js';
 import { canonicalString } from './functions.js';
+import { xtlError } from './error-codes.js';
 import type { FileGroup } from './grouper.js';
 import type { SourceData } from './reader.js';
 import { ExcelJsWorkbookDocument, sanitizeFilename, sanitizeSheetName, type WorkbookDocument } from './excel-document.js';
@@ -575,7 +576,10 @@ function coerceNumberValue(v: unknown, numFmt: string): ExcelJS.CellValue {
   const raw = String(v).trim();
   const parsed = parseNumber(raw);
   if (parsed !== null) return parsed as ExcelJS.CellValue;
-  throw new Error(`Value cannot be coerced to a number for cell format "${numFmt}": ${raw}`);
+  throw xtlError(
+    'xl3/cell/numfmt-coercion',
+    `Value cannot be coerced to a number for cell format "${numFmt}": ${raw}`,
+  );
 }
 
 function coerceDateValue(v: unknown, numFmt: string): ExcelJS.CellValue {
@@ -586,7 +590,10 @@ function coerceDateValue(v: unknown, numFmt: string): ExcelJS.CellValue {
   const raw = String(v).trim();
   const parsed = parseStrictDate(raw);
   if (parsed) return parsed as ExcelJS.CellValue;
-  throw new Error(`Value cannot be coerced to a date for cell format "${numFmt}": ${raw}`);
+  throw xtlError(
+    'xl3/cell/numfmt-coercion',
+    `Value cannot be coerced to a date for cell format "${numFmt}": ${raw}`,
+  );
 }
 
 function parseNumber(s: string): number | null {

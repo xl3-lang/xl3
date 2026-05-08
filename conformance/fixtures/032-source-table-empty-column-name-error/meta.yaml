@@ -5,3 +5,4 @@ tags: [config, source-table, error]
 verified_by: [manual-script]
 expected_error: "source_table header cell C3 is empty"
 
+expected_error_code: 'xl3/source/missing-header'

@@ -1,3 +1,5 @@
+import { xtlError } from './error-codes.js';
+
 const TEMPLATE_BLOCK_RE = /\{\{(.*?)\}\}/g;
 // ADR-0011: bracket field detection must not match the structured-ref
 // form `__sheet__[key]` or `Source[Column]`. The bracket is a
@@ -121,17 +123,20 @@ function normalizeXlookup(args: string[], columns: Set<string>): string {
   const refLookup = parseFieldRef(args[1]);
   const refReturn = parseFieldRef(args[2]);
   if (!refLookup?.source) {
-    throw new Error(
+    throw xtlError(
+      'xl3/xlookup/bare-bracket',
       `XLOOKUP arg 2 must be a source-prefixed bracket reference like Customers[Account]`,
     );
   }
   if (!refReturn?.source) {
-    throw new Error(
+    throw xtlError(
+      'xl3/xlookup/bare-bracket',
       `XLOOKUP arg 3 must be a source-prefixed bracket reference like Customers[Name]`,
     );
   }
   if (refLookup.source !== refReturn.source) {
-    throw new Error(
+    throw xtlError(
+      'xl3/xlookup/source-mismatch',
       `XLOOKUP arg 2 source "${refLookup.source}" and arg 3 source "${refReturn.source}" must match`,
     );
   }

@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs';
 import type { Row, SourceSpec } from './types.js';
 import { isEmpty } from './functions.js';
+import { xtlError } from './error-codes.js';
 
 export interface SourceData {
   sheetName: string;
@@ -49,7 +50,8 @@ function readSourceFromWorkbook(
 ): SourceData {
   const sheet = resolveSheet(workbook, sheetPattern);
   if (!sheet) {
-    throw new Error(
+    throw xtlError(
+      'xl3/source/sheet-missing',
       `Source sheet "${sheetPattern}" was not found (available sheets: ${workbook.worksheets.map((s) => s.name).join(', ')})`,
     );
   }
@@ -106,7 +108,10 @@ function parseSourceTable(
 
   const range = raw.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)?$/i);
   if (!range) {
-    throw new Error(`${keyName} must be a row number or a table range such as "1", "A1:D", or "A1:D200": ${value}`);
+    throw xtlError(
+      'xl3/config/invalid-source-table',
+      `${keyName} must be a row number or a table range such as "1", "A1:D", or "A1:D200": ${value}`,
+    );
   }
 
   const leftCol = decodeColumn(range[1]!);
@@ -115,16 +120,24 @@ function parseSourceTable(
   const bottomRow = range[4] ? Number(range[4]) : undefined;
   assertPositiveRow(headerRow, keyName, value);
   if (bottomRow !== undefined) assertPositiveRow(bottomRow, keyName, value);
-  if (leftCol > rightCol) throw new Error(`${keyName} has an invalid column range: ${value}`);
+  if (leftCol > rightCol) {
+    throw xtlError('xl3/config/invalid-source-table', `${keyName} has an invalid column range: ${value}`);
+  }
   if (bottomRow !== undefined && bottomRow < headerRow) {
-    throw new Error(`${keyName} bottom row cannot be above the first selected row: ${value}`);
+    throw xtlError(
+      'xl3/config/invalid-source-table',
+      `${keyName} bottom row cannot be above the first selected row: ${value}`,
+    );
   }
   return { headerRow, leftCol, rightCol, bottomRow };
 }
 
 function assertPositiveRow(row: number, keyName: string, value: string): void {
   if (!Number.isInteger(row) || row < 1) {
-    throw new Error(`${keyName} row numbers must be 1-based positive integers: ${value}`);
+    throw xtlError(
+      'xl3/config/invalid-source-table',
+      `${keyName} row numbers must be 1-based positive integers: ${value}`,
+    );
   }
 }
 
@@ -135,7 +148,7 @@ function inferTableFromHeaderRow(sheet: ExcelJS.Worksheet, headerRow: number): S
     if (headerText(cell)) headerCols.push(colNumber);
   });
   if (headerCols.length === 0) {
-    throw new Error(`source_table row ${headerRow} has no headers`);
+    throw xtlError('xl3/source/missing-header', `source_table row ${headerRow} has no headers`);
   }
   return {
     headerRow,
@@ -153,10 +166,10 @@ function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): string[] {
     const cell = row.getCell(colNumber);
     const header = headerText(cell);
     if (!header) {
-      throw new Error(`source_table header cell ${cell.address} is empty`);
+      throw xtlError('xl3/source/missing-header', `source_table header cell ${cell.address} is empty`);
     }
     if (seen.has(header)) {
-      throw new Error(`source_table has duplicate header "${header}"`);
+      throw xtlError('xl3/source/duplicate-name', `source_table has duplicate header "${header}"`);
     }
     seen.add(header);
     headers.push(header);
@@ -177,12 +190,12 @@ function headerText(cell: ExcelJS.Cell): string {
   if (typeof value === 'object' && 'result' in value) {
     const result = (value as { result: unknown }).result;
     if (result === undefined && isFormulaValue(value)) {
-      throw new Error(`Formula cell ${cell.address} has no cached result`);
+      throw xtlError("xl3/cell/formula-no-cache", `Formula cell ${cell.address} has no cached result`);
     }
     return String(result ?? '').trim();
   }
   if (typeof value === 'object' && isFormulaValue(value)) {
-    throw new Error(`Formula cell ${cell.address} has no cached result`);
+    throw xtlError("xl3/cell/formula-no-cache", `Formula cell ${cell.address} has no cached result`);
   }
   return String(value).trim();
 }
@@ -235,7 +248,7 @@ function parseCellValue(cell: ExcelJS.Cell): unknown {
   if (typeof v === 'object' && 'result' in v) {
     const result = (v as { result: unknown }).result;
     if (result === undefined && isFormulaValue(v)) {
-      throw new Error(`Formula cell ${cell.address} has no cached result`);
+      throw xtlError("xl3/cell/formula-no-cache", `Formula cell ${cell.address} has no cached result`);
     }
     // ADR-0017: a formula cached result that is itself an error
     // sentinel reads as empty.
@@ -246,7 +259,7 @@ function parseCellValue(cell: ExcelJS.Cell): unknown {
   }
 
   if (typeof v === 'object' && isFormulaValue(v)) {
-    throw new Error(`Formula cell ${cell.address} has no cached result`);
+    throw xtlError("xl3/cell/formula-no-cache", `Formula cell ${cell.address} has no cached result`);
   }
 
   return v;

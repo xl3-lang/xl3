@@ -4,3 +4,4 @@ spec_version: "0.1"
 tags: [numfmt, coercion, date, error]
 verified_by: [manual-script]
 expected_error: 'Value cannot be coerced to a date for cell format "yyyy-mm-dd": not-a-date'
+expected_error_code: 'xl3/cell/numfmt-coercion'

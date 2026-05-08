@@ -4,3 +4,4 @@ spec_version: "0.1"
 tags: [cell-text, formula, source, error]
 verified_by: [manual-script]
 expected_error: "Formula cell A2 has no cached result"
+expected_error_code: 'xl3/cell/formula-no-cache'

@@ -5,3 +5,4 @@ tags: [config, source-table, error]
 verified_by: [manual-script]
 expected_error: 'source_table has duplicate header "Customer"'
 
+expected_error_code: 'xl3/source/duplicate-name'

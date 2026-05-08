@@ -8,6 +8,13 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- Error code coverage completed across the impl. Every spec-defined
+  throw site in parser, reader, normalizer, renderer, template-eval,
+  inputs, functions, and excel-document now carries an `xl3/...`
+  code via `xtlError(code, message)`. Existing error fixtures (017,
+  018, 019, 020, 021, 022, 032, 033, 034, 037, 042, 077, 078) gain
+  `expected_error_code` assertions, joining the previously-coded
+  067/072/073/076/081/082.
 - ADR-0017 defines the **source value model** normatively. Source
   values are one of Missing / String / Number / Boolean / Date.
   Date canonical string form is now `YYYY-MM-DD` (midnight) or

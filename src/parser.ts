@@ -367,7 +367,10 @@ export function readInputsSheet(workbook: ExcelJS.Workbook): InputSpec[] {
   const nameCol = headerMap['name'];
   const typeCol = headerMap['type'];
   if (!nameCol || !typeCol) {
-    throw new Error('__inputs__ sheet must have at least `name` and `type` columns in row 1');
+    throw xtlError(
+      'xl3/inputs/missing-header',
+      '__inputs__ sheet must have at least `name` and `type` columns in row 1',
+    );
   }
   const defaultCol = headerMap['default'];
   const labelCol = headerMap['label'];
@@ -383,16 +386,20 @@ export function readInputsSheet(workbook: ExcelJS.Workbook): InputSpec[] {
     const name = String(row.getCell(nameCol).value ?? '').trim();
     if (!name) continue; // skip empty rows
     if (!NAME_RE.test(name)) {
-      throw new Error(`__inputs__ row ${r} has invalid name "${name}"; use letters, digits, and underscore only`);
+      throw xtlError(
+        'xl3/inputs/invalid-name',
+        `__inputs__ row ${r} has invalid name "${name}"; use letters, digits, and underscore only`,
+      );
     }
     if (seen.has(name)) {
-      throw new Error(`__inputs__ has duplicate name "${name}"`);
+      throw xtlError('xl3/inputs/duplicate-name', `__inputs__ has duplicate name "${name}"`);
     }
     seen.add(name);
 
     const typeRaw = String(row.getCell(typeCol).value ?? '').trim().toLowerCase();
     if (!VALID_INPUT_TYPES.has(typeRaw as InputType)) {
-      throw new Error(
+      throw xtlError(
+        'xl3/inputs/invalid-type',
         `__inputs__ row ${r} has invalid type "${typeRaw}"; expected one of text, number, date, select`,
       );
     }
@@ -406,14 +413,23 @@ export function readInputsSheet(workbook: ExcelJS.Workbook): InputSpec[] {
     let options: string[] | undefined;
     if (type === 'select') {
       if (!optionsRaw) {
-        throw new Error(`__inputs__ row ${r} (name "${name}", type select) requires an options column with pipe-separated values`);
+        throw xtlError(
+          'xl3/inputs/missing-options',
+          `__inputs__ row ${r} (name "${name}", type select) requires an options column with pipe-separated values`,
+        );
       }
       options = optionsRaw.split('|').map((s) => s.trim()).filter((s) => s.length > 0);
       if (options.length === 0) {
-        throw new Error(`__inputs__ row ${r} (name "${name}") has empty options`);
+        throw xtlError(
+          'xl3/inputs/missing-options',
+          `__inputs__ row ${r} (name "${name}") has empty options`,
+        );
       }
       if (defaultRaw && !options.includes(defaultRaw)) {
-        throw new Error(`__inputs__ row ${r} (name "${name}") default "${defaultRaw}" is not in options`);
+        throw xtlError(
+          'xl3/inputs/select-option',
+          `__inputs__ row ${r} (name "${name}") default "${defaultRaw}" is not in options`,
+        );
       }
     }
 
@@ -459,7 +475,10 @@ export function readConfigSheet(workbook: ExcelJS.Workbook): ConfigResult {
       case 'match_pattern': meta.match_pattern = val; break;
       default:
         if (REMOVED_SOURCE_CONFIG_KEYS.has(key)) {
-          throw new Error(`Config key "${key}" was removed. Use "source_table" instead.`);
+          throw xtlError(
+            'xl3/config/source-table-removed',
+            `Config key "${key}" was removed. Use "source_table" instead.`,
+          );
         }
         // ADR-0011: any non-system key is an author-defined value
         // accessed via {{ __config__[key] }}. The leading-`_` prefix
@@ -486,7 +505,10 @@ export function readSourcesSheet(workbook: ExcelJS.Workbook): SourceSpec[] {
   const nameCol = headerMap['name'];
   const sheetCol = headerMap['sheet'];
   if (!nameCol || !sheetCol) {
-    throw new Error('__sources__ sheet must have at least `name` and `sheet` columns in row 1');
+    throw xtlError(
+      'xl3/source/missing-header',
+      '__sources__ sheet must have at least `name` and `sheet` columns in row 1',
+    );
   }
   const tableCol = headerMap['table'];
   const descCol = headerMap['description'];
@@ -500,16 +522,28 @@ export function readSourcesSheet(workbook: ExcelJS.Workbook): SourceSpec[] {
     const sheetName = String(row.getCell(sheetCol).value ?? '').trim();
     if (!name && !sheetName) continue; // skip blank rows
     if (!name || !sheetName) {
-      throw new Error(`__sources__ row ${r} missing required name/sheet`);
+      throw xtlError(
+        'xl3/source/missing-required',
+        `__sources__ row ${r} missing required name/sheet`,
+      );
     }
     if (!/^[A-Za-z0-9_]+$/.test(name)) {
-      throw new Error(`__sources__ row ${r} has invalid name "${name}"; use letters, digits, and underscore only`);
+      throw xtlError(
+        'xl3/source/invalid-name',
+        `__sources__ row ${r} has invalid name "${name}"; use letters, digits, and underscore only`,
+      );
     }
     if (name.startsWith('__') || name === 'default') {
-      throw new Error(`__sources__ row ${r} has invalid name "${name}"; reserved`);
+      throw xtlError(
+        'xl3/source/invalid-name',
+        `__sources__ row ${r} has invalid name "${name}"; reserved`,
+      );
     }
     if (seen.has(name)) {
-      throw new Error(`__sources__ has duplicate source name "${name}"`);
+      throw xtlError(
+        'xl3/source/duplicate-name',
+        `__sources__ has duplicate source name "${name}"`,
+      );
     }
     seen.add(name);
 
@@ -540,7 +574,10 @@ export function readListsSheet(workbook: ExcelJS.Workbook): Record<string, strin
     const name = String(cell.value ?? '').trim();
     if (!name) return;
     if (lists[name] !== undefined) {
-      throw new Error(`__lists__ has duplicate list name "${name}"`);
+      throw xtlError(
+        'xl3/sheet/duplicate-list-name',
+        `__lists__ has duplicate list name "${name}"`,
+      );
     }
     lists[name] = [];
     colNames.push({ col: colNumber, name });
