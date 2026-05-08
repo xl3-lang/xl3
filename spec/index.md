@@ -59,6 +59,7 @@ matrix.
 | `{{ }}` whitespace insignificant | language.md "Template Blocks" | (no ADR; spec line) | 105 |
 | Empty value lifecycle (cell + group key) | evaluation.md "Source Data Model" + "Output Filenames" | ADR-0026 | 107, 108 |
 | Reserved column names + directive validation | evaluation.md "Source Data Model" + "Directives" | ADR-0027 | 109, 110, 111 |
+| Literal syntax constraints (string + number) | language.md "Literals" | ADR-0028 | 112, 113 |
 
 ## Implementation-defined boundaries
 

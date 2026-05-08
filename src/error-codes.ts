@@ -43,6 +43,7 @@ export type XtlErrorCode =
   // Evaluation (ADR-0023, ADR-0024)
   | 'xl3/eval/operand-coercion'
   | 'xl3/eval/arity-mismatch'
+  | 'xl3/eval/unsupported-syntax'
   // Cell evaluation
   | 'xl3/cell/numfmt-coercion'
   | 'xl3/cell/row-outside-repeat'

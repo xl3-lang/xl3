@@ -5114,6 +5114,93 @@ async function build096() {
 }
 
 // ---------------------------------------------------------------------------
+// 112 - literal-signed-number (ADR-0028)
+//
+// Concept: a signed number literal `-N` is valid at parse position
+// per ADR-0028. Verifies the supported case so a future change
+// doesn't break it.
+// Spec section: ADR-0028 §"Number literal constraints".
+// ---------------------------------------------------------------------------
+async function build112() {
+  const dir = join(FIXTURES, '112-literal-signed-number');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'literal-signed-number'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Plain';
+    sh.getCell('B1').value = 'Negative';
+    sh.getCell('C1').value = 'Decimal';
+    sh.getCell('A2').value = '{{ 5 }}';
+    sh.getCell('B2').value = '{{ -5 }}';
+    sh.getCell('C2').value = '{{ -3.14 }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'X';
+    sh.getCell('A2').value = 1;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Plain';
+    sh.getCell('B1').value = 'Negative';
+    sh.getCell('C1').value = 'Decimal';
+    sh.getCell('A2').value = 5;
+    sh.getCell('B2').value = -5;
+    sh.getCell('C2').value = -3.14;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 113 - unsupported-unary-on-column-ref-error (ADR-0028)
+//
+// Concept: unary minus on a column reference (`-[X]`) is NOT
+// supported in XTL 0.x per ADR-0028 and raises
+// xl3/eval/unsupported-syntax. Replaces the previous silent
+// fallthrough that output the literal string `"-[X]"`.
+// Spec section: ADR-0028 §"Number literal constraints".
+// ---------------------------------------------------------------------------
+async function build113() {
+  const dir = join(FIXTURES, '113-unsupported-unary-on-column-ref-error');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'unsupported-unary'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Negated';
+    sh.getCell('A2').value = '{{ -[Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = 100;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 109 - source-column-reserved-name-error (ADR-0027)
 //
 // Concept: a source column named `Rows` collides with the renderer's
@@ -6225,6 +6312,8 @@ const builders = [
   ['109', build109],
   ['110', build110],
   ['111', build111],
+  ['112', build112],
+  ['113', build113],
 ];
 
 const selected = new Set(process.argv.slice(2));

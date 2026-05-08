@@ -8,6 +8,20 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0028 "Literal syntax constraints + unsupported-syntax detection".
+  Closes the unary-operator silent-fallthrough surface:
+  - **String literals** are matched-pair `"..."` only; no escape
+    sequences. Backslashes pass through literally; embed quotes via
+    `__config__` cells.
+  - **Number literals** support a leading `-` for negation
+    (`-5`, `-3.14`).
+  - **Unary operators on non-literal expressions** (`+5`, `--5`,
+    `-[col]`, `-(expr)`) raise `xl3/eval/unsupported-syntax`.
+    Replaces the previous silent fallthrough that output the
+    literal expression text. Workaround for column negation:
+    `(0 - [col])` or `[col] * -1`.
+  - 1 new error code, 2 new fixtures (112, 113).
+
 - ADR-0027 "Reserved column names + directive arg validation".
   Closes two silent-fallthrough surfaces:
   - **Reserved source column names**: `Rows`, `__rownum`,
