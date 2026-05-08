@@ -1,0 +1,5 @@
+description: Whitespace immediately inside `{{` and `}}` is insignificant. String-literal whitespace is preserved.
+spec_section: language.md "Template Blocks"
+spec_version: "0.1"
+tags: [parser, whitespace, template-block]
+verified_by: [hand]

@@ -54,6 +54,9 @@ matrix.
 | Excel version compatibility | (informational) | ADR-0022 | (no fixtures; authoring guidance) |
 | Operator coercion + Excel-default principle | language.md "Arithmetic" | ADR-0023 | 100, 101 |
 | Function arity (normative table) | language.md "Functions" arity table | ADR-0024 | 102, 103 |
+| Division by zero → `#DIV/0!` error cell | language.md "Arithmetic" | ADR-0025 | 106 |
+| Multiple `@filter` compose with AND | language.md "Filter" | (no ADR; spec line) | 104 |
+| `{{ }}` whitespace insignificant | language.md "Template Blocks" | (no ADR; spec line) | 105 |
 
 ## Implementation-defined boundaries
 

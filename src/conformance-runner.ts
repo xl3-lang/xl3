@@ -932,6 +932,12 @@ function comparable(v: ExcelJS.CellValue): unknown {
       return (v as { richText: { text: string }[] }).richText
         .map((r) => r.text).join('');
     }
+    // ADR-0025: an Excel error cell ({ error: '#DIV/0!' } etc.) is
+    // surfaced by its error code so output-side fixtures can pin the
+    // exact error. ADR-0017 separately governs error cells in input
+    // sources (they read as empty in eval, so they never reach output
+    // unchanged unless the engine intentionally produces them).
+    if ('error' in v) return (v as { error: unknown }).error ?? null;
     if ('result' in v) return (v as { result: unknown }).result ?? null;
     if (v instanceof Date) return v.toISOString();
   }

@@ -1,6 +1,22 @@
 import type { Row } from './types.js';
 import { xtlError } from './error-codes.js';
 
+// ADR-0025: marker for an Excel-style error cell value produced by
+// xl3 (currently only `#DIV/0!` from division by zero). The renderer
+// detects this shape and writes a real ExcelJS error cell so the
+// output workbook displays #DIV/0! the way Excel would. In string
+// contexts (canonicalString, & concatenation), the marker stringifies
+// to its `code` so authors get a readable value back.
+export interface XtlErrorCell {
+  __xl3_error__: '#DIV/0!';
+}
+
+export const DIV_ZERO_ERROR: XtlErrorCell = { __xl3_error__: '#DIV/0!' };
+
+export function isErrorCellMarker(v: unknown): v is XtlErrorCell {
+  return typeof v === 'object' && v !== null && '__xl3_error__' in v;
+}
+
 // ADR-0007: a value is empty if it is missing (null/undefined) or a string
 // whose contents are entirely Unicode whitespace. Numbers (including 0),
 // booleans (including false), and dates are never empty.
@@ -47,6 +63,8 @@ export function canonicalString(v: unknown): string {
   }
   if (typeof v === 'string') return v;
   if (v instanceof Date) return canonicalDateString(v);
+  // ADR-0025: error cell marker stringifies to its Excel error code.
+  if (isErrorCellMarker(v)) return v.__xl3_error__;
   return String(v);
 }
 
@@ -230,11 +248,14 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   mul: (a, b) => toNumberOrThrow(a, '*') * toNumberOrThrow(b, '*'),
   div: (a, b) => {
     const d = toNumberOrThrow(b, '/');
-    // Division by zero deferred — see ADR-0023 §"Open question:
-    // division by zero". Current behavior preserves the pre-ADR
-    // result (returns 0); a follow-up ADR will pick error vs.
-    // Excel-style #DIV/0! sentinel.
-    return d === 0 ? 0 : toNumberOrThrow(a, '/') / d;
+    // ADR-0025: division by zero produces an Excel-style #DIV/0!
+    // error cell in the output (matches Excel's behavior; aligns
+    // with ADR-0023 Excel-default principle). The renderer
+    // recognizes this marker shape and writes a real ExcelJS error
+    // cell value. canonicalString returns "#DIV/0!" so the marker
+    // also flows through `&` and other contexts as a readable string.
+    if (d === 0) return DIV_ZERO_ERROR;
+    return toNumberOrThrow(a, '/') / d;
   },
   concat: (...parts) => parts.map((p) => canonicalString(p)).join(''),
 

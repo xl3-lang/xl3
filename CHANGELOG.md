@@ -8,6 +8,24 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0025 "Division by zero produces an Excel #DIV/0! error cell".
+  Resolves ADR-0023 §"Open question". Aligns with the Excel-default
+  principle: a single bad row marks one cell with `#DIV/0!`, the
+  rest of the conversion proceeds. The reference impl returns a
+  typed marker (`{ __xl3_error__: '#DIV/0!' }`) from the `/` operator
+  on zero divisor; the renderer emits a real ExcelJS error cell.
+  Conformance fixture 106 pins the behavior. Comparable() in the
+  conformance runner now extracts the error code from error cells
+  so output-side fixtures can pin exact errors.
+- Multiple `@filter` directives normatively compose with AND
+  (language.md "Filter"). Conformance fixture 104 pins it.
+- `{{ }}` whitespace rule formalized in language.md "Template
+  Blocks": leading/trailing whitespace inside the delimiters is
+  insignificant, string-literal whitespace is preserved.
+  Conformance fixture 105 pins it.
+
+### Added
+
 - ADR-0024 "Function arity is part of the spec". XTL 0.1 user-facing
   functions now have a normative arity table in language.md
   "Functions" and a single source of truth in `FUNCTION_ARITY` in
