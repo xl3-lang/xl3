@@ -6,6 +6,24 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-05-08
+
+Patch release rolling up everything that landed since `0.1.0` was
+published to npm. Includes one impl crash fix surfaced by the new
+boundary fixtures, the xl3-py issue #1 batch (5 findings), the
+ADR-0021/0022 documentation expansion, and the `@jinyoung4478/xl3`
+scoped name (which was effective with the 0.1.0 publish but
+documented here for completeness across the changelog timeline).
+
+### Fixed
+
+- Empty `{{ }}` template block (whitespace-only between delimiters)
+  previously crashed with a generic `TypeError` from
+  `getFunction(undefined).toUpperCase()`. ADR-0021 specified it as
+  a parse error in prose; the impl now matches by raising
+  `xl3/parser/empty-block` at parse time. Fixture 099 pins the
+  behavior.
+
 ### Added
 
 - Conformance fixtures pinning two of the implementation-defined
@@ -422,6 +440,7 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/jinyoung4478/xl3/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/jinyoung4478/xl3/compare/v0.1.0-alpha.0...v0.1.0
 [0.1.0-alpha.0]: https://github.com/jinyoung4478/xl3/releases/tag/v0.1.0-alpha.0
