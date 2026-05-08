@@ -53,6 +53,7 @@ matrix.
 | Dynamic conformance assertions | conformance/runner-protocol.md "Dynamic" | ADR-0005 | 023 |
 | Excel version compatibility | (informational) | ADR-0022 | (no fixtures; authoring guidance) |
 | Operator coercion + Excel-default principle | language.md "Arithmetic" | ADR-0023 | 100, 101 |
+| Function arity (normative table) | language.md "Functions" arity table | ADR-0024 | 102, 103 |
 
 ## Implementation-defined boundaries
 

@@ -109,6 +109,8 @@ function normalizeAggregate(expr: string): string {
   const e = expr.trim();
   const call = parseFunctionCall(e);
   if (call) {
+    // ADR-0024: arity check before specific dispatch.
+    checkArity(call.name, call.args);
     const name = call.name.toUpperCase();
     if (name === 'COUNT' && call.args.length === 0) return 'len .Rows';
     if (name === 'COUNT' && call.args.length === 1) {
@@ -264,11 +266,52 @@ export function extractColumnRefs(
   return refs;
 }
 
+// ADR-0024: arity table for user-facing functions. The normalizer
+// validates against this table — any known name with wrong arity
+// raises `xl3/eval/arity-mismatch` early. Unknown function names
+// pass through unchanged so impl-specific extensions still work.
+export const FUNCTION_ARITY: Record<string, { min: number; max: number }> = {
+  IF: { min: 3, max: 3 },
+  IFEMPTY: { min: 2, max: 2 },
+  IFBLANK: { min: 2, max: 2 },
+  ROUND: { min: 2, max: 2 },
+  ABS: { min: 1, max: 1 },
+  TEXT: { min: 2, max: 2 },
+  ROW: { min: 0, max: 0 },
+  TODAY: { min: 0, max: 0 },
+  XLOOKUP: { min: 3, max: 4 },
+  SUM: { min: 1, max: 1 },
+  AVERAGE: { min: 1, max: 1 },
+  AVG: { min: 1, max: 1 },
+  MIN: { min: 1, max: 1 },
+  MAX: { min: 1, max: 1 },
+  COUNT: { min: 0, max: 1 },
+  CONCAT: { min: 1, max: Infinity },
+};
+
+function checkArity(name: string, args: string[]): void {
+  const upper = name.toUpperCase();
+  const arity = FUNCTION_ARITY[upper];
+  if (!arity) return; // unknown function — passes through
+  if (args.length < arity.min || args.length > arity.max) {
+    const expected = arity.min === arity.max
+      ? `${arity.min}`
+      : arity.max === Infinity
+        ? `${arity.min} or more`
+        : `${arity.min} or ${arity.max}`;
+    throw xtlError(
+      'xl3/eval/arity-mismatch',
+      `${upper}: expected ${expected} argument${arity.max === 1 ? '' : 's'}, got ${args.length}`,
+    );
+  }
+}
+
 function normalizeFunctionCall(
   name: string,
   args: string[],
   columns: Set<string>,
 ): string {
+  checkArity(name, args);
   const upper = name.toUpperCase();
   if (upper === 'ROW' && args.length === 0) {
     return '__ROW__';

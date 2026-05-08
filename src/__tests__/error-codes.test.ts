@@ -12,6 +12,7 @@ import { xtlError, isXtlError, type XtlErrorCode } from '../error-codes.js';
 // error-codes.ts is the expected workflow.
 const EXPECTED_CODES: XtlErrorCode[] = [
   'xl3/cell/formula-no-cache',
+  'xl3/eval/arity-mismatch',
   'xl3/eval/operand-coercion',
   'xl3/cell/numfmt-coercion',
   'xl3/cell/row-outside-repeat',

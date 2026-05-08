@@ -8,6 +8,18 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0024 "Function arity is part of the spec". XTL 0.1 user-facing
+  functions now have a normative arity table in language.md
+  "Functions" and a single source of truth in `FUNCTION_ARITY` in
+  the normalizer. Calls with wrong arity raise
+  `xl3/eval/arity-mismatch` at normalize time instead of falling
+  through to a silent string-fallback or generic crash. Conformance
+  fixtures 102 (`ROUND([x])`) and 103 (`XLOOKUP(a, b)`) pin two
+  common shapes; new error code added to the catalog and snapshot
+  test.
+
+### Added
+
 - ADR-0023 "Operator coercion + Excel-as-default principle".
   Spec gaps closed:
   - **Excel-default principle** — when XTL is silent or ambiguous,

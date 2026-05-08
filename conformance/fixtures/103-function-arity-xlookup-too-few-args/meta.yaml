@@ -1,0 +1,7 @@
+description: XLOOKUP requires 3 or 4 args. With 2 args raises xl3/eval/arity-mismatch per ADR-0024.
+spec_section: language.md "Functions" arity table; ADR-0024
+spec_version: "0.1"
+tags: [adr-0024, function, arity, xlookup, error]
+verified_by: [hand]
+expected_error: 'XLOOKUP: expected 3 or 4 arguments, got 2'
+expected_error_code: 'xl3/eval/arity-mismatch'
