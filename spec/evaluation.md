@@ -309,6 +309,26 @@ Implementations MUST render in this conceptual order:
 
 The exact implementation strategy may differ, but observable output MUST match this order.
 
+## Ordering
+
+Output ordering is deterministic and source-driven:
+
+- **File groups** appear in **first-seen** order. The engine walks
+  source rows in the source's natural order; the first row whose
+  `output_file_pattern` evaluates to filename `X` causes that group
+  to be emitted first.
+- **Sheet groups within a file** appear in **first-seen** order over
+  the file group's row list. The first matching row determines the
+  sheet's position.
+- The single-source iteration order is `source_table` reading
+  top-to-bottom. With multi-source data (see [External Data
+  Sources](#external-data-sources)) the rule applies to the
+  *primary* source's rows; named sources contribute to aggregates
+  and joins but do not affect output ordering.
+
+Sort stability is defined under
+[`@sort`](./language.md#sort): equal sort keys preserve source order.
+
 ## Directives
 
 Directives apply in this order:
@@ -317,9 +337,12 @@ Directives apply in this order:
 filter -> sort -> top
 ```
 
-Multiple filters are combined with logical AND. Multiple sorts are applied in directive order.
+Multiple filters are combined with logical AND. With multiple sorts,
+the first `@sort` is the primary key and later sorts are tiebreakers.
 
-`@repeat right` changes block expansion direction and is not a data filtering directive.
+`@repeat right` changes block expansion direction and is not a data
+filtering directive. Without an explicit `@repeat`, data blocks
+expand vertically (downward) — one rendered row per source row.
 
 ## Cell Text Extraction
 

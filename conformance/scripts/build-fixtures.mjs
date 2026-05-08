@@ -4549,6 +4549,273 @@ async function build082() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 083 - sort-stable-equal-keys
+//
+// Concept: @sort is stable — rows whose sort key compares equal
+// preserve their source order.
+// Spec section: language.md "Sort"; ADR-0016.
+// ---------------------------------------------------------------------------
+async function build083() {
+  const dir = join(FIXTURES, '083-sort-stable-equal-keys');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'sort-stable-equal-keys'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = '{{ @sort [Region] asc }}';
+    sh.getCell('A3').value = '{{ [Region] }}';
+    sh.getCell('B3').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — multiple Seoul rows in source order Acme→Beta→Gamma;
+  // multiple Busan rows in source order Delta→Echo. The stable sort
+  // must keep Customer order within each Region group.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = 'Seoul';
+    sh.getCell('B2').value = 'Acme';
+    sh.getCell('A3').value = 'Busan';
+    sh.getCell('B3').value = 'Delta';
+    sh.getCell('A4').value = 'Seoul';
+    sh.getCell('B4').value = 'Beta';
+    sh.getCell('A5').value = 'Busan';
+    sh.getCell('B5').value = 'Echo';
+    sh.getCell('A6').value = 'Seoul';
+    sh.getCell('B6').value = 'Gamma';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — Busan rows (asc < Seoul) first in source order,
+  // then Seoul rows in source order.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = 'Busan';
+    sh.getCell('B2').value = 'Delta';
+    sh.getCell('A3').value = 'Busan';
+    sh.getCell('B3').value = 'Echo';
+    sh.getCell('A4').value = 'Seoul';
+    sh.getCell('B4').value = 'Acme';
+    sh.getCell('A5').value = 'Seoul';
+    sh.getCell('B5').value = 'Beta';
+    sh.getCell('A6').value = 'Seoul';
+    sh.getCell('B6').value = 'Gamma';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 084 - sort-multi-stable-priority
+//
+// Concept: multiple @sort directives apply in priority order; later
+// sorts are stable relative to earlier ones.
+// Spec section: language.md "Sort"; ADR-0016.
+// ---------------------------------------------------------------------------
+async function build084() {
+  const dir = join(FIXTURES, '084-sort-multi-stable-priority');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — first @sort = primary key (Region asc), second
+  // @sort = tiebreaker (Customer asc).
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'sort-multi-stable-priority'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = '{{ @sort [Region] asc }}';
+    sh.getCell('A3').value = '{{ @sort [Customer] asc }}';
+    sh.getCell('A4').value = '{{ [Region] }}';
+    sh.getCell('B4').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — mixed regions and customers.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = 'Seoul';
+    sh.getCell('B2').value = 'Beta';
+    sh.getCell('A3').value = 'Busan';
+    sh.getCell('B3').value = 'Echo';
+    sh.getCell('A4').value = 'Seoul';
+    sh.getCell('B4').value = 'Acme';
+    sh.getCell('A5').value = 'Busan';
+    sh.getCell('B5').value = 'Delta';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — by Region asc primary, Customer asc secondary.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = 'Busan';
+    sh.getCell('B2').value = 'Delta';
+    sh.getCell('A3').value = 'Busan';
+    sh.getCell('B3').value = 'Echo';
+    sh.getCell('A4').value = 'Seoul';
+    sh.getCell('B4').value = 'Acme';
+    sh.getCell('A5').value = 'Seoul';
+    sh.getCell('B5').value = 'Beta';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 085 - file-group-first-seen-order
+//
+// Concept: file groups are emitted in first-seen order over the source
+// rows.
+// Spec section: evaluation.md "Ordering"; ADR-0016.
+// ---------------------------------------------------------------------------
+async function build085() {
+  const dir = join(FIXTURES, '085-file-group-first-seen-order');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — pattern produces one file per Region.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'file-group-first-seen-order'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', '{{ Region }}.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Seoul, Busan, Daegu first appear in this order.
+  // Lexicographic order would be Busan, Daegu, Seoul; first-seen
+  // keeps Seoul first.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = 'Seoul';
+    sh.getCell('B2').value = 'Acme';
+    sh.getCell('A3').value = 'Busan';
+    sh.getCell('B3').value = 'Beta';
+    sh.getCell('A4').value = 'Daegu';
+    sh.getCell('B4').value = 'Gamma';
+    sh.getCell('A5').value = 'Seoul';
+    sh.getCell('B5').value = 'Delta';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected/ — three files in first-seen order.
+  {
+    const expDir = join(dir, 'expected');
+    await mkdir(expDir, { recursive: true });
+    {
+      const wb = new ExcelJS.Workbook();
+      const sh = wb.addWorksheet('Report');
+      sh.getCell('A1').value = 'Customer';
+      sh.getCell('A2').value = 'Acme';
+      sh.getCell('A3').value = 'Delta';
+      await writeBook(wb, join(expDir, 'Seoul.xlsx'));
+    }
+    {
+      const wb = new ExcelJS.Workbook();
+      const sh = wb.addWorksheet('Report');
+      sh.getCell('A1').value = 'Customer';
+      sh.getCell('A2').value = 'Beta';
+      await writeBook(wb, join(expDir, 'Busan.xlsx'));
+    }
+    {
+      const wb = new ExcelJS.Workbook();
+      const sh = wb.addWorksheet('Report');
+      sh.getCell('A1').value = 'Customer';
+      sh.getCell('A2').value = 'Gamma';
+      await writeBook(wb, join(expDir, 'Daegu.xlsx'));
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 086 - sheet-group-first-seen-order
+//
+// Concept: sheet groups within a file emit in first-seen order — same
+// rule as file groups.
+// Spec section: evaluation.md "Ordering"; ADR-0016.
+// ---------------------------------------------------------------------------
+async function build086() {
+  const dir = join(FIXTURES, '086-sheet-group-first-seen-order');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — single output file, sheet name templated by Region.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'sheet-group-first-seen-order'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('{{ Region }}');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Seoul appears before Busan in source order.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('A2').value = 'Seoul';
+    sh.getCell('B2').value = 'Acme';
+    sh.getCell('A3').value = 'Busan';
+    sh.getCell('B3').value = 'Beta';
+    sh.getCell('A4').value = 'Seoul';
+    sh.getCell('B4').value = 'Gamma';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — Seoul sheet first, then Busan. Lexicographic
+  // would produce Busan first; first-seen keeps Seoul first.
+  {
+    const wb = new ExcelJS.Workbook();
+    const seoul = wb.addWorksheet('Seoul');
+    seoul.getCell('A1').value = 'Customer';
+    seoul.getCell('A2').value = 'Acme';
+    seoul.getCell('A3').value = 'Gamma';
+    const busan = wb.addWorksheet('Busan');
+    busan.getCell('A1').value = 'Customer';
+    busan.getCell('A2').value = 'Beta';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -4632,6 +4899,10 @@ const builders = [
   ['080', build080],
   ['081', build081],
   ['082', build082],
+  ['083', build083],
+  ['084', build084],
+  ['085', build085],
+  ['086', build086],
 ];
 
 const selected = new Set(process.argv.slice(2));

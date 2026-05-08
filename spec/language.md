@@ -288,6 +288,13 @@ in
 
 When the direction is omitted, `asc` is used.
 
+`@sort` is **stable**. Rows whose sort key compares equal preserve
+their source order. With multiple `@sort` directives, the **first**
+directive is the primary sort key and later directives are
+tiebreakers in the order they appear. Source order is the final
+tiebreaker (matching Excel "Sort by … then by …" and SQL `ORDER BY a,
+b`).
+
 ### Top
 
 ```text

@@ -63,7 +63,8 @@ function groupByKeysOrdered(rows: Row[], keys: string[]): SheetGroup[] {
     map.get(gkStr)!.rows.push(row);
   }
 
-  order.sort();
+  // ADR-0016: sheet groups within a file emit in first-seen order, the
+  // same rule that file groups already follow.
   return order.map((k) => map.get(k)!);
 }
 

@@ -1,0 +1,5 @@
+description: Multiple @sort directives apply in priority order; later sorts are stable relative to earlier ones per ADR-0016.
+spec_section: language.md "Sort"; ADR-0016
+spec_version: "0.1"
+tags: [directive, sort, stability, priority]
+verified_by: [hand]

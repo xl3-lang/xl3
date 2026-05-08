@@ -1,0 +1,5 @@
+description: Sheet groups within a file emit in first-seen order per ADR-0016.
+spec_section: evaluation.md "Ordering"; ADR-0016
+spec_version: "0.1"
+tags: [evaluation, grouping, ordering, sheets]
+verified_by: [hand]

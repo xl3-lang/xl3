@@ -1,0 +1,5 @@
+description: '@sort is stable — rows with equal keys preserve source order per ADR-0016.'
+spec_section: language.md "Sort"; ADR-0016
+spec_version: "0.1"
+tags: [directive, sort, stability]
+verified_by: [hand]

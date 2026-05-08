@@ -164,6 +164,10 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 080 | `join-no-match-dropped` | `@join` uses inner semantics — primary rows without a match are dropped per ADR-0014. |
 | 081 | `join-undeclared-source-error` | `@join` referencing a source not declared in `__sources__` is a parse-time error per ADR-0014. |
 | 082 | `join-bad-on-clause-error` | `@join` on-clause must reference the joined source and the block's primary source per ADR-0014. |
+| 083 | `sort-stable-equal-keys` | `@sort` is stable — rows with equal keys preserve source order per ADR-0016. |
+| 084 | `sort-multi-stable-priority` | Multiple `@sort` directives apply with first = primary key, later directives as tiebreakers per ADR-0016. |
+| 085 | `file-group-first-seen-order` | File groups emit in first-seen order over the source rows per ADR-0016. |
+| 086 | `sheet-group-first-seen-order` | Sheet groups within a file emit in first-seen order per ADR-0016. |
 
 ## Status
 

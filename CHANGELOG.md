@@ -8,6 +8,16 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0016 locks down **ordering and sort stability**. `@sort` is
+  stable; equal sort keys preserve source order. With multiple
+  `@sort` directives, the **first** is the primary key and later
+  sorts are tiebreakers (Excel/SQL convention). File groups and
+  sheet groups within a file emit in **first-seen** order over the
+  source's natural row order; the previous lexicographic sheet-group
+  sort is replaced. The spec also clarifies that data blocks expand
+  vertically by default (without an explicit `@repeat`). Conformance
+  fixtures 083–086 cover sort stability, multi-sort priority, and
+  file/sheet first-seen ordering.
 - ADR-0015 adds **structured error codes** alongside the English
   messages. Spec-defined errors now carry a stable `error.code` like
   `xl3/source/undeclared` or `xl3/inputs/missing-required`. Hosts use

@@ -1,0 +1,5 @@
+description: File groups emit in first-seen order over the source rows per ADR-0016.
+spec_section: evaluation.md "Ordering"; ADR-0016
+spec_version: "0.1"
+tags: [evaluation, grouping, ordering, files]
+verified_by: [hand]
