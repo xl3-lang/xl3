@@ -58,9 +58,9 @@ a pure impl refactor can ship as `xl3` patch with no spec change.
    npm publish --tag rc
    ```
 
-   The `rc` dist-tag means hosts opting in (`npm install xl3@rc`)
-   get the candidate; default `npm install xl3` keeps the prior
-   stable.
+   The `rc` dist-tag means hosts opting in
+   (`npm install @jinyoung4478/xl3@rc`) get the candidate; default
+   `npm install @jinyoung4478/xl3` keeps the prior stable.
 
 8. Open a GitHub release for the tag with the section from
    CHANGELOG.
@@ -129,12 +129,12 @@ If a release ships a critical bug:
 2. If the fix can't ship within an hour:
 
    ```bash
-   npm dist-tag rm xl3 latest      # un-recommend the bad version
-   npm dist-tag add xl3@<previous> latest
+   npm dist-tag rm @jinyoung4478/xl3 latest      # un-recommend the bad version
+   npm dist-tag add @jinyoung4478/xl3@<previous> latest
    ```
 
-   Hosts that pinned to `xl3` keep the old version until they
-   bump.
+   Hosts that pinned to `@jinyoung4478/xl3` keep the old version
+   until they bump.
 
 3. Never `npm unpublish` — npm policy disallows unpublishing
    versions used as dependencies after a brief grace window.
