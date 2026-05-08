@@ -140,6 +140,10 @@ You can try the browser flow on [xl3.io](https://xl3.io): run the attached
 sample files as-is, download the raw/template workbooks, or replace either file
 with your own.
 
+### Excel version compatibility
+
+xl3 reads `.xlsx` files via OOXML and is largely version-agnostic by design — it reads cached formula results, normalizes dates in UTC, and ignores OOXML serialization differences at the cell-value layer. See [ADR-0022](./spec/decisions/0022-excel-version-compatibility.md) for the full matrix; the short form is: stick to XTL's `{{ ... }}` syntax for anything dynamic, avoid charts/pivots/native formulas inside data blocks, and pick one date system (1900) per organization.
+
 Templates choose the source table in the hidden `__config__` sheet:
 
 | Key | Example | Meaning |
