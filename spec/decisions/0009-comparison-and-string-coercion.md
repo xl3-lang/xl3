@@ -140,7 +140,7 @@ result.
   section.
 - `evaluation.md` "List Sheets" updates "Each cell is converted to a
   string" to "Each cell is converted to its canonical string form per
-  [Comparison and String Coercion](./language.md#comparison-and-string-coercion)."
+  [Comparison and String Coercion](../language.md#comparison-and-string-coercion)."
 
 ## Impl changes
 

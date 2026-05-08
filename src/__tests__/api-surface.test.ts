@@ -1,0 +1,60 @@
+import { describe, expect, it } from 'vitest';
+import * as api from '../index.js';
+
+// 1.0 readiness: pin the public surface exported from `xl3` so a
+// silent removal or rename fails CI. Adding a new export at the
+// same time as updating this list is the expected workflow.
+//
+// Type-only re-exports (interfaces, type aliases) don't appear at
+// runtime, so this test asserts the runtime export shape only. Type
+// re-exports are checked indirectly through `npm run typecheck` —
+// dependents that import them by name will fail to compile if a
+// type export disappears.
+const EXPECTED_RUNTIME_EXPORTS = [
+  // Conversion entry points
+  'convert',
+  'preview',
+  'readTemplateInputs',
+  'analyze',
+  'analyzeModel',
+  'packageZip',
+  // Lower-level helpers
+  'readConfigSheet',
+  'writeConfigSheet',
+  'readInputsSheet',
+  'batchMatch',
+  'toTemplateModel',
+  // Error helpers (ADR-0015)
+  'xtlError',
+  'isXtlError',
+] as const;
+
+describe('public API surface', () => {
+  it('pins the runtime exports of `xl3`', () => {
+    const actual = Object.keys(api).sort();
+    const expected = [...EXPECTED_RUNTIME_EXPORTS].sort();
+    expect(actual).toEqual(expected);
+  });
+
+  it('every documented runtime export resolves to a callable / value', () => {
+    for (const name of EXPECTED_RUNTIME_EXPORTS) {
+      expect((api as Record<string, unknown>)[name]).toBeDefined();
+    }
+  });
+
+  it('convert, preview, readTemplateInputs are async functions', () => {
+    expect(typeof api.convert).toBe('function');
+    expect(typeof api.preview).toBe('function');
+    expect(typeof api.readTemplateInputs).toBe('function');
+    // Async functions: their constructor name is "AsyncFunction".
+    expect(api.convert.constructor.name).toBe('AsyncFunction');
+    expect(api.preview.constructor.name).toBe('AsyncFunction');
+    expect(api.readTemplateInputs.constructor.name).toBe('AsyncFunction');
+  });
+
+  it('xtlError returns an Error with a code', () => {
+    const err = api.xtlError('xl3/filename/empty', 'm');
+    expect(err).toBeInstanceOf(Error);
+    expect(err.code).toBe('xl3/filename/empty');
+  });
+});
