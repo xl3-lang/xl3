@@ -8,6 +8,10 @@ Implementations of the [XTL spec](./spec/). xl3 is the reference implementation.
 
 ## Adding an implementation
 
+Read [`PORTERS_GUIDE.md`](./PORTERS_GUIDE.md) first — it distinguishes
+spec-normative requirements from TS-impl-incidental details and gives
+a recommended development order keyed to the conformance corpus.
+
 To list a port here:
 
 1. Implement enough of XTL 0.1 to pass the [conformance fixtures](./conformance/fixtures/) you target.

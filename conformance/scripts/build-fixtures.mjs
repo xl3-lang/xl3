@@ -5042,6 +5042,48 @@ async function build090() {
 }
 
 // ---------------------------------------------------------------------------
+// 094 - reserved-sheet-name-error (ADR-0011)
+//
+// Concept: an author-created sheet whose name matches the reserved
+// dunder pattern `^__[a-z]+__$` (other than the four declared ones)
+// is rejected at parse time per ADR-0011.
+// Spec section: ADR-0011.
+// ---------------------------------------------------------------------------
+async function build094() {
+  const dir = join(FIXTURES, '094-reserved-sheet-name-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — author defines a `__custom__` sheet which is
+  // reserved by the dunder pattern but not one of the four real
+  // reserved sheets.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'reserved-sheet-name-error'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const aux = wb.addWorksheet('__custom__');
+    aux.getCell('A1').value = 'should-not-be-allowed';
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // No expected.xlsx — meta.yaml asserts expected_error.
+}
+
+// ---------------------------------------------------------------------------
 // 092 - composed-shape (multi-source + @join + @filter + @sort + XLOOKUP)
 //
 // Concept: a single fixture exercising the combination shape that
@@ -5376,6 +5418,7 @@ const builders = [
   ['091', build091],
   ['092', build092],
   ['093', build093],
+  ['094', build094],
 ];
 
 const selected = new Set(process.argv.slice(2));

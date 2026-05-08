@@ -53,6 +53,7 @@
     "conformance:tz": "TZ=UTC npm run conformance && TZ=America/New_York npm run conformance && TZ=Asia/Seoul npm run conformance",
     "examples:build": "node examples/scripts/build.mjs",
     "examples:run": "node examples/scripts/run-all.mjs",
+    "bench": "node scripts/bench.mjs",
     "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {

@@ -2,6 +2,10 @@
 
 This document defines the XTL 0.1 template language surface. The notation here is normative for template authors and implementations.
 
+A formal grammar for the contents of `{{ ... }}` template blocks
+lives in [`grammar.ebnf`](./grammar.ebnf) — non-normative supporting
+material for porters and tooling.
+
 ## Template Blocks
 
 Template expressions are written inside double braces:

@@ -1,0 +1,240 @@
+(* XTL 0.1 — formal grammar for the contents of `{{ ... }}` template blocks.
+ *
+ * This grammar covers WHAT can appear inside template-block delimiters
+ * (`{{` and `}}`) in a cell. The block delimiters themselves, the
+ * surrounding cell text, and the whole-cell "single-expression"
+ * vs "mixed text" classification are NOT part of this grammar — they
+ * are described in `evaluation.md`.
+ *
+ * Notation: ISO/IEC 14977 EBNF.
+ *   * = zero or more, + = one or more, ? = optional, | = alternation
+ *   "..." = literal string
+ *   (* ... *) = comment
+ *
+ * Lexical convention: whitespace between tokens is permitted and
+ * generally insignificant unless explicitly noted. The parser
+ * SHOULD trim leading and trailing whitespace inside `{{` `}}`.
+ *)
+
+(* ---------------------------------------------------------------- *)
+(* Top-level: a template-block's contents                            *)
+(* ---------------------------------------------------------------- *)
+
+template_block_body
+    = directive
+    | expression ;
+
+(* ---------------------------------------------------------------- *)
+(* Directives — block-level commands prefixed by "@"                 *)
+(* ---------------------------------------------------------------- *)
+
+directive
+    = filter_directive
+    | sort_directive
+    | top_directive
+    | repeat_directive
+    | source_directive
+    | join_directive ;
+
+filter_directive
+    = "@filter" , bracket_field , filter_op , value_arg ;
+
+filter_op
+    = "=" | "!=" | ">" | "<" | ">=" | "<=" | "in" | "!in" ;
+
+(* `@filter [field] in __lists__[name]`: the value_arg for `in` /
+ * `!in` MUST be a `__lists__[name]` reference. ADR-0011. *)
+
+sort_directive
+    = "@sort" , bracket_field , [ sort_direction ] ;
+
+sort_direction
+    = "asc" | "desc" ;     (* case-insensitive *)
+
+top_directive
+    = "@top" , integer ;
+
+repeat_directive
+    = "@repeat" , "right" , [ integer ] ;
+
+source_directive
+    = "@source" , source_name ;
+
+join_directive
+    = "@join" , source_name , "on" , source_bracket_field , "=" , source_bracket_field ;
+
+(* The two source_bracket_field operands of `on` must reference
+ * the joined source and the active block's source, in either
+ * order. Validated post-parse. ADR-0014. *)
+
+(* ---------------------------------------------------------------- *)
+(* Expressions                                                       *)
+(* ---------------------------------------------------------------- *)
+
+expression
+    = concat_expr ;
+
+(* `&` concatenation has lower precedence than comparison and
+ * arithmetic per ADR-0009. *)
+
+concat_expr
+    = compare_expr , { "&" , compare_expr } ;
+
+compare_expr
+    = arith_expr , [ comparison_op , arith_expr ] ;
+
+comparison_op
+    = "=" | "!=" | ">" | "<" | ">=" | "<=" ;
+
+arith_expr
+    = mul_expr , { ( "+" | "-" ) , mul_expr } ;
+
+mul_expr
+    = unary_expr , { ( "*" | "/" ) , unary_expr } ;
+
+unary_expr
+    = [ "-" ] , primary_expr ;
+
+primary_expr
+    = literal
+    | function_call
+    | bracket_field
+    | source_bracket_field
+    | reserved_ref
+    | "(" , expression , ")" ;
+
+(* ---------------------------------------------------------------- *)
+(* Function calls                                                    *)
+(* ---------------------------------------------------------------- *)
+
+function_call
+    = function_name , "(" , [ argument_list ] , ")" ;
+
+function_name
+    (* Function names are case-insensitive. The XTL 0.1 core set is:
+     * IF, IFEMPTY, SUM, COUNT, AVERAGE, MIN, MAX, ROUND, ABS,
+     * TEXT, ROW, TODAY, XLOOKUP. Implementation-defined extensions
+     * MAY add more, but are not portable. *)
+    = identifier ;
+
+argument_list
+    = value_arg , { "," , value_arg } ;
+
+value_arg
+    = expression ;
+
+(* ---------------------------------------------------------------- *)
+(* Bracket forms                                                     *)
+(* ---------------------------------------------------------------- *)
+
+bracket_field
+    (* A column reference into the active source's current row.
+     * MUST NOT be preceded by a word character — that disambiguates
+     * `[Col]` (data ref) from `Source[Col]` (source-prefixed) and
+     * `__sheet__[key]` (reserved-sheet ref). *)
+    = "[" , column_name , "]" ;
+
+source_bracket_field
+    (* `Source[Column]` — Excel-style structured reference. ADR-0012. *)
+    = source_name , "[" , column_name , "]" ;
+
+reserved_ref
+    (* `__sheet__[key]` — reserved sheet lookup. ADR-0011.
+     * The reserved sheet name MUST be one of the four declared
+     * dunder sheets: __config__, __inputs__, __lists__.
+     * `__sources__` is a declaration sheet only and MUST NOT
+     * appear in a reserved_ref (xl3/sources/not-a-dictionary). *)
+    = reserved_sheet , "[" , key , "]" ;
+
+reserved_sheet
+    = "__config__" | "__inputs__" | "__lists__" ;
+
+source_name
+    (* Declared in the __sources__ sheet, plus the implicit `default`
+     * (which is rarely written explicitly — it's the source_sheet
+     * configured in __config__). Letter-led so the regex check at
+     * parse time can distinguish `Source[…]` from `__sheet__[…]`. *)
+    = letter , { letter | digit | "_" } ;
+
+column_name
+    (* Header cell value from the source's table header row.
+     * Allowed characters: anything except `]`, `\r`, `\n`. *)
+    = ? any character except "]", CR, LF, one or more times ? ;
+
+key
+    (* Dictionary key into a reserved sheet. Allowed characters:
+     * anything except `]`, `\r`, `\n`. Trimmed before lookup. *)
+    = ? any character except "]", CR, LF, one or more times ? ;
+
+(* ---------------------------------------------------------------- *)
+(* Literals                                                          *)
+(* ---------------------------------------------------------------- *)
+
+literal
+    = string_literal
+    | number_literal
+    | boolean_literal ;
+
+string_literal
+    = '"' , { ? any character except '"', CR, LF ? } , '"' ;
+    (* No escape sequences in XTL 0.1. Single-quote form
+     * `'...'` is not part of the spec but some impls accept it
+     * as an extension; portable templates use double quotes. *)
+
+number_literal
+    = [ "-" ] , digit_seq , [ "." , digit_seq ] ;
+    (* No scientific notation in literals. Hex / octal / binary not
+     * supported. The Unicode minus sign U+2212 is NOT parsed as a
+     * number's sign per ADR-0009 amendment. *)
+
+digit_seq
+    = digit , { digit } ;
+
+boolean_literal
+    = "TRUE" | "FALSE" ;
+    (* Case-insensitive. Canonicalize to uppercase per ADR-0009. *)
+
+integer
+    = digit_seq ;
+
+(* ---------------------------------------------------------------- *)
+(* Identifiers and characters                                        *)
+(* ---------------------------------------------------------------- *)
+
+identifier
+    = letter , { letter | digit | "_" } ;
+
+letter
+    = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J"
+    | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T"
+    | "U" | "V" | "W" | "X" | "Y" | "Z"
+    | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j"
+    | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t"
+    | "u" | "v" | "w" | "x" | "y" | "z" ;
+
+digit
+    = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+(* ---------------------------------------------------------------- *)
+(* Notes and ambiguities                                             *)
+(* ---------------------------------------------------------------- *)
+
+(*
+ * AMBIGUITY (deferred to a future ADR if it becomes a real problem):
+ *
+ *   `Source[Account]` could lex as either a `source_bracket_field`
+ *   or as `identifier "[" key "]"`. The parser disambiguates by
+ *   classifying `Source` against the declared source set: if it
+ *   matches a name in `__sources__` (or is the implicit `default`
+ *   sheet name), it's a source_bracket_field; otherwise it's an
+ *   error. The grammar does not encode this contextual check.
+ *
+ * IMPLEMENTATION NOTE:
+ *
+ *   The TypeScript reference impl normalizes `{{ … }}` contents into
+ *   a tagged intermediate form (`sourceCell "Name" "Col"`,
+ *   `sourceRows "Name"`, `index . "Field"`) before evaluation. This
+ *   intermediate form is NOT part of the spec or this grammar — it
+ *   is an implementation detail. Other ports MAY use a direct AST,
+ *   a different IR, or no IR at all.
+ *)

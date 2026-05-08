@@ -6,6 +6,32 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Added — porter and 1.0 readiness
+
+- `PORTERS_GUIDE.md` — second-language port guide. Distinguishes
+  spec-normative requirements (error codes, date UTC semantics,
+  truthiness rules, reserved sheets, aggregate semantics) from
+  TS-impl-incidental details (async-everywhere, WeakMap caching,
+  ExcelJS workarounds), with a recommended development order keyed
+  to the conformance corpus.
+- `spec/grammar.ebnf` — formal EBNF grammar for `{{ ... }}` template
+  block contents. Non-normative supporting material; the spec prose
+  remains authoritative.
+- Property-based fuzz tests
+  (`src/__tests__/properties.test.ts`) — 10 invariants over the
+  value model (canonicalString totality, isTruthy implications,
+  compareValues totality / reflexivity / antisymmetry / sampled
+  transitivity), each run over 200 random cases.
+- ADR coverage matrix auto-generation
+  (`conformance/coverage.md`) — every semantic ADR now has at least
+  one covering fixture, and every fixture declares a `spec_section`.
+  Conformance fixture 094 added to close the ADR-0011
+  (reserved-sheet-name) gap.
+- `npm run bench` performance baseline + reference numbers in
+  `scripts/BENCH.md`. Three scenarios: wide-flat 10k row, multi-sheet
+  5k×5, multi-source-join 5k×1k. A regression > 2× in any scenario
+  should be investigated.
+
 ### Added
 
 - `examples/` directory with three production-shaped templates

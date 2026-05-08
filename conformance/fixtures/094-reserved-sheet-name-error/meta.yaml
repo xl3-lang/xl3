@@ -1,0 +1,7 @@
+description: Author-created sheets matching the reserved dunder pattern `^__[a-z]+__$` (other than the four declared reserved sheets) are rejected at parse time per ADR-0011.
+spec_section: evaluation.md "Reserved Sheets"; ADR-0011
+spec_version: "0.1"
+tags: [reserved, sheet, error]
+verified_by: [hand]
+expected_error: 'reserved'
+expected_error_code: 'xl3/sheet/reserved-name'
