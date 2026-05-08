@@ -12,7 +12,7 @@ import type {
 import { normalizeTemplate } from './normalizer.js';
 import { evalCell, evalCellAt } from './template-eval.js';
 import { applyDirectives } from './data-transform.js';
-import { canonicalString } from './functions.js';
+import { canonicalString, isErrorCellMarker } from './functions.js';
 import { xtlError } from './error-codes.js';
 import type { FileGroup } from './grouper.js';
 import type { SourceData } from './reader.js';
@@ -544,6 +544,18 @@ function renderCellValue(
   value: unknown,
   style: Partial<ExcelJS.Style> | undefined,
 ): ExcelJS.CellValue {
+  // ADR-0025: an XtlErrorCell marker (e.g., from division by zero)
+  // becomes a real ExcelJS error cell value regardless of cell
+  // numFmt. Single-expression text-format and mixed-text cells
+  // still stringify via canonicalString → "#DIV/0!" so authors
+  // see the readable form when they explicitly request text.
+  if (isErrorCellMarker(value)) {
+    const numFmt = typeof style?.numFmt === 'string' ? style.numFmt : undefined;
+    if (numFmt === '@' || !isSingleExpression(normalizedTemplate)) {
+      return value.__xl3_error__ as ExcelJS.CellValue;
+    }
+    return { error: value.__xl3_error__ } as unknown as ExcelJS.CellValue;
+  }
   const numFmt = typeof style?.numFmt === 'string' ? style.numFmt : undefined;
   const singleExpression = isSingleExpression(normalizedTemplate);
 

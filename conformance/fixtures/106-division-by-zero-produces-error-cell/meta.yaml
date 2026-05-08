@@ -1,0 +1,5 @@
+description: Division by zero produces an Excel `#DIV/0!` error cell in the output per ADR-0025.
+spec_section: ADR-0025
+spec_version: "0.1"
+tags: [adr-0025, arithmetic, division-by-zero, error-cell]
+verified_by: [hand]

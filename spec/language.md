@@ -15,7 +15,26 @@ Template expressions are written inside double braces:
 {{ expression }}
 ```
 
-Whitespace immediately inside `{{` and `}}` is insignificant.
+Whitespace immediately inside `{{` and `}}` is insignificant — the
+parser trims leading and trailing whitespace before normalization.
+The following are equivalent:
+
+```text
+{{ [name] }}
+{{[name]}}
+{{    [name]    }}
+{{
+  [name]
+}}
+```
+
+Whitespace inside operator spacing (e.g., `{{ [a] + [b] }}` vs
+`{{ [a]+[b] }}`) is also insignificant. Whitespace inside string
+literals is preserved (`"hello world"` keeps its space).
+
+A template block whose inner content is empty (`{{ }}` or
+whitespace-only) is a parse error per ADR-0021
+(`xl3/parser/empty-block`).
 
 ## Source Columns
 
@@ -360,6 +379,19 @@ in
 `__lists__[<name>]` (per ADR-0011), where `<name>` is the column header
 inside the reserved `__lists__` sheet. The legacy `_<name>` list-sheet
 form is retired.
+
+**Multiple `@filter` directives compose with AND.** A row passes
+the block only if every `@filter` predicate is satisfied. There is
+no `OR` form in XTL 0.1; templates that need disjunction compose
+the alternatives with `__lists__[…]` membership filters or
+pre-filter the source upstream.
+
+```text
+{{ @filter [Region] = "Seoul" }}
+{{ @filter [Amount] > 10000 }}
+```
+
+A row passes only when both conditions hold.
 
 ### Sort
 

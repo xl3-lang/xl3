@@ -1,0 +1,5 @@
+description: Multiple `@filter` directives in the same data block compose with AND semantics. A row passes only when every predicate holds.
+spec_section: language.md "Filter"
+spec_version: "0.1"
+tags: [directive, filter, and]
+verified_by: [hand]

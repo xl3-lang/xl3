@@ -5111,6 +5111,170 @@ async function build096() {
 }
 
 // ---------------------------------------------------------------------------
+// 104 - multiple-filter-directives-compose-with-and (ADR-0023 / ADR-0025 era)
+//
+// Concept: two `@filter` directives in the same data block compose
+// with AND semantics per language.md "Filter". A row passes only
+// when both predicates hold.
+// Spec section: language.md "Filter".
+// ---------------------------------------------------------------------------
+async function build104() {
+  const dir = join(FIXTURES, '104-multiple-filter-directives-and');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'multiple-filter-and'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Region';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = '{{ @filter [Region] = "Seoul" }}';
+    sh.getCell('A3').value = '{{ @filter [Amount] > 10000 }}';
+    sh.getCell('A4').value = '{{ [Account] }}';
+    sh.getCell('B4').value = '{{ [Region] }}';
+    sh.getCell('C4').value = '{{ [Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account'; sh.getCell('B1').value = 'Region'; sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';   sh.getCell('B2').value = 'Seoul';  sh.getCell('C2').value = 18400;  // pass: Seoul + > 10000
+    sh.getCell('A3').value = 'Beta';   sh.getCell('B3').value = 'Busan';  sh.getCell('C3').value = 22500;  // fail: Busan
+    sh.getCell('A4').value = 'Coreon'; sh.getCell('B4').value = 'Seoul';  sh.getCell('C4').value = 5000;   // fail: <= 10000
+    sh.getCell('A5').value = 'Delta';  sh.getCell('B5').value = 'Seoul';  sh.getCell('C5').value = 25000;  // pass
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account'; sh.getCell('B1').value = 'Region'; sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';   sh.getCell('B2').value = 'Seoul';  sh.getCell('C2').value = 18400;
+    sh.getCell('A3').value = 'Delta';  sh.getCell('B3').value = 'Seoul';  sh.getCell('C3').value = 25000;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 105 - template-block-whitespace-insignificant (language.md "Template Blocks")
+//
+// Concept: whitespace immediately inside `{{` and `}}` is
+// insignificant. `{{ [name] }}`, `{{[name]}}`, and `{{    [name]    }}`
+// all evaluate identically. Inner string-literal whitespace is
+// preserved.
+// Spec section: language.md "Template Blocks".
+// ---------------------------------------------------------------------------
+async function build105() {
+  const dir = join(FIXTURES, '105-template-block-whitespace-insignificant');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'whitespace-insignificant'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Spaced';
+    sh.getCell('B1').value = 'NoSpace';
+    sh.getCell('C1').value = 'ExtraSpace';
+    sh.getCell('D1').value = 'StringPreserved';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    sh.getCell('B2').value = '{{[Account]}}';
+    sh.getCell('C2').value = '{{    [Account]    }}';
+    sh.getCell('D2').value = '{{ "hello world" }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Spaced';
+    sh.getCell('B1').value = 'NoSpace';
+    sh.getCell('C1').value = 'ExtraSpace';
+    sh.getCell('D1').value = 'StringPreserved';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Acme';
+    sh.getCell('C2').value = 'Acme';
+    sh.getCell('D2').value = 'hello world';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 106 - division-by-zero-produces-error-cell (ADR-0025)
+//
+// Concept: division by zero produces an Excel `#DIV/0!` error cell.
+// The conformance runner's `comparable()` extracts the error code
+// from error cells so Stage 1 can pin the exact error.
+// Spec section: ADR-0025.
+// ---------------------------------------------------------------------------
+async function build106() {
+  const dir = join(FIXTURES, '106-division-by-zero-produces-error-cell');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'division-by-zero-error-cell'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Ratio';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    sh.getCell('B2').value = '{{ [Numerator] / [Denominator] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Numerator';
+    sh.getCell('C1').value = 'Denominator';
+    sh.getCell('A2').value = 'Acme';   sh.getCell('B2').value = 10; sh.getCell('C2').value = 2;
+    sh.getCell('A3').value = 'Beta';   sh.getCell('B3').value = 5;  sh.getCell('C3').value = 0;
+    sh.getCell('A4').value = 'Coreon'; sh.getCell('B4').value = 1;  sh.getCell('C4').value = 4;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Ratio';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 5;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = { error: '#DIV/0!' };
+    sh.getCell('A4').value = 'Coreon';
+    sh.getCell('B4').value = 0.25;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 102 - function-arity-round-missing-arg (ADR-0024)
 //
 // Concept: ROUND requires 2 args (value, places). Calling it with 1
@@ -5830,6 +5994,9 @@ const builders = [
   ['101', build101],
   ['102', build102],
   ['103', build103],
+  ['104', build104],
+  ['105', build105],
+  ['106', build106],
 ];
 
 const selected = new Set(process.argv.slice(2));
