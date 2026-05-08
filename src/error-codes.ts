@@ -35,6 +35,8 @@ export type XtlErrorCode =
   | 'xl3/join/bad-on-clause'
   // Lists
   | 'xl3/lists/missing-reference'
+  // Parser (ADR-0021)
+  | 'xl3/parser/empty-block'
   // Cell evaluation
   | 'xl3/cell/numfmt-coercion'
   | 'xl3/cell/row-outside-repeat'

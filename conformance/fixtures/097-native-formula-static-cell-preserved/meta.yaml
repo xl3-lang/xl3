@@ -1,0 +1,5 @@
+description: A native Excel formula in a static template cell (not inside a data block) is preserved verbatim per ADR-0021. The cached result round-trips through Stage 1 comparison.
+spec_section: ADR-0021 "Native Excel formulas in template cells"
+spec_version: "0.1"
+tags: [adr-0021, formula, static-cell, preserve]
+verified_by: [hand]

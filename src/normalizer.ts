@@ -66,6 +66,12 @@ export function normalizeTemplate(
 ): string {
   return tmpl.replace(TEMPLATE_BLOCK_RE, (_, inner: string) => {
     const trimmed = inner.trim();
+    // ADR-0021: an empty template block (`{{ }}` or whitespace-only
+    // between the delimiters) is a parse error. Without this guard
+    // downstream eval would crash on splitFunctionArgs("") + getFunction(undefined).
+    if (trimmed === '') {
+      throw xtlError('xl3/parser/empty-block', 'Empty template block: {{ ... }} must contain an expression');
+    }
     if (isGoKeyword(trimmed)) return `{{ ${trimmed} }}`;
 
     return `{{ ${normalizeInner(trimmed, columns)} }}`;

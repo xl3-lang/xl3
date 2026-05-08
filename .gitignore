@@ -40,3 +40,14 @@ TODO.local.md
 
 # Playwright MCP scratch
 .playwright-mcp/
+
+# Local probe / experiment artifacts at the repo root
+# (production fixtures live under conformance/fixtures/, examples
+# under examples/ — never at the root)
+/template.xlsx
+/data.xlsx
+/probe*.xlsx
+/probe*.mjs
+/demo.py
+/2026-*.xlsx
+/.venv/

@@ -1,0 +1,7 @@
+description: An empty `{{ }}` template block (whitespace-only between delimiters) is a parse error per ADR-0021 "Empty template block".
+spec_section: ADR-0021 "Empty template block"
+spec_version: "0.1"
+tags: [adr-0021, parser, error]
+verified_by: [hand]
+expected_error: 'Empty template block'
+expected_error_code: 'xl3/parser/empty-block'
