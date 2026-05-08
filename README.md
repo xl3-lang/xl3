@@ -134,7 +134,7 @@ const outputs = await convert(templateBuffer, dataBuffer);
 // outputs: OutputFile[] — one or more .xlsx, depending on grouping rules in the template
 ```
 
-Runs in browsers and Node (≥18).
+Runs in browsers and Node (≥20.12).
 
 You can try the browser flow on [xl3.io](https://xl3.io): run the attached
 sample files as-is, download the raw/template workbooks, or replace either file
