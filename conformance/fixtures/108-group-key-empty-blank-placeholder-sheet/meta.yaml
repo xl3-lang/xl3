@@ -1,0 +1,5 @@
+description: A sheet-level group key with an empty value substitutes the "(blank)" placeholder before sheet-name interpolation per ADR-0026.
+spec_section: ADR-0026 §"Group key value evaluating to empty"
+spec_version: "0.1"
+tags: [adr-0026, group-key, sheet-name, blank-placeholder]
+verified_by: [hand]

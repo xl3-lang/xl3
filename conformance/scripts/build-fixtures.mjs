@@ -991,14 +991,19 @@ async function build018() {
 async function build019() {
   const dir = join(FIXTURES, '019-filename-empty-basename-error');
 
-  // template.xlsx
+  // template.xlsx — filename pattern interpolates a __config__ author
+  // key that resolves to empty. ADR-0026's "(blank)" placeholder for
+  // group keys does NOT apply to non-group-key sources like
+  // __config__, so the rendered filename is ".xlsx" → empty basename
+  // → sanitization error per ADR-0002.
   {
     const wb = new ExcelJS.Workbook();
     addConfig(wb, [
       ['name', 'filename-empty-basename-error'],
       ['source_sheet', 'Data'],
       ['source_table', '1'],
-      ['output_file_pattern', '{{ [Name] }}.xlsx'],
+      ['output_file_pattern', '{{ __config__[suffix] }}.xlsx'],
+      ['suffix', ''], // author-defined empty value
     ]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Item';
@@ -1006,14 +1011,12 @@ async function build019() {
     await writeBook(wb, join(dir, 'template.xlsx'));
   }
 
-  // data.xlsx — Name is empty, so the pattern renders to ".xlsx".
+  // data.xlsx
   {
     const wb = new ExcelJS.Workbook();
     const sh = wb.addWorksheet('Data');
-    sh.getCell('A1').value = 'Name';
-    sh.getCell('B1').value = 'Item';
-    sh.getCell('A2').value = '';
-    sh.getCell('B2').value = 'Widget';
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('A2').value = 'Widget';
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 }
@@ -5111,6 +5114,121 @@ async function build096() {
 }
 
 // ---------------------------------------------------------------------------
+// 107 - group-key-empty-becomes-blank-placeholder-file (ADR-0026)
+//
+// Concept: a file-level group key whose value is empty per ADR-0007
+// substitutes the literal token "(blank)" before filename
+// interpolation per ADR-0026. The conversion does not halt; rows
+// with empty group keys land in a "(blank).xlsx" bucket.
+// Spec section: ADR-0026 §"Group key value evaluating to empty".
+// ---------------------------------------------------------------------------
+async function build107() {
+  const dir = join(FIXTURES, '107-group-key-empty-blank-placeholder-file');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'group-key-blank-file'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', '{{ [Region] }}.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account'; sh.getCell('B1').value = 'Region';
+    sh.getCell('A2').value = 'Acme';   sh.getCell('B2').value = 'Seoul';
+    sh.getCell('A3').value = 'Beta';   sh.getCell('B3').value = '';     // empty Region
+    sh.getCell('A4').value = 'Coreon'; sh.getCell('B4').value = 'Busan';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // Multi-file expected: files live in `expected/` subdirectory.
+  // The conformance runner detects multi-file mode by the directory.
+  await mkdir(join(dir, 'expected'), { recursive: true });
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'expected', 'Seoul.xlsx'));
+  }
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = 'Beta';
+    await writeBook(wb, join(dir, 'expected', '(blank).xlsx'));
+  }
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = 'Coreon';
+    await writeBook(wb, join(dir, 'expected', 'Busan.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 108 - group-key-empty-becomes-blank-placeholder-sheet (ADR-0026)
+//
+// Concept: a sheet-level group key whose value is empty substitutes
+// "(blank)" before sheet-name interpolation per ADR-0026. Replaces
+// the previous "Sheet" fallback for this case.
+// Spec section: ADR-0026 §"Group key value evaluating to empty".
+// ---------------------------------------------------------------------------
+async function build108() {
+  const dir = join(FIXTURES, '108-group-key-empty-blank-placeholder-sheet');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'group-key-blank-sheet'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('{{ Region }}');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account'; sh.getCell('B1').value = 'Region';
+    sh.getCell('A2').value = 'Acme';   sh.getCell('B2').value = 'Seoul';
+    sh.getCell('A3').value = 'Beta';   sh.getCell('B3').value = '';
+    sh.getCell('A4').value = 'Coreon'; sh.getCell('B4').value = 'Busan';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected: 3 sheets — Seoul, (blank), Busan
+  {
+    const wb = new ExcelJS.Workbook();
+    const seoul = wb.addWorksheet('Seoul');
+    seoul.getCell('A1').value = 'Account';
+    seoul.getCell('A2').value = 'Acme';
+    const blank = wb.addWorksheet('(blank)');
+    blank.getCell('A1').value = 'Account';
+    blank.getCell('A2').value = 'Beta';
+    const busan = wb.addWorksheet('Busan');
+    busan.getCell('A1').value = 'Account';
+    busan.getCell('A2').value = 'Coreon';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 104 - multiple-filter-directives-compose-with-and (ADR-0023 / ADR-0025 era)
 //
 // Concept: two `@filter` directives in the same data block compose
@@ -5997,6 +6115,8 @@ const builders = [
   ['104', build104],
   ['105', build105],
   ['106', build106],
+  ['107', build107],
+  ['108', build108],
 ];
 
 const selected = new Set(process.argv.slice(2));

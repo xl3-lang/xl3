@@ -6,6 +6,30 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Added
+
+- ADR-0026 "Empty value lifecycle in cell rendering and group keys".
+  Pins two previously-undefined behaviors:
+  - Single-expression cell evaluating to empty produces a cell value
+    of `""` (empty string) — matches Excel's `=""` formula behavior;
+    the cell is present in OOXML, value is empty, re-reading via
+    xl3 reads as empty per ADR-0007.
+  - File- and sheet-level group keys with empty values substitute
+    the literal token `(blank)` per Excel pivot table convention
+    (ADR-0023 Excel-default principle). This replaces the previous
+    asymmetric behavior where file-level halt-with-error and
+    sheet-level fell back to the literal `Sheet`. Real reporting
+    data with sloppy rows now produces a `(blank).xlsx` bucket and
+    a `(blank)` sheet instead of failing the whole conversion.
+
+### Changed
+
+- Conformance fixture 019 (`019-filename-empty-basename-error`) was
+  rewritten to exercise the empty-basename error path via a
+  `__config__` author key (which ADR-0026's `(blank)` substitution
+  does NOT apply to). The original empty-group-key shape now flows
+  through the `(blank)` placeholder instead of erroring.
+
 ## [0.2.0] - 2026-05-08
 
 Spec-audit minor release. Three new ADRs (0023, 0024, 0025) close

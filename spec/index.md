@@ -57,6 +57,7 @@ matrix.
 | Division by zero → `#DIV/0!` error cell | language.md "Arithmetic" | ADR-0025 | 106 |
 | Multiple `@filter` compose with AND | language.md "Filter" | (no ADR; spec line) | 104 |
 | `{{ }}` whitespace insignificant | language.md "Template Blocks" | (no ADR; spec line) | 105 |
+| Empty value lifecycle (cell + group key) | evaluation.md "Source Data Model" + "Output Filenames" | ADR-0026 | 107, 108 |
 
 ## Implementation-defined boundaries
 
