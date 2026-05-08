@@ -178,6 +178,28 @@ results in order. The result of `&` is always a string.
 
 Function names are case-insensitive. The spec writes them uppercase.
 
+Each user-facing function has a normative arity (see ADR-0024). A
+call with the wrong number of arguments raises
+`xl3/eval/arity-mismatch` at parse / normalize time, BEFORE any
+operand evaluation.
+
+| Function | Args | Notes |
+|---|---|---|
+| `IF` | 3 | condition, true-value, false-value |
+| `IFEMPTY` | 2 | value, fallback (alias: `IFBLANK`) |
+| `ROUND` | 2 | value, places |
+| `ABS` | 1 | value |
+| `TEXT` | 2 | value, format |
+| `ROW` | 0 | row index in current data block |
+| `TODAY` | 0 | UTC date |
+| `XLOOKUP` | 3 or 4 | value, lookup-array, return-array, [fallback] |
+| `SUM` | 1 | column ref |
+| `AVERAGE` (alias `AVG`) | 1 | column ref |
+| `MIN` | 1 | column ref |
+| `MAX` | 1 | column ref |
+| `COUNT` | 0 or 1 | 0 = block row count; 1 = non-empty count for column |
+| `CONCAT` | 1+ | variadic; alternative to `&` |
+
 ### IF
 
 ```text

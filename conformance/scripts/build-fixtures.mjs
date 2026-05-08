@@ -5111,6 +5111,74 @@ async function build096() {
 }
 
 // ---------------------------------------------------------------------------
+// 102 - function-arity-round-missing-arg (ADR-0024)
+//
+// Concept: ROUND requires 2 args (value, places). Calling it with 1
+// raises xl3/eval/arity-mismatch at normalize time per ADR-0024.
+// Spec section: language.md "Functions" arity table; ADR-0024.
+// ---------------------------------------------------------------------------
+async function build102() {
+  const dir = join(FIXTURES, '102-function-arity-round-missing-arg');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'function-arity-round'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Result';
+    sh.getCell('A2').value = '{{ ROUND([Amount]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = 1.234;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 103 - function-arity-xlookup-too-few-args (ADR-0024)
+//
+// Concept: XLOOKUP requires 3 or 4 args. With 2 args it raises
+// xl3/eval/arity-mismatch.
+// Spec section: ADR-0024.
+// ---------------------------------------------------------------------------
+async function build103() {
+  const dir = join(FIXTURES, '103-function-arity-xlookup-too-few-args');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'function-arity-xlookup'],
+      ['source_sheet', 'Customers'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Result';
+    sh.getCell('A2').value = '{{ XLOOKUP("Acme", Customers[Account]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Customers');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 100 - arithmetic-string-coerces-to-number (ADR-0023)
 //
 // Concept: arithmetic operators coerce numeric-like strings per ADR-
@@ -5760,6 +5828,8 @@ const builders = [
   ['099', build099],
   ['100', build100],
   ['101', build101],
+  ['102', build102],
+  ['103', build103],
 ];
 
 const selected = new Set(process.argv.slice(2));
