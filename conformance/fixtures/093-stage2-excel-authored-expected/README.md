@@ -1,64 +1,79 @@
-# 093 — cross-writer Stage 2
+# 093 — synthetic cross-writer Stage 2
 
-This fixture exists to verify the Stage 2 canonicalizer treats
-semantically equivalent OOXML produced by **different writers** as
-equal. Today every other Stage 2 fixture has its `expected.xlsx`
-written by ExcelJS, the same library that produces the actual
-output, so the cross-writer claim is asserted but not exercised.
+This fixture verifies the Stage 2 canonicalizer normalizes a set of
+semantically equivalent OOXML serialization differences. Today every
+other Stage 2 fixture has its `expected.xlsx` written by ExcelJS,
+the same library that produces the actual output, so the
+cross-writer claim is asserted but not exercised. This fixture
+inserts a small adversarial step:
 
-ADR-0006 amendment lists the gap items this fixture is expected to
-surface once exercised:
+1. The build script writes `template.xlsx` and `data.xlsx`.
+2. The maintainer captures the engine's output as
+   `expected-engine.xlsx`.
+3. `conformance/scripts/perturb-xlsx.mjs` rewrites that file,
+   producing `expected.xlsx` whose OOXML differs byte-for-byte from
+   the engine's output but is semantically identical.
 
-- Default attribute equivalence (`applyFont="0"` vs omitted)
-- Color hex case (`FF000000` vs `ff000000`)
-- Namespace prefix bindings
+Stage 2 passing means the canonicalizer normalizes every difference
+the perturbation introduces.
 
-## Why this fixture is currently skipped
+## What the perturbation exercises
 
-`expected.xlsx` is missing — the fixture's `meta.yaml` carries a
-`skip_reason` so the runner reports it as `skip` rather than
-`fail`. Once a maintainer supplies an Excel-authored expected file
-(see workflow below), the `skip_reason` is removed and the fixture
-joins the regular Stage 2 corpus.
+Per `conformance/runner-protocol.md` "Stage 2 output comparison":
 
-## Workflow to upgrade the fixture
+- **Rule 1** — file order within the zip is reversed.
+- **Rule 3** — attributes within each XML element are reverse-sorted
+  (vs. canonicalizer's alphabetical sort), and quote style is
+  flipped between `"` and `'` on alternating attributes.
 
-1. Run `node conformance/scripts/build-fixtures.mjs 093` to produce
-   `template.xlsx` and `data.xlsx`.
-2. Convert the pair through the engine and capture the output:
+A regression in any of these canonicalizer rules will fail this
+fixture loudly under `npm run conformance -- --comparison-stage=2`.
 
-   ```bash
-   node -e "
-   import('./dist/index.js').then(async (m) => {
-     const fs = await import('node:fs/promises');
-     const dir = 'conformance/fixtures/093-stage2-excel-authored-expected';
-     const tpl = await fs.readFile(\`\${dir}/template.xlsx\`);
-     const data = await fs.readFile(\`\${dir}/data.xlsx\`);
-     const out = await m.convert(tpl, data);
-     await fs.writeFile(\`\${dir}/expected-engine.xlsx\`, Buffer.from(out[0].data));
-   });
-   "
-   ```
+## What this fixture does NOT exercise
 
-3. Open `expected-engine.xlsx` in **Microsoft Excel** (or
-   LibreOffice / Numbers).
-4. Save it back to disk as `expected.xlsx` (use "Save As" so Excel's
-   serializer rewrites the OOXML; do not `Save` over the engine
-   file, which would keep the existing bytes).
-5. Remove the `skip_reason` line from `meta.yaml`.
-6. Run `npm run conformance -- --comparison-stage=2`. The fixture
-   either passes (canonicalizer accepts both writers' output as
-   equivalent) or fails with a concrete diff — that diff is the gap
-   item to extend the canonicalizer with.
+ADR-0006 amendment lists three gap items the canonicalizer does not
+yet normalize. A real Microsoft Excel save would expose them; the
+synthetic perturbation does not generate any of these because the
+engine's output never contains them in the first place:
 
-## What "passing" means here
+- Default attribute equivalence (`applyFont="0"` vs omitted).
+- Color hex case (`FF000000` vs `ff000000`).
+- Namespace prefix bindings.
 
-Stage 1 passes if cell values match. Stage 2 passes if every part
-in the canonicalized OOXML package matches byte-for-byte. A new gap
-item exposed by this fixture should drive a paired update to:
+To upgrade this fixture into a true cross-writer test:
 
-- The canonicalizer in `src/conformance-runner.ts`.
-- The "Stage 2 output comparison" rules in
-  `conformance/runner-protocol.md`.
-- The ADR-0006 amendment, removing the gap item from the
-  "treated as differences" list.
+1. Install LibreOffice or open `expected-engine.xlsx` in Microsoft
+   Excel.
+2. Save As `expected.xlsx` (do NOT overwrite — Excel must rewrite
+   the OOXML through its own serializer).
+3. Re-run `npm run conformance -- --comparison-stage=2`. Either:
+   - It passes → cross-writer parity confirmed for this template;
+     update meta.yaml to drop `verified_by: [synthetic-perturbation]`
+     in favor of `verified_by: [excel-saved]`.
+   - It fails with a concrete diff → the diff is the gap item to
+     extend the canonicalizer with. Pair the fix with an update to
+     the ADR-0006 amendment list and the runner protocol's rules.
+
+## Regenerating the perturbation
+
+```bash
+# (after a build script change that affects 093 template/data)
+node conformance/scripts/build-fixtures.mjs 093
+
+# Capture the engine output:
+node -e "
+import('./dist/index.js').then(async (m) => {
+  const fs = await import('node:fs/promises');
+  const dir = 'conformance/fixtures/093-stage2-excel-authored-expected';
+  const tpl = await fs.readFile(\`\${dir}/template.xlsx\`);
+  const data = await fs.readFile(\`\${dir}/data.xlsx\`);
+  const out = await m.convert(tpl, data);
+  await fs.writeFile(\`\${dir}/expected-engine.xlsx\`, Buffer.from(out[0].data));
+});
+"
+
+# Apply the perturbation:
+node conformance/scripts/perturb-xlsx.mjs \
+  conformance/fixtures/093-stage2-excel-authored-expected/expected-engine.xlsx \
+  conformance/fixtures/093-stage2-excel-authored-expected/expected.xlsx
+```

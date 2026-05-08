@@ -96,6 +96,14 @@ real fixture surfaces a non-volatile case. When that happens, expand
 the canonicalizer + the runner protocol's rule list together; do not
 silently relax rules in implementations.
 
+Fixture 093 ("synthetic cross-writer Stage 2") exercises rules 1 and
+3 by perturbing the engine's own output (attribute order, quote
+style, zip entry order) and asserting the canonicalizer normalizes
+the difference. This is not a substitute for a Microsoft Excel save
+— a real third-party writer produces the gap items above which
+this synthetic perturbation does not generate. See
+`conformance/fixtures/093-…/README.md` for the upgrade workflow.
+
 The canonicalizer is **not** a general-purpose XML C14N tool: it does
 not perform DTD/entity resolution, normalize element ordering for
 collections beyond those explicitly noted in the runner protocol, or

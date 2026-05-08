@@ -17,9 +17,14 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   `@source` + `@join` + `@filter` + `@sort` + `XLOOKUP` + cross-source
   `SUM` in one template; catches regressions where individually-
   correct rules interact incorrectly.
-- Cross-writer Stage 2 fixture 093 (scaffold; skipped until a
-  maintainer supplies an Excel-authored `expected.xlsx`); see
-  `conformance/fixtures/093-.../README.md` for the upgrade workflow.
+- Synthetic cross-writer Stage 2 fixture 093: `expected.xlsx` is
+  the engine's output passed through
+  `conformance/scripts/perturb-xlsx.mjs`, which reverses zip entry
+  order, reverse-sorts XML attributes, and flips quote style on
+  alternating attributes. Stage 2 passes only if the canonicalizer
+  normalizes all of these (rules 1 and 3 in the runner protocol).
+  The fixture's README documents the path to upgrade it into a true
+  Excel-authored cross-writer test.
 - CI matrix runs the conformance suite under three timezones
   (UTC, America/New_York, Asia/Seoul) so date-handling regressions
   fail at PR time. Available locally as `npm run conformance:tz`.
