@@ -466,13 +466,39 @@ Style preservation does not override value semantics. For example, a string retu
 
 The following conditions are errors:
 
-- Referencing a source column that does not exist.
-- Referencing a list sheet that does not exist.
+- Referencing a source column that does not exist (`xl3/source/unknown-column`).
+- Referencing a source not declared in `__sources__` (`xl3/source/undeclared`).
+- Referencing a list inside `__lists__` that does not exist
+  (`xl3/lists/missing-reference`).
 - Using an invalid directive.
 - Using an invalid `source_table`.
 - Using empty or duplicate source column names.
-- Failing to coerce a single-expression cell value to its template cell format.
-- Producing an invalid output filename after sanitization rules are applied.
-- Calling `ROW()` outside a repeat block.
+- Author-created sheets matching the reserved dunder pattern
+  `^__[a-z]+__$` (per ADR-0011, `xl3/sheet/reserved-name`).
+- Referencing the `__sources__` declaration sheet as a value
+  dictionary (e.g., `__sources__[Customers]`,
+  `xl3/sources/not-a-dictionary`); use the source name directly.
+- Failing to coerce a single-expression cell value to its template
+  cell format (`xl3/cell/numfmt-coercion`).
+- Producing an invalid output filename after sanitization rules are
+  applied (`xl3/filename/empty`, `xl3/filename/too-long`).
+- Calling `ROW()` outside a repeat block (`xl3/cell/row-outside-repeat`).
+- Source formula cells without cached results (`xl3/cell/formula-no-cache`).
+- Missing required `__inputs__` (`xl3/inputs/missing-required`),
+  invalid input value, or `select` value not in `options`
+  (see ADR-0010 for the full input error catalog).
+- XLOOKUP with no match and no fallback (`xl3/xlookup/no-match`),
+  bare-bracket arg (`xl3/xlookup/bare-bracket`), or source-mismatched
+  arrays (`xl3/xlookup/source-mismatch`).
+- `@join` referencing an undeclared source
+  (`xl3/join/undeclared-source`) or a malformed `on` clause
+  (`xl3/join/bad-on-clause`).
+- Row-level reference to a non-active source's column
+  (`xl3/source/row-cross-block`).
+
+Per ADR-0015, every spec-defined error carries a stable `error.code`
+of the form `xl3/<category>/<id>`. Hosts use the code for
+localization and programmatic dispatch; the English `Error.message`
+remains the conformance contract.
 
 Implementations MAY provide warnings for non-fatal portability issues, but warnings MUST NOT change output semantics.

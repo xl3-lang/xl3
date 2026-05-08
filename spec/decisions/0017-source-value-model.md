@@ -4,6 +4,7 @@
 - **Date:** 2026-05-08
 - **Spec target:** XTL 0.1 draft
 - **Affects:** evaluation.md, language.md, ADR-0009
+- **Extends:** [ADR-0009](./0009-comparison-and-string-coercion.md) — closes the deferred Date canonical string form and adds the Date timestamp branch to the comparison algorithm. Read together as the comparison/value-model contract.
 
 ## Context
 
@@ -118,6 +119,24 @@ in `&` concatenation; a Date for 2026-05-08 09:30:00 renders as
 
 This form supersedes the "implementation-defined" wording in
 ADR-0009 §"Canonical string form".
+
+**Timezone (normative).** Implementations MUST extract date
+components in **UTC** (e.g., `getUTCFullYear`, `getUTCMonth`,
+`getUTCDate`, …). Excel cells store timezone-naive serial dates;
+ExcelJS and similar libraries expose them as `Date` objects anchored
+at UTC midnight. Using local-timezone accessors introduces
+off-by-one drift in any non-UTC host, breaking the conformance
+contract.
+
+The same UTC discipline applies to:
+- The `TEXT()` function when its target is a date.
+- `TODAY()`, which returns "today in UTC". Hosts that need
+  locale-specific dates compute them outside the engine and pass
+  them via `__inputs__`/`__config__`.
+- String-to-Date coercion (ADR-0003 numFmt path): a string like
+  `"2026-05-08"` MUST coerce to UTC midnight, not local midnight.
+- Excel-serial-to-Date conversion: the resulting `Date` MUST round-
+  trip to the same `YYYY-MM-DD` regardless of host TZ.
 
 ### Error sentinels read as empty
 

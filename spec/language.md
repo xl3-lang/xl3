@@ -93,6 +93,15 @@ The canonical string form of a value is:
   (`00:00:00`); otherwise `YYYY-MM-DDTHH:mm:ss`. (Defined by
   ADR-0017; previously deferred from ADR-0009.)
 
+  Date components MUST be read in UTC. Excel cells store
+  timezone-naive serial dates that ExcelJS and similar libraries
+  return as UTC-anchored `Date` objects; using local-timezone
+  accessors (`getFullYear`, `getMonth`, `getDate`) introduces
+  off-by-one drift on any non-UTC host. Hosts that need a
+  timezone-aware date (e.g., a "today in Seoul" filename token)
+  should compute it outside the renderer and pass it through
+  `__inputs__` or `__config__`.
+
 Non-finite numbers (`NaN`, `Infinity`, `-Infinity`) MUST NOT arise from
 spec-conformant operations. If they appear, they stringify to `""`.
 
@@ -111,7 +120,11 @@ Comparison operators apply, in order:
    tolerance MUST round explicitly via `ROUND()`.
 4. If both operands are Booleans, compare as values with `false`
    ordered before `true`.
-5. Otherwise, compare canonical string forms using Unicode code-point
+5. If both operands are dates, compare by their underlying timestamp.
+   This captures the case where one operand is a midnight-only
+   `YYYY-MM-DD` and the other is a datetime — they would otherwise
+   compare as different canonical strings.
+6. Otherwise, compare canonical string forms using Unicode code-point
    order. No locale-aware collation is applied.
 
 ### `&` concatenation
@@ -249,11 +262,13 @@ Directives are written as template expressions, usually in rows immediately abov
 
 ```text
 {{ @filter [Status] = "Open" }}
-{{ @filter [Customer] in _IncludedCustomers }}
-{{ @filter [Category] !in _ExcludedCategories }}
+{{ @filter [Customer] in __lists__[IncludedCustomers] }}
+{{ @filter [Category] !in __lists__[ExcludedCategories] }}
 {{ @sort [total] desc }}
 {{ @top 10 }}
 {{ @repeat right 3 }}
+{{ @source Renewals }}
+{{ @join Customers on Customers[Account] = Renewals[Account] }}
 ```
 
 Directive names and sort directions are case-insensitive.
@@ -277,7 +292,10 @@ in
 !in
 ```
 
-`in` and `!in` require a list sheet reference such as `_IncludedCustomers`.
+`in` and `!in` require a list reference of the form
+`__lists__[<name>]` (per ADR-0011), where `<name>` is the column header
+inside the reserved `__lists__` sheet. The legacy `_<name>` list-sheet
+form is retired.
 
 ### Sort
 
@@ -311,6 +329,42 @@ Keeps the first N rows after filters and sorts.
 ```
 
 Repeats the detected data block horizontally. The optional number is the column span per repeated record; when omitted, the column span is `1`.
+
+### Source
+
+```text
+@source <SourceName>
+```
+
+Scopes the surrounding data block to the named source declared in
+`__sources__` (per ADR-0012). Inside the block, the bracket shorthand
+`[Column]` resolves to the active source's row, and aggregates over
+`Source[Column]` work as before. Without `@source`, the active source
+is the default `source_sheet` configured in `__config__`.
+
+Referencing an undeclared source is an error. Referencing a column
+that is not declared in the source's headers is an error
+(`xl3/source/unknown-column`); silent fallthrough to empty would mask
+typos.
+
+### Join
+
+```text
+@join <JoinedSource> on <JoinedSource>[<key>] = <PrimarySource>[<key>]
+```
+
+Pairs each primary row of a `@source` block with the first matching
+row from `<JoinedSource>` (per ADR-0014, inner-join semantics, first
+match). Unmatched primary rows are dropped. Inside the block,
+`<PrimarySource>[Column]` and the bare `[Column]` resolve to the
+primary row; `<JoinedSource>[Column]` resolves to the paired joined
+row. Multiple `@join` clauses, left-join semantics, and multi-row
+matches are out of scope for XTL 0.1.
+
+Both sides of the `on` clause MUST be source-prefixed bracket
+references; one side MUST name `<JoinedSource>` and the other
+`<PrimarySource>`. Either source being undeclared in `__sources__`,
+or a malformed `on` clause, is an error.
 
 ## Group Keys
 

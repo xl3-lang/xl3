@@ -4,6 +4,7 @@
 - **Date:** 2026-05-07
 - **Spec target:** XTL 0.1 draft
 - **Affects:** language.md, evaluation.md
+- **Extended-By:** [ADR-0017](./0017-source-value-model.md) — closes the deferred Date canonical string form (`YYYY-MM-DD` / `YYYY-MM-DDTHH:mm:ss`, UTC accessors) and adds the Date branch to the comparison algorithm. Read the two ADRs together as the comparison/value-model contract.
 
 ## Context
 

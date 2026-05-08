@@ -153,6 +153,51 @@ Use `source_table = N` for the common case where row `N` contains the raw
 column names. Use a range form when the table starts in a later column or needs
 a bounded end row.
 
+### Reserved sheets
+
+Templates use four reserved dunder-wrapped sheets (per ADR-0011):
+
+| Sheet | Purpose |
+|---|---|
+| `__config__` | author-defined configuration and value dictionary; access via `{{ __config__[name] }}` |
+| `__inputs__` | per-run host-supplied values (ADR-0010); declared with `name`/`type`/`default`/`label`/`description`/`options` columns |
+| `__sources__` | additional named data sources beyond the default `source_sheet` (ADR-0012); declared with `name`/`sheet`/`table`/`description` columns |
+| `__lists__` | membership lists for `@filter [field] in __lists__[name]` |
+
+Author sheets matching `^__[a-z]+__$` are reserved and rejected at parse time.
+
+### Multi-source data
+
+Beyond the default `source_sheet`, templates can declare named sources in
+`__sources__` and reference them with the Excel structured-ref form:
+
+```text
+{{ Customers[Account] }}
+{{ SUM(Renewals[Amount]) }}
+{{ XLOOKUP([Account], Customers[Account], Customers[Name]) }}
+```
+
+`@source <Name>` scopes a data block so the bare bracket shorthand
+(`[Column]`) resolves against `<Name>` instead of the default. `@join`
+pairs primary rows with rows from a second source by key (inner-join,
+first-match). See [`spec/language.md`](./spec/language.md) for full
+directive syntax.
+
+### Runtime inputs
+
+Templates that need per-run values (a target month, a customer
+filter, a label) declare them in `__inputs__` and the host passes
+them to `convert(...)`:
+
+```ts
+await convert(templateBuffer, dataBuffer, {
+  inputs: { month: '2026-05', region: 'Seoul' },
+});
+```
+
+Inputs flow into cells (`{{ __inputs__[month] }}`), filename patterns,
+and group keys.
+
 ## Spec
 
 The XTL spec is language-neutral and lives in [`spec/`](./spec). This repo provides the TypeScript reference implementation. Other-language ports are welcome — see [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md).

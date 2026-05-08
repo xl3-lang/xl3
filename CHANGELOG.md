@@ -6,6 +6,28 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Date timezone correctness (ADR-0017).** All Date component
+  extraction now uses UTC accessors so the canonical-string form
+  (`YYYY-MM-DD`) round-trips identically on any host timezone.
+  Previously `getFullYear`/`getMonth`/`getDate` introduced an
+  off-by-one drift on non-UTC hosts. The fix touches `canonicalString`,
+  `formatDate`, `today()`, `toDate()`, the renderer's strict-date
+  parser, the Excel-serial-to-Date conversion, and `__inputs__` date
+  validation. ADR-0017 now states UTC as normative.
+- **`__sources__` value-dictionary leak.** `{{ __sources__[Customers] }}`
+  used to leak the internal source descriptor; it now errors with
+  `xl3/sources/not-a-dictionary`.
+- **Unknown-column silent fail.** `Source[Column]` /
+  `SUM(Source[Column])` / `XLOOKUP(...)` /  bare `[Column]` referencing
+  an undeclared column previously aggregated to 0 / blank, masking
+  typos. They now error with `xl3/source/unknown-column`. Conformance
+  fixture 091 covers the SUM path.
+- **Aux-sheet cleanup.** `removeAuxiliarySheets` matched only
+  `_`-prefixed names; it now matches the dunder pattern from ADR-0011
+  so reserved sheets don't leak into output.
+
 ### Added
 
 - Error code coverage completed across the impl. Every spec-defined

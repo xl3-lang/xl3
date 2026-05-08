@@ -1,9 +1,10 @@
 # ADR 0010 - Runtime user inputs
 
-- **Status:** accepted (sheet renamed by ADR-0011)
+- **Status:** accepted; sheet name and reference syntax superseded by ADR-0011
 - **Date:** 2026-05-07
 - **Spec target:** XTL 0.1 draft
 - **Affects:** evaluation.md, language.md
+- **Superseded-By (partial):** [ADR-0011](./0011-reserved-sheet-naming.md) — renames the reserved sheet to `__inputs__` and replaces `{{ _<name> }}` with `{{ __inputs__[name] }}`. Semantics, the type system, host API, and error catalog from this ADR remain authoritative.
 
 > **Note (2026-05-07):** ADR-0011 renamed the reserved sheet `_inputs`
 > → `__inputs__` and replaced the `{{ _<name> }}` cell-reference

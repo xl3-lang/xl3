@@ -56,6 +56,15 @@ primary row's join-column value (per ADR-0009 comparison). If no
 match is found, the primary row is **dropped** from rendering (inner
 semantics).
 
+"First" is defined by the joined source's natural row order — the
+order rows appear in the joined source's `source_table` range (per
+ADR-0016 ordering, top-to-bottom). This is normative, not
+implementation-defined: two implementations given the same
+template+data MUST pick the same paired row when multiple joined
+rows have an equal join key. Templates that depend on a specific
+match SHOULD ensure join keys are unique on the joined side or sort
+the joined source upstream.
+
 `@join` operates on the joined source's full row set; it ignores any
 `@filter`/`@sort`/`@top` directives on the current block (which apply
 to the primary).
