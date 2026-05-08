@@ -1,0 +1,5 @@
+description: Composed shape — @source + @join + @filter + @sort + XLOOKUP + cross-source SUM in one template; catches regressions in the interaction between individually-correct rules.
+spec_section: composes ADR-0012/0013/0014/0016/0017
+spec_version: "0.1"
+tags: [composition, sources, join, filter, sort, xlookup, aggregate]
+verified_by: [hand]

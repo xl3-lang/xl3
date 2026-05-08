@@ -6,7 +6,37 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Added
+
+- `examples/` directory with three production-shaped templates
+  (basic renewal report, sheet-per-region with list-filter,
+  multi-source `@source` + `@join` + XLOOKUP + `__inputs__`). New
+  npm scripts `examples:build` / `examples:run` and a vitest
+  integration test pin them in CI.
+- Composition conformance fixture 092 exercising
+  `@source` + `@join` + `@filter` + `@sort` + `XLOOKUP` + cross-source
+  `SUM` in one template; catches regressions where individually-
+  correct rules interact incorrectly.
+- Cross-writer Stage 2 fixture 093 (scaffold; skipped until a
+  maintainer supplies an Excel-authored `expected.xlsx`); see
+  `conformance/fixtures/093-.../README.md` for the upgrade workflow.
+- CI matrix runs the conformance suite under three timezones
+  (UTC, America/New_York, Asia/Seoul) so date-handling regressions
+  fail at PR time. Available locally as `npm run conformance:tz`.
+- 1.0 readiness tests — error-code catalog snapshot (ADR-0015),
+  public API surface snapshot, and a spec-corpus lint that catches
+  orphan ADRs and broken spec/ markdown links.
+
 ### Fixed
+
+- Header cells containing only `SUM(Source[col])` /
+  `XLOOKUP(..., Source[a], Source[b])` no longer trigger a data
+  block. The previous `isDataExpression` heuristic detected any
+  `Source[Field]` reference as iterating, so static-context
+  aggregates / lookups in a header row were re-rendered once per
+  data row. Source-prefixed brackets wrapped in
+  `SUM`/`AVERAGE`/`AVG`/`MIN`/`MAX`/`COUNT`/`XLOOKUP` are now
+  treated as static.
 
 - **Date timezone correctness (ADR-0017).** All Date component
   extraction now uses UTC accessors so the canonical-string form

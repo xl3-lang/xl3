@@ -5042,6 +5042,125 @@ async function build090() {
 }
 
 // ---------------------------------------------------------------------------
+// 092 - composed-shape (multi-source + @join + @filter + @sort + XLOOKUP)
+//
+// Concept: a single fixture exercising the combination shape that
+// real reports use — one source iterated, another joined, the active
+// block filtered + sorted, plus a separate XLOOKUP and a SUM
+// aggregate over the full source row set. Catches regressions where
+// individual rules are correct but interact incorrectly.
+// Spec section: composes ADR-0012/0013/0014/0016/0017.
+// ---------------------------------------------------------------------------
+async function build092() {
+  const dir = join(FIXTURES, '092-composed-multi-source-join-filter-sort');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'composed-multi-source'],
+      ['source_sheet', 'Renewals'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'composed.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'Renewals', sheet: 'Renewals', table: '1' },
+      { name: 'Customers', sheet: 'Customers', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    // Static header row also carries a static-cell XLOOKUP and a
+    // cross-source SUM, so the fixture exercises both row-context
+    // joined references AND static-context cross-source aggregates
+    // and lookups in one template.
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Owner';
+    sh.getCell('C1').value = 'Region';
+    sh.getCell('D1').value = 'Amount';
+    sh.getCell('E1').value = 'Tier';
+    sh.getCell('F1').value = '{{ SUM(Renewals[Amount]) }}';
+    sh.getCell('G1').value = '{{ XLOOKUP("Coreon", Customers[Account], Customers[Owner], "(unknown)") }}';
+    sh.getCell('A2').value = '{{ @source Renewals }}';
+    sh.getCell('A3').value = '{{ @join Customers on Customers[Account] = Renewals[Account] }}';
+    sh.getCell('A4').value = '{{ @filter [Amount] > 5000 }}';
+    sh.getCell('A5').value = '{{ @sort [Amount] desc }}';
+    sh.getCell('A6').value = '{{ Renewals[Account] }}';
+    sh.getCell('B6').value = '{{ Customers[Owner] }}';
+    sh.getCell('C6').value = '{{ Customers[Region] }}';
+    sh.getCell('D6').value = '{{ Renewals[Amount] }}';
+    sh.getCell('E6').value = '{{ IF(Renewals[Amount] > 15000, "Priority", "Standard") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Account';
+    cust.getCell('B1').value = 'Owner';
+    cust.getCell('C1').value = 'Region';
+    [
+      ['Acme', 'Mina', 'Seoul'],
+      ['Beta', 'Joon', 'Busan'],
+      ['Coreon', 'Hana', 'Seoul'],
+      ['Delta', 'Sora', 'Daegu'],
+    ].forEach(([a, o, r], i) => {
+      cust.getCell(`A${i + 2}`).value = a;
+      cust.getCell(`B${i + 2}`).value = o;
+      cust.getCell(`C${i + 2}`).value = r;
+    });
+
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('B1').value = 'Amount';
+    [
+      ['Acme', 18400],
+      ['Beta', 7200],
+      ['Coreon', 22500],
+      ['Delta', 4900],     // filtered out by Amount > 5000
+      ['Foxtrot', 9000],   // dropped by inner join (no Foxtrot in Customers)
+    ].forEach(([a, am], i) => {
+      ren.getCell(`A${i + 2}`).value = a;
+      ren.getCell(`B${i + 2}`).value = am;
+    });
+
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — after @join (drops Foxtrot) + @filter (drops
+  // Delta) + @sort desc: Coreon 22500, Acme 18400, Beta 7200.
+  // SUM(Renewals[Amount]) at F1 = 18400+7200+22500+4900+9000 = 62000
+  // XLOOKUP("Coreon", …) at G1 = "Hana"
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Owner';
+    sh.getCell('C1').value = 'Region';
+    sh.getCell('D1').value = 'Amount';
+    sh.getCell('E1').value = 'Tier';
+    sh.getCell('F1').value = 62000;
+    sh.getCell('G1').value = 'Hana';
+    sh.getCell('A2').value = 'Coreon';
+    sh.getCell('B2').value = 'Hana';
+    sh.getCell('C2').value = 'Seoul';
+    sh.getCell('D2').value = 22500;
+    sh.getCell('E2').value = 'Priority';
+    sh.getCell('A3').value = 'Acme';
+    sh.getCell('B3').value = 'Mina';
+    sh.getCell('C3').value = 'Seoul';
+    sh.getCell('D3').value = 18400;
+    sh.getCell('E3').value = 'Priority';
+    sh.getCell('A4').value = 'Beta';
+    sh.getCell('B4').value = 'Joon';
+    sh.getCell('C4').value = 'Busan';
+    sh.getCell('D4').value = 7200;
+    sh.getCell('E4').value = 'Standard';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 091 - source-unknown-column-error
 //
 // Concept: a Source[Column] reference where the column is not declared
@@ -5086,6 +5205,81 @@ async function build091() {
   }
 
   // No expected.xlsx — meta.yaml asserts expected_error.
+}
+
+// ---------------------------------------------------------------------------
+// 093 - stage2-excel-authored-expected (scaffold; pending)
+//
+// Concept: Stage 2 canonicalization is meant to compare semantically
+// equivalent OOXML across writers (ExcelJS, Microsoft Excel,
+// LibreOffice). Today every Stage 2 fixture's `expected.xlsx` is
+// also written by ExcelJS, so the cross-writer claim is not actually
+// tested. This fixture scaffolds the workflow:
+//
+//   1. The build script produces `template.xlsx` and `data.xlsx`.
+//   2. It runs the engine and writes the engine's output as
+//      `expected-engine.xlsx` (committed as a transparent baseline).
+//   3. To upgrade this to a true cross-writer test, a maintainer
+//      opens `expected-engine.xlsx` in Microsoft Excel (or
+//      LibreOffice) and saves it as `expected.xlsx`. Then the
+//      `skip_reason` is removed from meta.yaml.
+//
+// Until step 3 lands, the fixture is skipped by the runner; running
+// it is non-fatal but produces no signal. ADR-0006 amendment lists
+// the gap items (default-attribute equivalence, color hex case,
+// namespace prefix bindings) that this fixture is expected to
+// surface once exercised.
+// ---------------------------------------------------------------------------
+async function build093() {
+  const dir = join(FIXTURES, '093-stage2-excel-authored-expected');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — exercises styles + merges + a numFmt-formatted
+  // numeric cell so cross-writer drift has surface area to hit.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'stage2-excel-authored-expected'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Quarterly summary';
+    sh.mergeCells('A1:C1');
+    sh.getCell('A1').font = { bold: true, size: 14 };
+    sh.getCell('A1').alignment = { horizontal: 'center' };
+    sh.getCell('A3').value = 'Account';
+    sh.getCell('B3').value = 'Amount';
+    sh.getCell('C3').value = 'Tier';
+    sh.getRow(3).font = { bold: true };
+    sh.getCell('A4').value = '{{ [Account] }}';
+    sh.getCell('B4').value = '{{ [Amount] }}';
+    sh.getCell('B4').numFmt = '#,##0';
+    sh.getCell('C4').value = '{{ IF([Amount] > 10000, "Priority", "Standard") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Amount';
+    [
+      ['Acme', 18400],
+      ['Beta', 7200],
+      ['Coreon', 22500],
+    ].forEach(([a, am], i) => {
+      sh.getCell(`A${i + 2}`).value = a;
+      sh.getCell(`B${i + 2}`).value = am;
+    });
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // The fixture's expected.xlsx is intentionally NOT generated here.
+  // A maintainer supplies a real Excel-authored file (see README in
+  // the fixture directory). The build script does not overwrite it.
 }
 
 const builders = [
@@ -5180,6 +5374,8 @@ const builders = [
   ['089', build089],
   ['090', build090],
   ['091', build091],
+  ['092', build092],
+  ['093', build093],
 ];
 
 const selected = new Set(process.argv.slice(2));

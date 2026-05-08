@@ -198,6 +198,13 @@ await convert(templateBuffer, dataBuffer, {
 Inputs flow into cells (`{{ __inputs__[month] }}`), filename patterns,
 and group keys.
 
+## Examples
+
+Three production-shaped templates live in [`examples/`](./examples):
+basic renewal report, sheet-per-region with list-filter, and a
+multi-source join with runtime inputs. Run them with
+`npm run examples:build && npm run examples:run`.
+
 ## Spec
 
 The XTL spec is language-neutral and lives in [`spec/`](./spec). This repo provides the TypeScript reference implementation. Other-language ports are welcome — see [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md).

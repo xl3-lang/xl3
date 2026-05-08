@@ -15,15 +15,34 @@ const SOURCE_BRACKET_RE = /^([A-Za-z][A-Za-z0-9_]*)\[([^\]\r\n]+)\]$/;
 const GO_KEYWORDS = ['else', 'end', 'define ', 'template ', 'block '];
 const EXCEL_AGGREGATE_NAMES = new Set(['SUM', 'AVERAGE', 'AVG', 'MIN', 'MAX']);
 
+// Function names whose top-level call shape always operates over a
+// source's full row set, never over the current iterating row. Cells
+// whose expression is exactly such a call are static (they do not
+// start a data block) even when their args contain `Source[Column]`
+// references.
+const STATIC_CONTEXT_CALLS = new Set([
+  'SUM', 'AVERAGE', 'AVG', 'MIN', 'MAX', 'COUNT', 'XLOOKUP',
+]);
+
 export function isDataExpression(expr: string): boolean {
-  // Bare `[Field]` not preceded by a word char (excludes `__sheet__[key]`).
+  // A "data expression" is one whose value depends on the current
+  // iterating row of a data block. Two shapes qualify:
+  //
+  // 1. A bare `[Field]` reference — always iterates the active source.
+  //    The leading non-word boundary excludes `__sheet__[key]` and
+  //    `Source[key]` matches.
   if (HAS_BRACKET_FIELD_RE.test(expr)) return true;
-  // ADR-0012: `Source[Field]` where Source starts with a letter and
-  // is not preceded by a word char. The boundary check excludes
-  // matches inside `__sheet__[key]` like `inputs__[` within
-  // `__inputs__[month]`.
-  if (/(?<!\w)[A-Za-z]\w*\[[^\]\r\n]+\]/.test(expr)) return true;
-  return false;
+  //
+  // 2. A `Source[Field]` reference NOT wrapped in a static-context
+  //    call (aggregate or XLOOKUP). Inside an `@source Source` block,
+  //    `{{ Source[Column] }}` resolves to the current row — that's a
+  //    data expression. Inside a header / footer cell that just calls
+  //    `SUM(Source[Column])` or `XLOOKUP("k", Source[a], Source[b])`,
+  //    the brackets feed a full-row-set call and the cell is static.
+  if (!/(?<!\w)[A-Za-z]\w*\[[^\]\r\n]+\]/.test(expr)) return false;
+  const call = parseFunctionCall(expr.trim());
+  if (call && STATIC_CONTEXT_CALLS.has(call.name.toUpperCase())) return false;
+  return true;
 }
 
 export function isAggregateExpression(expr: string): boolean {

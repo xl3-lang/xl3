@@ -1,0 +1,7 @@
+description: Cross-writer Stage 2 — verifies the canonicalizer treats semantically equivalent OOXML produced by Microsoft Excel / LibreOffice as equal to ExcelJS output.
+spec_section: ADR-0006 amendment "canonicalizer scope and gaps"
+spec_version: "0.1"
+tags: [stage2, canonicalization, cross-writer]
+comparison_stage: 2
+verified_by: [pending-cross-writer-author]
+skip_reason: "pending Excel-authored expected.xlsx — see fixtures/093-stage2-excel-authored-expected/README.md"
