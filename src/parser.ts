@@ -169,11 +169,42 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
         } else {
           // Attach to current block or pending
           if (currentBlock) {
+            // ADR-0029: at most one `@source` and one `@join` per
+            // data block. Repeats indicate either a typo or a request
+            // for a feature that is intentionally out of scope (per
+            // ADR-0014 multi-join is deferred to 1.x).
+            if (directive.kind === 'source' && currentBlock.directives.some((d) => d.kind === 'source')) {
+              throw xtlError(
+                'xl3/directive/invalid-syntax',
+                `Duplicate @source directive in the same data block. Each block may declare at most one active source.`,
+              );
+            }
+            if (directive.kind === 'join' && currentBlock.join) {
+              throw xtlError(
+                'xl3/directive/invalid-syntax',
+                `Duplicate @join directive in the same data block. Multi-join is intentionally out of scope for XTL 0.x (ADR-0014).`,
+              );
+            }
             currentBlock.directives.push(directive);
             currentBlock.directiveRows.push(rowNumber);
             if (directive.kind === 'source') currentBlock.source = directive.name;
             if (directive.kind === 'join') currentBlock.join = directive;
           } else {
+            // ADR-0029: same duplicate check applied to pending
+            // directives — a block hasn't started yet, but two
+            // `@source` lines back-to-back are still a duplicate.
+            if (directive.kind === 'source' && pendingDirectives.some((d) => d.kind === 'source')) {
+              throw xtlError(
+                'xl3/directive/invalid-syntax',
+                `Duplicate @source directive in the same data block. Each block may declare at most one active source.`,
+              );
+            }
+            if (directive.kind === 'join' && pendingDirectives.some((d) => d.kind === 'join')) {
+              throw xtlError(
+                'xl3/directive/invalid-syntax',
+                `Duplicate @join directive in the same data block. Multi-join is intentionally out of scope for XTL 0.x (ADR-0014).`,
+              );
+            }
             pendingDirectives.push(directive);
             pendingDirectiveRows.push(rowNumber);
           }
@@ -317,6 +348,16 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
           throw xtlError(
             'xl3/join/bad-on-clause',
             `@join key columns must reference the joined and primary sources (block source is "${block.source}", on-clause primary is "${j.primarySource}")`,
+          );
+        }
+        // ADR-0029: self-join (joined source same as primary) is
+        // intentionally out of scope for XTL 0.x. Tree / hierarchy
+        // joins need different semantics (recursive resolution,
+        // multiple matches per row) that ADR-0014 does not specify.
+        if (j.joinedSource === j.primarySource) {
+          throw xtlError(
+            'xl3/join/bad-on-clause',
+            `@join cannot reference the same source on both sides ("${j.joinedSource}"). Self-joins are intentionally out of scope for XTL 0.x.`,
           );
         }
       }

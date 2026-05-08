@@ -5114,6 +5114,184 @@ async function build096() {
 }
 
 // ---------------------------------------------------------------------------
+// 114 - duplicate-source-directive-error (ADR-0029)
+//
+// Concept: at most one `@source` directive per data block.
+// Spec section: ADR-0029 §"Composition rules".
+// ---------------------------------------------------------------------------
+async function build114() {
+  const dir = join(FIXTURES, '114-duplicate-source-directive-error');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'duplicate-source'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'A', sheet: 'A', table: '1' },
+      { name: 'B', sheet: 'B', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'V';
+    sh.getCell('A2').value = '{{ @source A }}';
+    sh.getCell('A3').value = '{{ @source B }}';
+    sh.getCell('A4').value = '{{ [v] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const dd = wb.addWorksheet('Data'); dd.getCell('A1').value = 'V'; dd.getCell('A2').value = 'd';
+    const da = wb.addWorksheet('A'); da.getCell('A1').value = 'v'; da.getCell('A2').value = 'a';
+    const db = wb.addWorksheet('B'); db.getCell('A1').value = 'v'; db.getCell('A2').value = 'b';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 115 - self-join-error (ADR-0029)
+//
+// Concept: `@join` cannot reference the same source as the active
+// `@source`. Self-joins are out of scope per ADR-0014/0029.
+// Spec section: ADR-0029 §"Composition rules".
+// ---------------------------------------------------------------------------
+async function build115() {
+  const dir = join(FIXTURES, '115-self-join-error');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'self-join'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [
+      { name: 'S', sheet: 'S', table: '1' },
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'X';
+    sh.getCell('A2').value = '{{ @source S }}';
+    sh.getCell('A3').value = '{{ @join S on S[parent] = S[id] }}';
+    sh.getCell('A4').value = '{{ [id] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const dd = wb.addWorksheet('Data'); dd.getCell('A1').value = 'X'; dd.getCell('A2').value = 'd';
+    const ds = wb.addWorksheet('S');
+    ds.getCell('A1').value = 'id'; ds.getCell('B1').value = 'parent';
+    ds.getCell('A2').value = 1; ds.getCell('B2').value = 2;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 116 - function-name-case-insensitive (ADR-0029)
+//
+// Concept: function names are case-insensitive. `if`, `If`, `IF`,
+// and `iF` all resolve to the IF function.
+// Spec section: ADR-0029 §"Function name case-insensitivity";
+// language.md "Functions".
+// ---------------------------------------------------------------------------
+async function build116() {
+  const dir = join(FIXTURES, '116-function-name-case-insensitive');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'fn-case-insensitive'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Upper';
+    sh.getCell('B1').value = 'Lower';
+    sh.getCell('C1').value = 'Mixed';
+    sh.getCell('A2').value = '{{ IF([X] > 0, "pos", "neg") }}';
+    sh.getCell('B2').value = '{{ if([X] > 0, "pos", "neg") }}';
+    sh.getCell('C2').value = '{{ If([X] > 0, "pos", "neg") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'X';
+    sh.getCell('A2').value = 5;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Upper';
+    sh.getCell('B1').value = 'Lower';
+    sh.getCell('C1').value = 'Mixed';
+    sh.getCell('A2').value = 'pos';
+    sh.getCell('B2').value = 'pos';
+    sh.getCell('C2').value = 'pos';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 117 - hidden-source-rows-included (ADR-0029)
+//
+// Concept: source rows with `hidden=true` are included in iteration
+// per ADR-0029 §"Hidden rows in source". Authors filter explicitly
+// via `@filter` if visibility-aware filtering is desired.
+// Spec section: ADR-0029 §"Hidden rows in source".
+// ---------------------------------------------------------------------------
+async function build117() {
+  const dir = join(FIXTURES, '117-hidden-source-rows-included');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'hidden-rows-included'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'V';
+    sh.getCell('A2').value = '{{ [V] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'V';
+    sh.getCell('A2').value = 'r1';
+    sh.getCell('A3').value = 'r2-hidden';
+    sh.getCell('A4').value = 'r3';
+    sh.getRow(3).hidden = true;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'V';
+    sh.getCell('A2').value = 'r1';
+    sh.getCell('A3').value = 'r2-hidden';
+    sh.getCell('A4').value = 'r3';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 112 - literal-signed-number (ADR-0028)
 //
 // Concept: a signed number literal `-N` is valid at parse position
@@ -6314,6 +6492,10 @@ const builders = [
   ['111', build111],
   ['112', build112],
   ['113', build113],
+  ['114', build114],
+  ['115', build115],
+  ['116', build116],
+  ['117', build117],
 ];
 
 const selected = new Set(process.argv.slice(2));
