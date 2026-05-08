@@ -168,6 +168,10 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 084 | `sort-multi-stable-priority` | Multiple `@sort` directives apply with first = primary key, later directives as tiebreakers per ADR-0016. |
 | 085 | `file-group-first-seen-order` | File groups emit in first-seen order over the source rows per ADR-0016. |
 | 086 | `sheet-group-first-seen-order` | Sheet groups within a file emit in first-seen order per ADR-0016. |
+| 087 | `date-canonical-string-concat` | A Date in `&` produces YYYY-MM-DD (midnight) or YYYY-MM-DDTHH:mm:ss per ADR-0017. |
+| 088 | `date-comparison-equality` | Date values compare via canonical string form against a string filter value per ADR-0017. |
+| 089 | `error-sentinel-empty` | Excel error cells (`#N/A`, `#VALUE!`, …) read as empty per ADR-0017. |
+| 090 | `percentage-numeric-flow` | Percentage-formatted cells flow as their underlying Number per ADR-0017 (50% → 0.5). |
 
 ## Status
 

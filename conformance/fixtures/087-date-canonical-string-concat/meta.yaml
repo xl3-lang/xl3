@@ -1,0 +1,5 @@
+description: A Date in `&` concatenation produces YYYY-MM-DD when midnight, YYYY-MM-DDTHH:mm:ss otherwise per ADR-0017.
+spec_section: language.md "Canonical String Form"; ADR-0017
+spec_version: "0.1"
+tags: [language, date, canonical-string]
+verified_by: [hand]

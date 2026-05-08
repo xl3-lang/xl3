@@ -225,11 +225,22 @@ function parseCellValue(cell: ExcelJS.Cell): unknown {
       .join('');
   }
 
+  // ADR-0017: a static error cell (e.g. `=#N/A` typed by the author or
+  // a formula evaluation that produced an error) is treated as empty.
+  if (typeof v === 'object' && 'error' in v) {
+    return '';
+  }
+
   // Formula result
   if (typeof v === 'object' && 'result' in v) {
     const result = (v as { result: unknown }).result;
     if (result === undefined && isFormulaValue(v)) {
       throw new Error(`Formula cell ${cell.address} has no cached result`);
+    }
+    // ADR-0017: a formula cached result that is itself an error
+    // sentinel reads as empty.
+    if (result && typeof result === 'object' && 'error' in result) {
+      return '';
     }
     return result;
   }

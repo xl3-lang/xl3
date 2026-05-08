@@ -20,11 +20,11 @@ export function isTruthy(v: unknown): boolean {
   return true;
 }
 
-// ADR-0009: canonical string form. Empty → "". Boolean → "TRUE"/"FALSE".
-// Number → ECMAScript shortest round-trippable form (Number.prototype.toString
-// matches the spec's range guarantee for 1e-4..1e21). String → itself.
-// Dates are implementation-defined for XTL 0.1; portable templates should
-// not depend on `&` over dates.
+// ADR-0009 / ADR-0017: canonical string form. Empty → "". Boolean →
+// "TRUE"/"FALSE". Number → ECMAScript shortest round-trippable form
+// (Number.prototype.toString matches the spec's range guarantee for
+// 1e-4..1e21). String → itself. Date → YYYY-MM-DD when midnight,
+// otherwise YYYY-MM-DDTHH:mm:ss (ADR-0017).
 export function canonicalString(v: unknown): string {
   if (isEmpty(v)) return '';
   if (typeof v === 'boolean') return v ? 'TRUE' : 'FALSE';
@@ -33,9 +33,20 @@ export function canonicalString(v: unknown): string {
     return String(v);
   }
   if (typeof v === 'string') return v;
-  // Dates: implementation-defined. Fall back to host String() so existing
-  // behavior is observable but not normative.
+  if (v instanceof Date) return canonicalDateString(v);
   return String(v);
+}
+
+function canonicalDateString(d: Date): string {
+  const y = String(d.getFullYear()).padStart(4, '0');
+  const mo = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const h = d.getHours();
+  const mi = d.getMinutes();
+  const s = d.getSeconds();
+  const date = `${y}-${mo}-${dd}`;
+  if (h === 0 && mi === 0 && s === 0) return date;
+  return `${date}T${String(h).padStart(2, '0')}:${String(mi).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 // ADR-0009: shared comparison algorithm used by IF, @filter, and @sort.
@@ -56,6 +67,13 @@ export function compareValues(a: unknown, b: unknown): -1 | 0 | 1 {
   if (typeof a === 'boolean' && typeof b === 'boolean') {
     if (a === b) return 0;
     return a ? 1 : -1;
+  }
+
+  // ADR-0017: two dates compare by their underlying timestamp.
+  if (a instanceof Date && b instanceof Date) {
+    const ta = a.getTime();
+    const tb = b.getTime();
+    return ta < tb ? -1 : ta > tb ? 1 : 0;
   }
 
   const sa = canonicalString(a);

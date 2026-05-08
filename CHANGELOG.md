@@ -8,6 +8,18 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0017 defines the **source value model** normatively. Source
+  values are one of Missing / String / Number / Boolean / Date.
+  Date canonical string form is now `YYYY-MM-DD` (midnight) or
+  `YYYY-MM-DDTHH:mm:ss` (datetime), closing the ADR-0009 deferral.
+  Excel error cells (`#N/A`, `#VALUE!`, `#DIV/0!`, …) read as empty
+  per ADR-0007. Percentage-formatted cells continue to flow as their
+  underlying Number value (50% → `0.5`); use `TEXT()` for formatted
+  output. The reference impl handles `{ error }` cells in
+  `parseCellValue`, extends `canonicalString` for Date, and adds a
+  Date branch to `compareValues`. Conformance fixtures 087–090
+  cover date concatenation, date comparison, error sentinel, and
+  percentage cell flow.
 - ADR-0016 locks down **ordering and sort stability**. `@sort` is
   stable; equal sort keys preserve source order. With multiple
   `@sort` directives, the **first** is the primary key and later

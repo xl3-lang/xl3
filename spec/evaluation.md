@@ -242,6 +242,12 @@ are never empty. Dates are never empty. Non-empty strings are never
 empty. A formula whose cached result is the empty string is empty by
 this rule.
 
+Excel error cells (`#N/A`, `#VALUE!`, `#DIV/0!`, `#REF!`, `#NAME?`,
+`#NUM!`, `#NULL!`) — whether static or carried as a formula cached
+result — are also empty per this rule (ADR-0017). Implementations MAY
+emit a warning when they encounter one; warnings MUST NOT change
+output semantics.
+
 The empty predicate governs every place the spec refers to an empty
 value:
 
@@ -354,6 +360,35 @@ effective text/value:
 - Formula cells are not recalculated by XTL. If the workbook contains a cached
   formula result, that cached result is used. If a formula cell is read as a
   source data value and no cached result is available, this is an error.
+
+## Source Value Model
+
+A source value is one of the following kinds (per ADR-0017):
+
+| Kind | Notes |
+|---|---|
+| Missing | Source column does not exist on this row, or the cell is blank. Empty per [Empty Values](#empty-values). |
+| String | Unicode text. Empty per ADR-0007 only when entirely whitespace. |
+| Number | IEEE 754 double. `NaN` and infinities are not produced by spec-conformant operations; they stringify to `""` and flow as empty. |
+| Boolean | `TRUE` / `FALSE`. |
+| Date | A calendar instant; may or may not carry a time component. |
+
+Excel cell shapes map onto kinds:
+
+| Excel cell | XTL kind |
+|---|---|
+| Blank | Missing |
+| String / inline / shared string | String |
+| Number (incl. dates stored as serials with non-date format) | Number |
+| Date-formatted cell | Date |
+| Boolean | Boolean |
+| Formula with cached result | The result's kind |
+| Error cell (`#N/A`, `#VALUE!`, `#DIV/0!`, …) | Missing (per [Empty Values](#empty-values)) |
+
+A percentage-formatted Excel cell flows as its underlying Number
+value (50% → `0.5`). Templates that need formatted output use
+`TEXT(value, "0%")` (an extension format outside the XTL 0.1 core
+table) or rely on the template cell's number format being preserved.
 
 ## Cell Evaluation
 

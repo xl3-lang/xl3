@@ -89,9 +89,9 @@ The canonical string form of a value is:
   scientific notation for magnitudes between `1e-4` and `1e21`.
   Integers omit the trailing decimal point.
 - A string: the string itself.
-- A date: implementation-defined in XTL 0.1. Portable templates
-  SHOULD NOT rely on date concatenation or string-fallback comparison
-  of dates. Use `TEXT()` to produce a stable string instead.
+- A date: `YYYY-MM-DD` when the time component is exactly midnight
+  (`00:00:00`); otherwise `YYYY-MM-DDTHH:mm:ss`. (Defined by
+  ADR-0017; previously deferred from ADR-0009.)
 
 Non-finite numbers (`NaN`, `Infinity`, `-Infinity`) MUST NOT arise from
 spec-conformant operations. If they appear, they stringify to `""`.

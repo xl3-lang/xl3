@@ -1,0 +1,5 @@
+description: Date values compare via canonical string form against a string filter value per ADR-0017.
+spec_section: language.md "Comparison Algorithm"; ADR-0017
+spec_version: "0.1"
+tags: [language, date, comparison, filter]
+verified_by: [hand]

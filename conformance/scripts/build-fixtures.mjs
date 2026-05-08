@@ -4816,6 +4816,231 @@ async function build086() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 087 - date-canonical-string-concat
+//
+// Concept: a Date value in `&` concatenation produces YYYY-MM-DD when
+// midnight, YYYY-MM-DDTHH:mm:ss otherwise (ADR-0017).
+// Spec section: language.md "Canonical String Form"; ADR-0017.
+// ---------------------------------------------------------------------------
+async function build087() {
+  const dir = join(FIXTURES, '087-date-canonical-string-concat');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'date-canonical-string-concat'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Summary';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Customer] & " (" & [Signup] & ")" }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Acme has midnight date, Beta has datetime.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Signup';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = new Date(2026, 4, 8);          // midnight → YYYY-MM-DD
+    sh.getCell('B2').numFmt = 'yyyy-mm-dd';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = new Date(2026, 4, 8, 9, 30, 0); // datetime → ISO
+    sh.getCell('B3').numFmt = 'yyyy-mm-dd hh:mm:ss';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — Acme produces "Acme (2026-05-08)", Beta produces
+  // "Beta (2026-05-08T09:30:00)".
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Summary';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Acme (2026-05-08)';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'Beta (2026-05-08T09:30:00)';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 088 - date-comparison-equality
+//
+// Concept: two Date values compare by their underlying timestamp per
+// ADR-0017.
+// Spec section: language.md "Comparison Algorithm"; ADR-0017.
+// ---------------------------------------------------------------------------
+async function build088() {
+  const dir = join(FIXTURES, '088-date-comparison-equality');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — filter rows where Signup equals 2026-05-08.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'date-comparison-equality'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '{{ @filter [Signup] = "2026-05-08" }}';
+    sh.getCell('A3').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Acme matches by date, Beta has different date.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Signup';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = new Date(2026, 4, 8);
+    sh.getCell('B2').numFmt = 'yyyy-mm-dd';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = new Date(2026, 4, 9);
+    sh.getCell('B3').numFmt = 'yyyy-mm-dd';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — only Acme survives; "2026-05-08" filter value is
+  // a string but compareValues falls through to canonical-string-form
+  // matching where the date renders as YYYY-MM-DD.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 089 - error-sentinel-empty
+//
+// Concept: Excel error cells (#N/A, #VALUE!, etc.) read as empty per
+// ADR-0017. IFEMPTY catches them.
+// Spec section: evaluation.md "Empty Values"; ADR-0017.
+// ---------------------------------------------------------------------------
+async function build089() {
+  const dir = join(FIXTURES, '089-error-sentinel-empty');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'error-sentinel-empty'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Tier';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ IFEMPTY([Tier], "—") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Acme's Tier is an error cell; Beta's Tier is normal.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Tier';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = { error: '#N/A' };
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'Priority';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — Acme renders the IFEMPTY fallback "—".
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Tier';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = '—';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'Priority';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 090 - percentage-numeric-flow
+//
+// Concept: a percentage-formatted Excel cell flows as its underlying
+// Number value (50% → 0.5) per ADR-0017. Templates that need
+// formatted output use TEXT() or template cell number format.
+// Spec section: evaluation.md "Source Value Model"; ADR-0017.
+// ---------------------------------------------------------------------------
+async function build090() {
+  const dir = join(FIXTURES, '090-percentage-numeric-flow');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — render rate * 100 to confirm the underlying number.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'percentage-numeric-flow'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'RateTimes100';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Rate] * 100 }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Rate cells formatted as percent.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Rate';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 0.5; // displays as 50% with the format
+    sh.getCell('B2').numFmt = '0%';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 0.125;
+    sh.getCell('B3').numFmt = '0.0%';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — multiplying by 100 yields 50 / 12.5.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'RateTimes100';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 50;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 12.5;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -4903,6 +5128,10 @@ const builders = [
   ['084', build084],
   ['085', build085],
   ['086', build086],
+  ['087', build087],
+  ['088', build088],
+  ['089', build089],
+  ['090', build090],
 ];
 
 const selected = new Set(process.argv.slice(2));

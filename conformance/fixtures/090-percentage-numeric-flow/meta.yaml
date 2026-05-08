@@ -1,0 +1,5 @@
+description: Percentage-formatted Excel cells flow as their underlying Number per ADR-0017 (50% → 0.5).
+spec_section: evaluation.md "Source Value Model"; ADR-0017
+spec_version: "0.1"
+tags: [evaluation, source-data, number, percentage]
+verified_by: [hand]

@@ -1,0 +1,5 @@
+description: Excel error cells (#N/A, #VALUE!, …) read as empty per ADR-0017; IFEMPTY catches them.
+spec_section: evaluation.md "Empty Values"; evaluation.md "Source Value Model"; ADR-0017
+spec_version: "0.1"
+tags: [evaluation, source-data, error-sentinel, empty]
+verified_by: [hand]
