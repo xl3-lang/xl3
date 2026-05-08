@@ -2527,7 +2527,10 @@ async function build048() {
     sh.getCell('A3').value = 1;
     sh.getCell('B3').value = 'positive';
     sh.getCell('C3').value = 'non-negative';
-    sh.getCell('D3').value = 'zero';
+    // D3: IF([Amount] = 0, "zero", "non-zero") with Amount=1 → "non-zero"
+    // Pre-rc.1 fixtures had "zero" here, frozen against a normalizer
+    // bug that made `=` fall through (xl3-py issue #1, finding #5).
+    sh.getCell('D3').value = 'non-zero';
     sh.getCell('E3').value = 'non-zero';
     sh.getCell('F3').value = 'gt-zero';
     await writeBook(wb, join(dir, 'expected.xlsx'));
@@ -5042,6 +5045,139 @@ async function build090() {
 }
 
 // ---------------------------------------------------------------------------
+// 096 - canonical-number-decimal-vs-scientific-boundary (ADR-0009)
+//
+// Concept: ADR-0009 specifies that canonical string form uses
+// scientific notation for magnitudes outside [1e-6, 1e21). A value
+// like 0.00005 (= 5e-5) sits inside the decimal range and MUST
+// stringify as "0.00005", not "5e-5". A value like 0.0000005
+// (= 5e-7) sits outside and stringifies as "5e-7".
+// Pre-rc.1 spec text incorrectly cited 1e-4; corrected per xl3-py
+// issue #1.
+// Spec section: language.md "Canonical String Form"; ADR-0009.
+// ---------------------------------------------------------------------------
+async function build096() {
+  const dir = join(FIXTURES, '096-canonical-number-scientific-boundary');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — concatenate the cell value into a string so the
+  // canonical-string form is observable. Single-expression cells
+  // would preserve the number type and let Excel format it.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'canonical-number-scientific-boundary'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'AsString';
+    sh.getCell('A2').value = '{{ [Label] }}';
+    sh.getCell('B2').value = '{{ "" & [Value] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — three values straddling the 1e-6 boundary.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'Value';
+    sh.getCell('A2').value = 'inside-decimal';
+    sh.getCell('B2').value = 0.00005;       // 5e-5, decimal range
+    sh.getCell('A3').value = 'at-1e-6';
+    sh.getCell('B3').value = 0.000001;      // 1e-6, decimal range (boundary)
+    sh.getCell('A4').value = 'below-boundary';
+    sh.getCell('B4').value = 0.0000005;     // 5e-7, scientific range
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'AsString';
+    sh.getCell('A2').value = 'inside-decimal';
+    sh.getCell('B2').value = '0.00005';
+    sh.getCell('A3').value = 'at-1e-6';
+    sh.getCell('B3').value = '0.000001';
+    sh.getCell('A4').value = 'below-boundary';
+    sh.getCell('B4').value = '5e-7';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 095 - empty-fefff-not-whitespace (ADR-0007 amendment)
+//
+// Concept: U+FEFF (zero-width no-break space / BOM) is NOT whitespace
+// per ADR-0007. A cell whose value is a single U+FEFF is therefore
+// NON-empty; it survives `@filter [field] != ""` and IFEMPTY's
+// fallback. ECMAScript's native String.prototype.trim DOES strip
+// U+FEFF, so a host-naive trim diverges from the ADR — this fixture
+// pins the spec-correct behavior.
+// Spec section: ADR-0007 amendment.
+// ---------------------------------------------------------------------------
+async function build095() {
+  const dir = join(FIXTURES, '095-empty-fefff-not-whitespace');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — IFEMPTY([Name], "missing"). If U+FEFF is treated
+  // as content (per ADR), Acme's row keeps the FEFF; if treated as
+  // whitespace (impl bug), it becomes "missing".
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'empty-fefff-not-whitespace'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Resolved';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    sh.getCell('B2').value = '{{ IFEMPTY([Name], "missing") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Acme's Name is U+FEFF; Beta's Name is empty string;
+  // Coreon's Name is normal.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Name';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = '﻿';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = '';
+    sh.getCell('A4').value = 'Coreon';
+    sh.getCell('B4').value = 'Hana';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — Acme keeps the FEFF (NOT empty), Beta gets the
+  // fallback "missing", Coreon keeps "Hana".
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Resolved';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = '﻿';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'missing';
+    sh.getCell('A4').value = 'Coreon';
+    sh.getCell('B4').value = 'Hana';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 094 - reserved-sheet-name-error (ADR-0011)
 //
 // Concept: an author-created sheet whose name matches the reserved
@@ -5419,6 +5555,8 @@ const builders = [
   ['092', build092],
   ['093', build093],
   ['094', build094],
+  ['095', build095],
+  ['096', build096],
 ];
 
 const selected = new Set(process.argv.slice(2));

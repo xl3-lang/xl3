@@ -214,9 +214,17 @@ function normalizeOperand(op: string, columns: Set<string>): string {
 }
 
 function normalizeCondition(cond: string, columns: Set<string>): string {
+  // Order is significant: indexOf picks the first matching op. Compound
+  // operators (`!=`, `>=`, `<=`, `==`) MUST appear before any single
+  // character that overlaps (`=`, `>`, `<`), so a string like `[a] >= 0`
+  // matches `>=` rather than `>` or `=`. The single-char `=` is the
+  // spec equality operator (per language.md "Operators"); `==` is kept
+  // as an impl-only tolerance so existing TS-impl-flavored templates
+  // continue working, but ports MAY accept `=` only.
   const ops: [string, string][] = [
     ['!=', 'ne'], ['>=', 'ge'], ['<=', 'le'],
     ['==', 'eq'], ['>', 'gt'], ['<', 'lt'],
+    ['=', 'eq'],
   ];
   for (const [infix, fn] of ops) {
     const idx = cond.indexOf(infix);

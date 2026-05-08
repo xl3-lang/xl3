@@ -6,6 +6,35 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Fixed (xl3-py issue #1 batch)
+
+- **IF condition `=` operator now recognized** (issue #1 finding #5,
+  the highest-value finding of the Python port). The
+  `normalizeCondition` op list had `==` but not `=`, so the spec's
+  equality operator silently fell through and templates like
+  `IF([Amount] = 0, "zero", "non-zero")` evaluated as truthy
+  regardless of `[Amount]`. Fixture 048 was authored against the
+  bug; its `expected.xlsx` is re-built so D3 (Amount=1) is
+  `"non-zero"` instead of `"zero"`. `==` retained as an impl-only
+  tolerance — ports MAY accept `=` only.
+- **U+FEFF / U+200B no longer treated as whitespace** by `isEmpty`
+  (issue #1 finding #2). Native `String.prototype.trim` strips
+  U+FEFF; ADR-0007 amendment explicitly excludes zero-width chars.
+  `isEmpty` now pre-replaces zero-width chars with a sentinel before
+  trimming. Fixture 095 pins the behavior.
+- **ADR-0009 1e-4 → 1e-6 cutoff correction** (issue #1 finding #1).
+  Spec text said "no scientific notation between 1e-4 and 1e21" and
+  cited ECMA-262, but ECMA-262 §6.1.6.1.13 actually uses 1e-6.
+  ADR-0009 + language.md "Canonical String Form" corrected to
+  `[1e-6, 1e21)`. Fixture 096 covers the boundary.
+
+### Added
+
+- Conformance fixtures 095 (FEFF non-empty), 096 (1e-6 cutoff).
+- PORTERS_GUIDE.md "Language-specific gotchas" section — Python
+  `repr(float)` divergence (issue #1 finding #3), openpyxl
+  `tzinfo=None` (finding #4), zero-width whitespace handling.
+
 ### Added
 
 - ADR-0021 "Implementation-defined boundaries" — explicit catalog of

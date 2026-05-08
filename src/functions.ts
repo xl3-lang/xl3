@@ -4,9 +4,22 @@ import { xtlError } from './error-codes.js';
 // ADR-0007: a value is empty if it is missing (null/undefined) or a string
 // whose contents are entirely Unicode whitespace. Numbers (including 0),
 // booleans (including false), and dates are never empty.
+//
+// ADR-0007 amendment: zero-width characters (U+200B zero-width
+// space, U+FEFF zero-width no-break space / BOM) are explicitly NOT
+// whitespace and count as content. ECMAScript's native
+// String.prototype.trim strips U+FEFF, so a host-naive
+// .trim() === '' would diverge from the ADR on a single-FEFF string.
+// Pre-replace zero-width characters with a non-whitespace sentinel so
+// they survive trim().
+const ZERO_WIDTH_RE = /[\u200B\uFEFF]/g;
+
 export function isEmpty(v: unknown): boolean {
   if (v === null || v === undefined) return true;
-  if (typeof v === 'string') return v.trim() === '';
+  if (typeof v === 'string') {
+    if (v === '') return true;
+    return v.replace(ZERO_WIDTH_RE, '\x01').trim() === '';
+  }
   return false;
 }
 

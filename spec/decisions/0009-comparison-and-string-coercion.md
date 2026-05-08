@@ -92,9 +92,12 @@ The canonical string form of a value is:
 - A Boolean: `"TRUE"` or `"FALSE"` (uppercase).
 - A finite number: the shortest decimal representation that uniquely
   identifies the value, using `.` as the decimal separator and no
-  scientific notation for magnitudes between `1e-4` and `1e21`. Integers
-  omit the trailing decimal point. (This matches the ECMAScript
-  `Number.prototype.toString` behavior in the cited range.)
+  scientific notation for magnitudes greater than or equal to `1e-6`
+  and less than `1e21`. Integers omit the trailing decimal point.
+  (This matches ECMA-262 §6.1.6.1.13 — i.e., what JavaScript's
+  `Number.prototype.toString` produces for the same range. Earlier
+  drafts of this ADR cited a `1e-4` cutoff; that was incorrect.
+  Corrected per xl3-py issue #1 finding #1.)
 - A string: the string itself.
 - A date: implementation-defined in XTL 0.1; portable templates SHOULD
   NOT rely on date concatenation or string fallback comparison of dates.

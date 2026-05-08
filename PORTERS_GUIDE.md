@@ -125,6 +125,34 @@ constraint protects future evolution.
   tiebreakers (Excel/SQL convention).
 - File groups and sheet groups emit in **first-seen** order.
 
+### Language-specific gotchas (informational)
+
+These are real differences porters have hit. Documented from xl3-py
+issue #1 — share the lessons rather than make every port rediscover.
+
+**Number-to-string formatting.** The canonical string form follows
+ECMA-262 §6.1.6.1.13 exactly. **Do NOT trust your host language's
+default float formatter** — Python's `repr(1e-7)` is `"1e-07"` (two-
+digit exponent) where ECMA says `"1e-7"`; Python's `repr(-0.0)` is
+`"-0.0"` where ECMA says `"0"`. Re-implement the algorithm directly
+or pin the exact ECMA behavior with fixtures (012, 016, 064, 096).
+
+**Date timezone handling.** ADR-0017 mandates UTC. ExcelJS exposes
+Excel's timezone-naive serial dates as `Date` objects anchored at
+UTC midnight; the TS impl uses `getUTCFullYear` etc. **openpyxl
+returns `datetime.datetime` with `tzinfo=None`** — calling
+`.year`/`.month`/`.date()` is correct only if the value never gets
+localized first. Easy to introduce a subtle drift. The Stage 1 TZ
+matrix (`TZ=UTC` / `TZ=America/New_York` / `TZ=Asia/Seoul`) catches
+this.
+
+**Whitespace and zero-width.** ADR-0007 says zero-width characters
+(U+200B, U+FEFF) are NOT whitespace. The native `str.strip()` /
+`String.prototype.trim()` in many languages strips U+FEFF — your
+isEmpty MUST pre-replace zero-width chars with a non-whitespace
+sentinel before trimming, or use a hand-rolled whitespace test.
+Fixture 095 pins this behavior.
+
 ### Single-implementation impl details that ARE normative
 
 These look like JS-flavored choices but are spec:
