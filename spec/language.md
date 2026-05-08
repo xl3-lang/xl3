@@ -91,8 +91,8 @@ The canonical string form of a value is:
 - A Boolean: `TRUE` or `FALSE` (uppercase).
 - A finite number: the shortest decimal representation that uniquely
   identifies the value, using `.` as the decimal separator and no
-  scientific notation for magnitudes between `1e-4` and `1e21`.
-  Integers omit the trailing decimal point.
+  scientific notation for magnitudes in `[1e-6, 1e21)`. Integers omit
+  the trailing decimal point. Matches ECMA-262 §6.1.6.1.13.
 - A string: the string itself.
 - A date: `YYYY-MM-DD` when the time component is exactly midnight
   (`00:00:00`); otherwise `YYYY-MM-DDTHH:mm:ss`. (Defined by

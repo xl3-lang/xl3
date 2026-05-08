@@ -1,0 +1,5 @@
+description: A cell whose value is a single U+FEFF is NON-empty per ADR-0007 amendment; native String.prototype.trim would (incorrectly) strip it. Pinned via IFEMPTY's fallback.
+spec_section: ADR-0007 amendment "zero-width characters explicitly NOT whitespace"
+spec_version: "0.1"
+tags: [empty, whitespace, zero-width, ifempty]
+verified_by: [hand]

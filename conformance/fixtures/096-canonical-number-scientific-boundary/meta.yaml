@@ -1,0 +1,5 @@
+description: Canonical string form uses decimal notation for magnitudes >= 1e-6 and scientific notation for magnitudes < 1e-6, matching ECMA-262 §6.1.6.1.13.
+spec_section: language.md "Canonical String Form"; ADR-0009
+spec_version: "0.1"
+tags: [comparison, canonical-string, number, scientific]
+verified_by: [hand]
