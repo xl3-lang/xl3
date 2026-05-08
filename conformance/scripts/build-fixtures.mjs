@@ -5111,6 +5111,112 @@ async function build096() {
 }
 
 // ---------------------------------------------------------------------------
+// 099 - empty-template-block-error (ADR-0021)
+//
+// Concept: an empty `{{ }}` template block (whitespace-only between
+// the delimiters) is a parse error per ADR-0021 "Empty template
+// block". Implementations SHOULD raise `xl3/parser/empty-block`.
+// Spec section: ADR-0021 "Empty template block".
+// ---------------------------------------------------------------------------
+async function build099() {
+  const dir = join(FIXTURES, '099-empty-template-block-error');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — B2 has an empty template block.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'empty-template-block-error'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    sh.getCell('B2').value = '{{   }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // No expected.xlsx — meta.yaml asserts expected_error.
+}
+
+// ---------------------------------------------------------------------------
+// 097 - native-formula-static-cell-preserved (ADR-0021)
+//
+// Concept: a native Excel formula in a STATIC template cell (not
+// inside a data block) is preserved verbatim per ADR-0021 "Native
+// Excel formulas in template cells". The cached result must
+// round-trip through Stage 1 comparison (which extracts result
+// from formula cells via `comparable`).
+//
+// What this fixture does NOT pin: native formulas INSIDE a data
+// block template row. That behavior is intentionally left
+// implementation-defined by ADR-0021.
+// Spec section: ADR-0021 "Native Excel formulas in template cells".
+// ---------------------------------------------------------------------------
+async function build097() {
+  const dir = join(FIXTURES, '097-native-formula-static-cell-preserved');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — header row has a native formula (`=UPPER(A1)`)
+  // referencing a fixed cell outside the data block. After data
+  // block expansion the formula's range stays unchanged, but the
+  // cached result still reads back correctly via comparable().
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'native-formula-static-cell-preserved'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'header';
+    sh.getCell('B1').value = { formula: 'UPPER(A1)', result: 'HEADER' };
+    sh.getCell('A2').value = '{{ [Account] }}';
+    sh.getCell('A4').value = 'footer';
+    sh.getCell('B4').value = { formula: 'LOWER(A4)', result: 'footer' };
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — 2 rows so the data block expands by one (changing
+  // row positions for static cells below the block).
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — row 1 unchanged. Data rows at row 2-3. Original
+  // row 4 footer shifts to row 5. Both formulas preserve their
+  // cached results (Stage 1 compares those).
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'header';
+    sh.getCell('B1').value = { formula: 'UPPER(A1)', result: 'HEADER' };
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('A5').value = 'footer';
+    sh.getCell('B5').value = { formula: 'LOWER(A4)', result: 'footer' };
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 095 - empty-fefff-not-whitespace (ADR-0007 amendment)
 //
 // Concept: U+FEFF (zero-width no-break space / BOM) is NOT whitespace
@@ -5557,6 +5663,8 @@ const builders = [
   ['094', build094],
   ['095', build095],
   ['096', build096],
+  ['097', build097],
+  ['099', build099],
 ];
 
 const selected = new Set(process.argv.slice(2));

@@ -31,6 +31,7 @@ const EXPECTED_CODES: XtlErrorCode[] = [
   'xl3/join/bad-on-clause',
   'xl3/join/undeclared-source',
   'xl3/lists/missing-reference',
+  'xl3/parser/empty-block',
   'xl3/sheet/duplicate-list-name',
   'xl3/sheet/reserved-name',
   'xl3/source/duplicate-name',

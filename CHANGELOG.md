@@ -8,6 +8,21 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- Conformance fixtures pinning two of the implementation-defined
+  boundaries documented by ADR-0021:
+  - 097 — native Excel formula in a static template cell (not inside
+    a data block) is preserved verbatim, with cached result reading
+    back via Stage 1 `comparable`.
+  - 099 — empty `{{ }}` template block (whitespace-only between
+    delimiters) raises `xl3/parser/empty-block` at parse time.
+    Previously the impl crashed with a generic `TypeError` from
+    `getFunction(undefined).toUpperCase()`; ADR-0021 specified the
+    behavior in prose but no fixture pinned it. Now it does, and the
+    impl emits a coded error.
+- New stable error code `xl3/parser/empty-block` in the catalog.
+
+### Added
+
 - ADR-0022 "Excel version compatibility" — informational catalog of
   which Excel-version differences XTL 0.1 is immune to, which it
   leaves implementation-defined, and which authoring patterns
