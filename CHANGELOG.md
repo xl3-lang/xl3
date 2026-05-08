@@ -8,6 +8,21 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0027 "Reserved column names + directive arg validation".
+  Closes two silent-fallthrough surfaces:
+  - **Reserved source column names**: `Rows`, `__rownum`,
+    `__activeSource__`, `__joinedRow__`, plus any `^__[a-z]+__$`
+    pattern, are rejected at parse with
+    `xl3/source/reserved-column-name`. Previously such columns
+    silently shadowed (or were shadowed by) renderer ctx keys,
+    producing `[object Object]` cell values.
+  - **Empty / malformed directive bodies**:
+    `{{ @filter }}`, `{{ @sort }}`, `{{ @source }}` (and friends)
+    now raise `xl3/directive/invalid-syntax` at parse instead of
+    silently no-opping. Authors who think they filtered see the
+    error immediately rather than wondering why output has all rows.
+  - 3 new conformance fixtures (109, 110, 111).
+
 - ADR-0026 "Empty value lifecycle in cell rendering and group keys".
   Pins two previously-undefined behaviors:
   - Single-expression cell evaluating to empty produces a cell value

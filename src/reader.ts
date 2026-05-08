@@ -157,6 +157,19 @@ function inferTableFromHeaderRow(sheet: ExcelJS.Worksheet, headerRow: number): S
   };
 }
 
+// ADR-0027: source column names that collide with xl3-internal
+// context keys silently shadowed (and were silently shadowed by) the
+// internal value at row-eval time. Reject at parse so authors see
+// the conflict immediately instead of debugging a `[object Object]`
+// cell value later.
+const RESERVED_COLUMN_NAMES = new Set([
+  'Rows',
+  '__rownum',
+  '__activeSource__',
+  '__joinedRow__',
+]);
+const DUNDER_NAME_RE = /^__[a-z]+__$/;
+
 function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): string[] {
   const row = sheet.getRow(table.headerRow);
   const headers: string[] = [];
@@ -170,6 +183,12 @@ function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): string[] {
     }
     if (seen.has(header)) {
       throw xtlError('xl3/source/duplicate-name', `source_table has duplicate header "${header}"`);
+    }
+    if (RESERVED_COLUMN_NAMES.has(header) || DUNDER_NAME_RE.test(header)) {
+      throw xtlError(
+        'xl3/source/reserved-column-name',
+        `source_table column "${header}" uses a reserved internal name; rename it (reserved: Rows, __rownum, __activeSource__, __joinedRow__, anything matching __<lowercase>__)`,
+      );
     }
     seen.add(header);
     headers.push(header);

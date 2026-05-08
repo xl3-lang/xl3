@@ -129,6 +129,16 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
               isDirectiveRow = true;
               return;
             }
+            // ADR-0027: a recognized directive prefix (`@source`,
+            // `@filter`, `@sort`, `@top`, `@repeat`, `@join`) that
+            // fails to fully parse is an error, not a silent no-op.
+            // Catches missing args (`@filter`), malformed bodies
+            // (`@sort foo` with no bracket), and reserved-name
+            // collisions (`@source __config__`).
+            throw xtlError(
+              'xl3/directive/invalid-syntax',
+              `Invalid directive: ${expr.trim()}`,
+            );
           }
         }
       });

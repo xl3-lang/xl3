@@ -58,6 +58,7 @@ matrix.
 | Multiple `@filter` compose with AND | language.md "Filter" | (no ADR; spec line) | 104 |
 | `{{ }}` whitespace insignificant | language.md "Template Blocks" | (no ADR; spec line) | 105 |
 | Empty value lifecycle (cell + group key) | evaluation.md "Source Data Model" + "Output Filenames" | ADR-0026 | 107, 108 |
+| Reserved column names + directive validation | evaluation.md "Source Data Model" + "Directives" | ADR-0027 | 109, 110, 111 |
 
 ## Implementation-defined boundaries
 

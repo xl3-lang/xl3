@@ -1,0 +1,7 @@
+description: An empty `@source` directive (no source name) raises xl3/directive/invalid-syntax per ADR-0027. Replaces silent fallback to the implicit "default" source.
+spec_section: ADR-0027 §"Directive validation"
+spec_version: "0.1"
+tags: [adr-0027, directive, source, error]
+verified_by: [hand]
+expected_error: 'Invalid directive'
+expected_error_code: 'xl3/directive/invalid-syntax'
