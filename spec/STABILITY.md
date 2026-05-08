@@ -2,8 +2,8 @@
 
 ## Current state
 
-XTL is at version **0.1**. The reference impl ships as `xl3@0.1.0`
-on npm. The 1.0 cut is deliberately deferred until external
+XTL is at version **0.1**. The reference impl ships as
+`@jinyoung4478/xl3@0.1.0` on npm. The 1.0 cut is deliberately deferred until external
 validation accumulates — at minimum, a second-language port that
 passes the conformance corpus and one production adopter. Until
 then, breaking changes are possible across 0.x minor bumps and

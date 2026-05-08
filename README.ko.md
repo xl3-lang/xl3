@@ -117,13 +117,13 @@ xl3는 재사용 가능한 엔진과 엑셀 파일별 변환 규칙을 분리합
 ## 설치
 
 ```bash
-npm install xl3
+npm install @jinyoung4478/xl3
 ```
 
 ## 사용법
 
 ```ts
-import { convert } from 'xl3';
+import { convert } from '@jinyoung4478/xl3';
 
 const templateBuffer = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
 const dataBuffer = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

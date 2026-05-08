@@ -119,13 +119,13 @@ workflow in the workbook.
 ## Install
 
 ```bash
-npm install xl3
+npm install @jinyoung4478/xl3
 ```
 
 ## Usage
 
 ```ts
-import { convert } from 'xl3';
+import { convert } from '@jinyoung4478/xl3';
 
 const templateBuffer = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
 const dataBuffer = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

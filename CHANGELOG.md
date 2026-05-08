@@ -6,6 +6,17 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Changed
+
+- **npm package renamed** from `xl3` to `@jinyoung4478/xl3`. The
+  unscoped `xl3` name was rejected by npm's typosquatting prevention
+  (too similar to `xlsx`, `xml`, etc.). Project name, GitHub repo,
+  and the `xl3.io` domain are unchanged — only the npm package and
+  the import specifier change. Install is now
+  `npm install @jinyoung4478/xl3`; importing is
+  `import { convert } from '@jinyoung4478/xl3'`. The conformance
+  CLI binary (`xl3-conformance`) keeps its name.
+
 ### Fixed (xl3-py issue #1 batch)
 
 - **IF condition `=` operator now recognized** (issue #1 finding #5,

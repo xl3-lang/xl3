@@ -1,5 +1,5 @@
 {
-  "name": "xl3",
+  "name": "@jinyoung4478/xl3",
   "version": "0.1.0",
   "description": "Use Excel workbooks as templates and render formatted Excel output from Excel data.",
   "keywords": [
@@ -26,7 +26,10 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "xl3-conformance": "./dist/bin/conformance.js"
+    "xl3-conformance": "dist/bin/conformance.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "exports": {
     ".": {
