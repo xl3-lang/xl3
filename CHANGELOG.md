@@ -6,6 +6,44 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-09
+
+Spec-audit minor release. Three new ADRs (0026, 0027, 0028) close
+gaps that surfaced during a focused audit. Six new conformance
+fixtures (107–113) pin the new behaviors. Replaces several
+silent-fallthrough surfaces with coded errors — the
+"silent-garbage-to-loud-error" theme that has driven this
+audit pass.
+
+### Changed (BREAKING within 0.x semantics)
+
+- **Empty group key value** in a file or sheet name template now
+  substitutes the literal token `(blank)` per Excel pivot
+  convention (ADR-0026). Previously: file-level halted with
+  `xl3/filename/empty`, sheet-level fell back to literal `Sheet`.
+- **Source column name** colliding with an internal context key
+  (`Rows`, `__rownum`, `__activeSource__`, `__joinedRow__`, or any
+  `^__[a-z]+__$` pattern) now raises
+  `xl3/source/reserved-column-name` at parse (ADR-0027). Previously
+  silently shadowed (or was shadowed by) the internal value,
+  producing `[object Object]` cell values.
+- **Empty / malformed directive bodies** (`{{ @filter }}`,
+  `{{ @source }}`, `{{ @sort foo }}`, etc.) now raise
+  `xl3/directive/invalid-syntax` (ADR-0027). Previously silently
+  no-opped — author saw output with the directive un-applied.
+- **Unary operators on non-literal expressions** (`+5`, `--5`,
+  `-[col]`, `-(expr)`) now raise `xl3/eval/unsupported-syntax`
+  (ADR-0028). Previously silently rendered the literal expression
+  text. Workaround for column negation: `(0 - [col])` or
+  `[col] * -1`. Number literals with a leading `-` (`-5`, `-3.14`)
+  remain valid.
+
+### Changed
+
+- Conformance fixture 019 rewritten to use a `__config__` author
+  key for the empty-basename error path (the empty-group-key shape
+  now flows through `(blank)` per ADR-0026).
+
 ### Added
 
 - ADR-0028 "Literal syntax constraints + unsupported-syntax detection".
@@ -567,7 +605,8 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/jinyoung4478/xl3/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/jinyoung4478/xl3/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/jinyoung4478/xl3/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/jinyoung4478/xl3/compare/v0.1.0-alpha.0...v0.1.0
