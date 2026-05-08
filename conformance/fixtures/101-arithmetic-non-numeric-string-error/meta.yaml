@@ -1,0 +1,7 @@
+description: An operand that does not coerce to a finite number raises xl3/eval/operand-coercion at eval time per ADR-0023.
+spec_section: language.md "Arithmetic"; ADR-0023
+spec_version: "0.1"
+tags: [adr-0023, operator, coercion, error]
+verified_by: [hand]
+expected_error: 'cannot coerce'
+expected_error_code: 'xl3/eval/operand-coercion'

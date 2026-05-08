@@ -52,6 +52,7 @@ matrix.
 | Stage 2 OOXML canonicalization | conformance/runner-protocol.md "Stage 2" | ADR-0006 | 024–027, 093 |
 | Dynamic conformance assertions | conformance/runner-protocol.md "Dynamic" | ADR-0005 | 023 |
 | Excel version compatibility | (informational) | ADR-0022 | (no fixtures; authoring guidance) |
+| Operator coercion + Excel-default principle | language.md "Arithmetic" | ADR-0023 | 100, 101 |
 
 ## Implementation-defined boundaries
 

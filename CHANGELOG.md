@@ -6,6 +6,26 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Added
+
+- ADR-0023 "Operator coercion + Excel-as-default principle".
+  Spec gaps closed:
+  - **Excel-default principle** — when XTL is silent or ambiguous,
+    implementations SHOULD adopt Excel's behavior (subject to existing
+    overriding ADRs like 0017 UTC dates).
+  - **Arithmetic operator coercion table** — `+`, `-`, `*`, `/` now
+    have an explicit table for numeric-like strings (coerced),
+    Booleans (TRUE→1, FALSE→0), empty values (→0), Dates (error),
+    and non-numeric strings (error). Replaces the previous
+    silent-`toNumber()=0` behavior.
+  - New error code `xl3/eval/operand-coercion`.
+  - Conformance fixtures 100 (coercion table) + 101 (non-numeric
+    string error).
+- Division-by-zero behavior is left as an open question in ADR-0023
+  pending a follow-up ADR (options: throw, Excel-style `#DIV/0!`
+  cell, or empty). Reference impl preserves prior behavior (returns
+  0) until decided.
+
 ## [0.1.1] - 2026-05-08
 
 Patch release rolling up everything that landed since `0.1.0` was

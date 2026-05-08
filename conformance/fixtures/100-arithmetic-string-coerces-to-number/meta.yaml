@@ -1,0 +1,5 @@
+description: Arithmetic operators coerce numeric-like strings, Booleans, and empty values per ADR-0023's coercion table.
+spec_section: language.md "Arithmetic"; ADR-0023
+spec_version: "0.1"
+tags: [adr-0023, operator, coercion, arithmetic]
+verified_by: [hand]
