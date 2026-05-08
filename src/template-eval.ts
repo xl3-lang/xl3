@@ -174,6 +174,20 @@ export function evalExpression(
 
   if (ctx[trimmed] !== undefined) return ctx[trimmed];
 
+  // ADR-0028: literal-syntax constraints. Catch unary operator forms
+  // and malformed literals that would otherwise fall through to bare
+  // string return. Without this, `{{ -[X] }}` silently outputs the
+  // literal string "-[X]" instead of negating the column value.
+  // Number literals with a sign at parse position (e.g., `-5`) are
+  // already handled above by parseFloat — only unsupported forms
+  // reach here.
+  if (/^\+/.test(trimmed) || /^--/.test(trimmed) || /^-\s*[\[(]/.test(trimmed)) {
+    throw xtlError(
+      'xl3/eval/unsupported-syntax',
+      `Unsupported expression: "${trimmed}". Unary operators on column or sub-expressions are not supported in XTL 0.x; use (0 - [col]) for negation.`,
+    );
+  }
+
   return trimmed;
 }
 

@@ -61,7 +61,33 @@ XTL 0.1 supports:
 -123
 ```
 
-String literals use double quotes. Number literals are decimal numbers.
+### String literals (per ADR-0028)
+
+A `"`-delimited matched pair. **No escape sequences** — backslashes
+pass through literally; there is no normative way to embed a `"`
+inside a string literal in 0.x. Authors who need a `"` in a value
+hold it in a `__config__` author key (cell content can be any
+character) and reference it via `{{ __config__[key] }}`.
+
+An unbalanced or duplicated quote (`"a"b"`, `"a` etc.) is
+implementation-defined; portable templates use exactly one matched
+pair per literal.
+
+### Number literals (per ADR-0028)
+
+A decimal number, optionally with a leading `-` for negation. Allowed
+shapes: `5`, `-5`, `3.14`, `-3.14`, `0`. The Unicode minus
+`U+2212` is NOT recognized as a sign (per ADR-0009 amendment).
+
+**Unary operators on non-literal expressions are NOT supported in
+XTL 0.x.** All of the following raise `xl3/eval/unsupported-syntax`:
+
+- `+5`, `+[col]` (unary plus)
+- `--5`, `-(0 - 5)` (double negation)
+- `-[col]`, `-(expr)`, `-__config__[k]` (unary minus on
+  non-literal)
+
+Workaround for column negation: write `(0 - [col])` or `[col] * -1`.
 
 ## Operators
 

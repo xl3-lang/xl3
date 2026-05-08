@@ -1,0 +1,5 @@
+description: A signed number literal (`-5`, `-3.14`) is valid at parse position per ADR-0028.
+spec_section: ADR-0028 §"Number literal constraints"
+spec_version: "0.1"
+tags: [adr-0028, literal, number]
+verified_by: [hand]

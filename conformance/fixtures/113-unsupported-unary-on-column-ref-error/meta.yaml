@@ -1,0 +1,7 @@
+description: Unary minus on a column reference (`-[X]`) is NOT supported in XTL 0.x and raises xl3/eval/unsupported-syntax per ADR-0028. Replaces the previous silent fallthrough.
+spec_section: ADR-0028 §"Number literal constraints"
+spec_version: "0.1"
+tags: [adr-0028, literal, unary, error]
+verified_by: [hand]
+expected_error: 'Unsupported expression'
+expected_error_code: 'xl3/eval/unsupported-syntax'

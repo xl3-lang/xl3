@@ -14,6 +14,7 @@ const EXPECTED_CODES: XtlErrorCode[] = [
   'xl3/cell/formula-no-cache',
   'xl3/eval/arity-mismatch',
   'xl3/eval/operand-coercion',
+  'xl3/eval/unsupported-syntax',
   'xl3/cell/numfmt-coercion',
   'xl3/cell/row-outside-repeat',
   'xl3/config/invalid-source-table',
