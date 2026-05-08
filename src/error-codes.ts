@@ -26,6 +26,7 @@ export type XtlErrorCode =
   | 'xl3/source/missing-required'
   | 'xl3/source/row-cross-block'
   | 'xl3/source/unknown-column'
+  | 'xl3/source/reserved-column-name'
   | 'xl3/sources/not-a-dictionary'
   // Reserved sheets (ADR-0011)
   | 'xl3/sheet/reserved-name'
@@ -33,6 +34,8 @@ export type XtlErrorCode =
   // Join (ADR-0014)
   | 'xl3/join/undeclared-source'
   | 'xl3/join/bad-on-clause'
+  // Directive (ADR-0027)
+  | 'xl3/directive/invalid-syntax'
   // Lists
   | 'xl3/lists/missing-reference'
   // Parser (ADR-0021)

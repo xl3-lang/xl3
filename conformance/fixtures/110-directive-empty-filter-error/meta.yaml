@@ -1,0 +1,7 @@
+description: An empty `@filter` directive (no body) raises xl3/directive/invalid-syntax instead of silently no-opping per ADR-0027.
+spec_section: ADR-0027 §"Directive validation"
+spec_version: "0.1"
+tags: [adr-0027, directive, filter, error]
+verified_by: [hand]
+expected_error: 'Invalid directive'
+expected_error_code: 'xl3/directive/invalid-syntax'

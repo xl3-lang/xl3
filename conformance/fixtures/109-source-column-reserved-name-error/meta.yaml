@@ -1,0 +1,7 @@
+description: A source column whose name collides with an xl3-internal context key (here, "Rows") raises xl3/source/reserved-column-name at parse per ADR-0027.
+spec_section: ADR-0027 §"Reserved column names"
+spec_version: "0.1"
+tags: [adr-0027, source, reserved-name, error]
+verified_by: [hand]
+expected_error: 'reserved internal name'
+expected_error_code: 'xl3/source/reserved-column-name'

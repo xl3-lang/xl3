@@ -5114,6 +5114,111 @@ async function build096() {
 }
 
 // ---------------------------------------------------------------------------
+// 109 - source-column-reserved-name-error (ADR-0027)
+//
+// Concept: a source column named `Rows` collides with the renderer's
+// internal `Rows` ctx key. ADR-0027 rejects this at parse time with
+// xl3/source/reserved-column-name.
+// Spec section: ADR-0027 §"Reserved column names".
+// ---------------------------------------------------------------------------
+async function build109() {
+  const dir = join(FIXTURES, '109-source-column-reserved-name-error');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'reserved-column-name'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ [Rows] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Rows'; // ← reserved name
+    sh.getCell('A2').value = 'value';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 110 - directive-empty-filter-error (ADR-0027)
+//
+// Concept: `{{ @filter }}` (no body) raises xl3/directive/invalid-syntax
+// instead of silently no-opping per ADR-0027.
+// Spec section: ADR-0027 §"Directive validation".
+// ---------------------------------------------------------------------------
+async function build110() {
+  const dir = join(FIXTURES, '110-directive-empty-filter-error');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'directive-empty-filter'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = '{{ @filter }}';
+    sh.getCell('A3').value = '{{ [Account] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 111 - directive-empty-source-error (ADR-0027)
+//
+// Concept: `{{ @source }}` (no source name) raises
+// xl3/directive/invalid-syntax. Previously silently fell back to the
+// implicit `default` source.
+// Spec section: ADR-0027 §"Directive validation".
+// ---------------------------------------------------------------------------
+async function build111() {
+  const dir = join(FIXTURES, '111-directive-empty-source-error');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'directive-empty-source'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = '{{ @source }}';
+    sh.getCell('A3').value = '{{ [Account] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 107 - group-key-empty-becomes-blank-placeholder-file (ADR-0026)
 //
 // Concept: a file-level group key whose value is empty per ADR-0007
@@ -6117,6 +6222,9 @@ const builders = [
   ['106', build106],
   ['107', build107],
   ['108', build108],
+  ['109', build109],
+  ['110', build110],
+  ['111', build111],
 ];
 
 const selected = new Set(process.argv.slice(2));
