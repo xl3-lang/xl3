@@ -31,6 +31,7 @@ const INFORMATIONAL_ADRS = new Set([
   '0015', // structured error reporting (assertions are in fixtures, but no dedicated semantic fixture)
   '0019', // deferred — date arithmetic
   '0020', // deferred — locale collation
+  '0021', // implementation-defined boundaries (covered indirectly by 014/018/052; no dedicated fixture)
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.

@@ -6,6 +6,21 @@
  * vs "mixed text" classification are NOT part of this grammar — they
  * are described in `evaluation.md`.
  *
+ * PRECEDENCE: this grammar is non-normative supporting material. When
+ * a fixture and the grammar disagree, the fixture wins. The grammar
+ * may be coarser than the actual parser (e.g., it does not encode the
+ * contextual disambiguation between `Source[Column]` and an unknown
+ * identifier-bracket form — that check happens against the declared
+ * source set at parse time).
+ *
+ * Use this grammar to:
+ *   - bootstrap a parser in a new language port
+ *   - generate syntax highlighters / linters
+ *   - reason about valid template shapes at a glance
+ *
+ * Do NOT use it as the sole conformance check. The conformance corpus
+ * + spec prose are authoritative.
+ *
  * Notation: ISO/IEC 14977 EBNF.
  *   * = zero or more, + = one or more, ? = optional, | = alternation
  *   "..." = literal string

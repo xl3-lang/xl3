@@ -130,8 +130,13 @@ source:
 
 For each primary row, the engine finds the **first** matching joined
 row (per [Comparison Algorithm](./language.md#comparison-algorithm))
-and renders the pair. If no match is found, the primary row is
-**dropped** (inner-join semantics).
+and renders the pair. "First" is defined by the joined source's
+natural row order — top-to-bottom over its `source_table` range.
+This is normative: when multiple joined rows have an equal join key,
+two implementations MUST pick the same paired row.
+
+If no match is found, the primary row is **dropped** (inner-join
+semantics).
 
 Inside the block, `[Column]` and `<PrimarySource>[Column]` resolve
 to the primary row; `<JoinedSource>[Column]` resolves to the paired

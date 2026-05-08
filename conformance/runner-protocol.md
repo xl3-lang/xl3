@@ -46,6 +46,13 @@ spec_version: string        # minimum XTL version (e.g., "0.1")
 tags: [string, ...]         # filter tags (e.g., [substitution, repeat, aggregate])
 ```
 
+`tags` is a fixture-side convenience for the `--filter=<tag>` CLI
+flag. Tag values are NOT part of the conformance contract — runners
+MUST treat them as opaque strings and SHOULD NOT reject a fixture
+because its tag set differs from another fixture's. The reference
+corpus uses lowercase, hyphen-separated tokens but does not enforce a
+canonical taxonomy.
+
 Optional fields:
 
 ```yaml

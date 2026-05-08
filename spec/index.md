@@ -52,6 +52,27 @@ matrix.
 | Stage 2 OOXML canonicalization | conformance/runner-protocol.md "Stage 2" | ADR-0006 | 024–027, 093 |
 | Dynamic conformance assertions | conformance/runner-protocol.md "Dynamic" | ADR-0005 | 023 |
 
+## Implementation-defined boundaries
+
+XTL 0.1 deliberately leaves these areas to implementations. Choosing
+differently across two ports does NOT make either one non-conformant.
+See [ADR-0021](./decisions/0021-implementation-defined-boundaries.md)
+for the full catalog.
+
+| Area | XTL 0.1 position |
+|---|---|
+| Memory / streaming model | implementation-defined |
+| Sync vs. async API shape | implementation-defined |
+| Native Excel formula in source | required: read cached result, error if missing |
+| Native Excel formula in template | implementation-defined (typically pass-through) |
+| `TEXT()` formats outside the core table | implementation-defined extension |
+| Merge-cell preservation under row expansion | required (above/below); implementation-defined inside the data block |
+| `__config__` author-defined keys | required: accessible via `{{ __config__[key] }}` |
+| Empty source (zero rows) | implementation-defined output, no error |
+| Sheet-name collision after sanitization | implementation-defined |
+| Empty template block `{{   }}` | error |
+| Non-template, non-reserved sheets in input | implementation-defined (typically pass-through) |
+
 ## Deferred surfaces
 
 These are NOT in 1.0. The deferral ADR explains why and what a

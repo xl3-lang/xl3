@@ -6,6 +6,25 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Added
+
+- ADR-0021 "Implementation-defined boundaries" — explicit catalog of
+  the gray-area gaps in XTL 0.1, classified per item as
+  implementation-defined or required. Covers memory model, sync vs.
+  async, native Excel formulas, `TEXT()` extensions, merge cells,
+  `__config__` author-defined keys, empty source, sheet-name
+  collisions, empty template blocks, non-template input sheets.
+  spec/index.md gets an "Implementation-defined boundaries" matrix
+  mirroring the catalog.
+- `evaluation.md` `@join` first-match clarified as normative —
+  joined-source natural row order, top-to-bottom over `source_table`
+  range. Two implementations MUST pick the same paired row when
+  multiple joined rows have an equal join key.
+- `grammar.ebnf` precedence disclaimer — the EBNF is non-normative;
+  fixtures + spec prose win.
+- `runner-protocol.md` clarifies `tags` is a runner convenience, not
+  a conformance contract.
+
 ## [1.0.0-rc.1] - 2026-05-08
 
 First release candidate for the XTL 0.1 → 1.0 cut. Locks the
