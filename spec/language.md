@@ -4,7 +4,8 @@ This document defines the XTL 0.1 template language surface. The notation here i
 
 A formal grammar for the contents of `{{ ... }}` template blocks
 lives in [`grammar.ebnf`](./grammar.ebnf) — non-normative supporting
-material for porters and tooling.
+material for porters and tooling. Term definitions live in
+[`glossary.md`](./glossary.md).
 
 ## Template Blocks
 

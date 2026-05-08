@@ -2,7 +2,10 @@
 
 ## Current state
 
-XTL is at version **0.1 (draft)**. The spec, conformance corpus, and reference implementation are all pre-1.0. Breaking changes are possible.
+XTL is at version **0.1**, with a 1.0 release candidate published as
+`xl3@1.0.0-rc.1` on npm. The 0.1 spec surface is the 1.0 surface; the
+rc cycle is for catching impl-side bugs and porter-side ambiguities
+before the contract freezes for the 1.x line.
 
 ## During 0.x
 
@@ -22,6 +25,44 @@ The 1.0 cut closes XTL's first portability contract. The intent is
 that any conforming implementation produces identical output (Stage
 1) and identical canonical OOXML (Stage 2) for the frozen fixture
 corpus, on any host timezone, locale, or byte order.
+
+### Public API surface (xl3 reference impl)
+
+The TypeScript reference impl freezes the following 13 runtime
+exports at 1.0. Adding a new export is backwards-compatible;
+removing or renaming any of them is a 2.0-only change.
+
+**Conversion entry points**
+
+- `convert(template, source, options?) → Promise<OutputFile[]>`
+- `preview(template, source, options?) → Promise<PreviewResult>`
+- `readTemplateInputs(template) → Promise<InputSpec[]>`
+- `analyze(template) → Promise<ParsedTemplate>`
+- `analyzeModel(template) → Promise<TemplateModel>`
+- `packageZip(files) → Promise<Blob>`
+
+**Lower-level helpers**
+
+- `readConfigSheet(workbook) → ConfigResult`
+- `writeConfigSheet(workbook, meta) → void`
+- `readInputsSheet(workbook) → InputSpec[]`
+- `batchMatch(...)` — file-pattern matching helper
+- `toTemplateModel(parsed) → TemplateModel`
+
+**Error helpers (ADR-0015)**
+
+- `xtlError(code, message) → XtlError`
+- `isXtlError(value) → boolean`
+
+**Type re-exports** also frozen at 1.0:
+`TemplateMeta`, `TemplateModel`, `ParsedTemplate`, `OutputFile`,
+`PreviewResult`, `PreviewSource`, `ConvertOptions`, `InputSpec`,
+`InputType`, `SourceSpec`, `XtlError`, `XtlErrorCode`, `XtlWarning`,
+`XtlWarningCode`.
+
+The snapshot test in `src/__tests__/api-surface.test.ts` pins the
+runtime list and fails CI on silent changes. New exports require
+deliberately updating the snapshot AND a CHANGELOG entry.
 
 ### What 1.0 freezes
 

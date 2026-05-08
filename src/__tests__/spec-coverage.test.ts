@@ -22,13 +22,15 @@ const FIXTURE_DIR = join(REPO_ROOT, 'conformance', 'fixtures');
 const ADR_DIR = join(REPO_ROOT, 'spec', 'decisions');
 
 // ADRs that are intentionally not covered by fixtures because they
-// describe process, audit, or runner protocol — not language
-// semantics with observable output.
+// describe process, audit, runner protocol, or deferral — not
+// language semantics with observable output.
 const INFORMATIONAL_ADRS = new Set([
-  '0004', // reference impl coupling audit
+  '0004', // reference impl coupling audit (informational)
   '0005', // dynamic conformance assertions (used by 023)
   '0006', // Stage 2 OOXML conformance protocol
   '0015', // structured error reporting (assertions are in fixtures, but no dedicated semantic fixture)
+  '0019', // deferred — date arithmetic
+  '0020', // deferred — locale collation
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.

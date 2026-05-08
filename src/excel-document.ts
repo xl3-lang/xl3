@@ -1,5 +1,6 @@
 import ExcelJS from 'exceljs';
 import { xtlError } from './error-codes.js';
+import type { XtlWarning } from './types.js';
 
 export interface WorkbookDocument {
   removeAuxiliarySheets(): void;
@@ -156,7 +157,7 @@ const RESERVED_DEVICE_NAMES = new Set([
 export interface SanitizedFilename {
   filename: string;
   changed: boolean;
-  warnings: string[];
+  warnings: XtlWarning[];
 }
 
 export function sanitizeFilename(rendered: string): SanitizedFilename {
@@ -199,8 +200,12 @@ export function sanitizeFilename(rendered: string): SanitizedFilename {
     );
   }
 
-  const warnings = s !== rendered
-    ? [`Output filename "${rendered}" sanitized to "${s}"`]
+  const warnings: XtlWarning[] = s !== rendered
+    ? [{
+        code: 'xl3w/filename/sanitized',
+        message: `Output filename "${rendered}" sanitized to "${s}"`,
+        location: s,
+      }]
     : [];
   return { filename: s, changed: s !== rendered, warnings };
 }

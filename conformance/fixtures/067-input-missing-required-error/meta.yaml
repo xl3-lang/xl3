@@ -3,5 +3,5 @@ spec_section: evaluation.md "Inputs"; ADR-0010
 spec_version: "0.1"
 tags: [evaluation, inputs, error]
 verified_by: [hand]
-expected_error: 'missing required input "region"'
+expected_error: 'Input "region" is required'
 expected_error_code: 'xl3/inputs/missing-required'

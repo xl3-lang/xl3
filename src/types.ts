@@ -142,7 +142,23 @@ export interface TemplateModel {
   resolvedInputs?: Record<string, string>;
   // ADR-0012: external data source declarations from `__sources__`.
   sources: SourceSpec[];
-  warnings: string[];
+  warnings: XtlWarning[];
+}
+
+// Stable warning shape (1.0). Hosts dispatch on `code` for
+// programmatic handling and localization; the English `message` is
+// the conformance-corpus contract for `expected_warnings` matching.
+// `location` is a free-form string ("sheet \"Report\" cell A5",
+// "__inputs__ row 3", filename) — present when known, omitted when
+// the warning is global.
+export type XtlWarningCode =
+  | 'xl3w/parser/missing-column'
+  | 'xl3w/filename/sanitized';
+
+export interface XtlWarning {
+  code: XtlWarningCode;
+  message: string;
+  location?: string;
 }
 
 export interface ParsedTemplate extends TemplateModel {
@@ -168,7 +184,7 @@ export interface FileGroup {
 export interface OutputFile {
   filename: string;
   data: ArrayBuffer;
-  warnings: string[];
+  warnings: XtlWarning[];
 }
 
 export interface PreviewSheet {
@@ -196,5 +212,5 @@ export interface PreviewResult {
   files: PreviewFile[];
   inputs: InputSpec[];
   sources: PreviewSource[];
-  warnings: string[];
+  warnings: XtlWarning[];
 }

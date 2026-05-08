@@ -47,6 +47,30 @@ English `Error.message` is also part of the conformance contract —
 fixtures use `expected_error` substring matching against it. Localize
 in a layer above the engine, not by changing the engine's English text.
 
+#### Message style guide
+
+Stick to a consistent voice so substring matching across ports stays
+predictable. The reference impl follows these rules:
+
+- **Capitalize the first word** of the message.
+- **Subject + verb** form. Subject is the offending entity:
+  `Source "X"`, `Column "X"`, `Input "X"`, `Cell A5`, `Output filename "..."`,
+  `XLOOKUP`, `@join key columns`, etc.
+- **Quote identifiers** with `"..."` so they survive substring matches:
+  `Source "Renewals"` not `Source Renewals`.
+- **Reference reserved sheets by name** (`__sources__`, `__inputs__`)
+  with no quotes — they are syntactic, not user-supplied.
+- **Detail follows a `:`** for parse failures:
+  `Input "month" cannot be parsed as a date: empty value`.
+- **No "you must"**. Use `"X must be a Y"`, not `"you must provide a Y"`.
+- **No log-style prefixes** like `XLOOKUP: ...` or `[error] ...`.
+- **No trailing period** unless the message is a full sentence with
+  multiple clauses; one-clause messages omit it for terseness.
+
+When you discover a message in the reference impl that violates these
+rules, that is a defect — file an issue against xl3 with the proposed
+rewording.
+
 ### Date semantics (ADR-0017)
 
 - Date components MUST be read in **UTC**. `getUTCFullYear` /

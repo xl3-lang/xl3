@@ -202,7 +202,9 @@ async function runOne(
     const out = await convert(toArrayBuffer(tmpl), toArrayBuffer(data), {
       inputs: inputsAsRecord(meta.inputs),
     });
-    const actualWarnings = out.flatMap((f) => f.warnings ?? []);
+    // Conformance corpus matches against the warning's English
+    // `message` for portability; see XtlWarning shape in types.ts.
+    const actualWarnings = out.flatMap((f) => (f.warnings ?? []).map((w) => w.message));
     const warningDiff = diffWarnings(actualWarnings, meta.expected_warnings);
     if (warningDiff) {
       return {

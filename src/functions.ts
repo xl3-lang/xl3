@@ -270,7 +270,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
       if (hasFallback) return fallback;
       throw xtlError(
         'xl3/xlookup/no-match',
-        `XLOOKUP: no row matches where [${lookupCol}] equals ${canonicalString(lookupValue)}`,
+        `XLOOKUP found no row where [${lookupCol}] equals "${canonicalString(lookupValue)}"`,
       );
     }
     const idx = getOrBuildLookupIndex(arr, lookupCol);
@@ -279,7 +279,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     if (hasFallback) return fallback;
     throw xtlError(
       'xl3/xlookup/no-match',
-      `XLOOKUP: no row matches where [${lookupCol}] equals ${canonicalString(lookupValue)}`,
+      `XLOOKUP found no row where [${lookupCol}] equals "${canonicalString(lookupValue)}"`,
     );
   },
 

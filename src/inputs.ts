@@ -32,7 +32,7 @@ export function resolveInputs(
     } else if (spec.default !== undefined) {
       raw = spec.default;
     } else if (spec.required) {
-      throw xtlError("xl3/inputs/missing-required", `missing required input "${spec.name}"`);
+      throw xtlError("xl3/inputs/missing-required", `Input "${spec.name}" is required but was not provided`);
     } else {
       continue;
     }
@@ -61,11 +61,11 @@ function coerceNumber(name: string, raw: unknown): string {
   if (typeof raw === 'number' && Number.isFinite(raw)) return String(raw);
   const text = canonicalString(raw).trim();
   if (text === '') {
-    throw xtlError("xl3/inputs/parse-number", `input "${name}" cannot be parsed as a number: empty value`);
+    throw xtlError("xl3/inputs/parse-number", `Input "${name}" cannot be parsed as a number: empty value`);
   }
   const cleaned = text.replace(/,/g, '');
   if (!/^-?\d+(\.\d+)?$/.test(cleaned)) {
-    throw xtlError("xl3/inputs/parse-number", `input "${name}" cannot be parsed as a number: ${text}`);
+    throw xtlError("xl3/inputs/parse-number", `Input "${name}" cannot be parsed as a number: ${text}`);
   }
   return String(Number(cleaned));
 }
@@ -80,13 +80,13 @@ const DATE_PATTERNS = [
 function coerceDate(name: string, raw: unknown): string {
   if (raw instanceof Date) {
     if (Number.isNaN(raw.getTime())) {
-      throw xtlError("xl3/inputs/parse-date", `input "${name}" cannot be parsed as a date: invalid Date`);
+      throw xtlError("xl3/inputs/parse-date", `Input "${name}" cannot be parsed as a date: invalid Date`);
     }
     return formatDateIso(raw);
   }
   const text = canonicalString(raw).trim();
   if (text === '') {
-    throw xtlError("xl3/inputs/parse-date", `input "${name}" cannot be parsed as a date: empty value`);
+    throw xtlError("xl3/inputs/parse-date", `Input "${name}" cannot be parsed as a date: empty value`);
   }
   for (const re of DATE_PATTERNS) {
     const m = text.match(re);
@@ -107,10 +107,10 @@ function coerceDate(name: string, raw: unknown): string {
         // for filename patterns like `{{ _month }}_report.xlsx`.
         return text;
       }
-      throw xtlError("xl3/inputs/parse-date", `input "${name}" cannot be parsed as a date: ${text}`);
+      throw xtlError("xl3/inputs/parse-date", `Input "${name}" cannot be parsed as a date: ${text}`);
     }
   }
-  throw xtlError("xl3/inputs/parse-date", `input "${name}" cannot be parsed as a date: ${text}`);
+  throw xtlError("xl3/inputs/parse-date", `Input "${name}" cannot be parsed as a date: ${text}`);
 }
 
 function coerceSelect(spec: InputSpec, raw: unknown): string {
@@ -119,7 +119,7 @@ function coerceSelect(spec: InputSpec, raw: unknown): string {
   if (options.includes(text)) return text;
   throw xtlError(
     'xl3/inputs/select-option',
-    `input "${spec.name}" value "${text}" is not in the declared options [${options.join(', ')}]`,
+    `Input "${spec.name}" value "${text}" is not in the declared options [${options.join(', ')}]`,
   );
 }
 

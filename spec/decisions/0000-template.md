@@ -1,6 +1,6 @@
 # ADR <NNNN> — <title>
 
-- **Status:** proposed | accepted | superseded by ADR-XXXX | rejected
+- **Status:** proposed | accepted | informational | superseded by ADR-XXXX | rejected
 - **Date:** YYYY-MM-DD
 - **Spec target:** XTL 0.x
 - **Affects:** language.md | evaluation.md | new section | impl-only
@@ -29,3 +29,18 @@ commit to?
 ## References
 
 Links to related ADRs, issues, or external precedent.
+
+---
+
+## Status values
+
+- **proposed** — under discussion; impl MAY anticipate but spec is
+  not yet binding.
+- **accepted** — normative; impl and conformance corpus reflect it.
+- **informational** — non-normative documentation, audit, or
+  process. Does not bind impl behavior.
+- **superseded by ADR-NNNN** — replaced (in whole or part) by a
+  later decision. Both ADRs remain in the corpus for traceability.
+- **rejected** — considered and explicitly NOT adopted; kept for
+  the historical record so the option does not get reproposed
+  without new context.

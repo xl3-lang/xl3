@@ -200,6 +200,32 @@ export function evalCell(
   });
 }
 
+// Wrap an evalCell call so any xl3-coded error gets the cell location
+// appended to its message. This is the diagnostic-UX bridge: runtime
+// errors thrown by deep template-eval helpers (which don't know what
+// cell triggered them) become "Source X is not declared in __sources__
+// (at sheet "Report" cell A5)" in the host's error stream. The error
+// code, instance type, and stack are preserved.
+export function evalCellAt(
+  sheetName: string,
+  cellAddress: string,
+  cellTemplate: string,
+  ctx: Record<string, unknown>,
+): unknown {
+  try {
+    return evalCell(cellTemplate, ctx);
+  } catch (e) {
+    if (e instanceof Error && / \(at sheet "/.test(e.message)) {
+      // Already annotated upstream — don't double-stamp.
+      throw e;
+    }
+    if (e instanceof Error) {
+      e.message = `${e.message} (at sheet "${sheetName}" cell ${cellAddress})`;
+    }
+    throw e;
+  }
+}
+
 function resolveArg(arg: string, ctx: Record<string, unknown>): unknown {
   arg = arg.trim();
 

@@ -51,12 +51,26 @@ export interface XtlError extends Error {
   code: XtlErrorCode;
 }
 
+/**
+ * Construct an Error with a stable `code` (ADR-0015). Hosts dispatch
+ * on `error.code` for localization and programmatic handling; the
+ * English `error.message` remains the conformance-corpus contract.
+ *
+ * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
+ */
 export function xtlError(code: XtlErrorCode, message: string): XtlError {
   const err = new Error(message) as XtlError;
   err.code = code;
   return err;
 }
 
+/**
+ * Type guard for XtlError. Returns `true` only for Error instances
+ * whose `code` starts with `xl3/`. Plain Errors, host-supplied error
+ * shapes, and non-Error values all return `false`.
+ *
+ * @stable Frozen at 1.0.
+ */
 export function isXtlError(e: unknown): e is XtlError {
   return e instanceof Error && typeof (e as XtlError).code === 'string'
     && (e as XtlError).code.startsWith('xl3/');

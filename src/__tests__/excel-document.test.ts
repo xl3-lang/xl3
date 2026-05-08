@@ -42,7 +42,11 @@ describe('sanitizeFilename', () => {
     expect(sanitizeFilename('Acme:North.xlsx')).toEqual({
       filename: 'Acme_North.xlsx',
       changed: true,
-      warnings: ['Output filename "Acme:North.xlsx" sanitized to "Acme_North.xlsx"'],
+      warnings: [{
+        code: 'xl3w/filename/sanitized',
+        message: 'Output filename "Acme:North.xlsx" sanitized to "Acme_North.xlsx"',
+        location: 'Acme_North.xlsx',
+      }],
     });
   });
 });

@@ -7,9 +7,10 @@ import type {
   SheetTemplate,
   DataBlock,
   OutputFile,
+  XtlWarning,
 } from './types.js';
 import { normalizeTemplate } from './normalizer.js';
-import { evalCell } from './template-eval.js';
+import { evalCell, evalCellAt } from './template-eval.js';
 import { applyDirectives } from './data-transform.js';
 import { canonicalString } from './functions.js';
 import { xtlError } from './error-codes.js';
@@ -49,7 +50,7 @@ export class Renderer {
   }
 
   /** Generate preview warnings for a file group. */
-  previewFilenameWarnings(fileGroup: FileGroup): string[] {
+  previewFilenameWarnings(fileGroup: FileGroup): XtlWarning[] {
     return this.renderFilenameDetail(fileGroup.key, fileGroup).warnings;
   }
 
@@ -224,7 +225,7 @@ export class Renderer {
           const val = cellString(cell.value);
           if (VAR_PATTERN.test(val)) {
             const normalized = normalizeTemplate(val, this.columns);
-            cell.value = renderCellValue(normalized, evalCell(normalized, finalStaticCtx), cell.style);
+            cell.value = renderCellValue(normalized, evalCellAt(sheet.name, cell.address, normalized, finalStaticCtx), cell.style);
           }
         });
       });
@@ -259,7 +260,7 @@ export class Renderer {
           const val = cellString(cell.value);
           if (VAR_PATTERN.test(val)) {
             const normalized = normalizeTemplate(val, this.columns);
-            cell.value = renderCellValue(normalized, evalCell(normalized, staticCtx), cell.style);
+            cell.value = renderCellValue(normalized, evalCellAt(sheet.name, cell.address, normalized, staticCtx), cell.style);
           }
         });
       });
@@ -342,7 +343,7 @@ export class Renderer {
 
           if (VAR_PATTERN.test(template)) {
             const normalized = normalizeTemplate(template, this.columns);
-            cell.value = renderCellValue(normalized, evalCell(normalized, rowData), style);
+            cell.value = renderCellValue(normalized, evalCellAt(sheet.name, cell.address, normalized, rowData), style);
           } else if (template) {
             cell.value = template as ExcelJS.CellValue;
           }
@@ -409,7 +410,7 @@ export class Renderer {
             const normalized = normalizeTemplate(tmpl.template, this.columns);
             // Use row data for [field], static context for aggregates.
             const ctx = { ...staticCtx, ...rowData };
-            cell.value = renderCellValue(normalized, evalCell(normalized, ctx), tmpl.style);
+            cell.value = renderCellValue(normalized, evalCellAt(sheet.name, cell.address, normalized, ctx), tmpl.style);
           } else if (tmpl.template) {
             cell.value = tmpl.template as ExcelJS.CellValue;
           }
@@ -497,7 +498,7 @@ export class Renderer {
     return canonicalString(evalCell(normalized, ctx));
   }
 
-  private renderFilenameDetail(key: GroupKey, fileGroup: FileGroup): { filename: string; warnings: string[] } {
+  private renderFilenameDetail(key: GroupKey, fileGroup: FileGroup): { filename: string; warnings: XtlWarning[] } {
     const pattern = this.parsed.meta.output_file_pattern;
     const rendered = this.renderRawFilename(pattern, key, fileGroup);
     // ADR-0002: Output filenames MUST be sanitized.

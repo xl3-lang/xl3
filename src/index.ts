@@ -14,6 +14,7 @@ import type {
   TemplateModel,
   ConvertOptions,
   InputSpec,
+  XtlWarning,
 } from './types.js';
 
 export type {
@@ -27,6 +28,8 @@ export type {
   InputSpec,
   InputType,
   SourceSpec,
+  XtlWarning,
+  XtlWarningCode,
 } from './types.js';
 export { readConfigSheet, writeConfigSheet, readInputsSheet } from './parser.js';
 export { batchMatch } from './matcher.js';
@@ -97,12 +100,16 @@ async function renderPreparedConversion(prepared: PreparedConversion): Promise<O
   return files;
 }
 
-function buildPreviewWarnings(parsed: TemplateModel, columns: Set<string>): string[] {
-  const warnings: string[] = [...parsed.warnings];
+function buildPreviewWarnings(parsed: TemplateModel, columns: Set<string>): XtlWarning[] {
+  const warnings: XtlWarning[] = [...parsed.warnings];
   for (const v of parsed.variables) {
     for (const col of v.columns) {
       if (!columns.has(col)) {
-        warnings.push(`Source column "${col}" is missing (used at ${v.location})`);
+        warnings.push({
+          code: 'xl3w/parser/missing-column',
+          message: `Source column "${col}" is missing`,
+          location: v.location,
+        });
       }
     }
   }
@@ -174,7 +181,22 @@ function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
   return { files, inputs, sources: previewSources, warnings };
 }
 
-/** Run full conversion: template + source → output files. */
+/**
+ * Run full conversion: template + source → output files.
+ *
+ * Reads the XTL template workbook, applies its directives over the
+ * source workbook, and returns one OutputFile per emitted file group.
+ *
+ * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
+ *   Signature changes are 2.0-only.
+ *
+ * @example
+ * ```ts
+ * const outputs = await convert(templateBuffer, sourceBuffer, {
+ *   inputs: { month: '2026-05' },
+ * });
+ * ```
+ */
 export async function convert(
   templateBuffer: ArrayBuffer,
   sourceBuffer: ArrayBuffer,
@@ -184,7 +206,16 @@ export async function convert(
   return renderPreparedConversion(prepared);
 }
 
-/** Preview what conversion will produce without generating full files. */
+/**
+ * Preview what conversion will produce without generating full files.
+ *
+ * Returns the planned filenames, sheet names, row counts, declared
+ * inputs, and warnings the host should surface to the operator.
+ * Cheaper than `convert()` because it does not serialize output
+ * workbooks.
+ *
+ * @stable Frozen at 1.0.
+ */
 export async function preview(
   templateBuffer: ArrayBuffer,
   sourceBuffer: ArrayBuffer,
@@ -194,8 +225,13 @@ export async function preview(
   return buildPreviewFromPrepared(prepared);
 }
 
-/** Inspect a template's runtime input declarations without running a
- *  conversion. Hosts can use this to render an input form. */
+/**
+ * Inspect a template's runtime input declarations without running a
+ * conversion. Hosts use this to render an input form before the host
+ * has a source workbook to convert.
+ *
+ * @stable Frozen at 1.0.
+ */
 export async function readTemplateInputs(
   templateBuffer: ArrayBuffer,
 ): Promise<InputSpec[]> {
@@ -203,13 +239,26 @@ export async function readTemplateInputs(
   return parsed.inputs;
 }
 
-/** Analyze a template file and return its parsed metadata. */
+/**
+ * Analyze a template file and return its full parsed model
+ * (including the underlying ExcelJS workbook). Mostly useful for
+ * tooling that needs to inspect template internals.
+ *
+ * @stable Frozen at 1.0.
+ */
 export async function analyze(
   templateBuffer: ArrayBuffer,
 ): Promise<ParsedTemplate> {
   return parseTemplate(templateBuffer);
 }
 
+/**
+ * Analyze a template file and return a serializable, workbook-free
+ * template model. Suitable for cross-process / cross-language
+ * inspection.
+ *
+ * @stable Frozen at 1.0.
+ */
 export async function analyzeModel(
   templateBuffer: ArrayBuffer,
 ): Promise<TemplateModel> {
@@ -217,7 +266,13 @@ export async function analyzeModel(
   return toTemplateModel(parsed);
 }
 
-/** Package multiple output files into a ZIP. */
+/**
+ * Package multiple output files into a single ZIP Blob. Convenience
+ * wrapper for hosts that want to download an entire batch in one
+ * request.
+ *
+ * @stable Frozen at 1.0.
+ */
 export async function packageZip(files: OutputFile[]): Promise<Blob> {
   const zip = new JSZip();
   for (const f of files) {

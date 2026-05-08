@@ -6,6 +6,58 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [1.0.0-rc.1] - 2026-05-08
+
+First release candidate for the XTL 0.1 → 1.0 cut. Locks the
+contract that any second-language port must match. See
+[`PORTERS_GUIDE.md`](./PORTERS_GUIDE.md), [`spec/STABILITY.md`](./spec/STABILITY.md),
+and [`RELEASING.md`](./RELEASING.md).
+
+### Added — 1.0 cut polish
+
+- **Public API surface frozen.** `spec/STABILITY.md` "Public API
+  surface" section enumerates the 13 runtime exports + 14 type
+  re-exports that are stable for 1.x. Each export now carries
+  `@stable` TSDoc. `src/__tests__/api-surface.test.ts` pins the
+  runtime list.
+- **Warning shape formalized.** `OutputFile.warnings`,
+  `PreviewResult.warnings`, and `TemplateModel.warnings` are now
+  `XtlWarning[]` with stable `code` (`xl3w/...`), `message`, and
+  optional `location` — replacing the previous loose `string[]`.
+  Two warning codes ship in 1.0: `xl3w/parser/missing-column` and
+  `xl3w/filename/sanitized`.
+- **Diagnostic location info.** Every cell-eval error now carries
+  `(at sheet "X" cell A5)` appended to its message. Implemented via
+  a new `evalCellAt(sheet, cell, ...)` wrapper in template-eval.
+- **Resource limits position stated.** `spec/evaluation.md`
+  "Resource Limits" section: limits are implementation-defined; the
+  spec does not mandate bounds. Hosts that accept untrusted
+  templates enforce their own caps.
+- **Glossary** at `spec/glossary.md` — 30 core XTL terms with
+  cross-links to the governing ADR / spec section.
+- **Spec navigation index** at `spec/index.md` — surface ↔ ADR ↔
+  fixture cross-reference table for porters and reviewers.
+- **Deferral ADRs.** ADR-0019 records why date arithmetic is
+  deferred to XTL 1.x; ADR-0020 does the same for locale-aware
+  collation.
+- **Status taxonomy.** `0000-template.md` and ADR-0004 introduce
+  the `informational` status — non-normative documentation /
+  audit / deferral ADRs that do not bind impl behavior.
+- **`RELEASING.md`** — npm cut procedure, rc soak rule, rollback
+  guide.
+
+### Changed — 1.0 cut polish
+
+- **Error message wording normalized.** Capitalize first word,
+  subject + verb form, no log-style `XLOOKUP:` prefixes. Two
+  fixtures updated to match (067, 076). Voice rules now documented
+  in `PORTERS_GUIDE.md` "Message style guide".
+- **ADR-0004 reclassified** to `informational` status. The audit's
+  conclusions live in the normative ADRs that followed (0007, 0009,
+  0011, 0017).
+
+## [Pre-1.0 history below]
+
 ### Added — porter and 1.0 readiness
 
 - `PORTERS_GUIDE.md` — second-language port guide. Distinguishes
@@ -285,5 +337,6 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.1.0-alpha.0...HEAD
+[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v1.0.0-rc.1...HEAD
+[1.0.0-rc.1]: https://github.com/jinyoung4478/xl3/compare/v0.1.0-alpha.0...v1.0.0-rc.1
 [0.1.0-alpha.0]: https://github.com/jinyoung4478/xl3/releases/tag/v0.1.0-alpha.0

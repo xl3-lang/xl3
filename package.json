@@ -1,6 +1,6 @@
 {
   "name": "xl3",
-  "version": "0.1.0-alpha.0",
+  "version": "1.0.0-rc.1",
   "description": "Use Excel workbooks as templates and render formatted Excel output from Excel data.",
   "keywords": [
     "excel",

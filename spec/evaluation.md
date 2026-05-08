@@ -502,3 +502,19 @@ localization and programmatic dispatch; the English `Error.message`
 remains the conformance contract.
 
 Implementations MAY provide warnings for non-fatal portability issues, but warnings MUST NOT change output semantics.
+
+## Resource limits
+
+Resource limits — maximum input template size, maximum source row
+count, maximum output workbook size, maximum iteration count for
+`@repeat`, maximum recursion depth — are **implementation-defined**.
+The XTL 0.1 spec does not mandate specific bounds. Implementations
+SHOULD document their limits and SHOULD raise a stable
+`xl3/limits/...` error code when a limit is hit, but the codes
+themselves are not part of the spec contract because hosts vary
+widely in deployment shape (browser, CLI, server) and threat model.
+
+Hosts that accept untrusted templates (e.g., a SaaS that accepts
+user-uploaded `.xlsx`) MUST enforce their own limits at a layer
+above the engine — sandboxing, request size caps, timeouts — and
+SHOULD NOT rely on the engine to detect malicious inputs.

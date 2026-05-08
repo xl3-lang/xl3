@@ -1,9 +1,15 @@
 # ADR 0004 - Reference implementation coupling audit
 
-- **Status:** accepted
+- **Status:** informational
 - **Date:** 2026-05-04
 - **Spec target:** XTL 0.1 draft
 - **Affects:** language.md, evaluation.md, conformance fixtures, reference implementation boundaries
+
+> This ADR is **informational** (per the status taxonomy in
+> `0000-template.md`). It records the coupling audit that drove
+> later normative decisions (ADR-0007, ADR-0009, ADR-0011, ADR-0017,
+> etc.) but does not itself bind implementations. The audit's
+> conclusions live in the ADRs that followed.
 
 ## Context
 

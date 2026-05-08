@@ -352,7 +352,12 @@ function renderConverterPreview({ meta, result }) {
   const warningMarkup = warnings.length
     ? `<div class="preview-warnings">
         <strong>${escapeHtml(t.previewWarnings)}</strong>
-        <ul>${warnings.map((warning) => `<li>${escapeHtml(warning)}</li>`).join('')}</ul>
+        <ul>${warnings.map((warning) => {
+          const text = typeof warning === 'string'
+            ? warning
+            : (warning.location ? `${warning.message} (${warning.location})` : warning.message);
+          return `<li>${escapeHtml(text)}</li>`;
+        }).join('')}</ul>
       </div>`
     : '';
 
