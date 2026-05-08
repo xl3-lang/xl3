@@ -32,6 +32,7 @@ const INFORMATIONAL_ADRS = new Set([
   '0019', // deferred — date arithmetic
   '0020', // deferred — locale collation
   '0021', // implementation-defined boundaries (covered indirectly by 014/018/052; no dedicated fixture)
+  '0022', // Excel version compatibility (informational catalog; no dedicated fixture)
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.

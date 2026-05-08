@@ -51,6 +51,7 @@ matrix.
 | Ordering | evaluation.md "Ordering" | ADR-0016 | 083–086 |
 | Stage 2 OOXML canonicalization | conformance/runner-protocol.md "Stage 2" | ADR-0006 | 024–027, 093 |
 | Dynamic conformance assertions | conformance/runner-protocol.md "Dynamic" | ADR-0005 | 023 |
+| Excel version compatibility | (informational) | ADR-0022 | (no fixtures; authoring guidance) |
 
 ## Implementation-defined boundaries
 

@@ -6,6 +6,15 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Added
+
+- ADR-0022 "Excel version compatibility" — informational catalog of
+  which Excel-version differences XTL 0.1 is immune to, which it
+  leaves implementation-defined, and which authoring patterns
+  templates should avoid for portability across Excel for Windows /
+  Mac / Online / 365, LibreOffice, and Numbers. README gets a short
+  link-and-summary; spec/index.md gets a row in the navigation table.
+
 ### Changed
 
 - **npm package renamed** from `xl3` to `@jinyoung4478/xl3`. The
