@@ -5111,6 +5111,99 @@ async function build096() {
 }
 
 // ---------------------------------------------------------------------------
+// 100 - arithmetic-string-coerces-to-number (ADR-0023)
+//
+// Concept: arithmetic operators coerce numeric-like strings per ADR-
+// 0023's coercion table. `"10" + 5 = 15`, `"1,234" + 1 = 1235`,
+// empty cells coerce to 0.
+// Spec section: language.md "Arithmetic"; ADR-0023.
+// ---------------------------------------------------------------------------
+async function build100() {
+  const dir = join(FIXTURES, '100-arithmetic-string-coerces-to-number');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'arithmetic-string-coerces'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'Result';
+    sh.getCell('A2').value = '{{ [Label] }}';
+    sh.getCell('B2').value = '{{ [A] + [B] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'A';
+    sh.getCell('C1').value = 'B';
+    sh.getCell('A2').value = 'numbers';        sh.getCell('B2').value = 1;       sh.getCell('C2').value = 2;
+    sh.getCell('A3').value = 'string-numeric'; sh.getCell('B3').value = '10';    sh.getCell('C3').value = 5;
+    sh.getCell('A4').value = 'thousands-sep';  sh.getCell('B4').value = '1,234'; sh.getCell('C4').value = 1;
+    sh.getCell('A5').value = 'empty-coerces';  sh.getCell('B5').value = '';      sh.getCell('C5').value = 5;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Label';
+    sh.getCell('B1').value = 'Result';
+    sh.getCell('A2').value = 'numbers';        sh.getCell('B2').value = 3;
+    sh.getCell('A3').value = 'string-numeric'; sh.getCell('B3').value = 15;
+    sh.getCell('A4').value = 'thousands-sep';  sh.getCell('B4').value = 1235;
+    sh.getCell('A5').value = 'empty-coerces';  sh.getCell('B5').value = 5;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 101 - arithmetic-non-numeric-string-error (ADR-0023)
+//
+// Concept: an operand that does not coerce to a finite number raises
+// xl3/eval/operand-coercion at eval time. Replaces the previous
+// silent-zero behavior.
+// Spec section: language.md "Arithmetic"; ADR-0023.
+// ---------------------------------------------------------------------------
+async function build101() {
+  const dir = join(FIXTURES, '101-arithmetic-non-numeric-string-error');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'arithmetic-non-numeric-error'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Result';
+    sh.getCell('A2').value = '{{ [A] + [B] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'A';
+    sh.getCell('B1').value = 'B';
+    sh.getCell('A2').value = 'abc';
+    sh.getCell('B2').value = 5;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // No expected.xlsx — meta.yaml asserts expected_error.
+}
+
+// ---------------------------------------------------------------------------
 // 099 - empty-template-block-error (ADR-0021)
 //
 // Concept: an empty `{{ }}` template block (whitespace-only between
@@ -5665,6 +5758,8 @@ const builders = [
   ['096', build096],
   ['097', build097],
   ['099', build099],
+  ['100', build100],
+  ['101', build101],
 ];
 
 const selected = new Set(process.argv.slice(2));

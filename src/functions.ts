@@ -183,13 +183,58 @@ function toNumber(v: unknown): number {
   return 0;
 }
 
+// ADR-0023: strict numeric coercion for arithmetic operators. Unlike
+// `toNumber` (which silently returns 0 for non-numeric input — used
+// by aggregates), this helper throws when an operand cannot be
+// coerced to a finite number. Empty values coerce to 0 per Excel.
+function toNumberOrThrow(v: unknown, op: string): number {
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  if (typeof v === 'boolean') return v ? 1 : 0;
+  if (isEmpty(v)) return 0;
+  if (typeof v === 'string') {
+    const cleaned = v.trim().replace(/,/g, '');
+    if (cleaned !== '') {
+      const n = Number(cleaned);
+      if (Number.isFinite(n)) return n;
+    }
+  }
+  if (v instanceof Date) {
+    // Excel treats Date as serial number in arithmetic. xl3 does not
+    // expose Excel serial conversions; treat as a coercion error
+    // rather than guess.
+    throw xtlError(
+      'xl3/eval/operand-coercion',
+      `Operator "${op}" cannot coerce a Date to a number; use TEXT() or arithmetic upstream`,
+    );
+  }
+  throw xtlError(
+    'xl3/eval/operand-coercion',
+    `Operator "${op}" cannot coerce ${describeOperand(v)} to a number`,
+  );
+}
+
+function describeOperand(v: unknown): string {
+  if (v === null) return 'null';
+  if (v === undefined) return 'undefined';
+  if (typeof v === 'string') return `string "${v}"`;
+  if (typeof v === 'boolean') return `boolean ${v ? 'TRUE' : 'FALSE'}`;
+  return `value of type ${typeof v}`;
+}
+
 export const functions: Record<string, (...args: unknown[]) => unknown> = {
-  add: (a, b) => toNumber(a) + toNumber(b),
-  sub: (a, b) => toNumber(a) - toNumber(b),
-  mul: (a, b) => toNumber(a) * toNumber(b),
+  // ADR-0023: arithmetic operators require both operands to coerce
+  // to a finite number. Failure is `xl3/eval/operand-coercion`.
+  // Empty values coerce to 0 (Excel-compatible).
+  add: (a, b) => toNumberOrThrow(a, '+') + toNumberOrThrow(b, '+'),
+  sub: (a, b) => toNumberOrThrow(a, '-') - toNumberOrThrow(b, '-'),
+  mul: (a, b) => toNumberOrThrow(a, '*') * toNumberOrThrow(b, '*'),
   div: (a, b) => {
-    const d = toNumber(b);
-    return d === 0 ? 0 : toNumber(a) / d;
+    const d = toNumberOrThrow(b, '/');
+    // Division by zero deferred — see ADR-0023 §"Open question:
+    // division by zero". Current behavior preserves the pre-ADR
+    // result (returns 0); a follow-up ADR will pick error vs.
+    // Excel-style #DIV/0! sentinel.
+    return d === 0 ? 0 : toNumberOrThrow(a, '/') / d;
   },
   concat: (...parts) => parts.map((p) => canonicalString(p)).join(''),
 

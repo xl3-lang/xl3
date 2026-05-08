@@ -46,7 +46,24 @@ String literals use double quotes. Number literals are decimal numbers.
 
 ## Operators
 
-Arithmetic:
+### Arithmetic — `+`, `-`, `*`, `/`
+
+Both operands MUST coerce to a finite number. Coercion rules per
+ADR-0023:
+
+| Operand type | Coerced value |
+|---|---|
+| Number (finite) | itself |
+| Boolean | 1 (TRUE) / 0 (FALSE) |
+| Empty (per [Empty Values](./evaluation.md#empty-values)) | 0 |
+| String that parses as a finite number | parsed number |
+| String that does not parse as a number | error `xl3/eval/operand-coercion` |
+| Date | error |
+| Anything else | error |
+
+String parsing follows ADR-0009: trim, replace commas with nothing,
+`Number()` without producing `NaN`. The Unicode minus `U+2212` is
+not a sign character (per ADR-0009 amendment).
 
 ```text
 {{ [price] * [quantity] }}
@@ -55,13 +72,36 @@ Arithmetic:
 {{ [a] - [b] }}
 ```
 
-String concatenation:
+Examples:
+
+| Expression | Result |
+|---|---|
+| `1 + 2` | 3 |
+| `"10" + 5` | 15 |
+| `"1,234" + 1` | 1235 |
+| `TRUE + 1` | 2 |
+| `[empty-cell] + 5` | 5 |
+| `"abc" + 5` | error |
+
+Division by zero behavior is currently undecided (ADR-0023 §"Open
+question") — see ADR-0023 for the option set.
+
+### String concatenation — `&`
+
+Each operand stringifies via canonical string form (see
+[Comparison and String Coercion](#comparison-and-string-coercion))
+and the results are joined. Always succeeds; no type errors.
 
 ```text
 {{ [item] & " (" & [size] & ")" }}
 ```
 
-Comparison operators:
+### Comparison — `=`, `!=`, `>`, `<`, `>=`, `<=`
+
+Used in `IF()` and `@filter`. Follow the algorithm in
+[Comparison and String Coercion](#comparison-and-string-coercion).
+Mixed types fall through to canonical-string-form code-point order;
+no coercion errors.
 
 ```text
 =
@@ -71,9 +111,6 @@ Comparison operators:
 >=
 <=
 ```
-
-Comparison operators are used in `IF()` and `@filter`. They follow the
-algorithm in [Comparison and String Coercion](#comparison-and-string-coercion).
 
 ## Comparison and String Coercion
 

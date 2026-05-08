@@ -37,6 +37,8 @@ export type XtlErrorCode =
   | 'xl3/lists/missing-reference'
   // Parser (ADR-0021)
   | 'xl3/parser/empty-block'
+  // Evaluation (ADR-0023)
+  | 'xl3/eval/operand-coercion'
   // Cell evaluation
   | 'xl3/cell/numfmt-coercion'
   | 'xl3/cell/row-outside-repeat'
