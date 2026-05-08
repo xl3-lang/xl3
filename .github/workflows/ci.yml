@@ -27,3 +27,23 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run conformance
+
+  conformance-timezones:
+    # ADR-0017 declares Date semantics UTC-normative. Run conformance
+    # under three distinct timezones so any future regression that
+    # leaks the host TZ into output values is caught at PR time.
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tz: [UTC, America/New_York, Asia/Seoul]
+    env:
+      TZ: ${{ matrix.tz }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run conformance

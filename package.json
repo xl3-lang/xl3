@@ -50,6 +50,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "conformance": "node dist/bin/conformance.js --fixture-dir=conformance/fixtures",
+    "conformance:tz": "TZ=UTC npm run conformance && TZ=America/New_York npm run conformance && TZ=Asia/Seoul npm run conformance",
     "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {

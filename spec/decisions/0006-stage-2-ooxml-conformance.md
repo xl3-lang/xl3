@@ -69,6 +69,40 @@ comparison stage.
 - Additional ADRs may refine canonicalization for specific OOXML collections if
   real fixtures expose unstable but semantically irrelevant ordering.
 
+## Amendment (2026-05-08): canonicalizer scope and gaps
+
+The reference canonicalizer (`canonicalizeXlsx` /  `canonicalizeXml`)
+currently implements rules 1-8 from
+[`conformance/runner-protocol.md`](../../conformance/runner-protocol.md#stage-2-output-comparison)
+and passes the existing Stage 2 fixtures (024–027). Three known gaps
+remain that future cross-writer fixtures may expose:
+
+1. **Equivalent attribute defaults.** OOXML defines defaults for many
+   boolean attributes (e.g., `applyFont="0"`, `customHeight="0"`).
+   Different writers may serialize the default form, omit the
+   attribute entirely, or write the explicit value. The current
+   canonicalizer does not normalize defaults beyond the explicit
+   page-setup list (rule 5). Cross-writer drift here is treated as
+   a difference today.
+2. **Color hex case.** `<color rgb="FF000000"/>` and `rgb="ff000000"`
+   refer to the same color; OOXML does not mandate case. The
+   canonicalizer compares them as strings.
+3. **Namespace prefix bindings.** Distinct prefixes bound to the
+   same namespace URI are semantically equivalent but compare as
+   different strings.
+
+These gaps are intentionally left as "treated as differences" until a
+real fixture surfaces a non-volatile case. When that happens, expand
+the canonicalizer + the runner protocol's rule list together; do not
+silently relax rules in implementations.
+
+The canonicalizer is **not** a general-purpose XML C14N tool: it does
+not perform DTD/entity resolution, normalize element ordering for
+collections beyond those explicitly noted in the runner protocol, or
+rewrite namespaces semantically. Implementations targeting Stage 2
+SHOULD reuse the rule list verbatim rather than build a domain-
+agnostic canonicalizer.
+
 ## References
 
 - `conformance/runner-protocol.md`

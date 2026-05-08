@@ -5,6 +5,19 @@
 - **Spec target:** XTL 0.1 draft
 - **Affects:** evaluation.md, language.md
 
+> **1.0 inclusion review (2026-05-08):** Internal review flagged
+> `@join` as a candidate to defer to XTL 1.1 on the grounds that
+> multi-source via `@source` + `XLOOKUP` (ADR-0012/0013) covers most
+> reporting cases. **Decision: keep in 1.0.** The block-level join is
+> a distinct shape (one rendered row per pair, joined-row columns in
+> row context); rebuilding it as a chain of `XLOOKUP` calls is
+> noticeably more verbose for templates that iterate over a fact
+> table. The surface is small (single inner join, deterministic
+> first-match by joined-source row order) and conformance fixtures
+> 079–082 are stable. Post-1.0 reviews can revisit based on adoption
+> data — the deferred shapes (multi-join, left semantics, multi-row
+> matches) remain off-limits until then.
+
 ## Context
 
 ADR-0012 introduced multi-source data and ADR-0013 added per-cell

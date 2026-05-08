@@ -16,6 +16,77 @@ XTL is at version **0.1 (draft)**. The spec, conformance corpus, and reference i
 - Breaking spec changes require XTL 2.0 with public discussion and a migration guide.
 - The reference implementation follows SemVer strictly.
 
+## Path to 1.0
+
+The 1.0 cut closes XTL's first portability contract. The intent is
+that any conforming implementation produces identical output (Stage
+1) and identical canonical OOXML (Stage 2) for the frozen fixture
+corpus, on any host timezone, locale, or byte order.
+
+### What 1.0 freezes
+
+Surface area covered by the following ADRs is part of the 1.0
+contract. Breaking changes require an XTL 2.0 cut.
+
+- ADR-0001 — `TODAY()` UTC semantics
+- ADR-0002 — output filename sanitization
+- ADR-0003 — numFmt-driven coercion
+- ADR-0005 — dynamic conformance assertion protocol
+- ADR-0006 — Stage 2 canonical OOXML comparison (rules 1-8 + the
+  amendment listing the gap items)
+- ADR-0007 — empty-value predicate
+- ADR-0008 — truthiness rules
+- ADR-0009 + ADR-0017 — comparison algorithm and source value
+  model (read together as one contract)
+- ADR-0010 + ADR-0011 — runtime inputs and reserved sheet naming
+- ADR-0012 — multi-source data model
+- ADR-0013 — XLOOKUP cross-source lookup
+- ADR-0014 — `@join` block-level pairing (single inner join,
+  deterministic first-match)
+- ADR-0015 — structured error reporting (`xl3/...` codes + English
+  conformance messages)
+- ADR-0016 — ordering and sort stability
+
+ADR-0004 is informational (reference-impl coupling audit) and not
+part of the spec contract.
+
+### What 1.0 does NOT include
+
+The following are intentionally deferred. Adding them is
+backwards-compatible and does not require a new spec major.
+
+- Multiple `@join` directives in a single block, `@join … left`
+  semantics, multi-row joined matches (ADR-0014 explicit
+  out-of-scope list).
+- XLOOKUP wildcard, approximate, and reverse-search modes
+  (ADR-0013 explicit out-of-scope list).
+- Locale-aware string collation. Sort uses Unicode code-point
+  order; hosts that need locale collation pre-sort upstream.
+- Date/datetime arithmetic functions (no `EOMONTH`, `EDATE`,
+  `DATEDIF`, etc.).
+- Cross-writer canonicalization for the gap items in ADR-0006
+  amendment (default attribute equivalence, color hex case,
+  namespace prefix bindings).
+- A normative wire format for inputs, sources, or outputs beyond
+  the host API surface in ADR-0010 / ADR-0012.
+
+### Conformance baseline
+
+The 1.0 conformance corpus is the union of fixtures tagged with
+`spec_version: "0.1"` plus any added before the 1.0 cut. The corpus
+must pass:
+
+1. Stage 1 cell-value comparison.
+2. Stage 2 canonical OOXML comparison for fixtures declaring
+   `comparison_stage: 2`.
+3. Stage 1 under at least three timezones (`UTC`,
+   `America/New_York`, `Asia/Seoul`) — the reference repo's CI
+   workflow runs this matrix; ports SHOULD do the same.
+
+A 1.0-claiming implementation MUST report its conformance run
+against this corpus and MUST NOT skip fixtures except those
+declared at a higher comparison stage than its runner supports.
+
 ## Core vs. extensions
 
 The spec distinguishes:

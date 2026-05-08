@@ -179,6 +179,26 @@ specific unordered-collection rules beyond those explicitly listed here.
 Fixtures that need additional OOXML equivalence rules should update this
 protocol first.
 
+### Known canonicalization gaps
+
+These cases are NOT normalized by the current canonicalizer. They are
+treated as differences if they ever appear. See [ADR-0006](../spec/decisions/0006-stage-2-ooxml-conformance.md)
+amendment for the rationale.
+
+- **Default attribute equivalence.** A boolean attribute that an
+  OOXML default specifies, when omitted vs. emitted as the default
+  value (e.g., `applyFont="0"`), is treated as a difference.
+- **Color hex case.** `rgb="FF000000"` and `rgb="ff000000"` compare
+  as different strings.
+- **Namespace prefix bindings.** Different prefixes bound to the same
+  namespace URI are not unified.
+
+When a cross-writer fixture exposes one of these gaps as a
+**genuinely volatile** difference (not a content difference dressed
+up as one), the protocol and reference canonicalizer should be
+extended together. Implementations MUST NOT silently relax these
+rules locally.
+
 ## Runner CLI conventions
 
 Implementations should expose a runner with this minimal interface:
