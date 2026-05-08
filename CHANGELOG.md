@@ -6,6 +6,30 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-08
+
+Spec-audit minor release. Three new ADRs (0023, 0024, 0025) close
+spec gaps that surfaced during a focused audit; seven new
+conformance fixtures (100–106) pin them. The notable behavior
+change — division by zero now produces an Excel `#DIV/0!` error
+cell instead of silently rendering `0` — is what bumps this from
+patch to minor.
+
+### Changed (BREAKING within 0.x semantics — see ADR-0025)
+
+- **Division by zero** in arithmetic produces an Excel-style
+  `#DIV/0!` error cell instead of silently rendering `0`.
+  Templates whose data has a zero divisor now show `#DIV/0!`
+  visibly in the cell (the workbook still renders; only the
+  affected cell carries the error). Aligns with Excel's behavior
+  per the Excel-default principle.
+- **Wrong arity** on user-facing functions (`IF`, `ROUND`,
+  `XLOOKUP`, `SUM`, etc.) now raises `xl3/eval/arity-mismatch`
+  at parse / normalize time. Previously fell through to a silent
+  string-fallback or generic crash.
+- **Non-numeric strings in arithmetic** (`"abc" + 5`) now raise
+  `xl3/eval/operand-coercion`. Previously coerced silently to 0.
+
 ### Added
 
 - ADR-0025 "Division by zero produces an Excel #DIV/0! error cell".
@@ -490,7 +514,8 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/jinyoung4478/xl3/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/jinyoung4478/xl3/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/jinyoung4478/xl3/compare/v0.1.0-alpha.0...v0.1.0
 [0.1.0-alpha.0]: https://github.com/jinyoung4478/xl3/releases/tag/v0.1.0-alpha.0
