@@ -68,6 +68,12 @@ function groupByKeysOrdered(rows: Row[], keys: string[]): SheetGroup[] {
   return order.map((k) => map.get(k)!);
 }
 
+// ADR-0026: Excel-style "(blank)" placeholder for empty group keys.
+// Without this, an empty Region cell would render to a `.xlsx`
+// filename or a "Sheet" fallback — neither is portable. Excel pivot
+// tables put empty values into a "(blank)" group; xl3 follows.
+const EMPTY_GROUP_KEY_PLACEHOLDER = '(blank)';
+
 function extractKey(row: Row, keys: string[]): GroupKey {
   if (keys.length === 0) return { values: {} };
   const values: Record<string, string> = {};
@@ -75,7 +81,12 @@ function extractKey(row: Row, keys: string[]): GroupKey {
     // ADR-0009: group keys use canonical string form so Boolean and
     // numeric columns produce stable, cross-impl group identifiers
     // (Booleans uppercase, integers without decimal point).
-    values[k] = canonicalString(row[k]);
+    // ADR-0026: empty canonical-string values use the "(blank)"
+    // placeholder so sheet/file names render as "(blank).xlsx" /
+    // "(blank)" rather than producing a sanitization error or a
+    // generic "Sheet" fallback.
+    const canonical = canonicalString(row[k]);
+    values[k] = canonical === '' ? EMPTY_GROUP_KEY_PLACEHOLDER : canonical;
   }
   return { values };
 }

@@ -1,0 +1,5 @@
+description: A file-level group key with an empty value substitutes the "(blank)" placeholder before filename interpolation per ADR-0026. Conversion does not halt.
+spec_section: ADR-0026 §"Group key value evaluating to empty"
+spec_version: "0.1"
+tags: [adr-0026, group-key, filename, blank-placeholder]
+verified_by: [hand]
