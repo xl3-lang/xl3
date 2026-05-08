@@ -54,14 +54,16 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 - `runner-protocol.md` clarifies `tags` is a runner convenience, not
   a conformance contract.
 
-## [1.0.0-rc.1] - 2026-05-08
+## [0.1.0] - 2026-05-08
 
-First release candidate for the XTL 0.1 → 1.0 cut. Locks the
-contract that any second-language port must match. See
-[`PORTERS_GUIDE.md`](./PORTERS_GUIDE.md), [`spec/STABILITY.md`](./spec/STABILITY.md),
-and [`RELEASING.md`](./RELEASING.md).
+First substantive 0.x release. Drafts the contract that a future 1.0
+cut will freeze; the cut itself is deferred until external validation
+accumulates — see [`spec/STABILITY.md`](./spec/STABILITY.md) "Current
+state". Until 1.0, breaking changes are possible across 0.x minor
+bumps. Reference docs: [`PORTERS_GUIDE.md`](./PORTERS_GUIDE.md),
+[`RELEASING.md`](./RELEASING.md).
 
-### Added — 1.0 cut polish
+### Added — 1.0-readiness polish
 
 - **Public API surface frozen.** `spec/STABILITY.md` "Public API
   surface" section enumerates the 13 runtime exports + 14 type
@@ -94,7 +96,7 @@ and [`RELEASING.md`](./RELEASING.md).
 - **`RELEASING.md`** — npm cut procedure, rc soak rule, rollback
   guide.
 
-### Changed — 1.0 cut polish
+### Changed — 1.0-readiness polish
 
 - **Error message wording normalized.** Capitalize first word,
   subject + verb form, no log-style `XLOOKUP:` prefixes. Two
@@ -385,6 +387,6 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v1.0.0-rc.1...HEAD
-[1.0.0-rc.1]: https://github.com/jinyoung4478/xl3/compare/v0.1.0-alpha.0...v1.0.0-rc.1
+[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/jinyoung4478/xl3/compare/v0.1.0-alpha.0...v0.1.0
 [0.1.0-alpha.0]: https://github.com/jinyoung4478/xl3/releases/tag/v0.1.0-alpha.0

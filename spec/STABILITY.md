@@ -2,10 +2,16 @@
 
 ## Current state
 
-XTL is at version **0.1**, with a 1.0 release candidate published as
-`xl3@1.0.0-rc.1` on npm. The 0.1 spec surface is the 1.0 surface; the
-rc cycle is for catching impl-side bugs and porter-side ambiguities
-before the contract freezes for the 1.x line.
+XTL is at version **0.1**. The reference impl ships as `xl3@0.1.0`
+on npm. The 1.0 cut is deliberately deferred until external
+validation accumulates — at minimum, a second-language port that
+passes the conformance corpus and one production adopter. Until
+then, breaking changes are possible across 0.x minor bumps and
+SHOULD be documented in the affected ADR(s).
+
+The contract that 1.0 will freeze is already drafted (see "Path to
+1.0" below); the deferral is about the level of external signal
+required to commit, not about the spec being incomplete.
 
 ## During 0.x
 
