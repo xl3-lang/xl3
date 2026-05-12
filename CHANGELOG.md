@@ -6,6 +6,16 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-05-12
+
+Spec-audit minor release. Four new ADRs (0029–0032) close the
+last "silent fallthrough" surfaces and pin existing
+implementation behavior as normative. One new error code
+(`xl3/filename/collision`) and six new conformance fixtures
+(115, 116, 117, 118, 119, 120). With this release the XTL 0.1
+spec audit pass is complete: 32 ADRs, 119 conformance fixtures,
+all green at Stage 2.
+
 ### Added
 
 - ADR-0032 "Niche limits and workbook pass-through behaviors".
@@ -67,6 +77,11 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
     Authors filter explicitly via `@filter` for visibility-aware
     behavior. Fixture 117.
 - 4 new conformance fixtures (114–117).
+
+### Changed
+
+- README adds a "What's new" callout referencing the audit-pass
+  completion and the changes accumulated since 0.3.0.
 
 ## [0.3.0] - 2026-05-09
 
@@ -667,7 +682,8 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/jinyoung4478/xl3/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/jinyoung4478/xl3/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/jinyoung4478/xl3/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/jinyoung4478/xl3/compare/v0.1.0...v0.1.1
