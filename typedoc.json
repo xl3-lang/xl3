@@ -18,6 +18,18 @@
   "excludeInternal": true,
   "excludePrivate": true,
   "excludeProtected": true,
+  "blockTags": [
+    "@param",
+    "@returns",
+    "@throws",
+    "@example",
+    "@see",
+    "@remarks",
+    "@deprecated",
+    "@since",
+    "@internal",
+    "@stable"
+  ],
   "sort": ["alphabetical"],
   "gitRevision": "main",
   "sourceLinkTemplate": "https://github.com/jinyoung4478/xl3/blob/{gitRevision}/{path}#L{line}"

@@ -24,6 +24,19 @@ export type {
   OutputFile,
   PreviewResult,
   PreviewSource,
+  PreviewFile,
+  PreviewSheet,
+  SheetTemplate,
+  TemplateVariable,
+  DataBlock,
+  Directive,
+  FilterDirective,
+  FilterOp,
+  SortDirective,
+  TopDirective,
+  RepeatDirective,
+  SourceDirective,
+  JoinDirective,
   ConvertOptions,
   InputSpec,
   InputType,
@@ -32,7 +45,9 @@ export type {
   XtlWarningCode,
 } from './types.js';
 export { readConfigSheet, writeConfigSheet, readInputsSheet } from './parser.js';
+export type { ConfigResult } from './parser.js';
 export { batchMatch } from './matcher.js';
+export type { MatchResult } from './matcher.js';
 export { toTemplateModel } from './template-model.js';
 export { xtlError, isXtlError } from './error-codes.js';
 export type { XtlError, XtlErrorCode } from './error-codes.js';

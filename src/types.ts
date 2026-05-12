@@ -40,6 +40,15 @@ export interface SourceSpec {
   description?: string;
 }
 
+/**
+ * A parsed template-expression reference inside a single cell.
+ * Returned indirectly via {@link analyze} (`ParsedTemplate.variables`).
+ *
+ * The concrete shape is TypeScript-impl-specific; porters should NOT
+ * copy this structure (see PORTERS_GUIDE.md "What you MUST NOT copy
+ * from the TS impl"). Tooling that inspects templates can rely on it,
+ * but it's not normatively part of the XTL spec.
+ */
 export interface TemplateVariable {
   expression: string;
   columns: string[];
@@ -117,6 +126,16 @@ export interface DataBlock {
   join?: JoinDirective;
 }
 
+/**
+ * A single sheet within a parsed template — its directives, group
+ * keys, and data blocks. Returned indirectly via {@link analyze}
+ * (`ParsedTemplate.sheetTemplates`).
+ *
+ * TypeScript-impl-specific shape. Porters should NOT copy this
+ * structure into their own internal model (see PORTERS_GUIDE.md "What
+ * you MUST NOT copy from the TS impl"); use it only to inspect the TS
+ * impl's parsed output.
+ */
 export interface SheetTemplate {
   originalName: string;
   groupKeys: string[];
