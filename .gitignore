@@ -5,6 +5,7 @@ node_modules
 dist
 docs/.vitepress/dist
 docs/.vitepress/cache
+site/docs
 *.tsbuildinfo
 
 # logs

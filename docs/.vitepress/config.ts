@@ -12,12 +12,25 @@ export default defineConfig({
   // existing source markdown rather than duplicating content.
   srcDir: '..',
   outDir: '.vitepress/dist',
-  base: '/',
+  // Site is mounted at xl3.io/docs/ — the root xl3.io is the
+  // hand-written marketing page + browser playground in `site/`.
+  // Locally `npm run docs:dev` serves from /docs/ too, so links
+  // resolve identically in dev and prod.
+  base: '/docs/',
 
   // Markdown links point at source-tree paths (LICENSE, src/, ADRs,
   // grammar.ebnf) that aren't part of the rendered site. Don't fail
   // the build on these — they resolve correctly on GitHub.
   ignoreDeadLinks: true,
+
+  // Avoid `/docs/docs/cookbook/` collisions: the site is already
+  // mounted at /docs/, so collapse the `docs/` prefix from the
+  // source markdown paths.
+  rewrites: {
+    'docs/cookbook/README.md': 'cookbook/index.md',
+    'docs/cookbook/:slug': 'cookbook/:slug',
+    'docs/SITE.md': 'site.md',
+  },
 
   // Files we surface in the site. Everything else (build scripts,
   // fixture xlsx, node_modules) is ignored.
@@ -68,7 +81,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'Spec', link: '/spec/' },
-      { text: 'Cookbook', link: '/docs/cookbook/' },
+      { text: 'Cookbook', link: '/cookbook/' },
       {
         text: 'Reference',
         items: [
@@ -89,21 +102,21 @@ export default defineConfig({
     ],
 
     sidebar: {
-      '/docs/cookbook/': [
+      '/cookbook/': [
         {
           text: 'Cookbook',
           items: [
-            { text: 'Overview', link: '/docs/cookbook/' },
-            { text: '01 · Getting started', link: '/docs/cookbook/01-getting-started' },
-            { text: '02 · Conditional cells', link: '/docs/cookbook/02-conditional-cells' },
-            { text: '03 · Aggregates', link: '/docs/cookbook/03-aggregates' },
-            { text: '04 · File per group', link: '/docs/cookbook/04-file-per-group' },
-            { text: '05 · Sheet per group', link: '/docs/cookbook/05-sheet-per-group' },
-            { text: '06 · Runtime inputs', link: '/docs/cookbook/06-runtime-inputs' },
-            { text: '07 · Multi-source + @join', link: '/docs/cookbook/07-multi-source-join' },
-            { text: '08 · XLOOKUP', link: '/docs/cookbook/08-xlookup' },
-            { text: '09 · Sort and Top-N', link: '/docs/cookbook/09-sort-and-top' },
-            { text: '10 · Styling and branding', link: '/docs/cookbook/10-styling-and-branding' },
+            { text: 'Overview', link: '/cookbook/' },
+            { text: '01 · Getting started', link: '/cookbook/01-getting-started' },
+            { text: '02 · Conditional cells', link: '/cookbook/02-conditional-cells' },
+            { text: '03 · Aggregates', link: '/cookbook/03-aggregates' },
+            { text: '04 · File per group', link: '/cookbook/04-file-per-group' },
+            { text: '05 · Sheet per group', link: '/cookbook/05-sheet-per-group' },
+            { text: '06 · Runtime inputs', link: '/cookbook/06-runtime-inputs' },
+            { text: '07 · Multi-source + @join', link: '/cookbook/07-multi-source-join' },
+            { text: '08 · XLOOKUP', link: '/cookbook/08-xlookup' },
+            { text: '09 · Sort and Top-N', link: '/cookbook/09-sort-and-top' },
+            { text: '10 · Styling and branding', link: '/cookbook/10-styling-and-branding' },
           ],
         },
       ],
