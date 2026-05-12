@@ -2,7 +2,53 @@ import React from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import clsx from 'clsx';
+import { CodeCard } from '@site/src/components/CodeCard';
+import { ExcelPreview, ExcelPreviewFrame } from '@site/src/components/ExcelPreview';
+import type { Workbook } from '@site/src/components/ExcelPreview';
 import styles from './index.module.css';
+
+const CONFIG_PREVIEW: Workbook = {
+  kind: '__config__',
+  title: 'The template declares the source shape.',
+  note: 'source_table tells the engine where the raw table starts and which columns belong to it.',
+  workbookTitle: 'template.xlsx',
+  workbookSubtitle: 'workbook with transformation rules',
+  formula: 'B2  source_table = 1',
+  sheetName: '__config__',
+  rows: [
+    ['key', 'value', 'notes'],
+    ['source_sheet', 'Raw', 'worksheet to read'],
+    ['source_table', '1', 'column names and data rows'],
+  ],
+  classes: [
+    ['header', 'header', 'header'],
+    ['', 'selected currency', ''],
+    ['', 'currency', ''],
+  ],
+};
+
+const RESULT_PREVIEW: Workbook = {
+  kind: 'result.xlsx',
+  title: 'The output is a finished workbook.',
+  note: 'Values change while workbook layout, styles, number formats, and merges remain useful.',
+  workbookTitle: 'result.xlsx',
+  workbookSubtitle: 'rendered workbook with formatting preserved',
+  formula: 'B2  1,200.00',
+  sheetName: 'Report',
+  rows: [
+    ['Customer', 'Amount', 'Status'],
+    ['Acme', '1,200.00', 'VIP'],
+    ['Prepared for finance review', '', ''],
+    ['Beta', '350.00', 'Standard'],
+  ],
+  classes: [
+    ['header', 'header', 'header'],
+    ['', 'selected currency', 'status'],
+    ['merged-note', 'merged-note', 'merged-note'],
+    ['', 'currency', ''],
+  ],
+  merges: [{ row: 2, col: 0, span: 3 }],
+};
 
 function Hero() {
   return (
@@ -102,16 +148,27 @@ function Walkthrough() {
             workbook template that teams can archive and hand over.
           </p>
         </div>
-        <div className={styles.stepsGrid}>
-          {WALKTHROUGH_STEPS.map((s) => (
-            <article key={s.index} className={styles.stepCard}>
-              <span className={styles.stepIndex}>{s.index}</span>
-              <div>
-                <h3 className={styles.stepTitle}>{s.title}</h3>
-                <p className={styles.stepBody}>{s.body}</p>
-              </div>
-            </article>
-          ))}
+        <div className={styles.walkthroughLayout}>
+          <div className={styles.stepsGrid}>
+            {WALKTHROUGH_STEPS.map((s) => (
+              <article key={s.index} className={styles.stepCard}>
+                <span className={styles.stepIndex}>{s.index}</span>
+                <div>
+                  <h3 className={styles.stepTitle}>{s.title}</h3>
+                  <p className={styles.stepBody}>{s.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className={styles.previewColumn}>
+            <ExcelPreviewFrame
+              kind={CONFIG_PREVIEW.kind}
+              title={CONFIG_PREVIEW.title}
+              note={CONFIG_PREVIEW.note}
+            >
+              <ExcelPreview workbook={CONFIG_PREVIEW} />
+            </ExcelPreviewFrame>
+          </div>
         </div>
       </div>
     </section>
@@ -277,31 +334,50 @@ function DeveloperApi() {
           </p>
         </div>
         <div className={styles.codePair}>
-          <figure className={styles.codeCard}>
-            <figcaption className={styles.codeCardHead}>
-              <span className={styles.windowDots} aria-hidden="true">
-                <span /><span /><span />
-              </span>
-              <span className={styles.codeCardName}>terminal</span>
-            </figcaption>
-            <pre>
-              <code>{`$ npm install @jinyoung4478/xl3`}</code>
-            </pre>
-          </figure>
-          <figure className={styles.codeCard}>
-            <figcaption className={styles.codeCardHead}>
-              <span className={styles.windowDots} aria-hidden="true">
-                <span /><span /><span />
-              </span>
-              <span className={styles.codeCardName}>example.ts</span>
-            </figcaption>
-            <pre>
-              <code>{`import { convert } from '@jinyoung4478/xl3';
-
-const outputs = await convert(templateBuffer, dataBuffer);
-// OutputFile[] → formatted .xlsx workbook(s)`}</code>
-            </pre>
-          </figure>
+          <CodeCard
+            name="terminal"
+            lines={[
+              [
+                { kind: 'prompt', text: '$' },
+                { kind: 'fn', text: 'npm' },
+                { kind: 'plain', text: ' ' },
+                { kind: 'kw', text: 'install' },
+                { kind: 'plain', text: ' ' },
+                { kind: 'var', text: '@jinyoung4478/xl3' },
+              ],
+            ]}
+          />
+          <CodeCard
+            name="example.ts"
+            lines={[
+              [
+                { kind: 'kw', text: 'import' },
+                { kind: 'plain', text: ' { ' },
+                { kind: 'var', text: 'convert' },
+                { kind: 'plain', text: ' } ' },
+                { kind: 'kw', text: 'from' },
+                { kind: 'plain', text: ' ' },
+                { kind: 'string', text: "'@jinyoung4478/xl3'" },
+                { kind: 'plain', text: ';' },
+              ],
+              [{ kind: 'plain', text: '' }],
+              [
+                { kind: 'kw', text: 'const' },
+                { kind: 'plain', text: ' ' },
+                { kind: 'const', text: 'outputs' },
+                { kind: 'plain', text: ' = ' },
+                { kind: 'kw', text: 'await' },
+                { kind: 'plain', text: ' ' },
+                { kind: 'fn', text: 'convert' },
+                { kind: 'plain', text: '(' },
+                { kind: 'var', text: 'templateBuffer' },
+                { kind: 'plain', text: ', ' },
+                { kind: 'var', text: 'dataBuffer' },
+                { kind: 'plain', text: ');' },
+              ],
+              [{ kind: 'comment', text: '// OutputFile[] → formatted .xlsx workbook(s)' }],
+            ]}
+          />
         </div>
         <p className={styles.apiCta}>
           <Link to="/cookbook/getting-started">Cookbook 01 — Getting started in 5 minutes</Link>

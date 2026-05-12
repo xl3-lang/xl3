@@ -157,14 +157,30 @@
   background: var(--ifm-background-color);
 }
 
-.stepsGrid {
+.walkthroughLayout {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr);
+  gap: 2rem;
+  align-items: start;
 }
 
-@media (max-width: 768px) {
-  .stepsGrid { grid-template-columns: 1fr; }
+@media (max-width: 996px) {
+  .walkthroughLayout { grid-template-columns: 1fr; }
+}
+
+.previewColumn {
+  position: sticky;
+  top: 5rem;
+}
+
+@media (max-width: 996px) {
+  .previewColumn { position: static; }
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
 }
 
 .stepCard {

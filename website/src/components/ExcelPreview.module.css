@@ -1,0 +1,235 @@
+/* Ported from site/styles.css `.excel-window` family. */
+
+:root {
+  --xl3-excel: #217846;
+  --xl3-excel-dark: #185c37;
+  --xl3-excel-soft: #e7f3eb;
+  --xl3-excel-amber: #9a6b1f;
+  --xl3-excel-red: #b54e4e;
+  --xl3-excel-line: #dfe4df;
+  --xl3-excel-line-strong: #c8d0ca;
+  --xl3-excel-muted: #68716d;
+  --xl3-excel-quiet: #8a928e;
+  --xl3-excel-shadow: 0 18px 55px rgba(31, 42, 35, 0.12);
+}
+
+.frame {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--xl3-excel-muted);
+}
+
+.caption span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--xl3-excel-dark);
+  text-transform: lowercase;
+}
+
+.caption strong {
+  font-size: 1.05rem;
+  color: #1e2822;
+  font-weight: 700;
+}
+
+[data-theme='dark'] .caption strong { color: #e6edea; }
+
+.notes {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--xl3-excel-muted);
+  line-height: 1.55;
+}
+
+.window {
+  overflow: hidden;
+  border: 1px solid var(--xl3-excel-line-strong);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--xl3-excel-shadow);
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 62px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--xl3-excel-line);
+  background: linear-gradient(90deg, #e9f4ed, #fbfbf8);
+}
+
+.titlebar strong {
+  display: block;
+  color: #1e2822;
+  font-size: 14px;
+}
+
+.titlebar small {
+  display: block;
+  margin-top: 2px;
+  color: var(--xl3-excel-muted);
+  font-size: 12px;
+}
+
+.dots {
+  display: flex;
+  gap: 6px;
+}
+
+.dots > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dots > span:nth-child(1) { background: var(--xl3-excel-red); }
+.dots > span:nth-child(2) { background: var(--xl3-excel-amber); }
+.dots > span:nth-child(3) { background: var(--xl3-excel); }
+
+.formulaBar {
+  display: grid;
+  grid-template-columns: 70px 34px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--xl3-excel-line);
+  background: #fbfcfa;
+}
+
+.nameBox,
+.fx,
+.formulaText {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--xl3-excel-line-strong);
+  border-radius: 4px;
+  background: #ffffff;
+  font-size: 12px;
+}
+
+.nameBox,
+.fx {
+  justify-content: center;
+  color: #4f5a54;
+  font-weight: 700;
+}
+
+.formulaText {
+  padding: 0 9px;
+  color: #26302a;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sheetWrap {
+  overflow-x: auto;
+  background: #ffffff;
+}
+
+.sheetGrid {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: 13px;
+  margin: 0;
+}
+
+.sheetGrid th,
+.sheetGrid td {
+  height: 48px;
+  padding: 7px 9px;
+  border-right: 1px solid #dfe5e0;
+  border-bottom: 1px solid #dfe5e0;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.sheetGrid thead th,
+.sheetGrid tbody th {
+  width: 42px;
+  background: #eef2ef;
+  color: #68716d;
+  text-align: center;
+  font-weight: 680;
+}
+
+.sheetGrid thead th:not(:first-child) {
+  width: 210px;
+}
+
+.sheetGrid td {
+  background: #ffffff;
+  color: #1e2822;
+}
+
+.headerCell {
+  background: var(--xl3-excel-soft) !important;
+  color: #123c2a !important;
+  font-weight: 760;
+}
+
+.templateCell {
+  color: var(--xl3-excel-dark);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.selected {
+  outline: 2px solid var(--xl3-excel);
+  outline-offset: -2px;
+}
+
+.mergedNote {
+  background: #fff8e7 !important;
+  color: #6b4c17;
+  font-style: italic;
+}
+
+.currencyCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.statusCell {
+  color: var(--xl3-excel-dark);
+  font-weight: 760;
+}
+
+.sheetTabs {
+  display: flex;
+  align-items: end;
+  min-height: 42px;
+  padding: 7px 10px 0;
+  border-top: 1px solid var(--xl3-excel-line);
+  background: #f4f5f1;
+}
+
+.sheetTab {
+  min-width: 110px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #b9d5c4;
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: #ffffff;
+  color: var(--xl3-excel-dark);
+  font-size: 12px;
+  font-weight: 760;
+}

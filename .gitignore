@@ -6,7 +6,24 @@ dist
 website/.docusaurus
 website/build
 website/docs
-site/docs
+# Site assembled at deploy time — everything copied in from website/build/.
+# Only CNAME, robots.txt, .nojekyll are tracked at site/ root.
+site/assets
+site/cookbook
+site/spec
+site/conformance
+site/ko
+site/converter
+site/img
+site/playground-samples
+site/sitemap.xml
+site/index.html
+site/404.html
+site/CONTRIBUTING
+site/IMPLEMENTATIONS
+site/PORTERS_GUIDE
+site/RELEASING
+site/README
 *.tsbuildinfo
 
 # logs

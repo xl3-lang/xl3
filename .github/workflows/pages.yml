@@ -49,11 +49,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: mkdir -p site/dist && cp -R dist/. site/dist/
-      # Build the Docusaurus docs site and mount it under /docs/.
-      # The hand-written landing page in site/ stays at the root.
+      # Build the Docusaurus docs site at the root. The /converter page
+      # imports the local dist via a webpack alias, so dist must exist
+      # before docs:build runs (build step above produces it).
       - run: npm run docs:build
-      - run: mkdir -p site/docs && cp -R website/build/. site/docs/
+      - run: cp -R website/build/. site/
       - uses: actions/configure-pages@v5
         with:
           enablement: true
