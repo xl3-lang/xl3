@@ -111,7 +111,6 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
     // Legacy fields (for backward compat — populated from blocks at the end)
     let legacyDataStartRow = 0;
     let legacyDataEndRow = 0;
-    const staticRows = new Set<number>();
 
     worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
       // 1. Check for directive rows
@@ -280,7 +279,6 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
       } else {
         // Non-data row: close current block
         if (currentBlock) { blocks.push(currentBlock); currentBlock = null; }
-        staticRows.add(rowNumber);
       }
     });
 
@@ -298,7 +296,6 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
       groupKeys: sheetGroupKeys,
       dataStartRow: legacyDataStartRow,
       dataEndRow: legacyDataEndRow,
-      staticRows,
       directives: allDirectives,
       directiveRows: allDirectiveRows,
       blocks,
@@ -318,7 +315,7 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
       if (d.kind === 'filter' && d.listRef && !listSheets[d.listRef]) {
         throw xtlError(
           'xl3/lists/missing-reference',
-          `Sheet "${st.originalName}" references missing list sheet "${d.listRef}" in a filter.`,
+          `Sheet "${st.originalName}" references missing list sheet "${d.listRef}" in a filter`,
         );
       }
     }
@@ -401,9 +398,13 @@ const VALID_INPUT_TYPES: ReadonlySet<InputType> = new Set([
 
 const NAME_RE = /^[A-Za-z0-9_]+$/;
 
-// ADR-0010 / ADR-0011: parse the optional `__inputs__` sheet. The
-// first row is the header; each subsequent row declares one input.
-// Columns are identified by header text, case-insensitive.
+/**
+ * Parse the optional `__inputs__` sheet (ADR-0010 / ADR-0011). The
+ * first row is the header; each subsequent row declares one input.
+ * Columns are identified by header text, case-insensitive.
+ *
+ * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
+ */
 export function readInputsSheet(workbook: ExcelJS.Workbook): InputSpec[] {
   const sheet = workbook.getWorksheet(INPUTS_SHEET);
   if (!sheet) return [];
@@ -503,6 +504,12 @@ export interface ConfigResult {
   configVars: Record<string, string>;
 }
 
+/**
+ * Read the `__config__` sheet and return parsed template metadata
+ * plus any author-defined config variables.
+ *
+ * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
+ */
 export function readConfigSheet(workbook: ExcelJS.Workbook): ConfigResult {
   const meta: TemplateMeta = {
     name: '', description: '', source_sheet: '',
@@ -649,6 +656,12 @@ export function readListsSheet(workbook: ExcelJS.Workbook): Record<string, strin
   return lists;
 }
 
+/**
+ * Write template metadata to the workbook's hidden `__config__`
+ * sheet, replacing any existing config sheet.
+ *
+ * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
+ */
 export function writeConfigSheet(workbook: ExcelJS.Workbook, meta: TemplateMeta) {
   // Remove existing
   const existing = workbook.getWorksheet(CONFIG_SHEET);
@@ -669,9 +682,9 @@ export function writeConfigSheet(workbook: ExcelJS.Workbook, meta: TemplateMeta)
   });
 }
 
-export function populateColumnRefs(parsed: TemplateModel, columns: Set<string>) {
+export function populateColumnRefs(parsed: TemplateModel) {
   for (const v of parsed.variables) {
-    v.columns = extractColumnRefs(v.expression, columns);
+    v.columns = extractColumnRefs(v.expression);
   }
 }
 

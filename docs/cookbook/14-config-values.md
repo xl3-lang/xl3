@@ -10,9 +10,9 @@ doubles as a value dictionary the author can read from any cell.
 ## How it works
 
 Per ADR-0011, `__config__` is the reserved configuration sheet. It has
-two columns: `key` and `value`. Some keys are spec-defined
-(`source_sheet`, `source_table`, `output_file_pattern`, `name`). Any
-other key is author-defined and accessible via:
+two columns: `key` and `value`. Some keys are spec-defined (`name`,
+`description`, `source_sheet`, `source_table`, `output_file_pattern`,
+`match_pattern`). Any other key is author-defined and accessible via:
 
 ```text
 {{ __config__[key_name] }}
@@ -68,12 +68,15 @@ Per ADR-0011, the following `__config__` keys are spec-defined and
 read by the engine itself; don't shadow them with custom semantics:
 
 - `name`
+- `description`
 - `source_sheet`
 - `source_table`
 - `output_file_pattern`
+- `match_pattern`
 
-Custom keys MUST NOT match `^_+` (avoid dunder names). Otherwise any
-identifier works.
+Custom keys MUST NOT match `^__[a-z]+__$` (dunder-wrapped names like
+`__foo__` are reserved per ADR-0027). A leading single `_` is fine.
+Otherwise any identifier works.
 
 ## Why not put it in source data?
 

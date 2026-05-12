@@ -106,9 +106,11 @@ ADR-0023:
 | Date | error |
 | Anything else | error |
 
-String parsing follows ADR-0009: trim, replace commas with nothing,
-`Number()` without producing `NaN`. The Unicode minus `U+2212` is
-not a sign character (per ADR-0009 amendment).
+String parsing follows ADR-0009 and ADR-0023: trim, then `Number()`
+without producing `NaN`. Commas are treated as thousands separators
+(`"1,234"` parses as `1234`); no scientific notation in literals; no
+leading `+`. The Unicode minus `U+2212` is not a sign character
+(per ADR-0009 amendment).
 
 ```text
 {{ [price] * [quantity] }}
@@ -128,8 +130,14 @@ Examples:
 | `[empty-cell] + 5` | 5 |
 | `"abc" + 5` | error |
 
-Division by zero behavior is currently undecided (ADR-0023 §"Open
-question") — see ADR-0023 for the option set.
+Division by zero produces an Excel `#DIV/0!` error cell (per
+ADR-0025). A numeric single-expression cell renders as a real Excel
+error cell with value `#DIV/0!`; in a text-format cell, mixed-text
+cell, or inside `&` concatenation, the string `"#DIV/0!"` is
+substituted at the position. If the error value flows into a further
+arithmetic operator within the same cell expression (e.g., `(1/0) + 5`),
+it fails to coerce to a finite number and raises
+`xl3/eval/operand-coercion` per the table above.
 
 ### String concatenation — `&`
 

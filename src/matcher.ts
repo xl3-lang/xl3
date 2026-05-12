@@ -6,7 +6,11 @@ export interface MatchResult {
   matchedBy: string;
 }
 
-/** Match source filenames to templates by match_pattern. */
+/**
+ * Match source filenames to templates by `match_pattern`.
+ *
+ * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
+ */
 export function batchMatch(
   filenames: string[],
   templates: { id: string; meta: TemplateMeta }[],

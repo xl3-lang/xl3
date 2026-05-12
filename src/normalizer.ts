@@ -248,7 +248,6 @@ function normalizeCondition(cond: string, columns: Set<string>): string {
 /** Extract column names referenced in an expression. */
 export function extractColumnRefs(
   expr: string,
-  _columns: Set<string>,
 ): string[] {
   const refs: string[] = [];
   const seen = new Set<string>();

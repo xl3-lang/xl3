@@ -26,7 +26,7 @@ template content.
 |---|---|
 | `__config__` | Single configuration object — engine metadata + author-defined values |
 | `__inputs__` | Runtime input declarations (collection; see [Inputs](#inputs)) |
-| `__sources__` | External data source declarations (reserved for a future ADR) |
+| `__sources__` | Named external data source declarations (collection; see [External Data Sources](#external-data-sources), per ADR-0012) |
 | `__lists__` | Author-defined membership lists (collection; see [List Sheets](#list-sheets)) |
 
 References to reserved-sheet contents from cell expressions use Excel
@@ -103,10 +103,13 @@ A data block MAY scope its iteration to a named source:
 ```
 {{ @source Customers }}
 {{ @filter [Region] = "Seoul" }}
-{{ @repeat }}
 {{ [Account] }}
 {{ [Region] }}
 ```
+
+The data block above expands vertically by default — one rendered
+row per source row — without an explicit `@repeat` directive (see
+[Directives](#directives)).
 
 Without `@source`, the active source is `default`. `@source` MUST
 appear before `@filter`/`@sort`/`@top` directives of the same block
@@ -124,7 +127,6 @@ source:
 ```
 {{ @source Renewals }}
 {{ @join Customers on Customers[Account] = Renewals[Account] }}
-{{ @repeat }}
 {{ [Account] }} | {{ Customers[Name] }} | {{ [Amount] }}
 ```
 
@@ -263,7 +265,8 @@ value:
 - List-sheet entries are read by dropping empty cells from the sheet's
   first column.
 - A source-row value that is empty never matches `@filter [field] in
-  _Sheet`. The same value always matches `@filter [field] !in _Sheet`.
+  __lists__[name]`. The same value always matches `@filter [field]
+  !in __lists__[name]`.
 
 ## List Sheets
 
@@ -500,6 +503,12 @@ The following conditions are errors:
   (`xl3/join/bad-on-clause`).
 - Row-level reference to a non-active source's column
   (`xl3/source/row-cross-block`).
+- Unsupported expression syntax — unary `+`/`--`, or unary `-` on a
+  non-literal (column reference, reserved-sheet reference, or
+  sub-expression) (`xl3/eval/unsupported-syntax`, per ADR-0028).
+- Invalid directive syntax — duplicate `@source` or `@join` in the
+  same data block, or an empty directive body
+  (`xl3/directive/invalid-syntax`, per ADR-0029).
 
 Per ADR-0015, every spec-defined error carries a stable `error.code`
 of the form `xl3/<category>/<id>`. Hosts use the code for

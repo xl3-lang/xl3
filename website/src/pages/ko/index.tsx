@@ -168,6 +168,77 @@ const RELIABILITY_CARDS = [
   { title: '개발자가 소유하는 엔진', body: '배포, 검증, 통합은 코드에서. 템플릿별 업무 규칙은 엑셀에 남습니다.', tag: 'convert(template, raw)' },
 ] as const;
 
+const COMPARISONS: Array<{ tool: string; bestAt: string; tradeoff: string }> = [
+  {
+    tool: 'xl3',
+    bestAt: '파일 기반 Excel 변환. 업무 규칙은 template.xlsx 안에 남습니다.',
+    tradeoff: 'Alpha입니다. XTL surface는 의도적으로 작고 아직 진화 중입니다.',
+  },
+  {
+    tool: 'Python / VBA 스크립트',
+    bestAt: '기존 스프레드시트에 가까운 빠른 일회성 자동화.',
+    tradeoff: '규칙이 코드나 한 담당자의 기억에 남아 검토와 인수인계가 어렵습니다.',
+  },
+  {
+    tool: 'Power Query / Office Scripts',
+    bestAt: 'Microsoft 365 워크플로우, Excel 생태계 안의 데이터 정리.',
+    tradeoff: '자동화가 tenant/계정에 묶여 포터블한 엑셀 파일 형태로 남기 어렵습니다.',
+  },
+  {
+    tool: 'Spreadsheet SDK (SheetJS, ExcelJS, Aspose)',
+    bestAt: '저수준 또는 고기능 프로그래밍 방식의 엑셀 파일 생성.',
+    tradeoff: '보고서별 규칙을 개발자가 application code 안에 직접 넣게 됩니다.',
+  },
+  {
+    tool: 'Template engine (JXLS, xltpl)',
+    bestAt: '스프레드시트형 템플릿 기반 서버사이드 보고서 생성.',
+    tradeoff: '언어/runtime에 묶이는 경우가 많고, 운영자 흐름이 중심 제품 형태는 아닙니다.',
+  },
+  {
+    tool: '문서 생성 SaaS (Plumsail, Conga)',
+    bestAt: '관리형 문서 워크플로우, integration, approval.',
+    tradeoff: '규칙이 vendor service 안에 남고, 포터블한 self-host 템플릿이 아닙니다.',
+  },
+  {
+    tool: 'LLM 기반 spreadsheet 생성',
+    bestAt: '일회성 탐색과 초안 생성.',
+    tradeoff: '반복 운영 업무를 위한 결정적 변환 계약으로 쓰기 어렵습니다.',
+  },
+];
+
+function Comparison() {
+  return (
+    <section id="compare" className={styles.comparison}>
+      <div className="container">
+        <div className={styles.sectionIntro}>
+          <p className={styles.kicker}>비교</p>
+          <h2 className={styles.sectionTitle}>같은 문제, 다른 모양.</h2>
+        </div>
+        <div className={styles.comparisonTable}>
+          <table>
+            <thead>
+              <tr>
+                <th>접근</th>
+                <th>잘하는 것</th>
+                <th>tradeoff</th>
+              </tr>
+            </thead>
+            <tbody>
+              {COMPARISONS.map((c) => (
+                <tr key={c.tool}>
+                  <td><strong>{c.tool}</strong></td>
+                  <td>{c.bestAt}</td>
+                  <td>{c.tradeoff}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Reliability() {
   return (
     <section id="conformance" className={styles.reliability}>
@@ -284,6 +355,7 @@ export default function HomeKo() {
         <Walkthrough />
         <Handoff />
         <Reliability />
+        <Comparison />
         <DeveloperApi />
       </main>
     </Layout>

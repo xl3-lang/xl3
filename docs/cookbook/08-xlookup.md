@@ -10,11 +10,13 @@ a key. Like a one-shot `VLOOKUP` / `INDEX(MATCH(...))` / SQL
 
 ```text
 {{ XLOOKUP(lookup_value, lookup_array, return_array) }}
+{{ XLOOKUP(lookup_value, lookup_array, return_array, fallback) }}
 ```
 
 - `lookup_value` — the value you want to find.
 - `lookup_array` — the column of the other source to search in.
 - `return_array` — the column of the other source to return from.
+- `fallback` (optional) — value to return when no row matches.
 
 The first matching row's `return_array` value is returned. Comparison
 follows XTL's standard comparison algorithm (numeric on
@@ -43,13 +45,19 @@ row by `id` and pulls `name` / `tier`.
 
 ## No-match behavior
 
-If `lookup_value` is not in `lookup_array`, xl3 raises
-`xl3/xlookup/no-match`. There is no implicit "return empty" — the spec
-prefers loud failure over silent missing data. To allow misses, filter
-upstream or use `@join` (drops unmatched rows entirely) instead.
+If `lookup_value` is not in `lookup_array` and no fallback is provided,
+xl3 raises `xl3/xlookup/no-match`. The spec prefers loud failure over
+silent missing data.
 
-A future XLOOKUP signature may add an optional `if_not_found`. For
-now, validate the data first.
+To suppress the error, pass a fallback as the 4th argument:
+
+```text
+{{ XLOOKUP([customer_id], Customers[id], Customers[name], "(unknown)") }}
+```
+
+When no row matches, the fallback value is returned instead. To allow
+misses without a placeholder, filter upstream or use `@join` (drops
+unmatched rows entirely) instead.
 
 ## Source-mismatch protection
 

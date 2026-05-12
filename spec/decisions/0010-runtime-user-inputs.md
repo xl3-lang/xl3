@@ -1,6 +1,6 @@
 # ADR 0010 - Runtime user inputs
 
-- **Status:** accepted; sheet name and reference syntax superseded by ADR-0011
+- **Status:** accepted
 - **Date:** 2026-05-07
 - **Spec target:** XTL 0.1 draft
 - **Affects:** evaluation.md, language.md

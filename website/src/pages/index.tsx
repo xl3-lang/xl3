@@ -285,6 +285,11 @@ const COMPARISONS: Array<{ tool: string; bestAt: string; tradeoff: string }> = [
     bestAt: 'Managed document workflows, integrations, approvals.',
     tradeoff: 'Rules live in a vendor service, not a portable self-hostable template.',
   },
+  {
+    tool: 'LLM-based spreadsheet generation',
+    bestAt: 'Ad hoc exploration and drafting.',
+    tradeoff: 'Not a deterministic transformation contract for recurring operational work.',
+  },
 ];
 
 function Comparison() {

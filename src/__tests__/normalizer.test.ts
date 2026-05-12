@@ -43,23 +43,23 @@ describe('isAggregateExpression', () => {
 
 describe('extractColumnRefs', () => {
   it('returns the bracketed columns in the order they appear', () => {
-    expect(extractColumnRefs('[a] + [b]', new Set())).toEqual(['a', 'b']);
-    expect(extractColumnRefs('IF([qty] > 10, [a], [b])', new Set())).toEqual([
+    expect(extractColumnRefs('[a] + [b]')).toEqual(['a', 'b']);
+    expect(extractColumnRefs('IF([qty] > 10, [a], [b])')).toEqual([
       'qty', 'a', 'b',
     ]);
   });
 
   it('deduplicates repeated columns while preserving first-seen order', () => {
-    expect(extractColumnRefs('[a] + [a] + [b] - [a]', new Set())).toEqual(['a', 'b']);
+    expect(extractColumnRefs('[a] + [a] + [b] - [a]')).toEqual(['a', 'b']);
   });
 
   it('trims whitespace inside brackets', () => {
-    expect(extractColumnRefs('[ Customer Name ]', new Set())).toEqual(['Customer Name']);
+    expect(extractColumnRefs('[ Customer Name ]')).toEqual(['Customer Name']);
   });
 
   it('returns an empty list when no bracketed columns are present', () => {
-    expect(extractColumnRefs('Customer', new Set())).toEqual([]);
-    expect(extractColumnRefs('"text"', new Set())).toEqual([]);
+    expect(extractColumnRefs('Customer')).toEqual([]);
+    expect(extractColumnRefs('"text"')).toEqual([]);
   });
 });
 

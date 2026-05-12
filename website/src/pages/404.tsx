@@ -15,9 +15,8 @@ export default function NotFound() {
           <p className={styles.code}>404</p>
           <h1 className={styles.title}>That page is not in this workbook.</h1>
           <p className={styles.body}>
-            The URL you followed does not match a page on xl3.io. The site was
-            reshuffled recently — if you came in via a <code>/docs/</code>
-            link, the new home is the same path without the prefix.
+            The URL you followed does not match a page on xl3.io. Use one of
+            the cards below to jump to the main areas of the site.
           </p>
 
           <div className={styles.cards}>
