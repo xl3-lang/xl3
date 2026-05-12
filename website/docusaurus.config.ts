@@ -8,7 +8,7 @@ const config: Config = {
   favicon: 'img/favicon.svg',
 
   url: 'https://xl3.io',
-  baseUrl: '/',
+  baseUrl: '/docs/',
 
   organizationName: 'jinyoung4478',
   projectName: 'xl3',
@@ -66,8 +66,6 @@ const config: Config = {
         { to: '/spec/', label: 'Spec', position: 'left' },
         { to: '/PORTERS_GUIDE', label: "Porter's Guide", position: 'left' },
         { to: '/conformance/DASHBOARD', label: 'Conformance', position: 'left' },
-        { href: '/playground/', label: 'Playground', position: 'right' },
-        { href: '/playground/ko/', label: '한국어', position: 'right' },
         { href: 'https://github.com/jinyoung4478/xl3', label: 'GitHub', position: 'right' },
         { href: 'https://www.npmjs.com/package/@jinyoung4478/xl3', label: 'npm', position: 'right' },
       ],
@@ -82,13 +80,6 @@ const config: Config = {
             { label: 'Spec', to: '/spec/' },
             { label: "Porter's Guide", to: '/PORTERS_GUIDE' },
             { label: 'Conformance', to: '/conformance/DASHBOARD' },
-          ],
-        },
-        {
-          title: 'Try',
-          items: [
-            { label: 'Playground', href: '/playground/' },
-            { label: 'Korean playground', href: '/playground/ko/' },
           ],
         },
         {

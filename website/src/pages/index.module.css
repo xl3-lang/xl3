@@ -14,36 +14,6 @@
   margin-top: 1.5rem;
 }
 
-.workflow {
-  padding: 3rem 0;
-  background: var(--ifm-color-emphasis-50);
-}
-
-.workflowRow {
-  align-items: stretch;
-}
-
-.workflowStep {
-  padding: 1.5rem;
-  border-radius: 8px;
-  background: var(--ifm-background-surface-color);
-  height: 100%;
-  border: 1px solid var(--ifm-color-emphasis-200);
-}
-
-.workflowKey {
-  font-family: var(--ifm-font-family-monospace);
-  font-weight: 700;
-  color: var(--ifm-color-primary);
-  margin-bottom: 0.5rem;
-}
-
-.workflowFooter {
-  margin-top: 2rem;
-  text-align: center;
-  color: var(--ifm-color-emphasis-700);
-}
-
 .features {
   padding: 3rem 0;
 }
@@ -59,35 +29,9 @@
   margin-top: 0;
 }
 
-.comparison {
-  padding: 3rem 0;
-  background: var(--ifm-color-emphasis-50);
-}
-
-.comparisonTable {
-  overflow-x: auto;
-}
-
-.comparisonTable table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.comparisonTable th,
-.comparisonTable td {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
-  vertical-align: top;
-}
-
-.comparisonTable th {
-  background: var(--ifm-color-emphasis-100);
-  font-weight: 600;
-}
-
 .install {
   padding: 2rem 0 4rem;
+  background: var(--ifm-color-emphasis-50);
 }
 
 .install pre {
