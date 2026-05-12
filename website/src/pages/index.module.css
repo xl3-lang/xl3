@@ -1,39 +1,378 @@
+/* Hero */
 .heroBanner {
-  padding: 4rem 0;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
+  padding: 4rem 0 3rem;
+  background: linear-gradient(180deg, #f5f9f6 0%, #fbfdfb 100%);
+  color: #1a221d;
 }
 
-.buttons {
-  display: flex;
+[data-theme='dark'] .heroBanner {
+  background: linear-gradient(180deg, #1a2620 0%, #131a16 100%);
+  color: var(--ifm-color-emphasis-1000);
+}
+
+.heroLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 3rem;
   align-items: center;
-  justify-content: center;
-  gap: 1rem;
+}
+
+@media (max-width: 996px) {
+  .heroLayout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.heroCopy { min-width: 0; }
+
+.kicker {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ifm-color-primary);
+  margin: 0 0 0.75rem;
+}
+
+.heroTitle {
+  font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+  line-height: 1.08;
+  margin: 0 0 1rem;
+  font-weight: 800;
+}
+
+.heroLead {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--ifm-color-emphasis-700);
+  margin: 0 0 1.5rem;
+  max-width: 36em;
+}
+
+.heroLinks {
+  display: flex;
+  gap: 0.75rem;
   flex-wrap: wrap;
-  margin-top: 1.5rem;
 }
 
-.features {
-  padding: 3rem 0;
+/* Flow panel on the right of the hero */
+.flowPanel {
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.featureCard {
-  padding: 1.5rem;
-  border-radius: 8px;
+.flowPanel code {
   background: var(--ifm-color-emphasis-100);
-  height: 100%;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
 }
 
-.featureCard h3 {
-  margin-top: 0;
+.flowRole {
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-700);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
-.install {
-  padding: 2rem 0 4rem;
+.flowRole strong {
+  color: var(--ifm-color-emphasis-1000);
+}
+
+.flowStack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.flowFile,
+.flowResult {
+  background: var(--ifm-color-emphasis-100);
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  display: flex;
+  flex-direction: column;
+}
+
+.flowFile span,
+.flowResult span {
+  font-family: var(--ifm-font-family-monospace);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.flowFile small,
+.flowResult small {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.75rem;
+}
+
+.flowResult {
+  background: var(--ifm-color-primary-lightest);
+  border-color: var(--ifm-color-primary-light);
+}
+
+[data-theme='dark'] .flowResult {
+  background: rgba(78, 179, 122, 0.15);
+}
+
+.flowPlus,
+.flowArrow {
+  text-align: center;
+  font-size: 1rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+/* Section primitives */
+.sectionIntro {
+  max-width: 48rem;
+  margin: 0 0 2rem;
+}
+
+.sectionTitle {
+  font-size: clamp(1.75rem, 3vw, 2.75rem);
+  line-height: 1.18;
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+}
+
+.sectionIntro p {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+/* Walkthrough */
+.walkthrough {
+  padding: 4rem 0;
+  background: var(--ifm-background-color);
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .stepsGrid { grid-template-columns: 1fr; }
+}
+
+.stepCard {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-left: 3px solid var(--ifm-color-primary);
+  background: var(--ifm-background-surface-color);
+}
+
+.stepIndex {
+  font-family: var(--ifm-font-family-monospace);
+  font-weight: 700;
+  color: var(--ifm-color-primary);
+  font-size: 0.95rem;
+}
+
+.stepTitle {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+}
+
+.stepBody {
+  margin: 0;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Handoff narrative */
+.handoff {
+  padding: 4rem 0;
   background: var(--ifm-color-emphasis-50);
 }
 
-.install pre {
-  margin-bottom: 1rem;
+.narrativeGrid {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(0, 1.4fr);
+  gap: 3rem;
+  align-items: start;
+}
+
+@media (max-width: 996px) {
+  .narrativeGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.prose p {
+  color: var(--ifm-color-emphasis-800);
+  font-size: 1.05rem;
+  line-height: 1.75;
+  margin: 0 0 1rem;
+}
+
+/* Reliability / stage cards */
+.reliability {
+  padding: 4rem 0;
+}
+
+.stageGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 996px) {
+  .stageGrid { grid-template-columns: 1fr; }
+}
+
+.stageCard {
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  background: var(--ifm-background-surface-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stageCard h3 { margin: 0; font-size: 1.1rem; }
+.stageCard p {
+  margin: 0;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.stageCard code {
+  align-self: flex-start;
+  background: var(--ifm-color-emphasis-100);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.conformanceFact {
+  margin-top: 2rem;
+  padding: 1rem 1.25rem;
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 8px;
+  color: var(--ifm-color-emphasis-800);
+}
+
+/* Comparison */
+.comparison {
+  padding: 4rem 0;
+  background: var(--ifm-color-emphasis-50);
+}
+
+.comparisonTable {
+  overflow-x: auto;
+  background: var(--ifm-background-surface-color);
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.comparisonTable table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.comparisonTable th,
+.comparisonTable td {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  vertical-align: top;
+}
+
+.comparisonTable thead th {
+  background: var(--ifm-color-emphasis-100);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.comparisonTable tbody tr:last-child th,
+.comparisonTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Developer API */
+.api {
+  padding: 4rem 0;
+}
+
+.codePair {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.6fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .codePair { grid-template-columns: 1fr; }
+}
+
+.codeCard {
+  margin: 0;
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  background: var(--ifm-background-surface-color);
+  overflow: hidden;
+}
+
+.codeCardHead {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--ifm-color-emphasis-100);
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.windowDots {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.windowDots > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ifm-color-emphasis-300);
+}
+
+.codeCardName {
+  font-family: var(--ifm-font-family-monospace);
+}
+
+.codeCard pre {
+  margin: 0;
+  padding: 1rem;
+  background: var(--ifm-background-surface-color);
+}
+
+.codeCard code {
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.apiCta {
+  margin-top: 2rem;
+  font-size: 0.95rem;
+  color: var(--ifm-color-emphasis-700);
 }

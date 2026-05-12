@@ -1,0 +1,238 @@
+import React from 'react';
+import Layout from '@theme/Layout';
+import Link from '@docusaurus/Link';
+import clsx from 'clsx';
+import styles from '../index.module.css';
+
+function Hero() {
+  return (
+    <header className={clsx('hero', styles.heroBanner)}>
+      <div className={clsx('container', styles.heroLayout)}>
+        <div className={styles.heroCopy}>
+          <p className={styles.kicker}>엑셀에서 엑셀로 · 규칙은 엑셀 파일 안에</p>
+          <h1 className={styles.heroTitle}>Excel 변환 로직은 Excel 파일 안에 산다.</h1>
+          <p className={styles.heroLead}>
+            xl3는 변환 규칙을 코드가 아니라 <code>template.xlsx</code> 안에
+            넣습니다. 비개발자도 직접 열어 고칠 수 있습니다 — 평소 쓰던{' '}
+            <code>IF</code>, <code>SUM</code>, 컬럼 참조 문법 그대로니까요.
+          </p>
+          <div className={styles.heroLinks}>
+            <Link className="button button--primary button--lg" to="/ko/converter">
+              브라우저에서 시도하기
+            </Link>
+            <Link className="button button--secondary button--lg" to="#walkthrough">
+              워크플로우 보기
+            </Link>
+            <Link
+              className="button button--secondary button--lg"
+              href="https://github.com/jinyoung4478/xl3"
+            >
+              GitHub
+            </Link>
+            <Link
+              className="button button--secondary button--lg"
+              href="https://www.npmjs.com/package/@jinyoung4478/xl3"
+            >
+              npm
+            </Link>
+          </div>
+        </div>
+        <aside className={styles.flowPanel} aria-label="xl3 워크플로우">
+          <div className={styles.flowRole}>
+            <span>개발자</span>
+            <strong>엔진을 한 번 정의</strong>
+          </div>
+          <div className={styles.flowStack}>
+            <div className={styles.flowFile}>
+              <span>raw.xlsx</span>
+              <small>운영자 데이터</small>
+            </div>
+            <div className={styles.flowPlus}>+</div>
+            <div className={styles.flowFile}>
+              <span>template.xlsx</span>
+              <small>아카이빙된 규칙</small>
+            </div>
+            <div className={styles.flowArrow}>↓</div>
+            <div className={styles.flowResult}>
+              <span>완성된 엑셀 파일</span>
+              <small>운영자가 다운로드</small>
+            </div>
+          </div>
+          <code>convert(template, raw)</code>
+        </aside>
+      </div>
+    </header>
+  );
+}
+
+const WALKTHROUGH_STEPS = [
+  { index: '01', title: 'Excel 안에서 contract 정의', body: '__config__, source_table, XTL 표현식으로 raw 엑셀이 어떻게 보고서가 되는지 정의합니다.' },
+  { index: '02', title: '단순한 업로드 흐름 노출', body: '비개발자가 raw 엑셀 파일과 승인된 템플릿을 선택하고 변환기를 실행합니다.' },
+  { index: '03', title: '완성된 엑셀 파일 생성', body: '결과는 시트 구조, 숫자 형식, 스타일, 병합 셀까지 유지하면서 값만 데이터에서 렌더링됩니다.' },
+  { index: '04', title: '업무 규칙 아카이빙', body: '템플릿이 인수인계 산출물이 됩니다. 반복되는 엑셀 업무가 어떻게 동작하는지 담긴 포터블 파일입니다.' },
+] as const;
+
+function Walkthrough() {
+  return (
+    <section id="walkthrough" className={styles.walkthrough}>
+      <div className="container">
+        <div className={styles.sectionIntro}>
+          <p className={styles.kicker}>워크플로우 모델</p>
+          <h2 className={styles.sectionTitle}>엔진은 코드에, 워크플로우는 엑셀 파일에.</h2>
+          <p>
+            개발자는 변환기를 한 번만 만듭니다. 반복되는 업무 규칙, source
+            테이블 매핑, 레이아웃, 출력 모양은 팀이 아카이빙하고 인수인계할 수
+            있는 엑셀 파일 안에 남습니다.
+          </p>
+        </div>
+        <div className={styles.stepsGrid}>
+          {WALKTHROUGH_STEPS.map((s) => (
+            <article key={s.index} className={styles.stepCard}>
+              <span className={styles.stepIndex}>{s.index}</span>
+              <div>
+                <h3 className={styles.stepTitle}>{s.title}</h3>
+                <p className={styles.stepBody}>{s.body}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Handoff() {
+  return (
+    <section id="standard" className={styles.handoff}>
+      <div className="container">
+        <div className={styles.narrativeGrid}>
+          <div>
+            <p className={styles.kicker}>왜 개발자가 xl3를 쓰나</p>
+            <h2 className={styles.sectionTitle}>반복 보고 업무를 일회성 스크립트에서 꺼내기.</h2>
+          </div>
+          <div className={styles.prose}>
+            <p>
+              Python 스크립트, VBA 매크로, 서비스별 자동화는 엑셀 업무를
+              자동화할 수 있습니다. 하지만 비즈니스 규칙은 코드, 계정, 담당자의
+              기억에 흩어지는 경우가 많습니다.
+            </p>
+            <p>
+              xl3는 재사용 가능한 엔진과 엑셀 파일별 contract를 분리합니다.
+              개발자는 TypeScript 통합을 관리하고, 반복되는 엑셀 업무는 각각의
+              템플릿 엑셀 파일로 이동합니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const RELIABILITY_CARDS = [
+  { title: '인수인계 산출물로서의 템플릿', body: '보고 규칙이 엑셀 파일 안에 살아 있어서 검토, 버전 관리, 아카이빙, 다음 담당자에게 인계가 모두 됩니다.', tag: 'template.xlsx' },
+  { title: '운영자 친화적인 실행', body: '런타임은 브라우저 페이지로 노출할 수 있습니다. raw 데이터 업로드, 템플릿 선택, 결과 다운로드.', tag: 'raw.xlsx → result.xlsx' },
+  { title: '개발자가 소유하는 엔진', body: '배포, 검증, 통합은 코드에서. 템플릿별 업무 규칙은 엑셀에 남습니다.', tag: 'convert(template, raw)' },
+] as const;
+
+function Reliability() {
+  return (
+    <section id="conformance" className={styles.reliability}>
+      <div className="container">
+        <div className={styles.sectionIntro}>
+          <p className={styles.kicker}>운영 적합성</p>
+          <h2 className={styles.sectionTitle}>자동화가 아니라 인수인계를 위해 설계.</h2>
+          <p>
+            업무를 실제로 돌리는 사람은 코드를 읽지 않아도 되어야 합니다.
+            안정적인 변환기, 승인된 템플릿, 예측 가능한 결과 엑셀 파일이
+            필요합니다.
+          </p>
+        </div>
+        <div className={styles.stageGrid}>
+          {RELIABILITY_CARDS.map((c) => (
+            <article key={c.title} className={styles.stageCard}>
+              <h3>{c.title}</h3>
+              <p>{c.body}</p>
+              <code>{c.tag}</code>
+            </article>
+          ))}
+        </div>
+        <p className={styles.conformanceFact}>
+          XTL 0.1은 <strong>ADR 32개</strong>, <strong>conformance fixture 119개</strong>를
+          포함하며 Stage 2 전부 green입니다. TypeScript reference implementation은{' '}
+          <a href="https://www.npmjs.com/package/@jinyoung4478/xl3">@jinyoung4478/xl3</a>로
+          공개되어 있습니다 — 다른 언어로의 포팅은{' '}
+          <Link to="/PORTERS_GUIDE">Porter&apos;s Guide</Link>를 참고하세요.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function DeveloperApi() {
+  return (
+    <section id="api" className={styles.api}>
+      <div className="container">
+        <div className={styles.sectionIntro}>
+          <p className={styles.kicker}>Developer API</p>
+          <h2 className={styles.sectionTitle}>같은 워크플로우를 제품에 연결하기.</h2>
+          <p>
+            데모 흐름을 내부 포털, CLI, 서비스 엔드포인트로 만들 때 패키지를
+            사용합니다. 운영자 경험은 파일 기반으로 유지하면서, 앱은 배포와
+            검증을 책임집니다.
+          </p>
+        </div>
+        <div className={styles.codePair}>
+          <figure className={styles.codeCard}>
+            <figcaption className={styles.codeCardHead}>
+              <span className={styles.windowDots} aria-hidden="true">
+                <span /><span /><span />
+              </span>
+              <span className={styles.codeCardName}>terminal</span>
+            </figcaption>
+            <pre>
+              <code>{`$ npm install @jinyoung4478/xl3`}</code>
+            </pre>
+          </figure>
+          <figure className={styles.codeCard}>
+            <figcaption className={styles.codeCardHead}>
+              <span className={styles.windowDots} aria-hidden="true">
+                <span /><span /><span />
+              </span>
+              <span className={styles.codeCardName}>example.ts</span>
+            </figcaption>
+            <pre>
+              <code>{`import { convert } from '@jinyoung4478/xl3';
+
+const outputs = await convert(templateBuffer, dataBuffer);
+// OutputFile[] → 포맷된 .xlsx 결과`}</code>
+            </pre>
+          </figure>
+        </div>
+        <p className={styles.apiCta}>
+          <Link to="/cookbook/getting-started">Cookbook 01 — 5분 시작하기</Link>
+          {' · '}
+          <Link to="/spec/">Spec 읽기</Link>
+          {' · '}
+          <Link to="/PORTERS_GUIDE">Porter&apos;s Guide</Link>
+        </p>
+      </div>
+    </section>
+  );
+}
+
+export default function HomeKo() {
+  return (
+    <Layout
+      title="xl3 — Excel 변환 로직은 Excel 파일 안에 산다"
+      description="xl3는 Excel 변환 로직을 코드가 아니라 Excel 파일 안에 넣습니다. 비개발자도 평소 쓰던 Excel 문법 그대로 변환 규칙을 직접 열어 보고 고칠 수 있습니다."
+    >
+      <Hero />
+      <main>
+        <Walkthrough />
+        <Handoff />
+        <Reliability />
+        <DeveloperApi />
+      </main>
+    </Layout>
+  );
+}
