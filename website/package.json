@@ -1,0 +1,6 @@
+{
+  "name": "xl3-website-scope",
+  "private": true,
+  "version": "0.0.0",
+  "_comment": "Scoped to CommonJS so Docusaurus's webpack-bundled server.bundle.js runs with require() available. The root package.json uses `type: module` for the TypeScript source."
+}

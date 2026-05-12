@@ -1,0 +1,23 @@
+/* Brand color matches the hand-written site (xl3 Excel-green). */
+:root {
+  --ifm-color-primary: #185c37;
+  --ifm-color-primary-dark: #154f30;
+  --ifm-color-primary-darker: #14492d;
+  --ifm-color-primary-darkest: #103c25;
+  --ifm-color-primary-light: #1b693e;
+  --ifm-color-primary-lighter: #1c6f41;
+  --ifm-color-primary-lightest: #207e4a;
+  --ifm-code-font-size: 92%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #4eb37a;
+  --ifm-color-primary-dark: #3da668;
+  --ifm-color-primary-darker: #389d62;
+  --ifm-color-primary-darkest: #2d8150;
+  --ifm-color-primary-light: #62bd8a;
+  --ifm-color-primary-lighter: #6dc290;
+  --ifm-color-primary-lightest: #8dcfa6;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
