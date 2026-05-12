@@ -104,6 +104,7 @@ const config: Config = {
         { to: '/', label: 'Home', position: 'left' },
         { to: '/converter', label: 'Converter', position: 'left' },
         { to: '/cookbook/', label: 'Cookbook', position: 'left' },
+        { to: '/api/', label: 'API', position: 'left' },
         { to: '/spec/', label: 'Spec', position: 'left' },
         { to: '/PORTERS_GUIDE', label: "Porter's Guide", position: 'left' },
         { to: '/conformance/DASHBOARD', label: 'Conformance', position: 'left' },
