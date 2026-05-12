@@ -1,0 +1,6 @@
+description: Workbook and sheet properties (here, sheet tabColor) are preserved verbatim from template to output per ADR-0032 §"#3 — Workbook and sheet properties". Stage 2 OOXML comparison observes the preserved tab color.
+spec_section: ADR-0032 §"#3 — Workbook and sheet properties"
+spec_version: "0.1"
+tags: [adr-0032, properties, tab-color, pass-through, stage2]
+comparison_stage: 2
+verified_by: [hand]

@@ -5114,6 +5114,60 @@ async function build096() {
 }
 
 // ---------------------------------------------------------------------------
+// 120 - workbook-properties-preserved (ADR-0032)
+//
+// Concept: workbook and sheet properties (here: `tabColor`) are
+// preserved verbatim from template to output, per ADR-0032 §"#3 —
+// Workbook and sheet properties". Stage 2 OOXML comparison observes
+// the preserved tab color in the output workbook.
+// Spec section: ADR-0032 §"#3 — Workbook and sheet properties".
+// ---------------------------------------------------------------------------
+async function build120() {
+  const dir = join(FIXTURES, '120-workbook-properties-preserved');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — single sheet with a red tabColor and a one-row
+  // data block. The output should expand the data block and retain
+  // the tab color.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'workbook-properties-preserved'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.properties.tabColor = { argb: 'FFFF0000' };
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — two source rows.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — two-row output sheet with the red tab color
+  // preserved on the sheet.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.properties.tabColor = { argb: 'FFFF0000' };
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 119 - output-filename-collision-error (ADR-0031)
 //
 // Concept: two distinct file group keys that sanitize to the same
@@ -6599,6 +6653,7 @@ const builders = [
   ['117', build117],
   ['118', build118],
   ['119', build119],
+  ['120', build120],
 ];
 
 const selected = new Set(process.argv.slice(2));

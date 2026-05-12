@@ -63,6 +63,7 @@ matrix.
 | Directive composition + source edge semantics | evaluation.md "External Data Sources" + "Source Data Model" | ADR-0029 | 114, 115, 116, 117 |
 | Unicode normalization (none applied) | language.md "Comparison Algorithm" | ADR-0030 | 118 |
 | Output filename collision is an error | evaluation.md "Output Filenames" | ADR-0031 | 119 |
+| Niche limits and workbook pass-through | evaluation.md "Source Data Model" + "Cell Evaluation" | ADR-0032 | 120 |
 
 ## Implementation-defined boundaries
 
