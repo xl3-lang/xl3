@@ -20,6 +20,7 @@ const TARGET = join(WEBSITE, 'docs');
 const COPIES = [
   // [src absolute, dest relative to TARGET]
   ['docs/cookbook', 'cookbook'],
+  ['docs/api', 'api'],
   ['spec', 'spec'],
   ['conformance', 'conformance'],
   ['PORTERS_GUIDE.md', 'PORTERS_GUIDE.md'],
@@ -72,6 +73,10 @@ async function main() {
   // Spec already ships an index.md; drop README.md to avoid a route
   // collision with `/spec/`.
   await preferIndexOverReadme(join(TARGET, 'spec'));
+
+  // TypeDoc emits an `api/README.md` overview; rename to index.md so
+  // `/api/` resolves.
+  await preferIndexOverReadme(join(TARGET, 'api'));
 
   // Conformance has both README.md (overview) and DASHBOARD.md.
   // README.md is fine as a separate doc here — no route collision since
