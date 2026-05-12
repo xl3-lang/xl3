@@ -1,0 +1,82 @@
+.page {
+  padding: 4rem 0 6rem;
+}
+
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--ifm-color-primary);
+  text-transform: uppercase;
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+}
+
+.title {
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  line-height: 1.18;
+  margin: 0 0 1rem;
+}
+
+.body {
+  font-size: 1rem;
+  color: var(--ifm-color-emphasis-700);
+  margin: 0 0 2.5rem;
+  max-width: 42rem;
+  line-height: 1.7;
+}
+
+.body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--ifm-color-emphasis-100);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  background: var(--ifm-background-surface-color);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.card:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 6px 24px rgba(31, 42, 35, 0.08);
+  text-decoration: none;
+  color: inherit;
+  transform: translateY(-1px);
+}
+
+.card strong {
+  font-size: 1rem;
+  color: var(--ifm-color-primary);
+}
+
+.card span {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.outbound strong::after {
+  content: ' ↗';
+}
+
+.foot {
+  font-size: 0.9rem;
+  color: var(--ifm-color-emphasis-600);
+}
