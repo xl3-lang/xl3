@@ -212,7 +212,11 @@ Comparison operators apply, in order:
    `YYYY-MM-DD` and the other is a datetime — they would otherwise
    compare as different canonical strings.
 6. Otherwise, compare canonical string forms using Unicode code-point
-   order. No locale-aware collation is applied.
+   order. No locale-aware collation is applied. **No Unicode
+   normalization is applied** either (ADR-0030) — NFC `한` (U+D55C)
+   and NFD `한` (U+1112 U+1161 U+11AB) render identically but
+   compare as different strings. Authors with mixed-form data
+   normalize upstream.
 
 ### `&` concatenation
 

@@ -153,6 +153,15 @@ isEmpty MUST pre-replace zero-width chars with a non-whitespace
 sentinel before trimming, or use a hand-rolled whitespace test.
 Fixture 095 pins this behavior.
 
+**Unicode normalization (NFC/NFD).** ADR-0030 says string
+comparison uses **raw code points** with NO normalization applied.
+NFC `한` (1 code point, U+D55C) and NFD `한` (3 code points,
+U+1112 U+1161 U+11AB) render identically but compare as different
+strings. macOS filesystems and clipboards often produce NFD; web
+input and Windows produce NFC. Do NOT add a normalization step in
+your port's compareValues — the spec deliberately matches Excel
+behavior (no normalization). Fixture 118 pins NFC ≠ NFD.
+
 ### Single-implementation impl details that ARE normative
 
 These look like JS-flavored choices but are spec:
