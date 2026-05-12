@@ -8,6 +8,15 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0031 "Output filename collision is an error". Two distinct
+  file group keys that sanitize (per ADR-0002) to the same filename
+  now raise `xl3/filename/collision` at convert time. Previously
+  silently returned two `OutputFile` entries with the same filename,
+  causing host code to overwrite the first when writing to disk.
+  Example: Region values `Seoul/Korea` and `Seoul:Korea` both
+  sanitize to `Seoul_Korea.xlsx`. Detection runs before any workbook
+  is rendered. New error code, fixture 119.
+
 - ADR-0030 "Unicode normalization in string comparison". Pins
   ADR-0009's existing "raw code-point order" behavior with explicit
   treatment of the NFC vs NFD trap (Korean, Japanese, Latin with
