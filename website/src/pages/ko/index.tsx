@@ -2,7 +2,30 @@ import React from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import clsx from 'clsx';
+import { CodeCard } from '@site/src/components/CodeCard';
+import { ExcelPreview, ExcelPreviewFrame } from '@site/src/components/ExcelPreview';
+import type { Workbook } from '@site/src/components/ExcelPreview';
 import styles from '../index.module.css';
+
+const CONFIG_PREVIEW_KO: Workbook = {
+  kind: '__config__',
+  title: '템플릿이 원본 데이터의 모양을 지정합니다.',
+  note: 'source_table이 원본 테이블의 시작 위치와 포함할 컬럼을 엔진에 알려줍니다.',
+  workbookTitle: 'template.xlsx',
+  workbookSubtitle: '업무 규칙이 들어 있는 엑셀 파일',
+  formula: 'B2  source_table = 1',
+  sheetName: '__config__',
+  rows: [
+    ['key', 'value', 'notes'],
+    ['source_sheet', 'Raw', 'worksheet to read'],
+    ['source_table', '1', 'column names and data rows'],
+  ],
+  classes: [
+    ['header', 'header', 'header'],
+    ['', 'selected currency', ''],
+    ['', 'currency', ''],
+  ],
+};
 
 function Hero() {
   return (
@@ -85,16 +108,27 @@ function Walkthrough() {
             있는 엑셀 파일 안에 남습니다.
           </p>
         </div>
-        <div className={styles.stepsGrid}>
-          {WALKTHROUGH_STEPS.map((s) => (
-            <article key={s.index} className={styles.stepCard}>
-              <span className={styles.stepIndex}>{s.index}</span>
-              <div>
-                <h3 className={styles.stepTitle}>{s.title}</h3>
-                <p className={styles.stepBody}>{s.body}</p>
-              </div>
-            </article>
-          ))}
+        <div className={styles.walkthroughLayout}>
+          <div className={styles.stepsGrid}>
+            {WALKTHROUGH_STEPS.map((s) => (
+              <article key={s.index} className={styles.stepCard}>
+                <span className={styles.stepIndex}>{s.index}</span>
+                <div>
+                  <h3 className={styles.stepTitle}>{s.title}</h3>
+                  <p className={styles.stepBody}>{s.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className={styles.previewColumn}>
+            <ExcelPreviewFrame
+              kind={CONFIG_PREVIEW_KO.kind}
+              title={CONFIG_PREVIEW_KO.title}
+              note={CONFIG_PREVIEW_KO.note}
+            >
+              <ExcelPreview workbook={CONFIG_PREVIEW_KO} />
+            </ExcelPreviewFrame>
+          </div>
         </div>
       </div>
     </section>
@@ -182,31 +216,50 @@ function DeveloperApi() {
           </p>
         </div>
         <div className={styles.codePair}>
-          <figure className={styles.codeCard}>
-            <figcaption className={styles.codeCardHead}>
-              <span className={styles.windowDots} aria-hidden="true">
-                <span /><span /><span />
-              </span>
-              <span className={styles.codeCardName}>terminal</span>
-            </figcaption>
-            <pre>
-              <code>{`$ npm install @jinyoung4478/xl3`}</code>
-            </pre>
-          </figure>
-          <figure className={styles.codeCard}>
-            <figcaption className={styles.codeCardHead}>
-              <span className={styles.windowDots} aria-hidden="true">
-                <span /><span /><span />
-              </span>
-              <span className={styles.codeCardName}>example.ts</span>
-            </figcaption>
-            <pre>
-              <code>{`import { convert } from '@jinyoung4478/xl3';
-
-const outputs = await convert(templateBuffer, dataBuffer);
-// OutputFile[] → 포맷된 .xlsx 결과`}</code>
-            </pre>
-          </figure>
+          <CodeCard
+            name="terminal"
+            lines={[
+              [
+                { kind: 'prompt', text: '$' },
+                { kind: 'fn', text: 'npm' },
+                { kind: 'plain', text: ' ' },
+                { kind: 'kw', text: 'install' },
+                { kind: 'plain', text: ' ' },
+                { kind: 'var', text: '@jinyoung4478/xl3' },
+              ],
+            ]}
+          />
+          <CodeCard
+            name="example.ts"
+            lines={[
+              [
+                { kind: 'kw', text: 'import' },
+                { kind: 'plain', text: ' { ' },
+                { kind: 'var', text: 'convert' },
+                { kind: 'plain', text: ' } ' },
+                { kind: 'kw', text: 'from' },
+                { kind: 'plain', text: ' ' },
+                { kind: 'string', text: "'@jinyoung4478/xl3'" },
+                { kind: 'plain', text: ';' },
+              ],
+              [{ kind: 'plain', text: '' }],
+              [
+                { kind: 'kw', text: 'const' },
+                { kind: 'plain', text: ' ' },
+                { kind: 'const', text: 'outputs' },
+                { kind: 'plain', text: ' = ' },
+                { kind: 'kw', text: 'await' },
+                { kind: 'plain', text: ' ' },
+                { kind: 'fn', text: 'convert' },
+                { kind: 'plain', text: '(' },
+                { kind: 'var', text: 'templateBuffer' },
+                { kind: 'plain', text: ', ' },
+                { kind: 'var', text: 'dataBuffer' },
+                { kind: 'plain', text: ');' },
+              ],
+              [{ kind: 'comment', text: '// OutputFile[] → 포맷된 .xlsx 결과' }],
+            ]}
+          />
         </div>
         <p className={styles.apiCta}>
           <Link to="/cookbook/getting-started">Cookbook 01 — 5분 시작하기</Link>

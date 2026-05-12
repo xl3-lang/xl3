@@ -8,7 +8,7 @@ const config: Config = {
   favicon: 'img/favicon.svg',
 
   url: 'https://xl3.io',
-  baseUrl: '/docs/',
+  baseUrl: '/',
 
   organizationName: 'jinyoung4478',
   projectName: 'xl3',

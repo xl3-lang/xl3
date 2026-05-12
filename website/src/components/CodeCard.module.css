@@ -1,0 +1,74 @@
+/* Dark code card ported from site/styles.css `.code-card`.
+   Uses GitHub-dark-style token colors regardless of Docusaurus theme. */
+
+.card {
+  margin: 0;
+  border-radius: 14px;
+  background: #0d1117;
+  border: 1px solid #1f2630;
+  box-shadow: 0 18px 50px rgba(13, 17, 23, 0.18);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #161b22;
+  border-bottom: 1px solid #1f2630;
+}
+
+.dots {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.dots > span {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #2a313a;
+}
+
+.dots > span:nth-child(1) { background: #ff5f57; }
+.dots > span:nth-child(2) { background: #febc2e; }
+.dots > span:nth-child(3) { background: #28c840; }
+
+.name {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: #8b949e;
+}
+
+.block {
+  margin: 0;
+  padding: 18px 20px;
+  overflow-x: auto;
+  background: transparent;
+  color: #c9d1d9;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.75;
+  flex: 1;
+}
+
+.block code {
+  font-family: inherit;
+  color: inherit;
+  font-size: inherit;
+  background: transparent;
+  padding: 0;
+  border: 0;
+}
+
+.tokKw      { color: #ff7b72; }
+.tokString  { color: #a5d6ff; }
+.tokFn      { color: #d2a8ff; }
+.tokConst   { color: #79c0ff; }
+.tokVar     { color: #ffa657; }
+.tokComment { color: #8b949e; font-style: italic; }
+.tokPrompt  { color: #58a6ff; user-select: none; margin-right: 6px; }
