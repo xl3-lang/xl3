@@ -2,9 +2,10 @@
 
 Implementations of the [XTL spec](./spec/). xl3 is the reference implementation.
 
-| Language | Package | Spec version | Conformance | Notes |
-|---|---|---|---|---|
-| TypeScript | [`@jinyoung4478/xl3`](https://www.npmjs.com/package/@jinyoung4478/xl3) | XTL 0.1 (draft) | reference, 96/96 stage-1 fixtures, Stage 2 capable | Browser + Node >=20.12; runner via `npx xl3-conformance` |
+| Language | Repo | Package | Spec version | Conformance | Notes |
+|---|---|---|---|---|---|
+| TypeScript | [`jinyoung4478/xl3`](https://github.com/jinyoung4478/xl3) | [`@jinyoung4478/xl3`](https://www.npmjs.com/package/@jinyoung4478/xl3) | XTL 0.1 (draft) | reference, **119/119** Stage 2 pass | Browser + Node ≥ 20.12; runner via `npx xl3-conformance`; 3-TZ matrix in CI |
+| Python | [`jinyoung4478/xl3-py`](https://github.com/jinyoung4478/xl3-py) | _(unpublished)_ | XTL 0.1 (draft) | **draft**, in development | Tracked alongside the reference impl; drop a `--report=json` artifact under [`conformance/reports/`](./conformance/reports/) and `npm run conformance:dashboard` will pick it up |
 
 ## Adding an implementation
 
