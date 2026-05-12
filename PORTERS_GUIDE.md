@@ -162,6 +162,103 @@ input and Windows produce NFC. Do NOT add a normalization step in
 your port's compareValues — the spec deliberately matches Excel
 behavior (no normalization). Fixture 118 pins NFC ≠ NFD.
 
+**Integer precision beyond 2^53.** ADR-0032 #4 pins the value
+model as IEEE 754 doubles. Source cell `9007199254740993` (2^53+1)
+reads as `9007199254740992` because no double can represent it.
+Languages with native bigint (Python, Ruby, Java BigInteger,
+JS BigInt) MUST NOT widen automatically — that diverges from the
+TS reference. If a host needs exact integers beyond 2^53 (financial
+IDs, very large counts), they store the value as a string in the
+source and call `TEXT()` for formatting. xl3 does NOT detect or
+warn about precision loss.
+
+**IF condition normalizer: `=` AND `==`.** XTL accepts both `=`
+(Excel) and `==` (C-family) as equality operators in `IF`
+conditions. Early port code that normalizes only one of them
+silently treats the other as assignment / fails. Fixture 058 has
+`=`; a normalizer that strips `==` to `=` but not vice-versa, or
+vice-versa, will produce wrong output for hand-written templates.
+Both forms reach the same comparison algorithm.
+
+**Function name case-insensitivity.** ADR-0029 §"Composition
+rules" makes function name matching case-insensitive: `if`, `If`,
+`IF`, `iF` are all the same function. Excel itself is
+case-insensitive on function names. Authors who write `if(...)`
+or `sum(...)` in their templates must get the same behavior as
+the canonical uppercase form. Hash function names lower-case before
+dispatch. Fixture 116 pins this.
+
+**Hidden source rows are still iterated.** ADR-0029 normatively
+includes hidden rows in `source_sheet` iteration. xl3 reads OOXML
+rows regardless of Excel's row-hidden flag, because reading
+visibility-aware would silently drop data the author may not even
+know is hidden. Authors who want visibility-aware behavior use
+`@filter` explicitly. If your port's Excel reader auto-filters
+hidden rows, override it. Fixture 117 pins this.
+
+**Headers in merged cells are not portable.** ADR-0032 #2 pins
+this as implementation-defined / not portable. When `source_table`
+points at a row whose cells are part of a merged range, what a
+reader library returns differs: ExcelJS returns the merge value on
+every cell of the range (so xl3 trips `xl3/source/duplicate-name`);
+openpyxl and others may return only the top-left cell with the
+others empty (trip `xl3/source/missing-header`). Both paths reject
+the template — the normative position is that templates SHOULD NOT
+merge header cells. Document whichever path your port produces; do
+not invent a third behavior that silently succeeds.
+
+**Output filename collision is an error.** ADR-0031 requires
+detecting two distinct file group keys that sanitize (per ADR-0002)
+to the same filename. Example: `Seoul/Korea` and `Seoul:Korea` both
+sanitize to `Seoul_Korea.xlsx`. Detect this **before rendering any
+file** — the TS impl precomputes filenames for all file groups
+into a `Set` and raises `xl3/filename/collision` on the first
+duplicate. A port that just appends to a `dict` and lets the second
+overwrite the first will silently produce wrong output. Fixture
+119 pins this.
+
+**Reserved source column names.** ADR-0027 rejects source columns
+named `Rows`, `__rownum`, `__activeSource__`, `__joinedRow__`, or
+matching `^__[a-z]+__$` at parse with
+`xl3/source/reserved-column-name`. These collide with the renderer's
+internal context keys. A port that uses different internal key
+names might think it can accept these column names — DON'T. The
+constraint is part of the spec, not an internal detail. Authors
+rename the column upstream.
+
+**Empty-value placeholder is `(blank)`, not error or empty.**
+ADR-0026 specifies that an empty group-key value (file- or
+sheet-level) substitutes the literal token `(blank)` per Excel
+pivot table convention. Earlier impl behavior diverged: file-level
+halted with an error, sheet-level fell back to the literal `Sheet`.
+Authors with sloppy data want `(blank).xlsx` and a `(blank)` sheet,
+not a halted conversion. Fixtures 107, 108 pin this.
+
+**Unary operators on non-literal expressions are an error, not a
+no-op.** ADR-0028 specifies that `+5`, `--5`, `-[col]`, `-(expr)`
+raise `xl3/eval/unsupported-syntax`. Number literals with a leading
+`-` (`-5`, `-3.14`) remain valid — that is a signed literal, not a
+unary operator. Workaround for column negation: `(0 - [col])` or
+`[col] * -1`. The previous silent fallthrough rendered the literal
+expression text (e.g., `"-{{ [col] }}"`), which looked like working
+output to authors. Fixture 113 pins this.
+
+**Workbook + sheet properties pass-through.** ADR-0032 #3 requires
+preserving `tabColor`, `defaultRowHeight`, `defaultColWidth`,
+`pageSetup`, `views`, themes, defined names, and print areas from
+template to output. If your port builds output workbooks fresh
+instead of cloning the template, copy these properties explicitly.
+The TS impl uses `cloneWorksheet` to clone the worksheet wholesale,
+then overwrites cell values. Fixture 120 pins `tabColor`
+preservation as the most user-visible example.
+
+**String length > 32,767 chars.** ADR-0032 #1 says strings longer
+than Excel's per-cell limit are written to OOXML as-is.
+Implementation-defined; xl3 does NOT pre-validate. The resulting
+workbook may fail to open in Excel. Hosts that need Excel
+compatibility validate upstream. Do NOT add silent truncation in
+your port — pass the value through unchanged.
+
 ### Single-implementation impl details that ARE normative
 
 These look like JS-flavored choices but are spec:
