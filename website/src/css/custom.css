@@ -71,3 +71,169 @@
 [data-theme='dark'] .navbar {
   border-bottom: 1px solid var(--ifm-color-emphasis-200);
 }
+
+/* ---------------------------------------------------------------------
+   Unified dark "code-card" style for every Docusaurus fenced code block.
+   Matches the hand-written site's `.code-card` (GitHub-dark palette,
+   traffic-light dots, monospace filename label).
+
+   Applies in BOTH light and dark site themes — the code-card is a
+   screenshot-like chrome that reads as "code shown on its own dark
+   surface" regardless of page background.
+
+   Targets Docusaurus's emitted markup:
+     .theme-code-block                — outer container
+       .codeBlockTitle_xxx             — filename strip (when ```ts title=…)
+       .codeBlockContent_xxx           — body wrapper
+         .prism-code                    — <pre>
+           .token.keyword/string/…      — Prism tokens
+   --------------------------------------------------------------------- */
+.theme-code-block {
+  background: #0d1117 !important;
+  border: 1px solid #1f2630;
+  border-radius: 12px;
+  box-shadow: 0 18px 50px rgba(13, 17, 23, 0.18);
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+/* Filename strip: where Docusaurus puts the ```ts title="…" label.
+   Add the traffic-light dots as a ::before pseudo-element. */
+.theme-code-block [class*='codeBlockTitle_'] {
+  background: #161b22 !important;
+  color: #8b949e !important;
+  border-bottom: 1px solid #1f2630 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 10px 14px 10px 64px;
+  position: relative;
+}
+
+.theme-code-block [class*='codeBlockTitle_']::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 41px;
+  height: 11px;
+  background:
+    radial-gradient(circle 5.5px at 5.5px 50%, #ff5f57 99%, transparent 100%) 0 0 / 15px 11px no-repeat,
+    radial-gradient(circle 5.5px at 5.5px 50%, #febc2e 99%, transparent 100%) 15px 0 / 15px 11px no-repeat,
+    radial-gradient(circle 5.5px at 5.5px 50%, #28c840 99%, transparent 100%) 30px 0 / 15px 11px no-repeat;
+}
+
+/* Code body: dark surface, light text. */
+.theme-code-block .prism-code,
+.theme-code-block pre {
+  background: #0d1117 !important;
+  color: #c9d1d9 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.7;
+  padding: 18px 20px;
+  margin: 0;
+}
+
+.theme-code-block code {
+  background: transparent !important;
+  border: 0 !important;
+  color: inherit;
+  padding: 0;
+}
+
+/* Buttons (copy / collapse) keep contrast on dark. */
+.theme-code-block [class*='copyButton_'],
+.theme-code-block [class*='wordWrapButton_'] {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #c9d1d9 !important;
+  border-color: #2a313a !important;
+}
+
+.theme-code-block [class*='copyButton_']:hover,
+.theme-code-block [class*='wordWrapButton_']:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Prism tokens — GitHub-dark palette matching the hand-written design
+   tokens (tok-kw / tok-string / etc.). Apply in BOTH site themes. */
+.theme-code-block .token.comment,
+.theme-code-block .token.prolog,
+.theme-code-block .token.doctype,
+.theme-code-block .token.cdata {
+  color: #8b949e;
+  font-style: italic;
+}
+
+.theme-code-block .token.punctuation {
+  color: #c9d1d9;
+}
+
+.theme-code-block .token.namespace {
+  opacity: 0.7;
+}
+
+.theme-code-block .token.tag,
+.theme-code-block .token.boolean,
+.theme-code-block .token.number,
+.theme-code-block .token.constant,
+.theme-code-block .token.symbol,
+.theme-code-block .token.deleted {
+  color: #79c0ff;
+}
+
+.theme-code-block .token.selector,
+.theme-code-block .token.attr-name,
+.theme-code-block .token.string,
+.theme-code-block .token.char,
+.theme-code-block .token.builtin,
+.theme-code-block .token.inserted,
+.theme-code-block .token.url {
+  color: #a5d6ff;
+}
+
+.theme-code-block .token.operator,
+.theme-code-block .token.entity {
+  color: #ff7b72;
+}
+
+.theme-code-block .token.atrule,
+.theme-code-block .token.attr-value,
+.theme-code-block .token.keyword,
+.theme-code-block .token.important {
+  color: #ff7b72;
+}
+
+.theme-code-block .token.function,
+.theme-code-block .token.class-name {
+  color: #d2a8ff;
+}
+
+.theme-code-block .token.regex,
+.theme-code-block .token.variable {
+  color: #ffa657;
+}
+
+.theme-code-block .token.property,
+.theme-code-block .token.parameter {
+  color: #ffa657;
+}
+
+.theme-code-block .token.bold {
+  font-weight: 700;
+}
+
+.theme-code-block .token.italic {
+  font-style: italic;
+}
+
+/* Highlighted-line indicator (when ``` // highlight-next-line). */
+.theme-code-block [class*='codeLineHighlight'] {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-left: 3px solid #4eb37a !important;
+}
+
+/* Inline `code` in body text keeps the light treatment in light mode
+   (it's a noun inside a sentence — different role than a code block).
+   Only fenced blocks get the dark code-card treatment above. */
