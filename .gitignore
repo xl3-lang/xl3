@@ -3,6 +3,8 @@ node_modules
 
 # build output
 dist
+docs/.vitepress/dist
+docs/.vitepress/cache
 *.tsbuildinfo
 
 # logs
