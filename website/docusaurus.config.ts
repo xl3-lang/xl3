@@ -50,6 +50,39 @@ const config: Config = {
         theme: {
           customCss: './src/css/custom.css',
         },
+        sitemap: {
+          changefreq: 'weekly',
+          priority: 0.5,
+          lastmod: 'date',
+          // The root `/` and a couple of high-traffic pages get higher
+          // priority so Google ranks them above the long-tail spec/ADR
+          // pages.
+          createSitemapItems: async (params) => {
+            const { defaultCreateSitemapItems, ...rest } = params;
+            const items = await defaultCreateSitemapItems(rest);
+            return items
+              // Drop the 404 page — search engines should not index it.
+              .filter((item) => !/\/404\/?$/.test(item.url))
+              // Drop the trailing duplicate root entry the default
+              // sitemap generator emits.
+              .filter((item, idx, arr) => arr.findIndex((x) => x.url === item.url) === idx)
+              .map((item) => {
+                if (item.url === 'https://xl3.io/' || item.url === 'https://xl3.io') {
+                  return { ...item, priority: 1.0, changefreq: 'weekly' };
+                }
+                if (/\/(converter|cookbook\/?|spec\/?|PORTERS_GUIDE)$/.test(item.url)) {
+                  return { ...item, priority: 0.9 };
+                }
+                if (/\/cookbook\//.test(item.url) || /\/spec\//.test(item.url)) {
+                  return { ...item, priority: 0.7 };
+                }
+                if (/\/spec\/decisions\//.test(item.url)) {
+                  return { ...item, priority: 0.4 };
+                }
+                return item;
+              });
+          },
+        },
       } satisfies Preset.Options,
     ],
   ],

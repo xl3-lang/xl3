@@ -21,3 +21,53 @@
   --ifm-color-primary-lightest: #8dcfa6;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+/* Dark mode polish: the ExcelPreview is a hand-built component whose
+   inline styles assume a light "real Excel" palette. Keep that palette
+   in dark mode too — the workbook chrome reads as a screenshot, so
+   forcing it to white surface keeps the visual metaphor intact and
+   stops it from looking like a broken white box on a dark page. */
+[data-theme='dark'] {
+  /* Hero gradient on dark uses a darker tint than the default. */
+  --xl3-hero-gradient-from: #1a2620;
+  --xl3-hero-gradient-to: #131a16;
+}
+
+/* Footer dark theme: make column titles legible and links match
+   primary-lighter so they pop against the darker surface. */
+[data-theme='dark'] .footer {
+  --ifm-footer-background-color: #161b22;
+  --ifm-footer-link-color: var(--ifm-color-primary-lighter);
+  --ifm-footer-title-color: var(--ifm-color-emphasis-700);
+}
+
+/* Cookbook / spec tables in dark mode: keep stripe contrast readable. */
+[data-theme='dark'] .theme-doc-markdown table {
+  background: var(--ifm-background-surface-color);
+}
+
+[data-theme='dark'] .theme-doc-markdown table thead {
+  background: var(--ifm-color-emphasis-200);
+}
+
+/* Inline code in body text: dark mode bg + slight border for legibility. */
+[data-theme='dark'] code {
+  background: var(--ifm-color-emphasis-200);
+  border: 1px solid var(--ifm-color-emphasis-300);
+}
+
+[data-theme='dark'] pre code {
+  border: 0;
+  background: transparent;
+}
+
+/* Hero subtitle on dark: stronger contrast than default emphasis-700. */
+[data-theme='dark'] .hero__subtitle {
+  color: var(--ifm-color-emphasis-800);
+}
+
+/* Navbar dark variant: subtle bottom border so it separates from the
+   hero gradient. */
+[data-theme='dark'] .navbar {
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
