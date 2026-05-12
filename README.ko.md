@@ -5,6 +5,8 @@
 
 **상태:** alpha · XTL spec 0.1 (draft) · 1.0 전까지 breaking change 가능
 
+**새 소식:** XTL 0.1 spec audit 패스 완료 — ADR 32개, conformance fixture 119개(Stage 2 전부 green), silent-fallthrough 동작은 모두 에러화 또는 정상 규범화. 0.3.0 이후 누적 변경은 [CHANGELOG](./CHANGELOG.md) 참고.
+
 [English](./README.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md)
 
 ---
