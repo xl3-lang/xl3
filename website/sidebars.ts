@@ -13,6 +13,11 @@ const sidebars: SidebarsConfig = {
     { type: 'doc', id: 'cookbook/xlookup', label: '08 · XLOOKUP' },
     { type: 'doc', id: 'cookbook/sort-and-top', label: '09 · Sort and Top-N' },
     { type: 'doc', id: 'cookbook/styling-and-branding', label: '10 · Styling and branding' },
+    { type: 'doc', id: 'cookbook/text-formatting', label: '11 · TEXT() formatting' },
+    { type: 'doc', id: 'cookbook/empty-values', label: '12 · Empty values in depth' },
+    { type: 'doc', id: 'cookbook/error-handling', label: '13 · Error handling for hosts' },
+    { type: 'doc', id: 'cookbook/config-values', label: '14 · __config__ as a value dictionary' },
+    { type: 'doc', id: 'cookbook/directive-composition', label: '15 · Composing directives' },
   ],
 
   specSidebar: [
