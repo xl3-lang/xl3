@@ -141,7 +141,6 @@ export interface SheetTemplate {
   groupKeys: string[];
   dataStartRow: number;
   dataEndRow: number;
-  staticRows: Set<number>;
   directives: Directive[];
   directiveRows: number[];
   blocks: DataBlock[];

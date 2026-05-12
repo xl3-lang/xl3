@@ -82,7 +82,53 @@ async function main() {
   // README.md is fine as a separate doc here — no route collision since
   // there is no conformance/index.md.
 
+  // Rewrite repo-tree-only links to absolute GitHub blob URLs in the
+  // top-level reference docs. These markdown files live at the repo
+  // root and reference paths under conformance/fixtures/, spec/decisions/
+  // (bare dir), src/, etc., which exist on GitHub but not in the
+  // synced docs/ tree. Without this rewrite they 404 on xl3.io.
+  await rewriteDeadLinks([
+    join(TARGET, 'PORTERS_GUIDE.md'),
+    join(TARGET, 'IMPLEMENTATIONS.md'),
+    join(TARGET, 'CONTRIBUTING.md'),
+  ]);
+
   console.log('synced markdown into', TARGET);
+}
+
+const GH_BLOB = 'https://github.com/jinyoung4478/xl3/blob/main';
+const GH_TREE = 'https://github.com/jinyoung4478/xl3/tree/main';
+
+// Paths that 404 on the site (excluded from the synced docs/ tree or never copied).
+// Each entry rewrites a relative `./<prefix>` link target to an absolute GitHub URL.
+// Directories (trailing `/`) use the `tree` form; files use the `blob` form.
+const DEAD_LINK_PREFIXES = [
+  { prefix: 'conformance/fixtures/', kind: 'tree' },
+  { prefix: 'conformance/reports/', kind: 'tree' },
+  { prefix: 'src/', kind: 'blob' },
+];
+
+async function rewriteDeadLinks(files) {
+  for (const file of files) {
+    if (!existsSync(file)) continue;
+    const body = await readFile(file, 'utf8');
+    const rewritten = body.replace(/\]\(\.\/([^)]+)\)/g, (match, target) => {
+      // Bare `./spec/decisions/` (no specific file) — site has no index.
+      if (target === 'spec/decisions/' || target === 'spec/decisions') {
+        return `](${GH_TREE}/spec/decisions/)`;
+      }
+      for (const { prefix, kind } of DEAD_LINK_PREFIXES) {
+        if (target.startsWith(prefix)) {
+          const base = kind === 'tree' ? GH_TREE : GH_BLOB;
+          return `](${base}/${target})`;
+        }
+      }
+      return match;
+    });
+    if (rewritten !== body) {
+      await writeFile(file, rewritten);
+    }
+  }
 }
 
 async function preferIndexOverReadme(dir) {

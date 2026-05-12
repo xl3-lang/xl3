@@ -41,7 +41,6 @@ const sidebars: SidebarsConfig = {
     { type: 'doc', id: 'IMPLEMENTATIONS', label: 'Implementations' },
     { type: 'doc', id: 'CONTRIBUTING', label: 'Contributing' },
     { type: 'doc', id: 'RELEASING', label: 'Releasing' },
-    { type: 'doc', id: 'README', label: 'README (English)' },
   ],
 
   apiSidebar: [

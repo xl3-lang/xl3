@@ -111,6 +111,16 @@ time with `xl3/sheet/reserved-name`. The four reserved sheets:
 Your port enforces this even if it never uses some of them — the
 constraint protects future evolution.
 
+Reserved sheets MUST NOT appear in output workbooks. Even though
+`__inputs__`, `__sources__`, `__lists__`, and `__config__` exist
+in the input template and are read during evaluation, the rendered
+output workbook MUST omit them. This is required by
+[`spec/evaluation.md`](./spec/evaluation.md) ("List Sheets") and
+pinned by fixture 040. How you achieve this is incidental — strip
+them at the end (see "removeAuxiliarySheets timing" under "What
+you MUST NOT copy") or never carry them forward in the first
+place. The contract is the absence in output, not the mechanism.
+
 ### Aggregate semantics (ADR-0012)
 
 `SUM(Source[Column])`, `AVERAGE(...)`, `MIN(...)`, `MAX(...)`,
@@ -180,8 +190,9 @@ silently treats the other as assignment / fails. Fixture 058 has
 vice-versa, will produce wrong output for hand-written templates.
 Both forms reach the same comparison algorithm.
 
-**Function name case-insensitivity.** ADR-0029 §"Composition
-rules" makes function name matching case-insensitive: `if`, `If`,
+**Function name case-insensitivity.** ADR-0029 §"Function name
+case-insensitivity (normative)" makes function name matching
+case-insensitive: `if`, `If`,
 `IF`, `iF` are all the same function. Excel itself is
 case-insensitive on function names. Authors who write `if(...)`
 or `sum(...)` in their templates must get the same behavior as
@@ -337,8 +348,29 @@ gives you a natural curriculum:
    surfaces.
 6. **Fixtures 092 (composition) and 087-090 (date model)** — last,
    because they exercise multiple layers.
-7. **Stage 2** (024-027, 092-093) — only if your language has a
-   solid OOXML canonicalizer story. Skip if Stage 1 isn't 90%+ yet.
+7. **Audit-pass fixtures (094-120)** — these were added after the
+   initial corpus and cover edge cases the original 001-093 set
+   didn't pin. Group by theme:
+   - **Reserved + error cases**: 094 (reserved sheet error), 099
+     (empty template block), 109 (reserved source column),
+     110-111 (empty `@filter` / `@source`), 114 (duplicate
+     `@source`), 115 (self-join), 119 (filename collision).
+   - **Arithmetic + arity**: 100 (string-to-number coerce), 101
+     (non-numeric string error), 102-103 (function arity), 104
+     (multiple `@filter` = AND), 105 (template-block whitespace),
+     106 (division-by-zero error cell).
+   - **Empty / placeholder**: 107-108 (`(blank)` group-key file
+     and sheet placeholders).
+   - **Literals + unary**: 112 (signed literal), 113 (unary on
+     non-literal is an error).
+   - **Unicode + visibility**: 095 (zero-width ≠ whitespace), 116
+     (function name case-insensitive), 117 (hidden rows
+     included), 118 (NFC ≠ NFD).
+   - **Workbook properties**: 120 (`tabColor` + sheet/workbook
+     property pass-through).
+8. **Stage 2** (024, 025, 026, 027, 093, 120) — only if your
+   language has a solid OOXML canonicalizer story. Skip if Stage 1
+   isn't 90%+ yet.
 
 **Resist the urge to architect for fixtures you have not read.**
 The corpus is finite; each fixture you add support for tells you

@@ -14,9 +14,8 @@ between two values (`IF`), and substitute when the source is missing
 {{ IF([Owner] != "", [Owner], "Unassigned") }}
 ```
 
-Comparison operators: `=`, `!=`, `>`, `<`, `>=`, `<=`. Both `=` and `==`
-work for equality. The third argument (the "else") is required — XTL has
-no implicit empty branch.
+Comparison operators: `=`, `!=`, `>`, `<`, `>=`, `<=`. The third
+argument (the "else") is required — XTL has no implicit empty branch.
 
 ## `IFEMPTY` — substitute for missing values
 

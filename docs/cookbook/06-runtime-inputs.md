@@ -11,9 +11,9 @@ value in at convert time.
 | name | type | required | default | label | options |
 |---|---|---|---|---|---|
 | `month` | `text` | `true` | | `Target month (YYYY-MM)` | |
-| `region` | `select` | `false` | `All` | `Region filter` | `All,Seoul,Busan,Daegu` |
+| `region` | `select` | `false` | `All` | `Region filter` | `All\|Seoul\|Busan\|Daegu` |
 
-Type values: `text`, `number`, `date`, `boolean`, `select`.
+Type values: `text`, `number`, `date`, `select`.
 
 ## Use in template cells, filenames, and group keys
 
@@ -63,8 +63,8 @@ uploaded the data file.
 
 ## Notes
 
-- `select` options are comma-separated in the `__inputs__` row. A
-  supplied value not in the options raises
+- `select` options are pipe-separated in the `__inputs__` row (e.g.
+  `Seoul|Busan|Daegu`). A supplied value not in the options raises
   `xl3/inputs/select-option`.
 - Date inputs are parsed as `YYYY-MM-DD` or `YYYY-MM-DDTHH:mm:ss`.
 - Number inputs accept JS number literals; trailing whitespace is

@@ -207,10 +207,6 @@ export class Renderer {
       }
 
       // Render static rows (those not in any block)
-      const blockRowSet = new Set<number>();
-      for (const b of adjustedBlocks) {
-        for (let r = b.startRow; r <= b.endRow; r++) blockRowSet.add(r + (/* no shift for static pass */ 0));
-      }
       // Static rendering needs final context
       const allFilteredRows = applyDirectives(sg.rows, st.directives.filter((d) => d.kind !== 'repeat'), this.listSheets);
       const finalStaticCtx = this.buildStaticContext(fileKey, { ...sg, rows: allFilteredRows });

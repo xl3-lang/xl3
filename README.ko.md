@@ -134,7 +134,7 @@ const outputs = await convert(templateBuffer, dataBuffer);
 // outputs: OutputFile[] — 템플릿의 grouping rule에 따라 하나 이상의 .xlsx 출력
 ```
 
-브라우저와 Node 18 이상에서 동작합니다.
+브라우저와 Node 20.12 이상에서 동작합니다.
 
 [xl3.io](https://xl3.io)에서 브라우저 흐름을 바로 시험해볼 수 있습니다.
 첨부된 예시 파일을 그대로 실행하거나, raw/template 엑셀 파일을 내려받아
@@ -152,6 +152,36 @@ const outputs = await convert(templateBuffer, dataBuffer);
 raw 파일의 N번 행이 컬럼명인 일반적인 경우에는 `source_table = N`을 쓰면
 됩니다. 테이블이 중간 컬럼에서 시작하거나 끝 행을 제한해야 하면 range form을
 사용합니다.
+
+### 예약 시트
+
+템플릿은 dunder로 감싼 예약 시트 네 개를 사용합니다(ADR-0011 기준).
+
+| 시트 | 용도 |
+|---|---|
+| `__config__` | author가 정의하는 설정 + 값 사전; `{{ __config__[name] }}`으로 접근 |
+| `__inputs__` | 실행마다 host가 넘기는 값(ADR-0010); `name`/`type`/`default`/`label`/`description`/`options` 컬럼으로 선언 |
+| `__sources__` | 기본 `source_sheet` 외 추가 named data source(ADR-0012); `name`/`sheet`/`table`/`description` 컬럼으로 선언 |
+| `__lists__` | `@filter [field] in __lists__[name]`에 쓰일 membership list |
+
+author가 만든 시트 이름이 `^__[a-z]+__$`에 매칭되면 parse 시점에 거부됩니다.
+
+### Multi-source 데이터
+
+기본 `source_sheet` 외에도 템플릿이 `__sources__`에서 named source를
+선언하고 Excel structured-ref 형식으로 참조할 수 있습니다.
+
+```text
+{{ Customers[Account] }}
+{{ SUM(Renewals[Amount]) }}
+{{ XLOOKUP([Account], Customers[Account], Customers[Name]) }}
+```
+
+`@source <Name>`은 data block을 해당 source로 한정해서, bare bracket 단축
+형식(`[Column]`)이 기본 source 대신 `<Name>`에 대해 resolve됩니다. `@join`은
+두 번째 source의 row를 key 기준으로 primary row와 짝지웁니다(inner-join,
+first-match). 전체 directive 문법은
+[`spec/language.md`](./spec/language.md)를 참고하세요.
 
 ## Cookbook
 

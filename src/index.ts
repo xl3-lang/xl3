@@ -68,7 +68,7 @@ function prepareConversionFromSources(
 ): PreparedConversion {
   const defaultSource = sources['default']!;
   const columns = columnSet(defaultSource.headers);
-  populateColumnRefs(parsed, columns);
+  populateColumnRefs(parsed);
 
   const grouped = groupRows(defaultSource.rows, parsed.fileGroupKeys, parsed.sheetTemplates);
   const renderer = new Renderer(parsed, columns, sources);
@@ -247,6 +247,14 @@ export async function convert(
  * workbooks.
  *
  * @stable Frozen at 1.0.
+ *
+ * @example
+ * ```ts
+ * const result = await preview(templateBuffer, sourceBuffer, {
+ *   inputs: { month: '2026-05' },
+ * });
+ * console.log(result.files, result.warnings);
+ * ```
  */
 export async function preview(
   templateBuffer: ArrayBuffer,
@@ -263,6 +271,14 @@ export async function preview(
  * has a source workbook to convert.
  *
  * @stable Frozen at 1.0.
+ *
+ * @example
+ * ```ts
+ * const inputs = await readTemplateInputs(templateBuffer);
+ * for (const input of inputs) {
+ *   console.log(input.name, input.type, input.required);
+ * }
+ * ```
  */
 export async function readTemplateInputs(
   templateBuffer: ArrayBuffer,
@@ -277,6 +293,12 @@ export async function readTemplateInputs(
  * tooling that needs to inspect template internals.
  *
  * @stable Frozen at 1.0.
+ *
+ * @example
+ * ```ts
+ * const parsed = await analyze(templateBuffer);
+ * console.log(parsed.meta.name, parsed.sheetTemplates.length);
+ * ```
  */
 export async function analyze(
   templateBuffer: ArrayBuffer,
@@ -290,6 +312,12 @@ export async function analyze(
  * inspection.
  *
  * @stable Frozen at 1.0.
+ *
+ * @example
+ * ```ts
+ * const model = await analyzeModel(templateBuffer);
+ * const json = JSON.stringify(model, null, 2);
+ * ```
  */
 export async function analyzeModel(
   templateBuffer: ArrayBuffer,
@@ -304,6 +332,13 @@ export async function analyzeModel(
  * request.
  *
  * @stable Frozen at 1.0.
+ *
+ * @example
+ * ```ts
+ * const outputs = await convert(templateBuffer, sourceBuffer);
+ * const zip = await packageZip(outputs);
+ * // hand `zip` to the browser as a download
+ * ```
  */
 export async function packageZip(files: OutputFile[]): Promise<Blob> {
   const zip = new JSZip();

@@ -44,11 +44,14 @@ files. `Seoul-A.xlsx`, `Seoul-B.xlsx`, `Busan-A.xlsx`, etc.
 
 ## Filename sanitization
 
-xl3 sanitizes filenames per ADR-0002: replaces `/ \ : * ? " < > |` with
-`_`, collapses runs of `_`, and trims trailing `.` / spaces. If two
-distinct group values sanitize to the same filename — `Seoul/Korea` and
-`Seoul:Korea` both become `Seoul_Korea.xlsx` — xl3 raises
-`xl3/filename/collision` per ADR-0031 instead of silently overwriting.
+xl3 sanitizes filenames per ADR-0002: each forbidden character in
+`/ \ : * ? " < > |` (plus control characters) is replaced with `_`
+one-for-one, then leading whitespace and trailing dots / spaces are
+trimmed. Runs of `_` are NOT collapsed. If two distinct group values
+sanitize to the same filename — `Seoul/Korea` and `Seoul:Korea` both
+become `Seoul_Korea.xlsx` (each forbidden char becomes one `_`) — xl3
+raises `xl3/filename/collision` per ADR-0031 instead of silently
+overwriting.
 
 ## Empty group key
 

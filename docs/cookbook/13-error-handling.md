@@ -97,6 +97,7 @@ no wasted xlsx generation.
 ```ts
 const preview = await xl3.preview(template, data, options);
 // preview.warnings: non-fatal issues
+// preview.inputs: resolved input values (after defaults + coercion)
 // preview.files / preview.sources: what convert() would produce
 ```
 

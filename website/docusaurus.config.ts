@@ -100,6 +100,9 @@ const config: Config = {
     navbar: {
       title: 'xl3',
       logo: { alt: 'xl3', src: 'img/favicon.svg' },
+      // Note: left-side items below route to English pages. Full Korean nav
+      // parity is deferred to a future Docusaurus i18n migration; for now,
+      // the `/ko/` link surfaces the Korean landing as a single entry point.
       items: [
         { to: '/', label: 'Home', position: 'left' },
         { to: '/converter', label: 'Converter', position: 'left' },
@@ -123,6 +126,17 @@ const config: Config = {
             { label: 'Spec', to: '/spec/' },
             { label: "Porter's Guide", to: '/PORTERS_GUIDE' },
             { label: 'Conformance', to: '/conformance/DASHBOARD' },
+          ],
+        },
+        {
+          title: 'Try',
+          items: [
+            { label: 'Browser converter', to: '/converter' },
+            // pathname:// prefix bypasses Docusaurus's in-site link checker
+            // so these static-asset downloads under /static/ don't get
+            // flagged as broken routes.
+            { label: 'Sample raw.xlsx', href: 'pathname:///playground-samples/sample-raw.xlsx' },
+            { label: 'Sample template.xlsx', href: 'pathname:///playground-samples/sample-template.xlsx' },
           ],
         },
         {
