@@ -31,6 +31,11 @@ shape but forget the syntax.
 | 08 | [`XLOOKUP`](./08-xlookup.md) | Cross-source lookups. |
 | 09 | [Sort and Top-N](./09-sort-and-top.md) | `@sort` (stable), `@top`, multi-key sort. |
 | 10 | [Styling and branding](./10-styling-and-branding.md) | `tabColor`, merged cells, `numFmt`, `TEXT()`. |
+| 11 | [`TEXT()` formatting](./11-text-formatting.md) | Currency, dates, percentages; when to use `numFmt` vs `TEXT()`. |
+| 12 | [Empty values in depth](./12-empty-values.md) | `IFEMPTY`, empty-vs-zero traps, `(blank)`, aggregates over sparse data. |
+| 13 | [Error handling for hosts](./13-error-handling.md) | Catching `XtlError`, the code catalog, `preview()` for fail-fast. |
+| 14 | [`__config__` as a value dictionary](./14-config-values.md) | Author-defined keys, type-awareness, `__config__` vs `__inputs__`. |
+| 15 | [Composing directives](./15-directive-composition.md) | Execution order, multi-`@filter` AND, forbidden compositions. |
 
 ## How to read a recipe
 
