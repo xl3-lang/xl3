@@ -34,6 +34,8 @@ const config: Config = {
   // Docs are sourced from the repo's existing markdown trees rather than
   // duplicated. The build script symlinks them into website/docs/ before
   // `docusaurus build` runs.
+  plugins: ['./plugins/xl3-alias/index.cjs'],
+
   presets: [
     [
       'classic',
@@ -54,6 +56,10 @@ const config: Config = {
 
   themeConfig: {
     image: 'img/og.png',
+    metadata: [
+      { name: 'theme-color', content: '#185c37' },
+      { name: 'keywords', content: 'xl3, XTL, Excel template, Excel-to-Excel, OOXML, xlsx, workbook transformation, conformance, spec' },
+    ],
     colorMode: {
       defaultMode: 'light',
       respectPrefersColorScheme: true,
@@ -62,10 +68,13 @@ const config: Config = {
       title: 'xl3',
       logo: { alt: 'xl3', src: 'img/favicon.svg' },
       items: [
+        { to: '/', label: 'Home', position: 'left' },
+        { to: '/converter', label: 'Converter', position: 'left' },
         { to: '/cookbook/', label: 'Cookbook', position: 'left' },
         { to: '/spec/', label: 'Spec', position: 'left' },
         { to: '/PORTERS_GUIDE', label: "Porter's Guide", position: 'left' },
         { to: '/conformance/DASHBOARD', label: 'Conformance', position: 'left' },
+        { to: '/ko/', label: '한국어', position: 'right' },
         { href: 'https://github.com/jinyoung4478/xl3', label: 'GitHub', position: 'right' },
         { href: 'https://www.npmjs.com/package/@jinyoung4478/xl3', label: 'npm', position: 'right' },
       ],
