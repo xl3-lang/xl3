@@ -8,6 +8,30 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0032 "Niche limits and workbook pass-through behaviors".
+  Documents four niche behaviors as normative without changing the
+  reference impl, so future ports can't silently diverge:
+  - **Strings longer than 32,767 chars** are written to OOXML
+    as-is. Implementation-defined; xl3 does not enforce Excel's
+    per-cell limit. Host code is responsible for upstream
+    validation if Excel compatibility is required.
+  - **Source headers in merged cells** are implementation-defined;
+    portable templates do NOT merge header cells. Reader libraries
+    differ on what they return per cell of a merged range; xl3
+    reaches `xl3/source/duplicate-name` or
+    `xl3/source/missing-header` accordingly.
+  - **Workbook and sheet properties** (`tabColor`,
+    `defaultRowHeight`, `pageSetup`, `views`, defined names, print
+    areas) are preserved verbatim from template to output. Porters
+    MUST preserve these unless an ADR overrides.
+  - **Integer precision beyond 2^53** is implementation-defined
+    within IEEE 754 limits. xl3 does not detect precision loss.
+    Authors needing exact integer representation beyond 2^53 store
+    values as strings.
+
+  No new error codes. No impl change. Fixture 120 pins `tabColor`
+  preservation as the most user-visible example.
+
 - ADR-0031 "Output filename collision is an error". Two distinct
   file group keys that sanitize (per ADR-0002) to the same filename
   now raise `xl3/filename/collision` at convert time. Previously
