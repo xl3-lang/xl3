@@ -49,11 +49,14 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: mkdir -p site/dist && cp -R dist/. site/dist/
-      # Build the Docusaurus docs site and mount it under /docs/.
-      # The hand-written landing page in site/ stays at the root.
+      # The browser playground (site/playground/) needs the compiled
+      # xl3 bundle next to it. EN page references ./dist/, KO uses
+      # ../dist/ — both resolve to site/playground/dist/.
+      - run: mkdir -p site/playground/dist && cp -R dist/. site/playground/dist/
+      # Build Docusaurus and lay it down at the deploy root. The
+      # hand-written playground keeps living at /playground/.
       - run: npm run docs:build
-      - run: mkdir -p site/docs && cp -R website/build/. site/docs/
+      - run: cp -R website/build/. site/
       - uses: actions/configure-pages@v5
         with:
           enablement: true
