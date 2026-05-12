@@ -5114,6 +5114,65 @@ async function build096() {
 }
 
 // ---------------------------------------------------------------------------
+// 118 - unicode-normalization-not-applied (ADR-0030)
+//
+// Concept: comparison uses raw code points with NO Unicode
+// normalization applied per ADR-0030. NFC "한" (U+D55C) and NFD
+// "한" (U+1112 U+1161 U+11AB) render identically but compare as
+// different strings, so @filter [Name] = NFC "한" matches the NFC
+// row only.
+// Spec section: ADR-0030; language.md "Comparison Algorithm".
+// ---------------------------------------------------------------------------
+async function build118() {
+  const dir = join(FIXTURES, '118-unicode-normalization-not-applied');
+  await mkdir(dir, { recursive: true });
+
+  // NFC "한" = U+D55C, NFD "한" = U+1112 U+1161 U+11AB.
+  const NFC_HAN = '한';
+  const NFD_HAN = '한';
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'unicode-normalization'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Name';
+    sh.getCell('B1').value = 'IsNFCHan';
+    // @filter against NFC form. Only NFC row should pass.
+    sh.getCell('A2').value = `{{ @filter [Name] = "${NFC_HAN}" }}`;
+    sh.getCell('A3').value = '{{ [Name] }}';
+    sh.getCell('B3').value = `{{ IF([Name] = "${NFC_HAN}", "yes", "no") }}`;
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Name';
+    sh.getCell('A2').value = NFC_HAN;     // NFC "한"
+    sh.getCell('A3').value = NFD_HAN;     // NFD "한" — looks identical, compares unequal
+    sh.getCell('A4').value = '다른';      // unrelated
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // Expected: only the NFC row survives the filter. The NFD row is
+  // dropped because raw code-point comparison sees them as different.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Name';
+    sh.getCell('B1').value = 'IsNFCHan';
+    sh.getCell('A2').value = NFC_HAN;
+    sh.getCell('B2').value = 'yes';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 114 - duplicate-source-directive-error (ADR-0029)
 //
 // Concept: at most one `@source` directive per data block.
@@ -6496,6 +6555,7 @@ const builders = [
   ['115', build115],
   ['116', build116],
   ['117', build117],
+  ['118', build118],
 ];
 
 const selected = new Set(process.argv.slice(2));

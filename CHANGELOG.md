@@ -8,6 +8,17 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- ADR-0030 "Unicode normalization in string comparison". Pins
+  ADR-0009's existing "raw code-point order" behavior with explicit
+  treatment of the NFC vs NFD trap (Korean, Japanese, Latin with
+  diacritics). NFC `한` (U+D55C) and NFD `한` (U+1112 U+1161
+  U+11AB) render identically but compare as different strings.
+  Aligns with Excel-default principle (Excel does not normalize
+  either). Authors with mixed-form data normalize upstream.
+  Conformance fixture 118 pins it; `language.md` "Comparison
+  Algorithm" and `PORTERS_GUIDE.md` "Language-specific gotchas"
+  document the trap.
+
 - ADR-0029 "Directive composition + source edge semantics". Closes
   four spec gaps in one ADR:
   - **Duplicate `@source`** in a data block now raises

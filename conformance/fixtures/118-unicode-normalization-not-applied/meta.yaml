@@ -1,0 +1,5 @@
+description: Comparison uses raw code points with NO Unicode normalization per ADR-0030. NFC "한" (U+D55C) and NFD "한" (U+1112 U+1161 U+11AB) render identically but compare as different strings.
+spec_section: ADR-0030; language.md "Comparison Algorithm"
+spec_version: "0.1"
+tags: [adr-0030, comparison, unicode, normalization]
+verified_by: [hand]

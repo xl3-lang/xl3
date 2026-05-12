@@ -61,6 +61,7 @@ matrix.
 | Reserved column names + directive validation | evaluation.md "Source Data Model" + "Directives" | ADR-0027 | 109, 110, 111 |
 | Literal syntax constraints (string + number) | language.md "Literals" | ADR-0028 | 112, 113 |
 | Directive composition + source edge semantics | evaluation.md "External Data Sources" + "Source Data Model" | ADR-0029 | 114, 115, 116, 117 |
+| Unicode normalization (none applied) | language.md "Comparison Algorithm" | ADR-0030 | 118 |
 
 ## Implementation-defined boundaries
 
