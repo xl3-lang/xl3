@@ -153,6 +153,12 @@ raw 파일의 N번 행이 컬럼명인 일반적인 경우에는 `source_table =
 됩니다. 테이블이 중간 컬럼에서 시작하거나 끝 행을 제한해야 하면 range form을
 사용합니다.
 
+## Cookbook
+
+자주 쓰는 패턴을 모은 짧은 레시피 10개가 [`docs/cookbook/`](./docs/cookbook)에
+있습니다. 시작하기, 조건문, 집계, 파일/시트 그룹화, runtime input, join,
+`XLOOKUP`, 정렬/Top-N, 브랜딩까지 다룹니다.
+
 ## Spec
 
 XTL spec은 언어 중립적이며 [`spec/`](./spec)에 있습니다. 이 저장소는 TypeScript

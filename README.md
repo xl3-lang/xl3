@@ -211,6 +211,13 @@ basic renewal report, sheet-per-region with list-filter, and a
 multi-source join with runtime inputs. Run them with
 `npm run examples:build && npm run examples:run`.
 
+## Cookbook
+
+Short, copy-paste recipes for common workflows live in
+[`docs/cookbook/`](./docs/cookbook). Ten recipes covering getting
+started, conditionals, aggregates, file/sheet grouping, runtime
+inputs, joins, `XLOOKUP`, sort/top, and styling.
+
 ## Spec
 
 The XTL spec is language-neutral and lives in [`spec/`](./spec). This repo provides the TypeScript reference implementation. Other-language ports are welcome — see [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md).
