@@ -8,7 +8,7 @@ hero:
   actions:
     - theme: brand
       text: Read the cookbook
-      link: /docs/cookbook/
+      link: /cookbook/
     - theme: alt
       text: Read the spec
       link: /spec/
@@ -45,7 +45,7 @@ Runs in browsers and Node ≥ 20.12.
 
 ## Where to start
 
-- **New here?** [Cookbook 01 — Getting started in 5 minutes](/docs/cookbook/01-getting-started).
+- **New here?** [Cookbook 01 — Getting started in 5 minutes](/cookbook/01-getting-started).
 - **Want to read the language?** [`spec/language.md`](/spec/language).
 - **Porting to another language?** [`PORTERS_GUIDE.md`](/PORTERS_GUIDE).
 - **Curious about conformance?** [Dashboard](/conformance/DASHBOARD), [coverage matrix](/conformance/coverage).

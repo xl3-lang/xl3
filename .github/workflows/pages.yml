@@ -6,6 +6,18 @@ on:
     paths:
       - 'site/**'
       - 'src/**'
+      - 'docs/**'
+      - 'spec/**'
+      - 'conformance/coverage.md'
+      - 'conformance/runner-protocol.md'
+      - 'conformance/DASHBOARD.md'
+      - 'index.md'
+      - 'README.md'
+      - 'README.ko.md'
+      - 'PORTERS_GUIDE.md'
+      - 'IMPLEMENTATIONS.md'
+      - 'CONTRIBUTING.md'
+      - 'RELEASING.md'
       - 'package.json'
       - 'package-lock.json'
       - 'tsconfig.build.json'
@@ -36,6 +48,10 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: mkdir -p site/dist && cp -R dist/. site/dist/
+      # Build the VitePress docs site and mount it under /docs/.
+      # The hand-written landing page in site/ stays at the root.
+      - run: npm run docs:build
+      - run: mkdir -p site/docs && cp -R docs/.vitepress/dist/. site/docs/
       - uses: actions/configure-pages@v5
         with:
           enablement: true
