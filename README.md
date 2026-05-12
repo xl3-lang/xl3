@@ -229,6 +229,12 @@ npm run conformance
 node dist/bin/conformance.js --fixture-dir=conformance/fixtures --comparison-stage=2
 ```
 
+A summary of the latest reference-impl run — plus columns for any
+external port reports dropped under
+[`conformance/reports/`](./conformance/reports/) — lives in
+[`conformance/DASHBOARD.md`](./conformance/DASHBOARD.md). Regenerate
+with `npm run conformance:dashboard`.
+
 ## Project structure
 
 - `spec/` — normative XTL language draft.
