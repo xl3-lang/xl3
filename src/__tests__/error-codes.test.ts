@@ -19,6 +19,7 @@ const EXPECTED_CODES: XtlErrorCode[] = [
   'xl3/cell/row-outside-repeat',
   'xl3/config/invalid-source-table',
   'xl3/config/source-table-removed',
+  'xl3/filename/collision',
   'xl3/filename/empty',
   'xl3/filename/too-long',
   'xl3/inputs/conflict-config',

@@ -1,0 +1,7 @@
+description: Two distinct file group keys that sanitize to the same filename raise xl3/filename/collision at convert time per ADR-0031. Previously silently overwrote.
+spec_section: ADR-0031
+spec_version: "0.1"
+tags: [adr-0031, filename, collision, error]
+verified_by: [hand]
+expected_error: 'produced by multiple file groups'
+expected_error_code: 'xl3/filename/collision'

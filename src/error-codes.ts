@@ -54,7 +54,9 @@ export type XtlErrorCode =
   | 'xl3/xlookup/bare-bracket'
   // Filename sanitization (ADR-0002)
   | 'xl3/filename/empty'
-  | 'xl3/filename/too-long';
+  | 'xl3/filename/too-long'
+  // Output filename collision (ADR-0031)
+  | 'xl3/filename/collision';
 
 export interface XtlError extends Error {
   code: XtlErrorCode;

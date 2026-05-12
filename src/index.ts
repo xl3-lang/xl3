@@ -36,6 +36,7 @@ export { batchMatch } from './matcher.js';
 export { toTemplateModel } from './template-model.js';
 export { xtlError, isXtlError } from './error-codes.js';
 export type { XtlError, XtlErrorCode } from './error-codes.js';
+import { xtlError } from './error-codes.js';
 
 interface PreparedConversion {
   parsed: ParsedTemplate;
@@ -92,6 +93,22 @@ function applyResolvedInputs(parsed: ParsedTemplate, options?: ConvertOptions): 
 
 async function renderPreparedConversion(prepared: PreparedConversion): Promise<OutputFile[]> {
   const files: OutputFile[] = [];
+  // ADR-0031: detect filename collisions across file groups before
+  // rendering any of them. Two distinct group keys that sanitize to
+  // the same filename would otherwise silently overwrite each other
+  // in host code (host writes the array to disk or zip, second file
+  // clobbers first). Preview-fail-fast catches this at convert-time.
+  const seenFilenames = new Set<string>();
+  for (const fg of prepared.grouped.fileGroups) {
+    const filename = prepared.renderer.previewFilename(fg);
+    if (seenFilenames.has(filename)) {
+      throw xtlError(
+        'xl3/filename/collision',
+        `Output filename "${filename}" is produced by multiple file groups (their group key values collapse to the same sanitized filename). Make group keys distinct upstream — different cell values that share only forbidden characters (e.g., "Seoul/Korea" and "Seoul:Korea") both sanitize to "Seoul_Korea".`,
+      );
+    }
+    seenFilenames.add(filename);
+  }
   for (const fg of prepared.grouped.fileGroups) {
     const outFile = await prepared.renderer.renderFile(fg);
     files.push(outFile);

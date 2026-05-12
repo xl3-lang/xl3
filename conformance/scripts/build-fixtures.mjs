@@ -5114,6 +5114,48 @@ async function build096() {
 }
 
 // ---------------------------------------------------------------------------
+// 119 - output-filename-collision-error (ADR-0031)
+//
+// Concept: two distinct file group keys that sanitize to the same
+// filename raise xl3/filename/collision at convert time, before any
+// file is rendered. Previously the engine returned two OutputFile
+// entries with the same filename; host code silently overwrote the
+// first when writing to disk.
+// Spec section: ADR-0031.
+// ---------------------------------------------------------------------------
+async function build119() {
+  const dir = join(FIXTURES, '119-output-filename-collision-error');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'filename-collision'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', '{{ Region }}.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // Two Region values that sanitize to the same filename:
+  // "Seoul/Korea" and "Seoul:Korea" both → "Seoul_Korea.xlsx" per
+  // ADR-0002. Distinct group identities, same filename → collision.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account'; sh.getCell('B1').value = 'Region';
+    sh.getCell('A2').value = 'Acme';    sh.getCell('B2').value = 'Seoul/Korea';
+    sh.getCell('A3').value = 'Beta';    sh.getCell('B3').value = 'Seoul:Korea';
+    sh.getCell('A4').value = 'Coreon';  sh.getCell('B4').value = 'Busan';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 118 - unicode-normalization-not-applied (ADR-0030)
 //
 // Concept: comparison uses raw code points with NO Unicode
@@ -6556,6 +6598,7 @@ const builders = [
   ['116', build116],
   ['117', build117],
   ['118', build118],
+  ['119', build119],
 ];
 
 const selected = new Set(process.argv.slice(2));
