@@ -41,14 +41,14 @@
       "import": "./dist/conformance-runner.js"
     },
     "./bundle": "./dist/xl3.bundle.iife.min.js",
-    "./bundle/dev": "./dist/xl3.bundle.iife.js",
-    "./dist/xl3.bundle.iife.min.js": "./dist/xl3.bundle.iife.min.js",
-    "./dist/xl3.bundle.iife.js": "./dist/xl3.bundle.iife.js"
+    "./bundle/dev": "./dist/xl3.bundle.iife.js"
   },
   "unpkg": "./dist/xl3.bundle.iife.min.js",
   "jsdelivr": "./dist/xl3.bundle.iife.min.js",
   "files": [
-    "dist",
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "!dist/**/*.map",
     "README.md",
     "README.ko.md",
     "LICENSE"
