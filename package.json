@@ -1,6 +1,6 @@
 {
   "name": "@jinyoung4478/xl3",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Use Excel workbooks as templates and render formatted Excel output from Excel data.",
   "keywords": [
     "excel",
@@ -39,8 +39,14 @@
     "./conformance-runner": {
       "types": "./dist/conformance-runner.d.ts",
       "import": "./dist/conformance-runner.js"
-    }
+    },
+    "./bundle": "./dist/xl3.bundle.iife.min.js",
+    "./bundle/dev": "./dist/xl3.bundle.iife.js",
+    "./dist/xl3.bundle.iife.min.js": "./dist/xl3.bundle.iife.min.js",
+    "./dist/xl3.bundle.iife.js": "./dist/xl3.bundle.iife.js"
   },
+  "unpkg": "./dist/xl3.bundle.iife.min.js",
+  "jsdelivr": "./dist/xl3.bundle.iife.min.js",
   "files": [
     "dist",
     "README.md",
@@ -49,6 +55,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "build:bundle": "tsup && MINIFY=1 tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -63,7 +70,7 @@
     "examples:build": "node examples/scripts/build.mjs",
     "examples:run": "node examples/scripts/run-all.mjs",
     "bench": "node scripts/bench.mjs",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+    "prepublishOnly": "npm run typecheck && npm test && npm run build && npm run build:bundle"
   },
   "dependencies": {
     "exceljs": "^4.4.0",
@@ -80,6 +87,7 @@
     "prism-react-renderer": "^2.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "tsup": "^8.5.1",
     "typedoc": "^0.28.19",
     "typedoc-plugin-markdown": "^4.11.0",
     "typescript": "^5.6.0",

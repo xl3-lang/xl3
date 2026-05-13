@@ -136,6 +136,23 @@ const outputs = await convert(templateBuffer, dataBuffer);
 
 브라우저와 Node 20.12 이상에서 동작합니다.
 
+### 번들러 없이 `<script>`로 사용
+
+번들러를 쓰지 않는 환경에서는 자체 포함 IIFE 번들을 직접 include하면
+`window.xl3`로 사용할 수 있습니다.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.4.1/dist/xl3.bundle.iife.min.js"></script>
+<script>
+  const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
+  const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
+  const outputs = await xl3.convert(tpl, data);
+</script>
+```
+
+번들 크기는 ~1 MB minified (gzip ~300 KB). ExcelJS와 JSZip이 인라인되어
+다른 의존성 없이 한 줄 include로 동작합니다.
+
 [xl3.io](https://xl3.io)에서 브라우저 흐름을 바로 시험해볼 수 있습니다.
 첨부된 예시 파일을 그대로 실행하거나, raw/template 엑셀 파일을 내려받아
 확인하거나, 원하는 파일로 교체할 수 있습니다.

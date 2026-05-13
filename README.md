@@ -138,6 +138,23 @@ const outputs = await convert(templateBuffer, dataBuffer);
 
 Runs in browsers and Node (≥20.12).
 
+### Browser via `<script>` (no bundler)
+
+For projects that don't use a bundler, a self-contained IIFE bundle
+exposes `window.xl3`:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.4.1/dist/xl3.bundle.iife.min.js"></script>
+<script>
+  const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
+  const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
+  const outputs = await xl3.convert(tpl, data);
+</script>
+```
+
+Bundle is ~1 MB minified (~300 KB gzipped). ExcelJS + JSZip are inlined;
+no other dependencies are needed.
+
 You can try the browser flow on [xl3.io](https://xl3.io): run the attached
 sample files as-is, download the raw/template workbooks, or replace either file
 with your own.
