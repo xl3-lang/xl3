@@ -29,6 +29,7 @@ type Xl3Module = {
   readTemplateInputs(template: ArrayBuffer): Promise<
     Array<{ name: string; type: string; required?: boolean; default?: unknown; label?: string }>
   >;
+  isXtlError(e: unknown): e is Error & { code: string };
 };
 
 let xl3Promise: Promise<Xl3Module> | undefined;
@@ -69,7 +70,7 @@ function ConverterKo() {
   const [templateFile, setTemplateFile] = useState<File | null>(null);
   const [inputDecls, setInputDecls] = useState<Awaited<ReturnType<Xl3Module['readTemplateInputs']>>>([]);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState<{ message: string; tone: 'muted' | 'error' | 'success' }>({
+  const [status, setStatus] = useState<{ message: string; tone: 'muted' | 'error' | 'success'; code?: string }>({
     message: '예시 파일이 첨부되어 있습니다. 그대로 변환하거나 원하는 파일로 교체하세요.',
     tone: 'muted',
   });
@@ -138,8 +139,17 @@ function ConverterKo() {
         setStatus({ message: `결과 파일 ${outputs.length}개를 xl3-outputs.zip으로 다운로드했습니다.`, tone: 'success' });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setStatus({ message: `변환 실패: ${message}`, tone: 'error' });
+      const xl3 = await loadXl3().catch(() => undefined);
+      if (xl3 && xl3.isXtlError(err)) {
+        setStatus({
+          message: `변환 실패: ${err.message}`,
+          tone: 'error',
+          code: err.code,
+        });
+      } else {
+        const message = err instanceof Error ? err.message : String(err);
+        setStatus({ message: `변환 실패: ${message}`, tone: 'error' });
+      }
     } finally {
       setBusy(false);
     }
@@ -147,7 +157,12 @@ function ConverterKo() {
 
   return (
     <div className={styles.converterWrap}>
-      <form className={styles.converterForm} onSubmit={onSubmit}>
+      <form
+        className={styles.converterForm}
+        onSubmit={onSubmit}
+        aria-label="브라우저 워크북 변환기"
+        aria-busy={busy}
+      >
         <p className={styles.kicker}>브라우저 변환기</p>
         <h2 className={styles.heading}>raw 데이터와 템플릿을 업로드하면 결과 엑셀이 다운로드됩니다.</h2>
         <p className={styles.hint}>
@@ -185,19 +200,23 @@ function ConverterKo() {
         {inputDecls.length > 0 && (
           <fieldset className={styles.inputsBlock}>
             <legend>템플릿 input</legend>
-            {inputDecls.map((d) => (
-              <label key={d.name} className={styles.inputField}>
-                <span>
-                  {d.label || d.name}
-                  {d.required ? ' *' : ''}
-                </span>
-                <input
-                  value={inputValues[d.name] ?? ''}
-                  onChange={(e) => setInputValues((v) => ({ ...v, [d.name]: e.target.value }))}
-                  placeholder={d.default != null ? String(d.default) : ''}
-                />
-              </label>
-            ))}
+            {inputDecls.map((d) => {
+              const inputId = `xl3-input-${d.name}`;
+              return (
+                <label key={d.name} className={styles.inputField} htmlFor={inputId}>
+                  <span>
+                    {d.label || d.name}
+                    {d.required ? ' *' : ''}
+                  </span>
+                  <input
+                    id={inputId}
+                    value={inputValues[d.name] ?? ''}
+                    onChange={(e) => setInputValues((v) => ({ ...v, [d.name]: e.target.value }))}
+                    placeholder={d.default != null ? String(d.default) : ''}
+                  />
+                </label>
+              );
+            })}
           </fieldset>
         )}
 
@@ -208,10 +227,28 @@ function ConverterKo() {
         >
           {busy ? '변환 중…' : '실행하고 다운로드'}
         </button>
-        <p className={clsx(styles.status, styles[`status_${status.tone}`])}>{status.message}</p>
+        <p
+          className={clsx(styles.status, styles[`status_${status.tone}`])}
+          aria-live="polite"
+          aria-atomic="true"
+          role="status"
+        >
+          {status.message}
+          {status.code && (
+            <>
+              {' '}
+              <code style={{ fontSize: '0.85em' }}>{status.code}</code>
+            </>
+          )}
+        </p>
       </form>
 
-      <aside className={styles.previewPanel}>
+      <aside
+        className={styles.previewPanel}
+        aria-label="변환 미리보기"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         <h3>미리보기</h3>
         {!previewInfo && (
           <p className={styles.previewEmpty}>변환을 실행하면 소스 행 수, 결과 파일명, 경고가 표시됩니다.</p>

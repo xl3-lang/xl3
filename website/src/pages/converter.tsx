@@ -30,6 +30,7 @@ type Xl3Module = {
   readTemplateInputs(template: ArrayBuffer): Promise<
     Array<{ name: string; type: string; required?: boolean; default?: unknown; label?: string }>
   >;
+  isXtlError(e: unknown): e is Error & { code: string };
 };
 
 let xl3Promise: Promise<Xl3Module> | undefined;
@@ -72,7 +73,7 @@ function Converter() {
   const [templateFile, setTemplateFile] = useState<File | null>(null);
   const [inputDecls, setInputDecls] = useState<Xl3Module extends never ? never : Awaited<ReturnType<Xl3Module['readTemplateInputs']>>>([]);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState<{ message: string; tone: 'muted' | 'error' | 'success' }>({
+  const [status, setStatus] = useState<{ message: string; tone: 'muted' | 'error' | 'success'; code?: string }>({
     message: 'Sample files are pre-loaded. Press the button to convert as-is, or replace either file first.',
     tone: 'muted',
   });
@@ -150,8 +151,17 @@ function Converter() {
         setStatus({ message: `Downloaded ${outputs.length} files as xl3-outputs.zip.`, tone: 'success' });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setStatus({ message: `Conversion failed: ${message}`, tone: 'error' });
+      const xl3 = await loadXl3().catch(() => undefined);
+      if (xl3 && xl3.isXtlError(err)) {
+        setStatus({
+          message: `Conversion failed: ${err.message}`,
+          tone: 'error',
+          code: err.code,
+        });
+      } else {
+        const message = err instanceof Error ? err.message : String(err);
+        setStatus({ message: `Conversion failed: ${message}`, tone: 'error' });
+      }
     } finally {
       setBusy(false);
     }
@@ -159,7 +169,12 @@ function Converter() {
 
   return (
     <div className={styles.converterWrap}>
-      <form className={styles.converterForm} onSubmit={onSubmit} aria-label="Browser workbook converter">
+      <form
+        className={styles.converterForm}
+        onSubmit={onSubmit}
+        aria-label="Browser workbook converter"
+        aria-busy={busy}
+      >
         <p className={styles.kicker}>Browser converter</p>
         <h2 className={styles.heading}>Upload raw data and a template, then download the finished workbook.</h2>
         <p className={styles.hint}>
@@ -197,19 +212,23 @@ function Converter() {
         {inputDecls.length > 0 && (
           <fieldset className={styles.inputsBlock}>
             <legend>Template inputs</legend>
-            {inputDecls.map((d) => (
-              <label key={d.name} className={styles.inputField}>
-                <span>
-                  {d.label || d.name}
-                  {d.required ? ' *' : ''}
-                </span>
-                <input
-                  value={inputValues[d.name] ?? ''}
-                  onChange={(e) => setInputValues((v) => ({ ...v, [d.name]: e.target.value }))}
-                  placeholder={d.default != null ? String(d.default) : ''}
-                />
-              </label>
-            ))}
+            {inputDecls.map((d) => {
+              const inputId = `xl3-input-${d.name}`;
+              return (
+                <label key={d.name} className={styles.inputField} htmlFor={inputId}>
+                  <span>
+                    {d.label || d.name}
+                    {d.required ? ' *' : ''}
+                  </span>
+                  <input
+                    id={inputId}
+                    value={inputValues[d.name] ?? ''}
+                    onChange={(e) => setInputValues((v) => ({ ...v, [d.name]: e.target.value }))}
+                    placeholder={d.default != null ? String(d.default) : ''}
+                  />
+                </label>
+              );
+            })}
           </fieldset>
         )}
 
@@ -220,10 +239,28 @@ function Converter() {
         >
           {busy ? 'Converting…' : 'Run and download'}
         </button>
-        <p className={clsx(styles.status, styles[`status_${status.tone}`])}>{status.message}</p>
+        <p
+          className={clsx(styles.status, styles[`status_${status.tone}`])}
+          aria-live="polite"
+          aria-atomic="true"
+          role="status"
+        >
+          {status.message}
+          {status.code && (
+            <>
+              {' '}
+              <code style={{ fontSize: '0.85em' }}>{status.code}</code>
+            </>
+          )}
+        </p>
       </form>
 
-      <aside className={styles.previewPanel} aria-label="Conversion preview">
+      <aside
+        className={styles.previewPanel}
+        aria-label="Conversion preview"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         <h3>Preview</h3>
         {!previewInfo && (
           <p className={styles.previewEmpty}>Run the converter to see source counts, output filenames, and any warnings.</p>

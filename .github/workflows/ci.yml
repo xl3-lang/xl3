@@ -24,8 +24,9 @@ jobs:
 
       - run: npm ci
       - run: npm run typecheck
-      - run: npm test
       - run: npm run build
+      - run: npm run build:bundle
+      - run: npm test
       - run: npm run conformance
 
   conformance-timezones:
