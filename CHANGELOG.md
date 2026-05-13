@@ -6,6 +6,41 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-05-13
+
+Packaging-only patch release. Adds a browser-ready IIFE bundle so
+hosts that prefer a `<script src="...">` integration don't need a
+bundler. ESM npm entry, conformance behavior, and the spec are
+unchanged.
+
+### Added
+
+- **IIFE browser bundle.** New `dist/xl3.bundle.iife.min.js`
+  (~1 MB minified, ~300 KB gzipped) exposes `window.xl3` with all
+  13 public exports (`convert`, `preview`, `analyze`, etc.).
+  ExcelJS + JSZip are inlined; no external deps needed. Unminified
+  `xl3.bundle.iife.js` with source maps also ships for debugging.
+- **Package `exports` map** adds `./bundle` (minified) and
+  `./bundle/dev` (unminified) entries, plus `unpkg` and `jsdelivr`
+  fields so the CDN URL
+  `https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.4.1/`
+  resolves to the bundle by default.
+- **Build script:** `npm run build:bundle` (tsup, ESM→IIFE).
+  `prepublishOnly` runs it automatically.
+
+### Usage
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.4.1/dist/xl3.bundle.iife.min.js"></script>
+<script>
+  const outputs = await xl3.convert(templateBuffer, dataBuffer);
+</script>
+```
+
+The ESM `import { convert } from '@jinyoung4478/xl3'` form is
+unchanged and remains the recommended path for bundler-driven
+projects.
+
 ## [0.4.0] - 2026-05-12
 
 Spec-audit minor release. Four new ADRs (0029–0032) close the
@@ -682,7 +717,8 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/jinyoung4478/xl3/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/jinyoung4478/xl3/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/jinyoung4478/xl3/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/jinyoung4478/xl3/compare/v0.1.1...v0.2.0
