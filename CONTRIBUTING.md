@@ -4,6 +4,9 @@ xl3 is the reference TypeScript implementation of the [XTL spec](./spec/). This 
 
 During the 0.x phase, the project is maintained by a single author. Contributions are welcome but the bar for spec changes is high — XTL aims to be a stable, language-neutral standard.
 
+See [GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made and
+[ROADMAP.md](./ROADMAP.md) for what's blocking the 1.0 cut.
+
 ## Quick start
 
 ```bash
@@ -84,6 +87,34 @@ After 1.0, breaking spec changes require XTL 2.0 with a migration guide.
 3. Bump version in `package.json`.
 4. `npm publish` (gated by `prepublishOnly` running typecheck + tests + build).
 5. Tag the commit (`git tag v0.1.0 && git push --tags`).
+
+## Good first contributions
+
+If you're looking to contribute but don't have a specific itch, these
+are the highest-leverage things you can pick up. Each maps to a 1.0
+blocker in [ROADMAP.md](./ROADMAP.md).
+
+1. **Propose a conformance fixture** for a spec rule that doesn't have
+   one yet. Use the **"Conformance fixture proposal"** issue template.
+   You don't need TypeScript to author the fixture itself — just the
+   `template.xlsx` + `data.xlsx` + expected output (or expected error).
+2. **Cookbook translation.** Pick one of the 15 recipes in
+   [`docs/cookbook/`](./docs/cookbook/) and translate it to Korean (or
+   any other language). Drop the file at `docs/cookbook/<lang>/NN-*.md`
+   and PR. Low-coordination, high-value.
+3. **Run xl3 on real reporting data and report friction.** A short
+   issue tagged `early-adopter-feedback` with: what report you tried,
+   what worked, what didn't, what you wish XTL had. This shapes what
+   makes 1.0.
+4. **Spec clarification.** If you read the spec and find a sentence
+   that's ambiguous, file an issue tagged `spec` with the offending
+   sentence + two reasonable interpretations. Even unaccepted reports
+   usually trigger spec improvements.
+5. **Port progress.** Working on [xl3-py](https://github.com/jinyoung4478/xl3-py)
+   or another port? Drop a `conformance/reports/<impl>-<version>.json`
+   file (format documented in
+   [`conformance/runner-protocol.md`](./conformance/runner-protocol.md))
+   and the dashboard auto-includes you.
 
 ## Code of conduct
 
