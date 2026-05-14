@@ -26,6 +26,8 @@ const COPIES = [
   ['PORTERS_GUIDE.md', 'PORTERS_GUIDE.md'],
   ['IMPLEMENTATIONS.md', 'IMPLEMENTATIONS.md'],
   ['CONTRIBUTING.md', 'CONTRIBUTING.md'],
+  ['GOVERNANCE.md', 'GOVERNANCE.md'],
+  ['ROADMAP.md', 'ROADMAP.md'],
   ['RELEASING.md', 'RELEASING.md'],
   ['README.md', 'README.md'],
 ];

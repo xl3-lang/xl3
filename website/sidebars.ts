@@ -40,6 +40,8 @@ const sidebars: SidebarsConfig = {
     { type: 'doc', id: 'PORTERS_GUIDE', label: "Porter's Guide" },
     { type: 'doc', id: 'IMPLEMENTATIONS', label: 'Implementations' },
     { type: 'doc', id: 'CONTRIBUTING', label: 'Contributing' },
+    { type: 'doc', id: 'GOVERNANCE', label: 'Governance' },
+    { type: 'doc', id: 'ROADMAP', label: 'Roadmap to 1.0' },
     { type: 'doc', id: 'RELEASING', label: 'Releasing' },
   ],
 

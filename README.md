@@ -5,9 +5,15 @@
 
 **Status:** alpha · XTL spec 0.1 (draft) · breaking changes possible until 1.0
 
-**What's new:** the XTL 0.1 spec audit pass is complete — 32 ADRs, 119 conformance fixtures (all green at Stage 2), and every silent-fallthrough surface now either errors or is normatively pinned. See [CHANGELOG](./CHANGELOG.md) for the changes accumulated since 0.3.0.
+xl3 is technically capable but in its formative phase as a project: a single
+maintainer, no production reference cases yet, governance just documented.
+The audit pass closed every silent-fallthrough surface (32 ADRs, 119 fixtures,
+all green at Stage 2), so the language surface is stable enough for early
+adopters. **Early adopter feedback is the most useful contribution right
+now** — see [ROADMAP.md](./ROADMAP.md) for what's blocking 1.0 and
+[GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made.
 
-[한국어](./README.ko.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md)
+[한국어](./README.ko.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
 ---
 

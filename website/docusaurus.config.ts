@@ -111,6 +111,18 @@ const config: Config = {
         { to: '/spec/', label: 'Spec', position: 'left' },
         { to: '/PORTERS_GUIDE', label: "Porter's Guide", position: 'left' },
         { to: '/conformance/DASHBOARD', label: 'Conformance', position: 'left' },
+        {
+          type: 'dropdown',
+          label: 'Project',
+          position: 'left',
+          items: [
+            { label: 'Roadmap to 1.0', to: '/ROADMAP' },
+            { label: 'Governance', to: '/GOVERNANCE' },
+            { label: 'Contributing', to: '/CONTRIBUTING' },
+            { label: 'Implementations', to: '/IMPLEMENTATIONS' },
+            { label: 'Releasing', to: '/RELEASING' },
+          ],
+        },
         { to: '/ko/', label: '한국어', position: 'right' },
         { href: 'https://github.com/jinyoung4478/xl3', label: 'GitHub', position: 'right' },
         { href: 'https://www.npmjs.com/package/@jinyoung4478/xl3', label: 'npm', position: 'right' },

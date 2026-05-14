@@ -5,9 +5,15 @@
 
 **상태:** alpha · XTL spec 0.1 (draft) · 1.0 전까지 breaking change 가능
 
-**새 소식:** XTL 0.1 spec audit 패스 완료 — ADR 32개, conformance fixture 119개(Stage 2 전부 green), silent-fallthrough 동작은 모두 에러화 또는 정상 규범화. 0.3.0 이후 누적 변경은 [CHANGELOG](./CHANGELOG.md) 참고.
+xl3는 기술적으로는 안정되어 가는 단계지만 프로젝트로서는 아직 형성기에
+있습니다 — 메인테이너 1명, production reference case 없음, 거버넌스
+방금 문서화. Audit 패스로 silent-fallthrough 동작은 모두 정리됐고
+(ADR 32개, fixture 119개, Stage 2 전부 green), 언어 표면은 early
+adopter가 시도해볼 만큼 안정됐습니다. **지금 가장 가치 있는 기여는
+실제 사용 후 피드백**입니다 — 1.0 blocker는 [ROADMAP.md](./ROADMAP.md),
+의사결정 방식은 [GOVERNANCE.md](./GOVERNANCE.md) 참고.
 
-[English](./README.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md)
+[English](./README.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
 ---
 
