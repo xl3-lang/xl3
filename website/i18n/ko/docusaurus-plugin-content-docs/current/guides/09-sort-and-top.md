@@ -1,0 +1,64 @@
+# 09 · 정렬과 상위 N
+
+## 시나리오
+
+갱신 금액 기준 상위 10건을 내림차순으로 보여줍니다. 또는 다중 키 정렬 — 지역 (오름차순) → 금액 (내림차순) 순서로 정렬합니다.
+
+## `@sort`
+
+```text
+{{ @sort [Renewal] desc }}
+{{ [Account] }} | {{ [Renewal] }}
+```
+
+방향은 `asc` (기본값) 또는 `desc` 입니다. `@sort` 는 **안정 정렬** — 정렬 키가 같은 행은 원래 순서 (먼저 등장한 순서) 를 그대로 유지합니다.
+
+## 다중 키 정렬
+
+```text
+{{ @sort [Region] asc }}
+{{ @sort [Renewal] desc }}
+{{ [Account] }} | {{ [Region] }} | {{ [Renewal] }}
+```
+
+첫 번째 `@sort` 가 **1차 키** 이고, 그다음에 오는 `@sort` 디렉티브는 동률을 가르는 보조 키입니다 (Excel/SQL 관례). 위 예시는 Region 알파벳순으로 묶은 뒤, 각 Region 안에서 Renewal 내림차순으로 정렬합니다.
+
+## `@top`
+
+```text
+{{ @sort [Renewal] desc }}
+{{ @top 10 }}
+{{ [Account] }} | {{ [Renewal] }}
+```
+
+`@top N` 은 모든 필터와 정렬이 끝난 뒤 첫 `N` 개 행만 남깁니다. `@top` 은 반드시 `@sort` 뒤에 둡니다 — 먼저 정렬하고 그다음에 상위만 추립니다.
+
+`N` 이 가용한 행 수보다 크면 `@top` 은 아무 동작도 하지 않습니다 (전체 행 반환). 음수나 0 이면 빈 블록이 됩니다.
+
+## `@filter` 와 함께 쓰기
+
+```text
+{{ @filter [Renewal] > 1000 }}
+{{ @sort [Renewal] desc }}
+{{ @top 5 }}
+{{ [Account] }} | {{ [Renewal] }}
+```
+
+순서는 filter → sort → top 입니다. `@filter` 가 여러 개면 AND 로 합쳐집니다 (ADR-0029 관련 — 리스트 필터는 [Recipe 05](./05-sheet-per-group.md) 참고).
+
+## 비교 의미론
+
+`@sort` 는 XTL 의 표준 비교 규칙을 따릅니다.
+
+- 숫자 또는 숫자 문자열: 숫자 비교.
+- Boolean: `false < true`.
+- 날짜: timestamp.
+- 그 외: Unicode 코드포인트 순서의 표준 문자열 형태. **로캘 collation 은 적용되지 않습니다.** ASCII 에서 "Z" < "a" 입니다 (대문자 < 소문자).
+
+운영자가 로캘 기반 정렬을 원한다면 원본 단계에서 미리 정렬하거나 정렬 키 컬럼을 추가하세요.
+
+## 메모
+
+- 안정 정렬은 키가 같을 때 입력 순서를 유지한다는 뜻 — `@sort` 디렉티브를 여러 개 써서 동률을 가르는 보조 키로 활용할 때 핵심입니다.
+- `@sort` 뒤에 `@top` 을 쓰는 것이 정석적인 "상위 N" 패턴입니다. `@top` 만 단독으로 쓰면 원본 순서대로 첫 N 개 행을 반환합니다.
+- 스펙 참고: [`spec/language.md`](../../spec/language.md) "Sort" / "Top"; ADR-0016.
