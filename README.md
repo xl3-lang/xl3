@@ -7,11 +7,18 @@
 
 xl3 is technically capable but in its formative phase as a project: a single
 maintainer, no production reference cases yet, governance just documented.
-The audit pass closed every silent-fallthrough surface (32 ADRs, 119 fixtures,
+The audit pass closed every silent-fallthrough surface (37 ADRs, 123 fixtures,
 all green at Stage 2), so the language surface is stable enough for early
 adopters. **Early adopter feedback is the most useful contribution right
 now** — see [ROADMAP.md](./ROADMAP.md) for what's blocking 1.0 and
 [GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made.
+
+**0.5.x highlights** (May 2026): native support for **merged-cell headers**
+in source workbooks (ADR-0033) — common in Korean vendor templates
+(거래명세서, 정산서, 발주서). Merged data rows broadcast the master value
+to slaves (ADR-0035). A normative feature-preservation matrix covers
+images, conditional formatting, named ranges, freeze pane, sheet
+protection, data validation, and cell comments (ADR-0036).
 
 [한국어](./README.ko.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 

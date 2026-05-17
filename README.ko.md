@@ -8,10 +8,16 @@
 xl3는 기술적으로는 안정되어 가는 단계지만 프로젝트로서는 아직 형성기에
 있습니다 — 메인테이너 1명, production reference case 없음, 거버넌스
 방금 문서화. Audit 패스로 silent-fallthrough 동작은 모두 정리됐고
-(ADR 32개, fixture 119개, Stage 2 전부 green), 언어 표면은 early
+(ADR 37개, fixture 123개, Stage 2 전부 green), 언어 표면은 early
 adopter가 시도해볼 만큼 안정됐습니다. **지금 가장 가치 있는 기여는
 실제 사용 후 피드백**입니다 — 1.0 blocker는 [ROADMAP.md](./ROADMAP.md),
 의사결정 방식은 [GOVERNANCE.md](./GOVERNANCE.md) 참고.
+
+**0.5.x 주요 변경** (2026년 5월): 소스 워크북의 **병합 헤더 셀** 네이티브
+지원 (ADR-0033) — 한국식 vendor 양식(거래명세서, 정산서, 발주서) 에서
+흔한 패턴. 데이터 행의 병합 셀은 마스터 값을 슬레이브에 broadcast
+(ADR-0035). 이미지·조건부서식·이름 정의·틀고정·시트 보호·데이터 유효성·
+셀 주석을 다루는 정규 보존 매트릭스 추가 (ADR-0036).
 
 [English](./README.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
