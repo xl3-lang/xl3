@@ -29,7 +29,7 @@ const xl3GithubDark: PrismTheme = {
 const config: Config = {
   title: 'xl3',
   tagline: 'Excel conversion, inside Excel, in Excel syntax.',
-  favicon: 'img/favicon.svg',
+  favicon: 'img/xl3-logo.png',
 
   url: 'https://xl3.io',
   baseUrl: '/',
@@ -127,7 +127,7 @@ const config: Config = {
     },
     navbar: {
       title: 'xl3',
-      logo: { alt: 'xl3', src: 'img/favicon.svg' },
+      logo: { alt: 'xl3', src: 'img/xl3-logo.png' },
       // Note: left-side items below route to English pages. Full Korean nav
       // parity is deferred to a future Docusaurus i18n migration; for now,
       // the `/ko/` link surfaces the Korean landing as a single entry point.
