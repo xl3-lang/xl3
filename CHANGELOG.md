@@ -6,6 +6,58 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-17
+
+JXLS-absorption batch. Four new ADRs (0034–0037) settle merged-cell
+semantics on both header and data rows, pin the template feature
+preservation contract, and record the project's working principle for
+relating to prior-art template engines. The XTL language version is
+unchanged (still 0.1 draft).
+
+### Added
+
+- **ADR-0033 — Merged source-table headers.** Horizontally-merged
+  header cells now read as one logical column at the merge master.
+  Slave cells in the same row are transparent: no column contribution,
+  no `xl3/source/duplicate-name`. Vertical merges in the header row
+  read the master's text at the slave's column. Real Korean invoice
+  templates (거래명세서, 정산서) become readable as-is.
+- **ADR-0034 — Relationship to prior-art template engines
+  (informational).** Names the working principle: borrow JXLS's
+  experience, not its syntax. Three corollaries for future ADRs.
+- **ADR-0035 — Data-row merged cell semantics.** Pins
+  broadcast-master-to-slaves for both vertical and horizontal merges
+  in source data rows. A vertical merge spanning N rows yields N data
+  rows sharing the master's value.
+- **ADR-0036 — Template feature preservation matrix.** Replaces
+  `evaluation.md`'s "where possible" with a per-feature table covering
+  nine OOXML features (images, conditional formatting, named ranges,
+  print area, freeze pane, sheet protection, data validation, cell
+  comments, charts). Eight items are verbatim-preserve (P); charts are
+  implementation-defined (D) until a future ADR.
+- **ADR-0037 — Rejected: dynamic image insertion.** Five-objection
+  rejection of `jx:image`-style runtime image injection. Static image
+  preservation (per ADR-0036 #1) covers the real Korean-template use
+  cases; runtime binary pipelines would break the browser flow.
+- **Conformance fixtures 121–123.** Merged header (121),
+  data-row merge broadcast (122), feature preservation (123).
+- **`docs/internal/jxls-absorption-plan.md`.** Working backlog with
+  A (absorbed), B (deferred), C (rejected) categories.
+
+### Changed
+
+- **`evaluation.md` § Source Data Model.** New column rule 8 covering
+  merged headers (ADR-0033) and merge data-row broadcast paragraph
+  (ADR-0035).
+- **`evaluation.md` § Styles and Workbook Structure.** Vague "where
+  possible" list replaced with explicit MUST-preserve table (ADR-0036).
+
+### Fixed
+
+- Templates with horizontally-merged headers no longer throw
+  `xl3/source/duplicate-name`. Real-world vendor templates that
+  previously required manual unmerging now work as-is.
+
 ## [0.4.1] - 2026-05-13
 
 Packaging-only patch release. Adds a browser-ready IIFE bundle so
@@ -717,7 +769,8 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/jinyoung4478/xl3/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/jinyoung4478/xl3/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/jinyoung4478/xl3/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/jinyoung4478/xl3/compare/v0.2.0...v0.3.0

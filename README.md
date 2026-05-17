@@ -150,7 +150,7 @@ For projects that don't use a bundler, a self-contained IIFE bundle
 exposes `window.xl3`:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.4.1/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.5.0/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
