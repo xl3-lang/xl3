@@ -27,29 +27,6 @@ const CONFIG_PREVIEW: Workbook = {
   ],
 };
 
-const RESULT_PREVIEW: Workbook = {
-  kind: 'result.xlsx',
-  title: 'The output is a finished workbook.',
-  note: 'Values change while workbook layout, styles, number formats, and merges remain useful.',
-  workbookTitle: 'result.xlsx',
-  workbookSubtitle: 'rendered workbook with formatting preserved',
-  formula: 'B2  1,200.00',
-  sheetName: 'Report',
-  rows: [
-    ['Customer', 'Amount', 'Status'],
-    ['Acme', '1,200.00', 'VIP'],
-    ['Prepared for finance review', '', ''],
-    ['Beta', '350.00', 'Standard'],
-  ],
-  classes: [
-    ['header', 'header', 'header'],
-    ['', 'selected currency', 'status'],
-    ['merged-note', 'merged-note', 'merged-note'],
-    ['', 'currency', ''],
-  ],
-  merges: [{ row: 2, col: 0, span: 3 }],
-};
-
 function Hero() {
   return (
     <header className={clsx('hero', styles.heroBanner)}>
