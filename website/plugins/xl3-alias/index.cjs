@@ -1,8 +1,8 @@
-// Webpack alias so `import '@jinyoung4478/xl3'` from the converter
-// page resolves to the local `dist/` build instead of node_modules.
-// Keeps the playground in sync with the source under development —
-// no version drift between published @jinyoung4478/xl3 and what
-// gets shipped at /converter.
+// Webpack alias so `import '@jinyoung4478/xl3'` from the /try page
+// resolves to the local `dist/` build instead of node_modules. Keeps
+// the playground in sync with the source under development — no
+// version drift between published @jinyoung4478/xl3 and what gets
+// shipped at /try.
 
 const path = require('path');
 

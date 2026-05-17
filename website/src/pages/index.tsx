@@ -64,7 +64,7 @@ function Hero() {
             <code>SUM</code>, and column references they already use day to day.
           </p>
           <div className={styles.heroLinks}>
-            <Link className="button button--primary button--lg" to="/converter">
+            <Link className="button button--primary button--lg" to="/try">
               Try the converter
             </Link>
             <Link className="button button--secondary button--lg" to="#walkthrough">
@@ -246,7 +246,7 @@ function Reliability() {
           XTL 0.1 ships with <strong>32 ADRs</strong>, <strong>119 conformance fixtures</strong>,
           all green at Stage 2. The TypeScript reference implementation is published
           at <a href="https://www.npmjs.com/package/@jinyoung4478/xl3">@jinyoung4478/xl3</a>{' '}
-          — the <Link to="/PORTERS_GUIDE">Porter's Guide</Link> documents the
+          — the <Link to="/porters-guide">Porter's Guide</Link> documents the
           contract so a second-language port can match it.
         </p>
       </div>
@@ -385,11 +385,11 @@ function DeveloperApi() {
           />
         </div>
         <p className={styles.apiCta}>
-          <Link to="/cookbook/getting-started">Cookbook 01 — Getting started in 5 minutes</Link>
+          <Link to="/guides/getting-started">Cookbook 01 — Getting started in 5 minutes</Link>
           {' · '}
           <Link to="/spec/">Read the spec</Link>
           {' · '}
-          <Link to="/PORTERS_GUIDE">Porter's Guide</Link>
+          <Link to="/porters-guide">Porter's Guide</Link>
         </p>
       </div>
     </section>

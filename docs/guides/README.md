@@ -1,10 +1,10 @@
-# XTL Cookbook
+# XTL Guides
 
 Focused, copy-paste recipes for common reporting workflows. Each recipe is
 a short markdown page with a scenario, the template cells, and the
 expected output.
 
-The cookbook complements two existing surfaces:
+These guides complement two existing surfaces:
 
 - **[`examples/`](../../examples/)** holds three runnable templates
   (`renewal-report`, `sheet-per-region`, `multi-source-join`) that
@@ -60,7 +60,7 @@ Each recipe has the same shape:
 
 ## Running a recipe
 
-The cookbook recipes are documentation-first — not every recipe ships
+The guide recipes are documentation-first — not every recipe ships
 with a runnable `.xlsx` pair. To try one:
 
 1. Open Excel and create a new workbook.

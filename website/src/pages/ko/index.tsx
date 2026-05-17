@@ -40,7 +40,7 @@ function Hero() {
             <code>IF</code>, <code>SUM</code>, 컬럼 참조 문법 그대로니까요.
           </p>
           <div className={styles.heroLinks}>
-            <Link className="button button--primary button--lg" to="/ko/converter">
+            <Link className="button button--primary button--lg" to="/ko/try">
               브라우저에서 시도하기
             </Link>
             <Link className="button button--secondary button--lg" to="#walkthrough">
@@ -266,7 +266,7 @@ function Reliability() {
           포함하며 Stage 2 전부 green입니다. TypeScript reference implementation은{' '}
           <a href="https://www.npmjs.com/package/@jinyoung4478/xl3">@jinyoung4478/xl3</a>로
           공개되어 있습니다 — 다른 언어로의 포팅은{' '}
-          <Link to="/PORTERS_GUIDE">Porter&apos;s Guide</Link>를 참고하세요.
+          <Link to="/porters-guide">Porter&apos;s Guide</Link>를 참고하세요.
         </p>
       </div>
     </section>
@@ -333,11 +333,11 @@ function DeveloperApi() {
           />
         </div>
         <p className={styles.apiCta}>
-          <Link to="/cookbook/getting-started">Cookbook 01 — 5분 시작하기</Link>
+          <Link to="/guides/getting-started">Cookbook 01 — 5분 시작하기</Link>
           {' · '}
           <Link to="/spec/">Spec 읽기</Link>
           {' · '}
-          <Link to="/PORTERS_GUIDE">Porter&apos;s Guide</Link>
+          <Link to="/porters-guide">Porter&apos;s Guide</Link>
         </p>
       </div>
     </section>

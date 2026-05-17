@@ -46,7 +46,7 @@ A 1.0 cut requires **all** of the following:
 - [x] **API reference auto-generated.** TypeDoc, 43 pages.
 - [x] **Spec reading order documented.** PORTERS_GUIDE.md "Recommended
       development order."
-- [ ] **Korean cookbook i18n.** Currently English-only; Korean home +
+- [ ] **Korean guides i18n.** Currently English-only; Korean home +
       converter only.
 - [ ] **Production use case section in README.** Today the README says
       "alpha"; 1.0 swaps in concrete reference cases.
@@ -116,7 +116,7 @@ post-checklist-completion.
 | Second-language port at 80%+ | Contribute to [xl3-py](https://github.com/jinyoung4478/xl3-py), or start a new port (Rust, Java, Go). See [PORTERS_GUIDE.md](./PORTERS_GUIDE.md). |
 | First external ADR | Pick a deferred item, draft an ADR in `spec/decisions/`. See [GOVERNANCE.md](./GOVERNANCE.md) "How changes enter the project." |
 | Production reference case | Use xl3 internally, share what worked / didn't. Drop a row in [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) if appropriate. |
-| Korean cookbook i18n | Korean translation of any cookbook recipe is welcome as an individual PR. |
+| Korean guides i18n | Korean translation of any guide recipe is welcome as an individual PR. |
 | Benchmarks published | Run `npm run bench` on representative templates, share results. |
 
 ## How this roadmap evolves

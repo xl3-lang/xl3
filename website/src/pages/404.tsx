@@ -8,7 +8,7 @@ export default function NotFound() {
   return (
     <Layout
       title="404 — Not found"
-      description="The page you're looking for isn't here. Try the cookbook, the spec, or the converter."
+      description="The page you're looking for isn't here. Try the guides, the spec, or the converter."
     >
       <main className={styles.page}>
         <div className="container">
@@ -24,7 +24,7 @@ export default function NotFound() {
               <strong>Home</strong>
               <span>The xl3 landing page</span>
             </Link>
-            <Link className={styles.card} to="/cookbook/">
+            <Link className={styles.card} to="/guides">
               <strong>Guides</strong>
               <span>Ten short, copy-paste recipes</span>
             </Link>
@@ -32,7 +32,7 @@ export default function NotFound() {
               <strong>Spec</strong>
               <span>The XTL 0.1 language reference</span>
             </Link>
-            <Link className={styles.card} to="/converter">
+            <Link className={styles.card} to="/try">
               <strong>Try it</strong>
               <span>Run xl3 in the browser</span>
             </Link>
@@ -40,7 +40,7 @@ export default function NotFound() {
               <strong>GitHub</strong>
               <span>Source, issues, discussions</span>
             </Link>
-            <Link className={styles.card} to="/PORTERS_GUIDE">
+            <Link className={styles.card} to="/porters-guide">
               <strong>Porter&apos;s Guide</strong>
               <span>For second-language implementations</span>
             </Link>

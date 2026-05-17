@@ -234,10 +234,10 @@ basic renewal report, sheet-per-region with list-filter, and a
 multi-source join with runtime inputs. Run them with
 `npm run examples:build && npm run examples:run`.
 
-## Cookbook
+## Guides
 
 Short, copy-paste recipes for common workflows live in
-[`docs/cookbook/`](./docs/cookbook). Ten recipes covering getting
+[`docs/guides/`](./docs/guides). Ten recipes covering getting
 started, conditionals, aggregates, file/sheet grouping, runtime
 inputs, joins, `XLOOKUP`, sort/top, and styling.
 

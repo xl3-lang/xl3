@@ -39,6 +39,10 @@ const config: Config = {
 
   onBrokenLinks: 'warn',
   onBrokenAnchors: 'warn',
+  // No trailing slash on any URL — index docs become `/spec`, `/api`,
+  // `/conformance` (not `/spec/`). Keeps the navbar/footer URL form
+  // consistent with the lowercase-pathname convention.
+  trailingSlash: false,
   // Per-file detection: `.md` is parsed as CommonMark (no JSX/MDX),
   // `.mdx` is parsed as MDX. The repo's markdown contains literal
   // `<title>`, `</type>` etc. fragments from ADR text that MDX would
@@ -94,10 +98,10 @@ const config: Config = {
                 if (item.url === 'https://xl3.io/' || item.url === 'https://xl3.io') {
                   return { ...item, priority: 1.0, changefreq: 'weekly' };
                 }
-                if (/\/(converter|cookbook\/?|spec\/?|PORTERS_GUIDE)$/.test(item.url)) {
+                if (/\/(try|guides|api|spec|porters-guide)$/.test(item.url)) {
                   return { ...item, priority: 0.9 };
                 }
-                if (/\/cookbook\//.test(item.url) || /\/spec\//.test(item.url)) {
+                if (/\/guides\//.test(item.url) || /\/spec\//.test(item.url)) {
                   return { ...item, priority: 0.7 };
                 }
                 if (/\/spec\/decisions\//.test(item.url)) {
@@ -128,8 +132,8 @@ const config: Config = {
       // parity is deferred to a future Docusaurus i18n migration; for now,
       // the `/ko/` link surfaces the Korean landing as a single entry point.
       items: [
-        { to: '/converter', label: 'Try it', position: 'left' },
-        { to: '/cookbook', label: 'Guides', position: 'left' },
+        { to: '/try', label: 'Try it', position: 'left' },
+        { to: '/guides', label: 'Guides', position: 'left' },
         { to: '/api', label: 'API', position: 'left' },
         {
           type: 'dropdown',
@@ -137,13 +141,13 @@ const config: Config = {
           position: 'left',
           items: [
             { label: 'Spec', to: '/spec' },
-            { label: "Porter's Guide", to: '/PORTERS_GUIDE' },
-            { label: 'Conformance', to: '/conformance/DASHBOARD' },
-            { label: 'Roadmap to 1.0', to: '/ROADMAP' },
-            { label: 'Governance', to: '/GOVERNANCE' },
-            { label: 'Contributing', to: '/CONTRIBUTING' },
-            { label: 'Implementations', to: '/IMPLEMENTATIONS' },
-            { label: 'Releasing', to: '/RELEASING' },
+            { label: "Porter's Guide", to: '/porters-guide' },
+            { label: 'Conformance', to: '/conformance' },
+            { label: 'Roadmap to 1.0', to: '/roadmap' },
+            { label: 'Governance', to: '/governance' },
+            { label: 'Contributing', to: '/contributing' },
+            { label: 'Implementations', to: '/implementations' },
+            { label: 'Releasing', to: '/releasing' },
           ],
         },
         { to: '/ko/', label: '한국어', position: 'right' },
@@ -157,16 +161,16 @@ const config: Config = {
         {
           title: 'Docs',
           items: [
-            { label: 'Guides', to: '/cookbook' },
+            { label: 'Guides', to: '/guides' },
             { label: 'Spec', to: '/spec' },
-            { label: "Porter's Guide", to: '/PORTERS_GUIDE' },
-            { label: 'Conformance', to: '/conformance/DASHBOARD' },
+            { label: "Porter's Guide", to: '/porters-guide' },
+            { label: 'Conformance', to: '/conformance' },
           ],
         },
         {
           title: 'Try',
           items: [
-            { label: 'Browser converter', to: '/converter' },
+            { label: 'Browser converter', to: '/try' },
             // pathname:// prefix bypasses Docusaurus's in-site link checker
             // so these static-asset downloads under /static/ don't get
             // flagged as broken routes.

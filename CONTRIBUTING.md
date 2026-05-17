@@ -98,9 +98,9 @@ blocker in [ROADMAP.md](./ROADMAP.md).
    one yet. Use the **"Conformance fixture proposal"** issue template.
    You don't need TypeScript to author the fixture itself — just the
    `template.xlsx` + `data.xlsx` + expected output (or expected error).
-2. **Cookbook translation.** Pick one of the 15 recipes in
-   [`docs/cookbook/`](./docs/cookbook/) and translate it to Korean (or
-   any other language). Drop the file at `docs/cookbook/<lang>/NN-*.md`
+2. **Guides translation.** Pick one of the 15 recipes in
+   [`docs/guides/`](./docs/guides/) and translate it to Korean (or
+   any other language). Drop the file at `docs/guides/<lang>/NN-*.md`
    and PR. Low-coordination, high-value.
 3. **Run xl3 on real reporting data and report friction.** A short
    issue tagged `early-adopter-feedback` with: what report you tried,

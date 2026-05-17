@@ -206,9 +206,9 @@ author가 만든 시트 이름이 `^__[a-z]+__$`에 매칭되면 parse 시점에
 first-match). 전체 directive 문법은
 [`spec/language.md`](./spec/language.md)를 참고하세요.
 
-## Cookbook
+## 가이드
 
-자주 쓰는 패턴을 모은 짧은 레시피 10개가 [`docs/cookbook/`](./docs/cookbook)에
+자주 쓰는 패턴을 모은 짧은 레시피 10개가 [`docs/guides/`](./docs/guides)에
 있습니다. 시작하기, 조건문, 집계, 파일/시트 그룹화, runtime input, join,
 `XLOOKUP`, 정렬/Top-N, 브랜딩까지 다룹니다.
 
