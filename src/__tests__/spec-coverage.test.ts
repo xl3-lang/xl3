@@ -36,6 +36,9 @@ const INFORMATIONAL_ADRS = new Set([
   '0022', // Excel version compatibility (informational catalog; no dedicated fixture)
   '0034', // relationship to prior-art template engines (informational principle)
   '0037', // rejected — dynamic image insertion (rejection IS the contract; no fixture)
+  '0038', // @group + @subtotal — accepted spec, impl pending; fixture follows the impl commit
+  '0040', // preservation matrix amendment (impl pending for CF/DV range extension)
+  '0042', // rejected — runtime cell mutation (rejection IS the contract)
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.

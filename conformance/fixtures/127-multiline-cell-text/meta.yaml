@@ -1,0 +1,5 @@
+description: Cell values containing literal newline (\n) characters are preserved verbatim by substitution (ADR-0041). Multi-line strings flow through {{ [Col] }} unchanged. CR+LF and bare CR are normalized to LF on read.
+spec_section: ADR-0041, evaluation.md Source Value Model
+spec_version: "0.1"
+tags: [adr-0041, source-value-model, multi-line, jxls-absorption]
+verified_by: [hand]

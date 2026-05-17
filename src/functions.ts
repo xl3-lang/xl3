@@ -17,6 +17,19 @@ export function isErrorCellMarker(v: unknown): v is XtlErrorCell {
   return typeof v === 'object' && v !== null && '__xl3_error__' in v;
 }
 
+// ADR-0039: HYPERLINK() returns a marker the renderer unwraps to
+// ExcelJS's `{ text, hyperlink }` cell shape. Stringification (canonical
+// form, & concatenation) yields the label text so authors who pass a
+// HYPERLINK through TEXT() or & still get a readable string.
+export interface XtlHyperlinkCell {
+  __xl3_hyperlink__: string; // url
+  text: string;              // visible label
+}
+
+export function isHyperlinkMarker(v: unknown): v is XtlHyperlinkCell {
+  return typeof v === 'object' && v !== null && '__xl3_hyperlink__' in v;
+}
+
 // ADR-0007: a value is empty if it is missing (null/undefined) or a string
 // whose contents are entirely Unicode whitespace. Numbers (including 0),
 // booleans (including false), and dates are never empty.
@@ -65,6 +78,11 @@ export function canonicalString(v: unknown): string {
   if (v instanceof Date) return canonicalDateString(v);
   // ADR-0025: error cell marker stringifies to its Excel error code.
   if (isErrorCellMarker(v)) return v.__xl3_error__;
+  // ADR-0039: HYPERLINK marker stringifies to its visible label so that
+  // mixed-text cells (`Result: {{ HYPERLINK(...) }}`) and `&`
+  // concatenation produce readable text. The clickable form is only
+  // surfaced for single-expression cells (per renderer).
+  if (isHyperlinkMarker(v)) return v.text;
   return String(v);
 }
 
@@ -390,6 +408,74 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const formatted = formatNumber(v, f);
     if (formatted !== null) return formatted;
     return String(v ?? '');
+  },
+
+  // ADR-0019 amendment (2026-05-18): date arithmetic functions.
+  // All UTC per ADR-0017. Non-date inputs → xl3/eval/type-mismatch.
+  YEAR: (v) => {
+    const d = toDate(v);
+    if (!d) throw xtlError('xl3/eval/type-mismatch', `YEAR() expected a date, got: ${describeOperand(v)}`);
+    return d.getUTCFullYear();
+  },
+  MONTH: (v) => {
+    const d = toDate(v);
+    if (!d) throw xtlError('xl3/eval/type-mismatch', `MONTH() expected a date, got: ${describeOperand(v)}`);
+    return d.getUTCMonth() + 1;
+  },
+  DAY: (v) => {
+    const d = toDate(v);
+    if (!d) throw xtlError('xl3/eval/type-mismatch', `DAY() expected a date, got: ${describeOperand(v)}`);
+    return d.getUTCDate();
+  },
+  EOMONTH: (date, months) => {
+    const d = toDate(date);
+    if (!d) throw xtlError('xl3/eval/type-mismatch', `EOMONTH() expected a date as the 1st argument, got: ${describeOperand(date)}`);
+    const m = toNumber(months);
+    if (!Number.isInteger(m)) throw xtlError('xl3/eval/type-mismatch', `EOMONTH() expected an integer month offset, got: ${describeOperand(months)}`);
+    // Day 0 of (target month + 1) = last day of target month.
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + m + 1, 0));
+  },
+  EDATE: (date, months) => {
+    const d = toDate(date);
+    if (!d) throw xtlError('xl3/eval/type-mismatch', `EDATE() expected a date as the 1st argument, got: ${describeOperand(date)}`);
+    const m = toNumber(months);
+    if (!Number.isInteger(m)) throw xtlError('xl3/eval/type-mismatch', `EDATE() expected an integer month offset, got: ${describeOperand(months)}`);
+    const y = d.getUTCFullYear();
+    const mm = d.getUTCMonth() + m;
+    const dd = d.getUTCDate();
+    // Clamp to last day of target month if dd exceeds the month length.
+    const lastDay = new Date(Date.UTC(y, mm + 1, 0)).getUTCDate();
+    return new Date(Date.UTC(y, mm, Math.min(dd, lastDay)));
+  },
+  DATEDIF: (start, end, unit) => {
+    const s = toDate(start);
+    const e = toDate(end);
+    if (!s) throw xtlError('xl3/eval/type-mismatch', `DATEDIF() expected a date as the 1st argument, got: ${describeOperand(start)}`);
+    if (!e) throw xtlError('xl3/eval/type-mismatch', `DATEDIF() expected a date as the 2nd argument, got: ${describeOperand(end)}`);
+    const u = String(unit ?? '').toUpperCase();
+    if (u !== 'Y' && u !== 'M' && u !== 'D') {
+      throw xtlError('xl3/eval/type-mismatch', `DATEDIF() unit must be "Y", "M", or "D"; got: ${describeOperand(unit)}`);
+    }
+    const sign = e.getTime() >= s.getTime() ? 1 : -1;
+    const [a, b] = sign === 1 ? [s, e] : [e, s];
+    if (u === 'D') return sign * Math.floor((b.getTime() - a.getTime()) / 86400000);
+    let years = b.getUTCFullYear() - a.getUTCFullYear();
+    let months = b.getUTCMonth() - a.getUTCMonth();
+    let days = b.getUTCDate() - a.getUTCDate();
+    if (days < 0) months -= 1;
+    if (months < 0) { years -= 1; months += 12; }
+    return sign * (u === 'Y' ? years : years * 12 + months);
+  },
+
+  // ADR-0039: dynamic hyperlink — returns a marker the renderer unwraps
+  // to ExcelJS's `{ text, hyperlink }` cell shape so the rendered cell
+  // is clickable.
+  HYPERLINK: (url, label) => {
+    const u = String(url ?? '').trim();
+    if (u === '') throw xtlError('xl3/eval/type-mismatch', `HYPERLINK() url argument must be a non-empty string`);
+    const text = label == null || label === '' ? u : String(label);
+    const marker: XtlHyperlinkCell = { __xl3_hyperlink__: u, text };
+    return marker;
   },
 
   TODAY: () => {

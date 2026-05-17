@@ -40,10 +40,11 @@ export type XtlErrorCode =
   | 'xl3/lists/missing-reference'
   // Parser (ADR-0021)
   | 'xl3/parser/empty-block'
-  // Evaluation (ADR-0023, ADR-0024)
+  // Evaluation (ADR-0023, ADR-0024, ADR-0019 amendment, ADR-0039)
   | 'xl3/eval/operand-coercion'
   | 'xl3/eval/arity-mismatch'
   | 'xl3/eval/unsupported-syntax'
+  | 'xl3/eval/type-mismatch'
   // Cell evaluation
   | 'xl3/cell/numfmt-coercion'
   | 'xl3/cell/row-outside-repeat'

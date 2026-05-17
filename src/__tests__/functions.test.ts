@@ -211,3 +211,93 @@ describe('COUNT([field])', () => {
     ], 'Memo')).toBe(4);
   });
 });
+
+describe('date arithmetic (ADR-0019 amendment, 2026-05-18)', () => {
+  it('YEAR/MONTH/DAY extract UTC components', () => {
+    const d = new Date(Date.UTC(2026, 4, 18, 9, 30, 0));  // 2026-05-18T09:30Z
+    expect(functions.YEAR(d)).toBe(2026);
+    expect(functions.MONTH(d)).toBe(5);
+    expect(functions.DAY(d)).toBe(18);
+  });
+
+  it('YEAR accepts an ISO date string and reads UTC', () => {
+    expect(functions.YEAR('2026-05-18')).toBe(2026);
+    expect(functions.MONTH('2026-12-31')).toBe(12);
+    expect(functions.DAY('2026-12-31')).toBe(31);
+  });
+
+  it('YEAR rejects non-date input with type-mismatch', () => {
+    expect(() => functions.YEAR('not a date')).toThrow(/YEAR\(\) expected a date/);
+  });
+
+  it('EOMONTH returns the last day of the offset month at UTC midnight', () => {
+    const d = new Date(Date.UTC(2026, 4, 18));  // 2026-05-18
+    const eom = functions.EOMONTH(d, 0) as Date;
+    expect(eom.getUTCFullYear()).toBe(2026);
+    expect(eom.getUTCMonth()).toBe(4);   // May
+    expect(eom.getUTCDate()).toBe(31);
+    expect(eom.getUTCHours()).toBe(0);
+
+    const eomNext = functions.EOMONTH(d, 1) as Date;
+    expect(eomNext.getUTCMonth()).toBe(5); // June
+    expect(eomNext.getUTCDate()).toBe(30);
+
+    const eomPrev = functions.EOMONTH(d, -3) as Date;
+    expect(eomPrev.getUTCFullYear()).toBe(2026);
+    expect(eomPrev.getUTCMonth()).toBe(1); // February
+    expect(eomPrev.getUTCDate()).toBe(28);
+  });
+
+  it('EDATE returns the same day-of-month, clamped at month length', () => {
+    const d = new Date(Date.UTC(2026, 0, 31));  // 2026-01-31
+    const e1 = functions.EDATE(d, 1) as Date;
+    // Jan-31 + 1 month → Feb has only 28 days in 2026, clamp.
+    expect(e1.getUTCMonth()).toBe(1);
+    expect(e1.getUTCDate()).toBe(28);
+
+    const eNeg = functions.EDATE(d, -1) as Date;
+    expect(eNeg.getUTCMonth()).toBe(11);
+    expect(eNeg.getUTCFullYear()).toBe(2025);
+    expect(eNeg.getUTCDate()).toBe(31);
+  });
+
+  it('DATEDIF returns whole-unit counts; negative when start > end', () => {
+    const a = new Date(Date.UTC(2025, 0, 1));
+    const b = new Date(Date.UTC(2026, 4, 18));
+    expect(functions.DATEDIF(a, b, 'Y')).toBe(1);
+    expect(functions.DATEDIF(a, b, 'M')).toBe(16);
+    expect(functions.DATEDIF(a, b, 'D')).toBe(502);
+    expect(functions.DATEDIF(b, a, 'M')).toBe(-16);
+  });
+
+  it('DATEDIF unit must be Y, M, or D (case-insensitive)', () => {
+    const a = new Date(Date.UTC(2025, 0, 1));
+    const b = new Date(Date.UTC(2026, 0, 1));
+    expect(functions.DATEDIF(a, b, 'y')).toBe(1);
+    expect(() => functions.DATEDIF(a, b, 'W')).toThrow(/DATEDIF\(\) unit must be/);
+  });
+});
+
+describe('HYPERLINK (ADR-0039)', () => {
+  it('returns a marker the renderer unwraps to text+hyperlink', () => {
+    const r = functions.HYPERLINK('https://example.com', '보기');
+    expect(r).toEqual({ __xl3_hyperlink__: 'https://example.com', text: '보기' });
+  });
+
+  it('falls back to the URL as label when label is empty', () => {
+    expect(functions.HYPERLINK('https://example.com', '')).toEqual({
+      __xl3_hyperlink__: 'https://example.com',
+      text: 'https://example.com',
+    });
+  });
+
+  it('stringifies the marker to its visible label (canonicalString)', () => {
+    const r = functions.HYPERLINK('https://x.com', '바로가기');
+    expect(canonicalString(r)).toBe('바로가기');
+  });
+
+  it('rejects an empty url with type-mismatch', () => {
+    expect(() => functions.HYPERLINK('', 'label')).toThrow(/url argument must be a non-empty string/);
+    expect(() => functions.HYPERLINK('   ', 'label')).toThrow(/url argument must be a non-empty string/);
+  });
+});

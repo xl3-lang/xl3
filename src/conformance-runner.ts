@@ -938,6 +938,13 @@ function comparable(v: ExcelJS.CellValue): unknown {
     // sources (they read as empty in eval, so they never reach output
     // unchanged unless the engine intentionally produces them).
     if ('error' in v) return (v as { error: unknown }).error ?? null;
+    // ADR-0039: hyperlink cells ({ text, hyperlink }) compare by a
+    // stable concatenation so two structurally-equal hyperlinks pass
+    // the `!==` check in diffCellMaps.
+    if ('hyperlink' in v && 'text' in v) {
+      const h = v as { text: unknown; hyperlink: unknown };
+      return `HYPERLINK("${String(h.hyperlink ?? '')}","${String(h.text ?? '')}")`;
+    }
     if ('result' in v) return (v as { result: unknown }).result ?? null;
     if (v instanceof Date) return v.toISOString();
   }

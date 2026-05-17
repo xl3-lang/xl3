@@ -12,7 +12,7 @@ import type {
 import { normalizeTemplate } from './normalizer.js';
 import { evalCell, evalCellAt } from './template-eval.js';
 import { applyDirectives } from './data-transform.js';
-import { canonicalString, isErrorCellMarker } from './functions.js';
+import { canonicalString, isErrorCellMarker, isHyperlinkMarker } from './functions.js';
 import { xtlError } from './error-codes.js';
 import type { FileGroup } from './grouper.js';
 import type { SourceData } from './reader.js';
@@ -551,6 +551,13 @@ function renderCellValue(
       return value.__xl3_error__ as ExcelJS.CellValue;
     }
     return { error: value.__xl3_error__ } as unknown as ExcelJS.CellValue;
+  }
+  // ADR-0039: HYPERLINK() marker → ExcelJS `{ text, hyperlink }` shape.
+  // Only when the whole cell is a single HYPERLINK expression; mixed-text
+  // cells fall through to canonicalString and the link is lost (authors
+  // should use a single-expression cell for clickable links).
+  if (isHyperlinkMarker(value) && isSingleExpression(normalizedTemplate)) {
+    return { text: value.text, hyperlink: value.__xl3_hyperlink__ } as ExcelJS.CellValue;
   }
   const numFmt = typeof style?.numFmt === 'string' ? style.numFmt : undefined;
   const singleExpression = isSingleExpression(normalizedTemplate);

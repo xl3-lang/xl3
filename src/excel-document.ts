@@ -235,6 +235,10 @@ function copyWorksheet(src: ExcelJS.Worksheet, dst: ExcelJS.Worksheet) {
     // Only copy explicit heights — leave undefined rows alone so Excel falls
     // back to the worksheet's defaultRowHeight (which we forwarded above).
     if (srcRow.height !== undefined) dstRow.height = srcRow.height;
+    // ADR-0040: outline level preservation (P) — copy verbatim per row.
+    if (srcRow.outlineLevel !== undefined && srcRow.outlineLevel > 0) {
+      dstRow.outlineLevel = srcRow.outlineLevel;
+    }
 
     srcRow.eachCell({ includeEmpty: true }, (srcCell, colNumber) => {
       const dstCell = dstRow.getCell(colNumber);

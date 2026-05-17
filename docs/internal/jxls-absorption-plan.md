@@ -19,16 +19,16 @@ JXLS — what matters is that XTL stops being silent.
 
 | # | Item | xl3 current state | Target ADR | Priority |
 |---|---|---|---|---|
-| A1 | Data-row merged cells (vertical/horizontal) | Implicit: ExcelJS broadcasts master to slaves | **ADR-0035** | HIGH — follow-up to ADR-0033 |
-| A2 | Image anchor behavior across `@repeat` row expansion | Images preserved in `cloneWorksheet`; `spliceRowsPreservingMerges` does not adjust image anchors | ADR-0036 row | HIGH |
-| A3 | Conditional formatting preservation + range extension | Pass-through via ExcelJS load→save; ranges do **not** auto-extend across `@repeat` | ADR-0036 row | HIGH |
-| A4 | Chart data range expansion across `@repeat` | ExcelJS chart support is incomplete; charts likely lost on round-trip | ADR-0036 row | LOW — deferred |
-| A5 | Named range / defined names | Pass-through via ExcelJS; not extended across `@repeat` | ADR-0036 row | MEDIUM |
-| A6 | Print area + repeating header rows | Pass-through; not extended across `@repeat` | ADR-0036 row | MEDIUM |
-| A7 | Freeze pane / split | Pass-through via `views` (already in `cloneWorksheet:71`) | ADR-0036 row | LOW — already works |
-| A8 | Sheet protection / cell locking | Pass-through via ExcelJS | ADR-0036 row | LOW — already works |
-| A9 | Data validation (dropdowns, ranges) | Pass-through via ExcelJS; ranges not extended | ADR-0036 row | MEDIUM |
-| A10 | Cell comments (notes) | Pass-through via ExcelJS | ADR-0036 row | LOW — already works |
+| A1 | Data-row merged cells (vertical/horizontal) | ✅ **ADR-0035 landed** + fixture 122 | **ADR-0035** | HIGH — done |
+| A2 | Image anchor behavior across `@repeat` row expansion | ✅ pinned by ADR-0036 (P) | ADR-0036 row | HIGH — done |
+| A3 | Conditional formatting preservation + range extension | ⏳ ADR-0036 (P) for preservation; **ADR-0040 promotes to PE** (impl pending) | ADR-0036 + ADR-0040 | HIGH — spec done, impl pending |
+| A4 | Chart data range expansion across `@repeat` | ⏸️ ADR-0036 marks D (deferred). Revisit when Stage 2 conformance reaches charts | ADR-0036 row | LOW — deferred |
+| A5 | Named range / defined names | ✅ ADR-0036 (P) + fixture 123 | ADR-0036 row | MEDIUM — done |
+| A6 | Print area + repeating header rows | ✅ ADR-0036 (P) | ADR-0036 row | MEDIUM — done |
+| A7 | Freeze pane / split | ✅ ADR-0036 (P) | ADR-0036 row | LOW — done |
+| A8 | Sheet protection / cell locking | ✅ ADR-0036 (P) | ADR-0036 row | LOW — done |
+| A9 | Data validation (dropdowns, ranges) | ⏳ ADR-0036 (P); **ADR-0040 promotes to PE** (impl pending) | ADR-0036 + ADR-0040 | MEDIUM — spec done, impl pending |
+| A10 | Cell comments (notes) | ✅ ADR-0036 (P) + fixture 123 | ADR-0036 row | LOW — done |
 
 **Strategy:** consolidate A2–A10 into one matrix ADR (ADR-0036)
 rather than nine separate ADRs. A1 gets its own ADR (ADR-0035)
@@ -43,11 +43,13 @@ scope before 1.0.
 
 | # | JXLS feature | Possible XTL form | Why deferred |
 |---|---|---|---|
-| B1 | `groupBy` + subtotal rows | `{{ @group [Customer] }} ... {{ @subtotal SUM([Amount]) }}` | Real value, but multi-source/grouping already covers most cases via file/sheet grouping (ADR-0012) |
-| B2 | `jx:link` (dynamic hyperlink) | Use Excel's native `HYPERLINK()` function inside `{{ ... }}` | Excel's `HYPERLINK()` already covers this; no new directive needed |
-| B3 | `outlineLevel` (row grouping) | `{{ @outline N }}` | Rarely used in operations templates |
+| B1 | `groupBy` + subtotal rows | ✅ **ADR-0038 landed** (spec). Surface: `{{ @group [Key] }}` + `{{ @subtotal SUM(...) }}`. Impl pending — parser/renderer changes are non-trivial. | **PROMOTED → A-like** |
+| B2 | `jx:link` (dynamic hyperlink) | ✅ **ADR-0039 landed** — `HYPERLINK(url, label)` function + impl + fixture 125 | **PROMOTED → done** |
+| B3 | `outlineLevel` (row grouping) | ✅ **ADR-0040** adds preservation (P) to the matrix. Impl: `cloneWorksheet` copies `row.outlineLevel`. | **PROMOTED → done** |
 | B4 | Dynamic cell styling based on data | `{{ @style ... }}` | Risk of undermining "Excel stays Excel" — should stay author-controlled via conditional formatting |
 | B5 | `jx:multisheet` (sheet-per-group) | Already covered by file/sheet grouping (ADR-0012) | Already done |
+| B6 | Date arithmetic (EOMONTH, EDATE, DATEDIF, YEAR, MONTH, DAY) | ✅ **ADR-0019 amendment landed** + impl + tests + fixture 126 | **PROMOTED → done** |
+| B7 | Multi-line cell text (`\n` preservation) | ✅ **ADR-0041 landed** + fixture 127. Likely zero-code-change; pinned as normative. | **PROMOTED → done** |
 
 ## Category C — Rejected (incompatible with thesis)
 
@@ -62,15 +64,22 @@ Named here so the question stays settled. Each becomes a
 | C4 | Java/host custom commands (Turing-complete escape hatch) | Cannot survive porting; undermines spec | ADR-0034 Corollary 3 |
 | C5 | Library-as-spec | Already explicit anti-pattern per `PORTERS_GUIDE.md:28-30` | ADR-0034 Corollary 3 |
 | C6 | Dynamic image insertion (`jx:image` — data-driven image from a column/path) | Out of scope: vendor templates rarely need this; image preservation (template image survives) is enough; opens binary-asset pipeline that breaks browser flow | **ADR-0037 (rejected)** |
+| C7 | Runtime cell mutation (`jx:updateCell` — modify existing cell value during render, separate from `{{ }}` substitution) | Substitution via `{{ }}` already covers the use case; runtime mutation makes templates ambiguous and depends on evaluation order, conflicting with "template is the handover artifact" | **ADR-0042 (rejected)** |
 
 ## Sequence
 
 1. ✅ ADR-0034 informational — relationship principle
 2. ✅ Absorption-plan doc (this file)
-3. ⏳ ADR-0035 accepted — data-row merge cells + impl + fixture
-4. ⏳ ADR-0036 mixed — template feature preservation matrix
-5. ⏳ ADR-0037 rejected — dynamic image insertion
-6. *Future ADRs:* one B item per quarter if/when adoption pressure makes a B item necessary. Each preceded by a deferred-status ADR with explicit scope.
+3. ✅ ADR-0035 accepted — data-row merge cells + impl + fixture 122
+4. ✅ ADR-0036 mixed — template feature preservation matrix + fixtures 123/124
+5. ✅ ADR-0037 rejected — dynamic image insertion
+6. ✅ **ADR-0038 accepted** — `@group` + `@subtotal` (spec only; impl pending)
+7. ✅ **ADR-0019 amendment** — promote 6 date arithmetic functions; impl + fixture 126
+8. ✅ **ADR-0039 accepted** — `HYPERLINK(url, label)` function; impl + fixture 125
+9. ✅ **ADR-0040 accepted** — CF/DV range PE extension + outline level preservation (CF/DV impl pending; outline impl landed)
+10. ✅ **ADR-0041 accepted** — multi-line cell text; pin + fixture 127
+11. ✅ **ADR-0042 rejected** — runtime cell mutation
+12. **Next:** ADR-0038 impl (parser + renderer for `@group`/`@subtotal`); ADR-0040 impl (CF/DV `sqref` extension at `spliceRowsPreservingMerges` time).
 
 ## How this doc evolves
 

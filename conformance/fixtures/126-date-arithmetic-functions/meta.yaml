@@ -1,0 +1,5 @@
+description: YEAR / MONTH / EOMONTH / EDATE accept dates and return UTC-anchored components or dates (ADR-0019 amendment). EOMONTH(date, 0) returns the last day of the input month; EDATE(2026-01-31, 1) clamps to 2026-02-28 when the target month is shorter.
+spec_section: ADR-0019 (amendment 2026-05-18), language.md function table
+spec_version: "0.1"
+tags: [adr-0019, function, date-arithmetic, jxls-absorption]
+verified_by: [hand]

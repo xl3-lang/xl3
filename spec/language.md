@@ -249,6 +249,13 @@ operand evaluation.
 | `TEXT` | 2 | value, format |
 | `ROW` | 0 | row index in current data block |
 | `TODAY` | 0 | UTC date |
+| `YEAR` | 1 | 4-digit year of a date (UTC) — ADR-0019 amendment |
+| `MONTH` | 1 | month 1-12 of a date (UTC) — ADR-0019 amendment |
+| `DAY` | 1 | day-of-month 1-31 of a date (UTC) — ADR-0019 amendment |
+| `EOMONTH` | 2 | date of the last day of the month `N` months from a date (UTC midnight) — ADR-0019 amendment |
+| `EDATE` | 2 | date `N` months from a date, same day clamped (UTC midnight) — ADR-0019 amendment |
+| `DATEDIF` | 3 | integer count of complete `"Y"`/`"M"`/`"D"` units between two dates (negative when start > end) — ADR-0019 amendment |
+| `HYPERLINK` | 2 | url, label — produces a clickable cell — ADR-0039 |
 | `XLOOKUP` | 3 or 4 | value, lookup-array, return-array, [fallback] |
 | `SUM` | 1 | column ref |
 | `AVERAGE` (alias `AVG`) | 1 | column ref |

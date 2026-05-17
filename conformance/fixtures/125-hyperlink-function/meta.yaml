@@ -1,0 +1,5 @@
+description: HYPERLINK(url, label) (ADR-0039) produces an ExcelJS-shaped clickable cell ({ text, hyperlink }) when used as the sole expression in a cell. The visible label is the second argument; canonicalString of the result yields the label.
+spec_section: ADR-0039, language.md function table
+spec_version: "0.1"
+tags: [adr-0039, function, hyperlink, jxls-absorption]
+verified_by: [hand]

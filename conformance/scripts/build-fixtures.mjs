@@ -5155,6 +5155,165 @@ async function build096() {
 // Spec section: ADR-0033 (2026-05-17 amendment), evaluation.md
 // "Source Data Model".
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 125 - hyperlink-function (ADR-0039)
+// ---------------------------------------------------------------------------
+async function build125() {
+  const dir = join(FIXTURES, '125-hyperlink-function');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'hyperlink-function'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Link';
+    sh.getCell('A2').value = '{{ [Account] }}';
+    sh.getCell('B2').value = '{{ HYPERLINK([Url], [Label]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Url';
+    sh.getCell('C1').value = 'Label';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'https://erp.example.com/invoice/1';
+    sh.getCell('C2').value = '보기';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'https://erp.example.com/invoice/2';
+    sh.getCell('C3').value = '보기';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Link';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = { text: '보기', hyperlink: 'https://erp.example.com/invoice/1' };
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = { text: '보기', hyperlink: 'https://erp.example.com/invoice/2' };
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 126 - date-arithmetic-functions (ADR-0019 amendment)
+// ---------------------------------------------------------------------------
+async function build126() {
+  const dir = join(FIXTURES, '126-date-arithmetic-functions');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'date-arithmetic-functions'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Order';
+    sh.getCell('B1').value = 'Year';
+    sh.getCell('C1').value = 'Month';
+    sh.getCell('D1').value = 'EOMonth';
+    sh.getCell('E1').value = '+30 days';
+    sh.getCell('A2').value = '{{ [Order] }}';
+    sh.getCell('B2').value = '{{ YEAR([Order]) }}';
+    sh.getCell('C2').value = '{{ MONTH([Order]) }}';
+    sh.getCell('D2').value = '{{ TEXT(EOMONTH([Order], 0), "YYYY-MM-DD") }}';
+    sh.getCell('E2').value = '{{ TEXT(EDATE([Order], 1), "YYYY-MM-DD") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Order';
+    sh.getCell('A2').value = new Date(Date.UTC(2026, 0, 31)); // 2026-01-31
+    sh.getCell('A3').value = new Date(Date.UTC(2026, 4, 18)); // 2026-05-18
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Order';
+    sh.getCell('B1').value = 'Year';
+    sh.getCell('C1').value = 'Month';
+    sh.getCell('D1').value = 'EOMonth';
+    sh.getCell('E1').value = '+30 days';
+    sh.getCell('A2').value = new Date(Date.UTC(2026, 0, 31));
+    sh.getCell('B2').value = 2026;
+    sh.getCell('C2').value = 1;
+    sh.getCell('D2').value = '2026-01-31';
+    sh.getCell('E2').value = '2026-02-28'; // clamp
+    sh.getCell('A3').value = new Date(Date.UTC(2026, 4, 18));
+    sh.getCell('B3').value = 2026;
+    sh.getCell('C3').value = 5;
+    sh.getCell('D3').value = '2026-05-31';
+    sh.getCell('E3').value = '2026-06-18';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 127 - multiline-cell-text (ADR-0041)
+// ---------------------------------------------------------------------------
+async function build127() {
+  const dir = join(FIXTURES, '127-multiline-cell-text');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'multiline-cell-text'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Address';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Address] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Address';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Line one\nLine two\nLine three';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = '서울특별시 강남구\n테헤란로 98길 11\n2층';  // typical 3-line Korean address
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Address';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Line one\nLine two\nLine three';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = '서울특별시 강남구\n테헤란로 98길 11\n2층';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 async function build124() {
   const dir = join(FIXTURES, '124-source-2d-merge-header');
   await mkdir(dir, { recursive: true });
@@ -6949,6 +7108,9 @@ const builders = [
   ['122', build122],
   ['123', build123],
   ['124', build124],
+  ['125', build125],
+  ['126', build126],
+  ['127', build127],
 ];
 
 const selected = new Set(process.argv.slice(2));

@@ -15,6 +15,7 @@ const EXPECTED_CODES: XtlErrorCode[] = [
   'xl3/eval/arity-mismatch',
   'xl3/eval/operand-coercion',
   'xl3/eval/unsupported-syntax',
+  'xl3/eval/type-mismatch',
   'xl3/cell/numfmt-coercion',
   'xl3/cell/row-outside-repeat',
   'xl3/config/invalid-source-table',
