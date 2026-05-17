@@ -11,8 +11,10 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 JXLS-absorption batch. Four new ADRs (0034–0037) settle merged-cell
 semantics on both header and data rows, pin the template feature
 preservation contract, and record the project's working principle for
-relating to prior-art template engines. The XTL language version is
-unchanged (still 0.1 draft).
+relating to prior-art template engines. The 0.5.0 hardening pass
+resolves the spec-review critical items raised against ADR-0033 (the
+ADR-0032 §#2 supersession, the 2D merge amendment, the user-doc
+guidance gap). The XTL language version is unchanged (still 0.1 draft).
 
 ### Added
 
@@ -57,6 +59,28 @@ unchanged (still 0.1 draft).
 - Templates with horizontally-merged headers no longer throw
   `xl3/source/duplicate-name`. Real-world vendor templates that
   previously required manual unmerging now work as-is.
+- **ADR-0032 §#2 supersession.** ADR-0032 §#2 ("Source headers in
+  merged cells are not portable") is explicitly superseded by
+  ADR-0033 and marked as such in the ADR text. Ports reading
+  ADR-0032 first no longer get a normative contradiction.
+- **2D merge handling spec'd.** ADR-0033 amendment defines how a
+  merge spanning both rows and columns (e.g., J11:M12) is handled
+  by the existing transparency rules without new clauses. Recommended
+  pattern: pick the band's *last* row as the header so data starts
+  immediately below. Fixture 124 pins this.
+- **"Transparent" precision.** ADR-0033 amendment defines exactly
+  what "transparent" means for a horizontal-merge slave (skip in
+  iteration, exempt from empty/duplicate/reserved-name checks) and
+  states that the master cell participates in those checks exactly
+  as an unmerged header would.
+- **Porter independence note.** ADR-0033 amendment states the rule
+  is "column-skip + master-anchored read" independent of how the
+  underlying library materializes merge slaves (ExcelJS broadcasts
+  vs openpyxl `None`). Ports MUST identify slaves from merge-region
+  metadata, not from cell-value presence.
+- **User-doc guidance updated.** `docs/guides/10-styling-and-branding.md`
+  and `PORTERS_GUIDE.md` no longer advise authors to remove merged
+  headers; both point at ADR-0033's actual behavior.
 
 ## [0.4.1] - 2026-05-13
 

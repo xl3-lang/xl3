@@ -207,16 +207,23 @@ know is hidden. Authors who want visibility-aware behavior use
 `@filter` explicitly. If your port's Excel reader auto-filters
 hidden rows, override it. Fixture 117 pins this.
 
-**Headers in merged cells are not portable.** ADR-0032 #2 pins
-this as implementation-defined / not portable. When `source_table`
-points at a row whose cells are part of a merged range, what a
-reader library returns differs: ExcelJS returns the merge value on
-every cell of the range (so xl3 trips `xl3/source/duplicate-name`);
-openpyxl and others may return only the top-left cell with the
-others empty (trip `xl3/source/missing-header`). Both paths reject
-the template — the normative position is that templates SHOULD NOT
-merge header cells. Document whichever path your port produces; do
-not invent a third behavior that silently succeeds.
+**Headers in merged cells now read as one logical column** (per
+ADR-0033, which superseded ADR-0032 §#2 on 2026-05-17). A
+horizontally-merged header cell forms one source column at the
+merge master's column index; slave cells in the same row are
+transparent (they contribute no column and do not trigger
+`xl3/source/duplicate-name`). Vertical-direction merges in the
+header row read the master's text at the slave's column unchanged
+— this is how multi-row header bands work. A 2D merge (band) is
+handled by the same rules without new clauses; the recommended
+authoring pattern is to pick the band's *last* row as the header
+row so data starts immediately below the band. See ADR-0033's
+"Amendment (2026-05-17)" section for the porter-library
+independence rule (column-skip is identified from merge-region
+metadata, not from cell-value presence — ExcelJS, openpyxl, and
+other libraries differ on what they put in slave cells, but all
+ports MUST produce the same column list). Fixtures 121
+(simple horizontal merge) and 124 (2D merge band) pin this.
 
 **Output filename collision is an error.** ADR-0031 requires
 detecting two distinct file group keys that sanitize (per ADR-0002)

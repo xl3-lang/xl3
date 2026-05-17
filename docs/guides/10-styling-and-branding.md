@@ -57,13 +57,28 @@ xl3 preserves merges in the template:
 Vertical merges that cross the data-block boundary are
 implementation-defined per ADR-0021 — avoid them in portable templates.
 
-## Headers in merged cells: don't
+## Headers in merged cells: supported
 
-A common trap: the source-data sheet has a merged title row above the
-column headers. xl3 reads headers from the row pointed to by
-`source_table`. If that row is merged, behavior is reader-library-
-defined (ADR-0032 #2) — ExcelJS returns the merge value on every cell
-and trips `xl3/source/duplicate-name`. Keep header rows un-merged.
+Vendor templates (거래명세서, 발주서, 정산서) often merge header cells
+across multiple columns to label a group of fields with one heading.
+xl3 reads these natively as of 0.5.0 (per ADR-0033): a horizontally-
+merged header forms **one** logical column at the merge master,
+and slave cells in the same row are transparent.
+
+Example: a header row with `B1:D1 = "품목"` (merged across 3 columns)
+and `E1 = "수량"` reads as two source columns `품목` and `수량`. Data
+for `품목` is read from column B; columns C and D are skipped because
+their cells are merge slaves of B.
+
+Multi-row header bands (2D merges that span both rows and columns)
+also work — point `source_table` at the **last** row of the band so
+data starts immediately below it. For a `J11:M12` band, use
+`source_table = J12:N` (not `J11:N`, which would treat row 12 as a
+phantom data row carrying the merge master's text).
+
+If the original source genuinely has two columns named the same
+thing (not because of a merge), `xl3/source/duplicate-name` still
+fires. The narrowing only applies to merge slaves.
 
 ## Print setup
 

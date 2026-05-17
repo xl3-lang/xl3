@@ -1,0 +1,5 @@
+description: A 2D merge in a source header (region spanning both rows and columns) is handled by ADR-0033's existing transparency rules without new clauses. Cells in non-master columns are horizontal slaves regardless of row; cells in the master column but a different row are vertical-direction slaves that read the master's text in place.
+spec_section: ADR-0033 (2026-05-17 amendment), evaluation.md "Source Data Model"
+spec_version: "0.1"
+tags: [adr-0033, source-table, merged-header, 2d-merge, korean]
+verified_by: [hand]

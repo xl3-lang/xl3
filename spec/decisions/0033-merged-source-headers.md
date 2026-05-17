@@ -125,8 +125,71 @@ a new bullet:
     existing style-preservation rule (`evaluation.md` §"Styles and
     Workbook Structure"); this ADR is read-side only.
 
+## Amendment (2026-05-17) — 2D merges, "transparent" precision, porter guidance
+
+Three clarifications added after the first review pass surfaced
+the gaps. None changes the rule set; all sharpen the prose.
+
+### 2D merges (regions spanning both rows and columns)
+
+A merge whose region spans both multiple rows AND multiple
+columns (e.g., `J11:M12`) is handled by the existing rules
+mechanically — no new rule is needed:
+
+- The master is the top-left cell (`J11`). It is read as a normal
+  header per Rule 1.
+- Cells in the same row as the master, different column (`K11`,
+  `L11`, `M11`) are horizontal slaves per Rule 2: transparent.
+- Cells in a different row but the same column as the master
+  (`J12`) are vertical-direction slaves. Rule 1's same-column
+  clause treats them as header-reading positions; they read the
+  master's text in place. (This is how multi-row header bands
+  work and why `source_table = J12:N` against a 2D merge
+  starting at `J11` still yields a `품목` header.)
+- Cells with both different row and different column (`K12`,
+  `L12`, `M12`) are horizontal slaves per Rule 2: transparent.
+
+The reference impl pins this with reader tests
+`2D-merge-header-at-master-row` and `2D-merge-header-at-slave-row`,
+plus conformance fixture 124.
+
+### Definition: "transparent"
+
+A horizontal-merge slave header cell is **transparent**: when
+iterating the header row from `leftCol` to `rightCol`, the
+implementation MUST skip the cell entirely. The cell contributes
+no column to the source's column list, does not trigger
+empty-header / duplicate-name / reserved-name checks, and is not
+referenced in error messages produced for that header row.
+
+The retained master cell participates in empty-header,
+duplicate-name, and reserved-name checks **exactly as an
+unmerged header cell at the same column would**. The master is
+not exempted from any check.
+
+### Porter note (reading-library independence)
+
+The normative rule is **column-skip + master-anchored read**. It
+is independent of how the underlying spreadsheet library
+materializes merge slaves:
+
+- ExcelJS returns the master's value on every cell in the merge.
+- openpyxl returns `None` on slave cells, value only on the
+  master.
+- Other libraries vary.
+
+A port MUST identify horizontal-merge slaves from the workbook's
+*merge-region metadata*, not from cell-value presence. A port
+MUST read the master's value when header text is needed for a
+master cell that the workbook library otherwise reports as having
+its own value (ExcelJS case) or for a vertical-direction header
+slave whose master is on a row above the chosen header row.
+
 ## References
 
 - ADR-0015 — Structured error reporting (error-code catalog)
 - ADR-0017 — Source value model
+- ADR-0032 — Niche limits and pass-through (§#2 superseded by
+  this ADR, see ADR-0032 §#2 supersession note)
+- ADR-0035 — Data-row merged cell semantics (data-row companion)
 - `spec/evaluation.md` — Source Data Model section

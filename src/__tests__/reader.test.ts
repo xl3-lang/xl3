@@ -197,6 +197,49 @@ describe('readSource', () => {
     expect(source.rows).toEqual([{ 품목: '노트북', 수량: 2 }]);
   });
 
+  it('handles 2D merge header at the slave row (vertical-direction slave reads master)', async () => {
+    // Recommended pattern for multi-row header bands per ADR-0033 amendment:
+    // pick the LAST row of the band as the header row. Vertical-direction
+    // slaves read the master's text; horizontal-direction slaves are
+    // transparent. The first data row is then immediately below the band.
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Raw');
+    sheet.getCell('J11').value = '품목';
+    sheet.mergeCells('J11:M12');
+    sheet.getCell('N11').value = '수량';
+    sheet.mergeCells('N11:N12');
+    sheet.getCell('J13').value = '노트북';
+    sheet.getCell('N13').value = 5;
+
+    const data = await workbook.xlsx.writeBuffer();
+    const source = await readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'J12:N' });
+    expect(source.headers).toEqual(['품목', '수량']);
+    expect(source.rows).toEqual([{ 품목: '노트북', 수량: 5 }]);
+  });
+
+  it('picking the master row of a 2D merge band yields a phantom data row at the slave row', async () => {
+    // Documented gotcha per ADR-0033 amendment: if the user picks the master
+    // row of a 2D merge band as `source_table`, the slave rows of that band
+    // are read as data rows carrying the merge master's value. Authors of
+    // multi-row header bands SHOULD use the band's LAST row instead.
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Raw');
+    sheet.getCell('J11').value = '품목';
+    sheet.mergeCells('J11:M12');
+    sheet.getCell('N11').value = '수량';
+    sheet.mergeCells('N11:N12');
+    sheet.getCell('J13').value = '노트북';
+    sheet.getCell('N13').value = 5;
+
+    const data = await workbook.xlsx.writeBuffer();
+    const source = await readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'J11:N' });
+    expect(source.headers).toEqual(['품목', '수량']);
+    expect(source.rows).toEqual([
+      { 품목: '품목', 수량: '수량' },     // phantom row 12 from the merge band
+      { 품목: '노트북', 수량: 5 },
+    ]);
+  });
+
   it('errors when the source_table range starts inside a merged header (no master in window)', async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Raw');

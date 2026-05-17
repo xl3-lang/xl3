@@ -63,23 +63,31 @@ Excel-compatibility validation is a host concern."
 
 ### #2 — Source headers in merged cells
 
-**Position: implementation-defined; portable templates do NOT
-merge header cells.**
+**Superseded by ADR-0033 (2026-05-17).** The position below
+("implementation-defined; portable templates do NOT merge header
+cells") is **no longer the spec's position**. ADR-0033 changed
+the contract: a horizontally-merged header cell forms one logical
+column at the merge master, and slave cells are transparent (no
+duplicate-name error). Real Korean vendor templates are readable
+as-is. ADR-0035 separately covers data-row merges, and ADR-0036
+pins related preservation features.
 
-When `source_table` points at a row whose cells are part of a
-merged range, the value reported per individual cell is reader-
-library-defined. ExcelJS (the reference impl's reader) returns the
-merge value on every cell in the range. xl3 then hits the
-existing `xl3/source/duplicate-name` check, since the same value
-appears across multiple header cells.
+The original §#2 text is retained below for historical record:
 
-Other libraries may return only the top-left cell's value with
-others as empty, in which case xl3 would hit
-`xl3/source/missing-header` instead.
-
-Both error paths reject the template. The spec's normative position
-is: **templates that merge header cells are not portable**. Authors
-should remove merges from header rows.
+> ~~When `source_table` points at a row whose cells are part of a
+> merged range, the value reported per individual cell is reader-
+> library-defined. ExcelJS (the reference impl's reader) returns the
+> merge value on every cell in the range. xl3 then hits the
+> existing `xl3/source/duplicate-name` check, since the same value
+> appears across multiple header cells.~~
+>
+> ~~Other libraries may return only the top-left cell's value with
+> others as empty, in which case xl3 would hit
+> `xl3/source/missing-header` instead.~~
+>
+> ~~Both error paths reject the template. The spec's normative position
+> is: **templates that merge header cells are not portable**. Authors
+> should remove merges from header rows.~~
 
 ### #3 — Workbook and sheet properties
 

@@ -5143,6 +5143,78 @@ async function build096() {
 // Spec section: ADR-0035, evaluation.md "Source Data Model".
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+// 124 - source-2d-merge-header (ADR-0033 amendment)
+//
+// Concept: a 2D merge (region spanning both rows and columns) is handled
+// by the existing transparency rules: cells in non-master columns are
+// horizontal slaves regardless of whether they are also in non-master
+// rows. Cells in the master column but a different row are
+// vertical-direction slaves and read the master's text — they form
+// multi-row header bands. This pins the amendment that 2D merges
+// follow the same rules without new clauses.
+// Spec section: ADR-0033 (2026-05-17 amendment), evaluation.md
+// "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build124() {
+  const dir = join(FIXTURES, '124-source-2d-merge-header');
+  await mkdir(dir, { recursive: true });
+
+  // Pattern: pick the LAST row of the multi-row header band as the
+  // header row (per ADR-0033 amendment, recommended for 2D / multi-row
+  // bands). The vertical-direction slave at the band's last row reads
+  // the master's text in place; the horizontal slaves are transparent.
+
+  // template.xlsx — pulls two columns from the merged-band source.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-2d-merge-header'],
+      ['source_sheet', 'Data'],
+      ['source_table', 'B2:E'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '품목';
+    sh.getCell('B1').value = '수량';
+    sh.getCell('A2').value = '{{ [품목] }}';
+    sh.getCell('B2').value = '{{ [수량] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — 2D merge B1:D2 = "품목" (3 cols × 2 rows band);
+  //             vertical merge E1:E2 = "수량".
+  // Header row chosen as row 2 (band's last row); data starts at row 3.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('B1').value = '품목';
+    sh.mergeCells('B1:D2');
+    sh.getCell('E1').value = '수량';
+    sh.mergeCells('E1:E2');
+    sh.getCell('B3').value = '노트북';
+    sh.getCell('E3').value = 2;
+    sh.getCell('B4').value = '마우스';
+    sh.getCell('E4').value = 5;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — two data rows. The 2D merge yielded one logical
+  // column (품목, anchored at master B); the vertical merge yielded one
+  // logical column (수량, anchored at E).
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '품목';
+    sh.getCell('B1').value = '수량';
+    sh.getCell('A2').value = '노트북';
+    sh.getCell('B2').value = 2;
+    sh.getCell('A3').value = '마우스';
+    sh.getCell('B3').value = 5;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 123 - feature-preservation-matrix (ADR-0036)
 //
 // Concept: per ADR-0036 the engine preserves named ranges and cell
@@ -6876,6 +6948,7 @@ const builders = [
   ['121', build121],
   ['122', build122],
   ['123', build123],
+  ['124', build124],
 ];
 
 const selected = new Set(process.argv.slice(2));
