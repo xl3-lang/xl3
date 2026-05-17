@@ -57,7 +57,7 @@ const sidebars: SidebarsConfig = {
       collapsible: true,
       collapsed: true,
       items: [
-        { type: 'doc', id: 'spec/index', label: 'Overview' },
+        { type: 'doc', id: 'spec/index', label: 'Spec overview' },
         { type: 'doc', id: 'spec/language', label: 'Language' },
         { type: 'doc', id: 'spec/evaluation', label: 'Evaluation' },
         { type: 'doc', id: 'spec/STABILITY', label: 'Stability' },
@@ -71,7 +71,7 @@ const sidebars: SidebarsConfig = {
       collapsible: true,
       collapsed: true,
       items: [
-        { type: 'doc', id: 'conformance/index', label: 'Overview' },
+        { type: 'doc', id: 'conformance/index', label: 'Conformance overview' },
         { type: 'doc', id: 'conformance/DASHBOARD', label: 'Dashboard' },
         { type: 'doc', id: 'conformance/coverage', label: 'Coverage matrix' },
         { type: 'doc', id: 'conformance/runner-protocol', label: 'Runner protocol' },

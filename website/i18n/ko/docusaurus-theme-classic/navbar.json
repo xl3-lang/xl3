@@ -1,0 +1,66 @@
+{
+  "title": {
+    "message": "xl3",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "xl3",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.Try it": {
+    "message": "써보기",
+    "description": "Navbar item with label Try it"
+  },
+  "item.label.Guides": {
+    "message": "가이드",
+    "description": "Navbar item with label Guides"
+  },
+  "item.label.API": {
+    "message": "API",
+    "description": "Navbar item with label API"
+  },
+  "item.label.Docs": {
+    "message": "문서",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Spec": {
+    "message": "Spec",
+    "description": "Navbar item with label Spec"
+  },
+  "item.label.Porter's Guide": {
+    "message": "Porter's Guide",
+    "description": "Navbar item with label Porter's Guide"
+  },
+  "item.label.Conformance": {
+    "message": "Conformance",
+    "description": "Navbar item with label Conformance"
+  },
+  "item.label.Roadmap to 1.0": {
+    "message": "1.0 로드맵",
+    "description": "Navbar item with label Roadmap to 1.0"
+  },
+  "item.label.Governance": {
+    "message": "거버넌스",
+    "description": "Navbar item with label Governance"
+  },
+  "item.label.Contributing": {
+    "message": "기여",
+    "description": "Navbar item with label Contributing"
+  },
+  "item.label.Implementations": {
+    "message": "구현체 목록",
+    "description": "Navbar item with label Implementations"
+  },
+  "item.label.Releasing": {
+    "message": "릴리스 절차",
+    "description": "Navbar item with label Releasing"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  },
+  "item.label.npm": {
+    "message": "npm",
+    "description": "Navbar item with label npm"
+  }
+}

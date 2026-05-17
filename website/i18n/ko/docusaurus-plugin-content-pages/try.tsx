@@ -3,7 +3,7 @@ import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import clsx from 'clsx';
-import styles from '../try.module.css';
+import styles from '@site/src/pages/try.module.css';
 
 const SAMPLE_RAW_URL = '/playground-samples/sample-raw.xlsx';
 const SAMPLE_TEMPLATE_URL = '/playground-samples/sample-template.xlsx';
@@ -43,7 +43,7 @@ function loadXl3(): Promise<Xl3Module> {
 async function fileOrUrlBuffer(file: File | null, exampleUrl: string): Promise<ArrayBuffer> {
   if (file) return file.arrayBuffer();
   const response = await fetch(exampleUrl);
-  if (!response.ok) throw new Error(`예시 파일을 불러올 수 없습니다: ${exampleUrl}`);
+  if (!response.ok) throw new Error(`샘플 파일을 불러오지 못했습니다: ${exampleUrl}`);
   return response.arrayBuffer();
 }
 
@@ -71,7 +71,7 @@ function ConverterKo() {
   const [inputDecls, setInputDecls] = useState<Awaited<ReturnType<Xl3Module['readTemplateInputs']>>>([]);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<{ message: string; tone: 'muted' | 'error' | 'success'; code?: string }>({
-    message: '예시 파일이 첨부되어 있습니다. 그대로 변환하거나 원하는 파일로 교체하세요.',
+    message: '샘플 파일이 미리 들어 있습니다. 그대로 변환해보거나 원하는 파일로 교체하세요.',
     tone: 'muted',
   });
   const [busy, setBusy] = useState(false);
@@ -105,7 +105,7 @@ function ConverterKo() {
   const onSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    setStatus({ message: '엑셀 파일을 변환하는 중입니다…', tone: 'muted' });
+    setStatus({ message: '엑셀 파일을 변환하고 있습니다…', tone: 'muted' });
     setPreviewInfo(null);
     try {
       const templateBuf = await fileOrUrlBuffer(templateFile, SAMPLE_TEMPLATE_URL);
@@ -132,11 +132,11 @@ function ConverterKo() {
       }
       if (outputs.length === 1) {
         downloadBlob(outputBlob(outputs[0]), outputs[0].filename);
-        setStatus({ message: `${outputs[0].filename} 다운로드 완료.`, tone: 'success' });
+        setStatus({ message: `${outputs[0].filename} 다운로드를 완료했습니다.`, tone: 'success' });
       } else {
         const zip = await xl3.packageZip(outputs);
         downloadBlob(zip, 'xl3-outputs.zip');
-        setStatus({ message: `결과 파일 ${outputs.length}개를 xl3-outputs.zip으로 다운로드했습니다.`, tone: 'success' });
+        setStatus({ message: `결과 파일 ${outputs.length} 개를 xl3-outputs.zip 으로 묶어 받았습니다.`, tone: 'success' });
       }
     } catch (err) {
       const xl3 = await loadXl3().catch(() => undefined);
@@ -164,19 +164,19 @@ function ConverterKo() {
         aria-busy={busy}
       >
         <p className={styles.kicker}>브라우저 변환기</p>
-        <h2 className={styles.heading}>raw 데이터와 템플릿을 업로드하면 결과 엑셀이 다운로드됩니다.</h2>
+        <h2 className={styles.heading}>원본 데이터와 템플릿을 올리면 결과 엑셀을 바로 받습니다.</h2>
         <p className={styles.hint}>
-          raw 엑셀의 테이블 위치를 지정하려면 템플릿의 숨김 <code>__config__</code>{' '}
-          시트에 <code>source_table</code>을 추가하세요(예: <code>1</code> 또는{' '}
+          원본 엑셀의 테이블 위치를 지정하려면 템플릿의 숨김 <code>__config__</code>{' '}
+          시트에 <code>source_table</code> 값을 넣어주세요(예: <code>1</code> 또는{' '}
           <code>A1:D</code>).
         </p>
 
         <label className={styles.field}>
           <span className={styles.fieldRow}>
-            <span>Raw 엑셀 파일</span>
-            <a href={SAMPLE_RAW_URL} download>샘플 다운로드</a>
+            <span>원본 엑셀 파일</span>
+            <a href={SAMPLE_RAW_URL} download>샘플 받기</a>
           </span>
-          <span className={styles.fieldHint}>기본 샘플이 첨부되어 있습니다. 필요하면 교체하세요.</span>
+          <span className={styles.fieldHint}>기본 샘플이 들어 있습니다. 필요하면 본인 파일로 교체하세요.</span>
           <input
             type="file"
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -187,9 +187,9 @@ function ConverterKo() {
         <label className={styles.field}>
           <span className={styles.fieldRow}>
             <span>템플릿 엑셀 파일</span>
-            <a href={SAMPLE_TEMPLATE_URL} download>샘플 다운로드</a>
+            <a href={SAMPLE_TEMPLATE_URL} download>샘플 받기</a>
           </span>
-          <span className={styles.fieldHint}><code>__config__.source_table = 1</code>이 포함되어 있습니다.</span>
+          <span className={styles.fieldHint}><code>__config__.source_table = 1</code> 이 미리 설정되어 있습니다.</span>
           <input
             type="file"
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -199,7 +199,7 @@ function ConverterKo() {
 
         {inputDecls.length > 0 && (
           <fieldset className={styles.inputsBlock}>
-            <legend>템플릿 input</legend>
+            <legend>템플릿 입력값</legend>
             {inputDecls.map((d) => {
               const inputId = `xl3-input-${d.name}`;
               return (
@@ -251,18 +251,18 @@ function ConverterKo() {
       >
         <h3>미리보기</h3>
         {!previewInfo && (
-          <p className={styles.previewEmpty}>변환을 실행하면 소스 행 수, 결과 파일명, 경고가 표시됩니다.</p>
+          <p className={styles.previewEmpty}>변환을 실행하면 원본 행 수, 결과 파일명, 경고가 여기에 표시됩니다.</p>
         )}
         {previewInfo && (
           <>
             <section>
-              <h4>감지된 소스</h4>
+              <h4>인식된 원본</h4>
               {previewInfo.sources.length === 0 && <p>없음.</p>}
               <ul>
                 {previewInfo.sources.map((s) => (
                   <li key={s.name}>
                     <strong>{s.name}</strong>{' '}
-                    <span className={styles.muted}>· {s.rowCount}행 · {s.headers.length}컬럼</span>
+                    <span className={styles.muted}>· {s.rowCount} 행 · {s.headers.length} 컬럼</span>
                   </li>
                 ))}
               </ul>
@@ -276,7 +276,7 @@ function ConverterKo() {
                     <strong>{f.filename}</strong>
                     <ul>
                       {f.sheets.map((sh) => (
-                        <li key={sh.name}>{sh.name} <span className={styles.muted}>· {sh.rowCount}행</span></li>
+                        <li key={sh.name}>{sh.name} <span className={styles.muted}>· {sh.rowCount} 행</span></li>
                       ))}
                     </ul>
                   </li>
@@ -303,18 +303,18 @@ function ConverterKo() {
 export default function ConverterPageKo() {
   return (
     <Layout
-      title="xl3 변환기 — 브라우저에서 엑셀 변환해보기"
-      description="raw + 템플릿 엑셀을 업로드하면 xl3가 브라우저에서 convert()를 실행하고 결과를 다운로드합니다. xl3.io의 인터랙티브 데모."
+      title="xl3 변환기 — 브라우저에서 바로 엑셀 변환"
+      description="원본 + 템플릿 엑셀을 올리면 xl3 가 브라우저에서 convert() 를 실행해 결과를 내려받습니다. xl3.io 의 인터랙티브 데모."
     >
       <main className={styles.pageMain}>
         <div className="container">
           <div className={styles.intro}>
             <p className={styles.kicker}>실행</p>
-            <h1 className={styles.title}>운영자 흐름을 직접 해보고, 앱에 연결하세요.</h1>
+            <h1 className={styles.title}>운영자 흐름을 직접 돌려보고 그대로 앱에 연결하세요.</h1>
             <p className={styles.lead}>
-              두 파일 모두 샘플 데이터가 미리 로드되어 있습니다. 그대로 변환하거나,
-              원하는 파일로 교체하세요. 변환은 브라우저 안에서만 실행됩니다 —
-              어디에도 업로드되지 않습니다.
+              두 파일 모두 샘플 데이터가 미리 들어 있습니다. 그대로 변환해도 되고
+              원하는 파일로 바꿔도 됩니다. 변환은 브라우저 안에서만 일어납니다 —
+              파일은 어디에도 업로드되지 않습니다.
             </p>
             <p className={styles.crosslinks}>
               <Link to="/ko/">홈</Link>

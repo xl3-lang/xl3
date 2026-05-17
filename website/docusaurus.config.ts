@@ -54,9 +54,23 @@ const config: Config = {
     },
   },
 
+  // Docusaurus i18n. Adding a new language is a config-only operation:
+  //   1. Append the locale to `locales` and add a `localeConfigs` entry.
+  //   2. Drop translations under `i18n/<locale>/`:
+  //        - `docusaurus-plugin-content-pages/` for src/pages overrides
+  //        - `docusaurus-theme-classic/{navbar,footer}.json` for theme strings
+  //        - `code.json` for React component strings
+  //   3. (Optional) Translate docs by mirroring tree under
+  //      `i18n/<locale>/docusaurus-plugin-content-docs/current/`.
+  //      Untranslated docs fall back to the default locale automatically.
+  // Non-default locales route under `/<locale>/...` (e.g. `/ko/`).
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en', 'ko'],
+    localeConfigs: {
+      en: { label: 'English', htmlLang: 'en-US' },
+      ko: { label: '한국어', htmlLang: 'ko-KR' },
+    },
   },
 
   // Docs are sourced from the repo's existing markdown trees rather than
@@ -128,9 +142,8 @@ const config: Config = {
     navbar: {
       title: 'xl3',
       logo: { alt: 'xl3', src: 'img/xl3-logo.png' },
-      // Note: left-side items below route to English pages. Full Korean nav
-      // parity is deferred to a future Docusaurus i18n migration; for now,
-      // the `/ko/` link surfaces the Korean landing as a single entry point.
+      // Navbar item labels translate via i18n/<locale>/docusaurus-theme-classic/navbar.json.
+      // `localeDropdown` auto-switches between /, /ko/, /ja/, … based on `locales`.
       items: [
         { to: '/try', label: 'Try it', position: 'left' },
         { to: '/guides', label: 'Guides', position: 'left' },
@@ -150,7 +163,7 @@ const config: Config = {
             { label: 'Releasing', to: '/releasing' },
           ],
         },
-        { to: '/ko/', label: '한국어', position: 'right' },
+        { type: 'localeDropdown', position: 'right' },
         { href: 'https://github.com/jinyoung4478/xl3', label: 'GitHub', position: 'right' },
         { href: 'https://www.npmjs.com/package/@jinyoung4478/xl3', label: 'npm', position: 'right' },
       ],
