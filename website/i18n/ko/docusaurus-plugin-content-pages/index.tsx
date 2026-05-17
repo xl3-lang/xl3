@@ -78,7 +78,7 @@ function Hero() {
             <div className={styles.flowArrow}>↓</div>
             <div className={styles.flowResult}>
               <span>완성된 엑셀 파일</span>
-              <small>운영팀이 그대로 다운로드</small>
+              <small>운영팀에 전달</small>
             </div>
           </div>
           <code>convert(template, raw)</code>

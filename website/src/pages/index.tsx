@@ -102,7 +102,7 @@ function Hero() {
             <div className={styles.flowArrow}>↓</div>
             <div className={styles.flowResult}>
               <span>finished workbook</span>
-              <small>downloaded by the operator</small>
+              <small>for the operator</small>
             </div>
           </div>
           <code>convert(template, raw)</code>

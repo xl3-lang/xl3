@@ -116,13 +116,35 @@
   font-size: 0.75rem;
 }
 
+/* `--ifm-color-primary-lightest` resolves to `#207e4a` (medium-dark
+   green) — despite the "lightest" name. We explicitly force white
+   text + a translucent-white subtitle so the result card actually
+   meets contrast guidance on this dark-green fill. */
 .flowResult {
   background: var(--ifm-color-primary-lightest);
   border-color: var(--ifm-color-primary-light);
+  color: #ffffff;
+}
+
+.flowResult span {
+  color: #ffffff;
+}
+
+.flowResult small {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 [data-theme='dark'] .flowResult {
-  background: rgba(78, 179, 122, 0.15);
+  background: rgba(78, 179, 122, 0.2);
+  color: var(--ifm-color-emphasis-900);
+}
+
+[data-theme='dark'] .flowResult span {
+  color: var(--ifm-color-emphasis-900);
+}
+
+[data-theme='dark'] .flowResult small {
+  color: var(--ifm-color-emphasis-700);
 }
 
 .flowPlus,
