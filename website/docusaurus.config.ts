@@ -29,7 +29,7 @@ const xl3GithubDark: PrismTheme = {
 const config: Config = {
   title: 'xl3',
   tagline: 'Excel conversion, inside Excel, in Excel syntax.',
-  favicon: 'img/xl3-logo.png',
+  favicon: 'img/xl3-favicon.png',
 
   url: 'https://xl3.io',
   baseUrl: '/',
