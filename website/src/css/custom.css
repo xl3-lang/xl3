@@ -185,3 +185,13 @@
 .navbar [class*="iconLanguage"] {
   display: none;
 }
+
+/* External-link arrows that Docusaurus appends to navbar items
+   pointing at external hosts (GitHub, npm). Body and footer external
+   links keep the arrow because the "this leaves the site" signal is
+   useful there; in the navbar the destination is obvious from the
+   short label so the icon is just noise. Scoped to `.navbar` so
+   in-content external links are unaffected. */
+.navbar [class*="iconExternalLink"] {
+  display: none;
+}
