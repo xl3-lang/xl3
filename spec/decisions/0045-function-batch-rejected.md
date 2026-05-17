@@ -60,26 +60,32 @@ be produced by an Excel formula in the output cell.
 
 ### Conditional aggregates: `SUMIF`, `COUNTIF`, `AVERAGEIF`, `SUMIFS`
 
-**Why rejected:**
+**Why rejected (narrow claim):**
 
-- xl3's data-block model already does this. The author writes:
+- For the **block-total pattern** — "render rows matching some
+  criteria and a total at the bottom" — xl3's `@filter` + `SUM`
+  combination is equivalent. The author writes:
   ```text
   {{ @filter [Status] = "VIP" }}
-  {{ @filter [Customer] = "Acme" }}
   ... data block ...
   {{ SUM([Amount]) }}
   ```
-  to express the equivalent of
-  `=SUMIFS(Amount, Status, "VIP", Customer, "Acme")`.
-- Adding `SUMIF` would create two paths to the same result —
-  one block-based, one expression-based — and the choice between
-  them would have no clear rule. ADR-0043's principle says: don't
-  duplicate.
+  in place of `=SUMIFS(Amount, Status, "VIP")` and gets the same
+  computed total.
+- For the **cross-cutting pattern** — "render the full set of rows
+  AND show a conditional total in a separate cell" — `@filter`
+  is not equivalent (it would remove the rows from the output).
+  The author's path is to write the Excel formula directly in
+  the output cell: `=SUMIF(B:B, "VIP", C:C)`. xl3 preserves the
+  formula and Excel evaluates at open.
+- The block-total path is the dominant case; the cross-cutting
+  case is rare and has a clean Excel-formula answer. Neither
+  case justifies adding XTL `SUMIF`.
 
 ### `TEXT()` format token expansion: currency `₩`, percent `%`,
 ### accounting parens, scientific `E+00`, conditional color
 
-**Why rejected:**
+**Why rejected (with one acknowledged gap):**
 
 - This is the case that motivated ADR-0043 in the first place.
   Visual formatting belongs on the cell's `numFmt`, not in a
@@ -89,6 +95,18 @@ be produced by an Excel formula in the output cell.
 - Authors who want the formatted string *in concatenation*
   (`"Total: " & TEXT([Amount], "#,##0")`) still get the current
   XTL-0.1 token set, which covers the common case.
+
+**Acknowledged gap — filename composition:**
+
+`output_file_pattern` is a string, not a cell — `numFmt` has no
+target there. An author who wants `output-12345-USD.xlsx` cannot
+get currency-formatted amount in the filename via the rejected
+TEXT() expansion. The temporary workaround is manual
+concatenation: `"USD-" & TEXT([Amount], "#,##0")` or upstream
+preparation in `__inputs__`. This is a *legitimately deferred*
+gap under ADR-0043 Category 3 (render-time scalar that flows
+back into XTL context). A re-proposal limited to filename
+composition is the path forward when demand surfaces.
 
 ### `SUMPRODUCT`, `MEDIAN`, `STDEV`, `PERCENTILE`, `NPV`, `PMT`, `FV`
 

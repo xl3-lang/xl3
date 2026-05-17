@@ -111,10 +111,18 @@ the value is an error-cell marker. Use `IFERROR` to guard
 expressions that may produce `#DIV/0!`. Use `IFEMPTY` to
 substitute defaults for blank source cells.
 
-**Per ADR-0043:** justified — `IFERROR` is used inside `@filter`
-predicates and cell expressions whose evaluation might land on
-an error-cell marker (e.g., a divide-by-zero from `[A] / [B]`)
-and the author wants to keep iteration going.
+**Per ADR-0043:** *narrowly* justified — the catchable case
+(`[A] / [B]` divide-by-zero in a cell expression) **can** be done
+with `=IFERROR(B2/C2, 0)` in the output cell. The render-time-
+critical case that survives the gate is *guarded values in
+filename / sheet-name patterns* and `__inputs__` defaulting,
+where Excel formula cannot reach. ADR-0043's retroactive table
+marks `IFERROR` as 🟡 borderline; cookbook 16 documents the
+cell-output Excel-formula path as preferred for pure cell uses.
+
+The function is still accepted (not rejected) because the
+filename / `__inputs__` cases are real and would otherwise
+require host-side pre-processing.
 
 ### `IFS(c1, v1, c2, v2, ...)`
 

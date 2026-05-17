@@ -1,11 +1,20 @@
 # ADR 0043 - Excel-native preference principle
 
-- **Status:** informational
+- **Status:** accepted
 - **Date:** 2026-05-18
 - **Spec target:** XTL 0.x (process)
-- **Affects:** future function / directive additions; retroactive notes on
-  ADR-0003 (TEXT format table), ADR-0019 amendment (date arithmetic),
-  ADR-0039 (HYPERLINK), and the XTL function surface as a whole
+- **Affects:** future function / directive additions; ADR governance
+  pipeline; retroactive notes on ADR-0003 (TEXT format table), ADR-0019
+  amendment (date arithmetic), ADR-0039 (HYPERLINK), and the XTL
+  function surface as a whole
+
+> **Status note.** This ADR was first labeled `informational` because
+> it does not change runtime behavior. The review of 2026-05-18 (post-
+> commit `2d76913`) surfaced that the ADR creates **normative MUST
+> obligations on future ADR authors** ("MUST cite this ADR in their
+> Context section…") and therefore should be `accepted`, not
+> informational. ADR-0034 stays informational because it carries only
+> SHOULD-level obligations; this ADR's process gate is stricter.
 
 ## Context
 
@@ -60,6 +69,12 @@ remove anything (0.x compatibility), but it does:
    path versus where it overlaps an Excel-native path.
 
 ### What counts as "before rendering"
+
+"Before rendering" includes any phase of `convert()`, `preview()`,
+`analyze()`, and `readTemplateInputs()` that evaluates XTL
+expressions. Excel cannot run during any of these phases — the
+workbook either hasn't been written yet (`convert()`) or won't be
+written at all (`preview()` / `analyze()` / `readTemplateInputs()`).
 
 These are the cases an Excel formula *cannot* handle, so XTL must:
 
@@ -125,10 +140,12 @@ authorship in the output cell.
 
 ## Retroactive review of the existing surface
 
-The current surface is grandfathered (no removal in 0.x). This
-review is informational — it documents which functions sit on
-which side of the principle so future cookbook / spec text can
-guide authors:
+The functions below were **accepted before this ADR existed**.
+They are grandfathered (no removal in 0.x). The 🟡 marker
+indicates *where the principle, if applied today, would prefer
+the Excel-formula path* — not that the function failed any gate.
+Authors and cookbook recipes use the marker as guidance, not as
+a deprecation warning.
 
 | Function / directive | Render-time critical? | Notes |
 |---|---|---|
@@ -142,6 +159,10 @@ guide authors:
 | `EOMONTH`, `EDATE` | 🟡 Useful in `@filter` and filename; redundant for cell output | document choice |
 | `DATEDIF` | 🟡 Same | document choice |
 | `HYPERLINK(url, label)` | 🟡 Per-row dynamic URLs; static URLs use Excel formula | document choice |
+| `IFERROR` (ADR-0044) | 🟡 Only catches XTL error-cell markers (e.g., `#DIV/0!`); thrown `xtlError` cases not catchable. Cell-output use can be `=IFERROR(B2/C2, 0)`. Render-time-critical use: filename-pattern guards. | document choice |
+| `UPPER`/`LOWER`/`TRIM` (ADR-0044) | 🟡 Cell output has `=UPPER(B2)` / `=LOWER(B2)` / `=TRIM(B2)`. Render-time-critical use: filename / sheet patterns where Excel cannot reach. | document choice |
+| `IFS` (ADR-0044) | 🟡 Cell output has `=IFS(...)`. Render-time-critical use: filename patterns + filter-context conditional value selection. | document choice |
+| `DATE` (ADR-0044) | 🟡 Cell output has `=DATE(...)`. Render-time-critical use: composing dates from `__inputs__` components for filename / `@filter`. | document choice |
 | `@filter`, `@sort`, `@top`, `@repeat`, `@source`, `@join` | ✅ Render-time data shaping | core |
 | `@group`, `@subtotal` (ADR-0038) | ✅ Interleaved subtotal rows Excel cannot place | core |
 

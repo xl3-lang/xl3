@@ -945,6 +945,12 @@ function comparable(v: ExcelJS.CellValue): unknown {
       const h = v as { text: unknown; hyperlink: unknown };
       return `HYPERLINK("${String(h.hyperlink ?? '')}","${String(h.text ?? '')}")`;
     }
+    // ADR-0046: formula cells compare by formula text. Cached `result`
+    // is timing-dependent (template-cached vs runtime-computed) and is
+    // NOT part of the preservation contract — only the formula text.
+    if ('formula' in v) {
+      return `=${String((v as { formula: unknown }).formula ?? '')}`;
+    }
     if ('result' in v) return (v as { result: unknown }).result ?? null;
     if (v instanceof Date) return v.toISOString();
   }

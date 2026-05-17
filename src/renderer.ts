@@ -283,21 +283,25 @@ export class Renderer {
     const templateRowCount = st.dataEndRow - st.dataStartRow + 1;
 
     // 1. Read all template rows in the block (including empty styled cells and heights)
+    // ADR-0046: keep `rawValue` alongside the stringified `template` so non-{{
+    // template cells (formulas, rich text, dates) can be re-emitted as the
+    // original CellValue object rather than the stringified form (which would
+    // turn `{ formula: 'B2*2' }` into the literal `"[object Object]"`).
     const templateRows: {
       height: number;
-      cells: Map<number, { template: string; style: Partial<ExcelJS.Style> }>
+      cells: Map<number, { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }>
     }[] = [];
 
     for (let i = 0; i < templateRowCount; i++) {
       const row = sheet.getRow(st.dataStartRow + i);
-      const cells = new Map<number, { template: string; style: Partial<ExcelJS.Style> }>();
+      const cells = new Map<number, { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }>();
 
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
         const val = cellString(cell.value);
         const style = cell.style;
         // Only track if it has a value or a non-empty style
         if (val || (style && Object.keys(style).length > 0)) {
-          cells.set(colNumber, { template: val, style: style || {} });
+          cells.set(colNumber, { template: val, rawValue: cell.value, style: style || {} });
         }
       });
       templateRows.push({ height: row.height, cells });
@@ -328,7 +332,7 @@ export class Renderer {
           targetRow.height = templateRowInfo.height;
         }
 
-        for (const [colNumber, { template, style }] of templateRowInfo.cells) {
+        for (const [colNumber, { template, rawValue, style }] of templateRowInfo.cells) {
           const cell = targetRow.getCell(colNumber);
 
           // Copy style before writing the value so the template's intended
@@ -341,7 +345,10 @@ export class Renderer {
             const normalized = normalizeTemplate(template, this.columns);
             cell.value = renderCellValue(normalized, evalCellAt(sheet.name, cell.address, normalized, rowData), style);
           } else if (template) {
-            cell.value = template as ExcelJS.CellValue;
+            // ADR-0046: re-emit the ORIGINAL CellValue (preserves
+            // `{ formula, result }` shape, rich-text, Date objects) so
+            // formula cells inside a `@repeat` block survive cloning.
+            cell.value = rawValue;
           }
         }
 

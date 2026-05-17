@@ -1,0 +1,5 @@
+description: Template cell formulas are preserved verbatim through `@repeat` row expansion (ADR-0046). The formula text is cloned to every rendered row; references inside the formula are NOT adjusted to match the cloned row's position. Authors who want per-row arithmetic use an XTL expression instead.
+spec_section: ADR-0046, evaluation.md "Styles and Workbook Structure"
+spec_version: "0.1"
+tags: [adr-0046, preservation, cell-formula, repeat]
+verified_by: [hand]

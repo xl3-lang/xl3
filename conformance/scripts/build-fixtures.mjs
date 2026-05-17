@@ -5156,6 +5156,77 @@ async function build096() {
 // "Source Data Model".
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+// 129 - cell-formula-preservation (ADR-0046)
+//
+// Pins the contract that template cell formulas survive @repeat row
+// expansion *verbatim*: each cloned row carries the same formula text;
+// references are NOT adjusted. Authors who want per-row arithmetic use
+// an XTL expression instead.
+// ---------------------------------------------------------------------------
+async function build129() {
+  const dir = join(FIXTURES, '129-cell-formula-preservation');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'cell-formula-preservation'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('C1').value = 'Doubled (formula)';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Amount] }}';
+    sh.getCell('C2').value = { formula: 'B2*2' };  // static — does NOT adjust per row
+    sh.getCell('A3').value = 'Total (formula)';
+    sh.getCell('B3').value = { formula: 'SUM(B2:B2)' };  // does NOT extend across expansion
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 100;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 200;
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = 300;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('C1').value = 'Doubled (formula)';
+    // Three rendered rows. Each C cell carries the SAME formula text
+    // `B2*2` — references are NOT adjusted to match the row (this is
+    // ADR-0046's MUST NOT silently change).
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 100;
+    sh.getCell('C2').value = { formula: 'B2*2' };
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 200;
+    sh.getCell('C3').value = { formula: 'B2*2' };  // same formula text, same B2 ref
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = 300;
+    sh.getCell('C4').value = { formula: 'B2*2' };
+    // Footer shifted to row 5; formula text unchanged (range NOT extended).
+    sh.getCell('A5').value = 'Total (formula)';
+    sh.getCell('B5').value = { formula: 'SUM(B2:B2)' };
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 128 - function-batch-0044 (ADR-0044)
 //
 // Single fixture covering UPPER / LOWER / TRIM / IFERROR / IFS / DATE in
@@ -7187,6 +7258,7 @@ const builders = [
   ['126', build126],
   ['127', build127],
   ['128', build128],
+  ['129', build129],
 ];
 
 const selected = new Set(process.argv.slice(2));
