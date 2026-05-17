@@ -240,6 +240,19 @@ describe('readSource', () => {
     ]);
   });
 
+  it('errors helpfully when a merged header master is empty', async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Raw');
+    // B1 is the master of a B1:D1 merge but has no value.
+    sheet.mergeCells('B1:D1');
+    sheet.getCell('E1').value = '수량';
+
+    const data = await workbook.xlsx.writeBuffer();
+
+    await expect(readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'B1:E' }))
+      .rejects.toThrow(/source_table header cell B1 is in a merged region whose master is empty/);
+  });
+
   it('errors when the source_table range starts inside a merged header (no master in window)', async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Raw');

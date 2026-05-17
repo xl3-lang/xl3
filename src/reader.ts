@@ -57,7 +57,7 @@ function readSourceFromWorkbook(
   }
 
   const table = resolveSourceTable(sheet, options);
-  const { headers, columnMap } = readHeaders(sheet, table);
+  const columns = readHeaders(sheet, table);
 
   const rows: Row[] = [];
   const totalRows = table.bottomRow ?? sheet.rowCount;
@@ -66,9 +66,8 @@ function readSourceFromWorkbook(
     const record: Row = {};
     let allEmpty = true;
 
-    for (let c = 0; c < headers.length; c++) {
-      const header = headers[c];
-      const cell = row.getCell(columnMap[c]!);
+    for (const { header, col } of columns) {
+      const cell = row.getCell(col);
       const val = parseCellValue(cell);
       if (!isEmpty(val)) allEmpty = false;
       record[header] = val;
@@ -78,7 +77,7 @@ function readSourceFromWorkbook(
     rows.push(record);
   }
 
-  return { sheetName: sheet.name, headers, rows };
+  return { sheetName: sheet.name, headers: columns.map((c) => c.header), rows };
 }
 
 interface SourceTable {
@@ -175,27 +174,27 @@ const RESERVED_COLUMN_NAMES = new Set([
 const DUNDER_NAME_RE = /^__[a-z]+__$/;
 
 // ADR-0033: a horizontally-merged header cell occupies one logical column at
-// its master. Slave cells in the same row borrow text from the master and are
-// not independent columns; they neither contribute a header nor cause a
-// duplicate. Vertical merges (master in the same column) keep current
-// behavior — the slave reads its master's text, which is the intent for
-// multi-row header bands.
+// its master. Slaves in the same row borrow text from the master and are not
+// independent columns. Vertical merges keep current behavior — the slave
+// reads its master's text, intended for multi-row header bands.
 function isHorizontalMergeSlave(cell: ExcelJS.Cell): boolean {
   if (!cell.isMerged) return false;
+  // ExcelJS returns `cell` itself for unmerged cells (the master of a "merge"
+  // of size 1 is itself). When `isMerged` is true and master !== self, this
+  // cell is a slave; we further filter to *horizontal* slaves only.
   const master = cell.master;
-  if (!master || master === cell) return false;
+  if (master === cell) return false;
   return master.col !== cell.col;
 }
 
-interface HeaderResult {
-  headers: string[];
-  columnMap: number[];
+interface HeaderColumn {
+  header: string;
+  col: number;
 }
 
-function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): HeaderResult {
+function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): HeaderColumn[] {
   const row = sheet.getRow(table.headerRow);
-  const headers: string[] = [];
-  const columnMap: number[] = [];
+  const columns: HeaderColumn[] = [];
   const seen = new Set<string>();
 
   for (let colNumber = table.leftCol; colNumber <= table.rightCol; colNumber++) {
@@ -203,12 +202,14 @@ function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): HeaderResult
     if (isHorizontalMergeSlave(cell)) continue;
     const header = headerText(cell);
     if (!header) {
-      // A still-empty header cell at the left edge of the window may indicate
-      // the user picked a range starting inside a merged header band.
+      // We have already filtered horizontal-merge slaves above, so an empty
+      // header here means either an unmerged blank cell (the common case) or
+      // a merged region whose master itself is blank (a vertical-slave or
+      // master with no text).
       if (cell.isMerged) {
         throw xtlError(
           'xl3/source/missing-header',
-          `source_table header cell ${cell.address} sits inside a merged header but is not the master; widen the range left to include the merge master`,
+          `source_table header cell ${cell.address} is in a merged region whose master is empty`,
         );
       }
       throw xtlError('xl3/source/missing-header', `source_table header cell ${cell.address} is empty`);
@@ -223,18 +224,17 @@ function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): HeaderResult
       );
     }
     seen.add(header);
-    headers.push(header);
-    columnMap.push(colNumber);
+    columns.push({ header, col: colNumber });
   }
 
-  if (headers.length === 0) {
+  if (columns.length === 0) {
     throw xtlError(
       'xl3/source/missing-header',
       `source_table row ${table.headerRow} resolves to no headers (range may be entirely inside a merged header band)`,
     );
   }
 
-  return { headers, columnMap };
+  return columns;
 }
 
 function headerText(cell: ExcelJS.Cell): string {

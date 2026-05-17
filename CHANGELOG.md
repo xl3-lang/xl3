@@ -6,6 +6,30 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-05-17
+
+Patch release closing the 0.5.0 reviewer punch-list (M1/M2/M3
+code-quality items). No spec change; no behavioral change for
+correct templates. The error message for a specific edge case
+becomes more accurate.
+
+### Fixed
+
+- **`reader.ts` — type-safe column pair.** `readHeaders` now returns
+  `Array<{header, col}>` instead of two parallel arrays + a non-null
+  assertion. The header/column-number invariant is compile-enforced;
+  the `columnMap[c]!` non-null assertion is gone (M1).
+- **`reader.ts` — mis-targeted error message.** When a merged header
+  cell's merge master is empty, the error message no longer says
+  "sits inside a merged header but is not the master" (which only
+  fires for horizontal slaves, already filtered earlier). It now
+  says "is in a merged region whose master is empty", matching what
+  actually happened (M2). New reader test pins the message.
+- **`reader.ts` — dead branch removed.** ExcelJS guarantees
+  `cell.master` is non-null (returns the cell itself for unmerged
+  cells); the defensive `!master` check is removed and replaced
+  with a comment explaining the contract (M3).
+
 ## [0.5.0] - 2026-05-17
 
 JXLS-absorption batch. Four new ADRs (0034–0037) settle merged-cell
@@ -793,7 +817,8 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/jinyoung4478/xl3/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/jinyoung4478/xl3/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/jinyoung4478/xl3/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/jinyoung4478/xl3/compare/v0.3.0...v0.4.0
