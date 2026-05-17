@@ -89,6 +89,13 @@
            .token.keyword/string/…      — Prism tokens
    --------------------------------------------------------------------- */
 .theme-code-block {
+  /* Docusaurus exposes the configured Prism theme's plain color and
+     background as these vars; `<pre>` uses `color: var(--prism-color)`.
+     The default (light theme `github`) value is too dark on our dark
+     code-card — re-point the vars to GitHub Dark's `fg.default` /
+     canvas tones for both site themes. */
+  --prism-color: #e6edf3;
+  --prism-background-color: #0d1117;
   background: #0d1117 !important;
   border: 1px solid #1f2630;
   border-radius: 12px;
@@ -128,7 +135,7 @@
 .theme-code-block .prism-code,
 .theme-code-block pre {
   background: #0d1117 !important;
-  color: #c9d1d9 !important;
+  color: #e6edf3 !important;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 13.5px;
   line-height: 1.7;
@@ -147,7 +154,7 @@
 .theme-code-block [class*='copyButton_'],
 .theme-code-block [class*='wordWrapButton_'] {
   background: rgba(255, 255, 255, 0.06) !important;
-  color: #c9d1d9 !important;
+  color: #e6edf3 !important;
   border-color: #2a313a !important;
 }
 
@@ -156,77 +163,9 @@
   background: rgba(255, 255, 255, 0.12) !important;
 }
 
-/* Prism tokens — GitHub-dark palette matching the hand-written design
-   tokens (tok-kw / tok-string / etc.). Apply in BOTH site themes. */
-.theme-code-block .token.comment,
-.theme-code-block .token.prolog,
-.theme-code-block .token.doctype,
-.theme-code-block .token.cdata {
-  color: #8b949e;
-  font-style: italic;
-}
-
-.theme-code-block .token.punctuation {
-  color: #c9d1d9;
-}
-
-.theme-code-block .token.namespace {
-  opacity: 0.7;
-}
-
-.theme-code-block .token.tag,
-.theme-code-block .token.boolean,
-.theme-code-block .token.number,
-.theme-code-block .token.constant,
-.theme-code-block .token.symbol,
-.theme-code-block .token.deleted {
-  color: #79c0ff;
-}
-
-.theme-code-block .token.selector,
-.theme-code-block .token.attr-name,
-.theme-code-block .token.string,
-.theme-code-block .token.char,
-.theme-code-block .token.builtin,
-.theme-code-block .token.inserted,
-.theme-code-block .token.url {
-  color: #a5d6ff;
-}
-
-.theme-code-block .token.operator,
-.theme-code-block .token.entity {
-  color: #ff7b72;
-}
-
-.theme-code-block .token.atrule,
-.theme-code-block .token.attr-value,
-.theme-code-block .token.keyword,
-.theme-code-block .token.important {
-  color: #ff7b72;
-}
-
-.theme-code-block .token.function,
-.theme-code-block .token.class-name {
-  color: #d2a8ff;
-}
-
-.theme-code-block .token.regex,
-.theme-code-block .token.variable {
-  color: #ffa657;
-}
-
-.theme-code-block .token.property,
-.theme-code-block .token.parameter {
-  color: #ffa657;
-}
-
-.theme-code-block .token.bold {
-  font-weight: 700;
-}
-
-.theme-code-block .token.italic {
-  font-style: italic;
-}
+/* Token colors are inlined by prism-react-renderer from the
+   `xl3GithubDark` theme in docusaurus.config.ts — no CSS overrides
+   needed for `.token.*` here. */
 
 /* Highlighted-line indicator (when ``` // highlight-next-line). */
 .theme-code-block [class*='codeLineHighlight'] {

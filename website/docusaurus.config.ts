@@ -1,6 +1,30 @@
-import { themes as prismThemes } from 'prism-react-renderer';
+import type { PrismTheme } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+
+// GitHub-dark palette as a prism-react-renderer theme. Passed as both
+// `theme` and `darkTheme` so code blocks read identically across site
+// modes (matching the hand-built `.code-card` design). Using a custom
+// theme — rather than overriding `prismThemes.github` with `!important`
+// CSS — means our colors are inlined directly on each token span; no
+// specificity battle with prism's emitted styles.
+const xl3GithubDark: PrismTheme = {
+  plain: { color: '#e6edf3', backgroundColor: '#0d1117' },
+  styles: [
+    { types: ['comment', 'prolog', 'doctype', 'cdata'], style: { color: '#8b949e', fontStyle: 'italic' } },
+    { types: ['punctuation'], style: { color: '#e6edf3' } },
+    // class-name / JSX-tag in green distinguishes type identifiers
+    // (`Promise`, `InputSpec`) from function-call identifiers below.
+    { types: ['tag', 'class-name'], style: { color: '#7ee787' } },
+    { types: ['boolean', 'number', 'constant', 'symbol', 'deleted', 'attr-name', 'property'], style: { color: '#79c0ff' } },
+    { types: ['selector', 'string', 'char', 'builtin', 'inserted', 'url', 'attr-value'], style: { color: '#a5d6ff' } },
+    { types: ['operator', 'entity', 'keyword', 'atrule', 'important'], style: { color: '#ff7b72' } },
+    { types: ['function'], style: { color: '#d2a8ff' } },
+    { types: ['regex', 'variable', 'parameter'], style: { color: '#ffa657' } },
+    { types: ['bold'], style: { fontWeight: 'bold' } },
+    { types: ['italic'], style: { fontStyle: 'italic' } },
+  ],
+};
 
 const config: Config = {
   title: 'xl3',
@@ -162,8 +186,8 @@ const config: Config = {
       copyright: `Code MIT · Spec CC-BY-4.0. Microsoft and Excel are trademarks of Microsoft Corporation. xl3 is not affiliated.`,
     },
     prism: {
-      theme: prismThemes.github,
-      darkTheme: prismThemes.dracula,
+      theme: xl3GithubDark,
+      darkTheme: xl3GithubDark,
       additionalLanguages: ['bash', 'json', 'yaml', 'typescript'],
     },
   } satisfies Preset.ThemeConfig,
