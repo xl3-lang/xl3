@@ -233,6 +233,14 @@ Column name rules:
 5. Empty column names inside the selected source table are errors.
 6. Duplicate source column names are errors.
 7. Empty data rows are skipped.
+8. Horizontally-merged header cells form one column at the merge master's
+   column index (per ADR-0033). Slave cells in the same row but a different
+   column from the master are transparent: they contribute no column and do
+   not cause a duplicate-name error. Vertical merges in the header row read
+   the master's text at the slave's column unchanged. If the selected range
+   contains only slave cells of a merge (no master in the window), this is
+   an error (`xl3/source/missing-header`); widen the range to include the
+   merge master.
 
 For row-number shorthand (`source_table = N`), gaps between the first and last
 non-empty column name cell are therefore errors after the source column span is

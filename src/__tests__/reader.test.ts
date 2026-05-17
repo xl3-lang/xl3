@@ -132,6 +132,84 @@ describe('readSource', () => {
     expect(source.rows).toEqual([{ Customer: 'Acme', Amount: 10, Region: 'Seoul' }]);
   });
 
+  it('treats horizontally-merged headers as one column at the master', async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Raw');
+    // Row 1: J1:M1 merged = "품목", N1 = "수량", O1 = "단가"
+    sheet.getCell('J1').value = '품목';
+    sheet.mergeCells('J1:M1');
+    sheet.getCell('N1').value = '수량';
+    sheet.getCell('O1').value = '단가';
+
+    sheet.getCell('J2').value = '노트북';
+    sheet.getCell('N2').value = 2;
+    sheet.getCell('O2').value = 1500000;
+
+    sheet.getCell('J3').value = '마우스';
+    sheet.getCell('N3').value = 5;
+    sheet.getCell('O3').value = 25000;
+
+    const data = await workbook.xlsx.writeBuffer();
+
+    const source = await readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'J1:O' });
+    expect(source.headers).toEqual(['품목', '수량', '단가']);
+    expect(source.rows).toEqual([
+      { 품목: '노트북', 수량: 2, 단가: 1500000 },
+      { 품목: '마우스', 수량: 5, 단가: 25000 },
+    ]);
+  });
+
+  it('infers a table around a horizontally-merged header (row shorthand)', async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Raw');
+    sheet.getCell('B1').value = '품목';
+    sheet.mergeCells('B1:D1');
+    sheet.getCell('E1').value = '수량';
+
+    sheet.getCell('B2').value = '노트북';
+    sheet.getCell('E2').value = 2;
+
+    const data = await workbook.xlsx.writeBuffer();
+
+    const source = await readSource(data as ArrayBuffer, 'Raw', { sourceTable: '1' });
+    expect(source.headers).toEqual(['품목', '수량']);
+    expect(source.rows).toEqual([{ 품목: '노트북', 수량: 2 }]);
+  });
+
+  it('does not treat vertically-merged single-column headers as duplicates', async () => {
+    // Two-row header band where each column is vertically merged across rows 1-2.
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Raw');
+    sheet.getCell('A1').value = '품목';
+    sheet.mergeCells('A1:A2');
+    sheet.getCell('B1').value = '수량';
+    sheet.mergeCells('B1:B2');
+
+    sheet.getCell('A3').value = '노트북';
+    sheet.getCell('B3').value = 2;
+
+    const data = await workbook.xlsx.writeBuffer();
+
+    // Header row = 2 (the second row of each vertical merge); slaves of vertically
+    // merged headers return the master's text — column count is unchanged.
+    const source = await readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'A2:B' });
+    expect(source.headers).toEqual(['품목', '수량']);
+    expect(source.rows).toEqual([{ 품목: '노트북', 수량: 2 }]);
+  });
+
+  it('errors when the source_table range starts inside a merged header (no master in window)', async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Raw');
+    // J1:M1 merged at J1 = "품목", but window starts at K1 (slave-only)
+    sheet.getCell('J1').value = '품목';
+    sheet.mergeCells('J1:M1');
+
+    const data = await workbook.xlsx.writeBuffer();
+
+    await expect(readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'K1:M' }))
+      .rejects.toThrow(/source_table row 1 resolves to no headers.*merged header/);
+  });
+
   it('skips rows whose every cell is empty by ADR-0007 (including whitespace-only)', async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Raw');

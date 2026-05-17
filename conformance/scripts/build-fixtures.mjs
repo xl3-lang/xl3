@@ -5122,6 +5122,76 @@ async function build096() {
 // the preserved tab color in the output workbook.
 // Spec section: ADR-0032 §"#3 — Workbook and sheet properties".
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 121 - source-merged-header (ADR-0033)
+//
+// Concept: a horizontally-merged header cell occupies one logical column at
+// the merge master. Slave cells in the same row borrow the master's text and
+// are transparent — they neither contribute a new column nor trigger
+// xl3/source/duplicate-name. Vertical merges in body cells continue to
+// broadcast the master value (unchanged behavior).
+// Spec section: ADR-0033, evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+async function build121() {
+  const dir = join(FIXTURES, '121-source-merged-header');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — Report sheet has three output columns, one of which
+  // pulls from a merged-header source column.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-merged-header'],
+      ['source_sheet', 'Data'],
+      ['source_table', 'B1:F'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '품목';
+    sh.getCell('B1').value = '수량';
+    sh.getCell('C1').value = '단가';
+    sh.getCell('A2').value = '{{ [품목] }}';
+    sh.getCell('B2').value = '{{ [수량] }}';
+    sh.getCell('C2').value = '{{ [단가] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — B1:D1 is merged at master B1 = "품목"; E1 = "수량"; F1 = "단가".
+  // The source_table window B1:F sweeps five columns but reads as three.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('B1').value = '품목';
+    sh.mergeCells('B1:D1');
+    sh.getCell('E1').value = '수량';
+    sh.getCell('F1').value = '단가';
+    sh.getCell('B2').value = '노트북';
+    sh.getCell('E2').value = 2;
+    sh.getCell('F2').value = 1500000;
+    sh.getCell('B3').value = '마우스';
+    sh.getCell('E3').value = 5;
+    sh.getCell('F3').value = 25000;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — three header cells and two data rows; the merged-header
+  // source column "품목" maps to one logical column read at master B.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '품목';
+    sh.getCell('B1').value = '수량';
+    sh.getCell('C1').value = '단가';
+    sh.getCell('A2').value = '노트북';
+    sh.getCell('B2').value = 2;
+    sh.getCell('C2').value = 1500000;
+    sh.getCell('A3').value = '마우스';
+    sh.getCell('B3').value = 5;
+    sh.getCell('C3').value = 25000;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 async function build120() {
   const dir = join(FIXTURES, '120-workbook-properties-preserved');
   await mkdir(dir, { recursive: true });
@@ -6654,6 +6724,7 @@ const builders = [
   ['118', build118],
   ['119', build119],
   ['120', build120],
+  ['121', build121],
 ];
 
 const selected = new Set(process.argv.slice(2));

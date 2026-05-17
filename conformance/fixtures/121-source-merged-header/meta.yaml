@@ -1,0 +1,5 @@
+description: A horizontally-merged source header occupies one logical column at the merge master (ADR-0033). Slave cells in the same row borrow the master's text and do not contribute a new column or trigger xl3/source/duplicate-name.
+spec_section: ADR-0033, evaluation.md "Source Data Model"
+spec_version: "0.1"
+tags: [adr-0033, source-table, merged-header, korean]
+verified_by: [hand]

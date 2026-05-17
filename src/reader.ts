@@ -57,7 +57,7 @@ function readSourceFromWorkbook(
   }
 
   const table = resolveSourceTable(sheet, options);
-  const headers = readHeaders(sheet, table);
+  const { headers, columnMap } = readHeaders(sheet, table);
 
   const rows: Row[] = [];
   const totalRows = table.bottomRow ?? sheet.rowCount;
@@ -68,7 +68,7 @@ function readSourceFromWorkbook(
 
     for (let c = 0; c < headers.length; c++) {
       const header = headers[c];
-      const cell = row.getCell(table.leftCol + c);
+      const cell = row.getCell(columnMap[c]!);
       const val = parseCellValue(cell);
       if (!isEmpty(val)) allEmpty = false;
       record[header] = val;
@@ -144,7 +144,11 @@ function assertPositiveRow(row: number, keyName: string, value: string): void {
 function inferTableFromHeaderRow(sheet: ExcelJS.Worksheet, headerRow: number): SourceTable {
   const row = sheet.getRow(headerRow);
   const headerCols: number[] = [];
+  // ADR-0033: horizontal merge slaves borrow text from the master and are not
+  // independent header columns. Skip them so the inferred column window matches
+  // the merged-aware column count produced by `readHeaders`.
   row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+    if (isHorizontalMergeSlave(cell)) return;
     if (headerText(cell)) headerCols.push(colNumber);
   });
   if (headerCols.length === 0) {
@@ -170,15 +174,43 @@ const RESERVED_COLUMN_NAMES = new Set([
 ]);
 const DUNDER_NAME_RE = /^__[a-z]+__$/;
 
-function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): string[] {
+// ADR-0033: a horizontally-merged header cell occupies one logical column at
+// its master. Slave cells in the same row borrow text from the master and are
+// not independent columns; they neither contribute a header nor cause a
+// duplicate. Vertical merges (master in the same column) keep current
+// behavior — the slave reads its master's text, which is the intent for
+// multi-row header bands.
+function isHorizontalMergeSlave(cell: ExcelJS.Cell): boolean {
+  if (!cell.isMerged) return false;
+  const master = cell.master;
+  if (!master || master === cell) return false;
+  return master.col !== cell.col;
+}
+
+interface HeaderResult {
+  headers: string[];
+  columnMap: number[];
+}
+
+function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): HeaderResult {
   const row = sheet.getRow(table.headerRow);
   const headers: string[] = [];
+  const columnMap: number[] = [];
   const seen = new Set<string>();
 
   for (let colNumber = table.leftCol; colNumber <= table.rightCol; colNumber++) {
     const cell = row.getCell(colNumber);
+    if (isHorizontalMergeSlave(cell)) continue;
     const header = headerText(cell);
     if (!header) {
+      // A still-empty header cell at the left edge of the window may indicate
+      // the user picked a range starting inside a merged header band.
+      if (cell.isMerged) {
+        throw xtlError(
+          'xl3/source/missing-header',
+          `source_table header cell ${cell.address} sits inside a merged header but is not the master; widen the range left to include the merge master`,
+        );
+      }
       throw xtlError('xl3/source/missing-header', `source_table header cell ${cell.address} is empty`);
     }
     if (seen.has(header)) {
@@ -192,9 +224,17 @@ function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): string[] {
     }
     seen.add(header);
     headers.push(header);
+    columnMap.push(colNumber);
   }
 
-  return headers;
+  if (headers.length === 0) {
+    throw xtlError(
+      'xl3/source/missing-header',
+      `source_table row ${table.headerRow} resolves to no headers (range may be entirely inside a merged header band)`,
+    );
+  }
+
+  return { headers, columnMap };
 }
 
 function headerText(cell: ExcelJS.Cell): string {
