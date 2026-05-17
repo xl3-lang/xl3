@@ -1,0 +1,5 @@
+description: Template features (named ranges, cell comments) are preserved verbatim from template to output per ADR-0036's preservation matrix. Stage 1 cell-value comparison validates that the row data anchored by the named range and the cell carrying the comment survive the render cycle. Full Stage 2 canonical comparison of every preservation feature awaits ADR-0006 canonicalizer updates.
+spec_section: ADR-0036, evaluation.md "Styles and Workbook Structure"
+spec_version: "0.1"
+tags: [adr-0036, preservation, named-ranges, comments]
+verified_by: [hand]

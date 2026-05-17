@@ -210,6 +210,52 @@ describe('readSource', () => {
       .rejects.toThrow(/source_table row 1 resolves to no headers.*merged header/);
   });
 
+  it('broadcasts merged data-row master values to slave rows (ADR-0035 vertical)', async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Data');
+    sheet.getCell('A1').value = 'Customer';
+    sheet.getCell('B1').value = 'Amount';
+    sheet.getCell('A2').value = 'Acme';
+    sheet.mergeCells('A2:A4');
+    sheet.getCell('B2').value = 1000;
+    sheet.getCell('B3').value = 500;
+    sheet.getCell('B4').value = 200;
+    sheet.getCell('A5').value = 'Beta';
+    sheet.getCell('B5').value = 300;
+
+    const data = await workbook.xlsx.writeBuffer();
+    const source = await readSource(data as ArrayBuffer, 'Data', { sourceTable: '1' });
+
+    expect(source.rows).toEqual([
+      { Customer: 'Acme', Amount: 1000 },
+      { Customer: 'Acme', Amount: 500 },
+      { Customer: 'Acme', Amount: 200 },
+      { Customer: 'Beta', Amount: 300 },
+    ]);
+  });
+
+  it('broadcasts horizontally-merged data-row values to slave columns (ADR-0035 horizontal)', async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Data');
+    sheet.getCell('A1').value = 'Customer';
+    sheet.getCell('B1').value = 'Note';
+    sheet.getCell('C1').value = 'Amount';
+    sheet.getCell('A2').value = 'Acme';
+    sheet.getCell('B2').value = 'memo';
+    sheet.mergeCells('B2:C2');
+    sheet.getCell('A3').value = 'Beta';
+    sheet.getCell('B3').value = 'b';
+    sheet.getCell('C3').value = 200;
+
+    const data = await workbook.xlsx.writeBuffer();
+    const source = await readSource(data as ArrayBuffer, 'Data', { sourceTable: '1' });
+
+    expect(source.rows).toEqual([
+      { Customer: 'Acme', Note: 'memo', Amount: 'memo' },
+      { Customer: 'Beta', Note: 'b', Amount: 200 },
+    ]);
+  });
+
   it('skips rows whose every cell is empty by ADR-0007 (including whitespace-only)', async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Raw');

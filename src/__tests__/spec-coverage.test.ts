@@ -34,6 +34,8 @@ const INFORMATIONAL_ADRS = new Set([
   '0018', // reserved — placeholder for the numbering gap, no behavior
   '0021', // implementation-defined boundaries (covered indirectly by 014/018/052; no dedicated fixture)
   '0022', // Excel version compatibility (informational catalog; no dedicated fixture)
+  '0034', // relationship to prior-art template engines (informational principle)
+  '0037', // rejected — dynamic image insertion (rejection IS the contract; no fixture)
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.

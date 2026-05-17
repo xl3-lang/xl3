@@ -1,0 +1,5 @@
+description: Merged cells in source data rows broadcast the merge master's value to every slave (ADR-0035). A vertical merge spans N rows and yields N data rows sharing the master's value; a horizontal merge in a data row fills every slave column with the master's value.
+spec_section: ADR-0035, evaluation.md "Source Data Model"
+spec_version: "0.1"
+tags: [adr-0035, source-table, merged-cells, data-row, broadcast]
+verified_by: [hand]

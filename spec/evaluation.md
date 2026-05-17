@@ -242,6 +242,14 @@ Column name rules:
    an error (`xl3/source/missing-header`); widen the range to include the
    merge master.
 
+Merged cells in **data rows** (rows below the header row) follow a
+separate rule per ADR-0035: a merge slave's value is the merge master's
+value. A vertical merge spanning *N* data rows yields *N* data rows, each
+sharing the master's value at that column. A horizontal merge in a data
+row gives every slave column the master's value at that row. Empty-data-row
+skip is evaluated *after* merge broadcast. Authors who want a vertical
+merge to count as one logical record SHOULD unmerge the source data region.
+
 For row-number shorthand (`source_table = N`), gaps between the first and last
 non-empty column name cell are therefore errors after the source column span is
 inferred.
@@ -467,16 +475,38 @@ Unicode characters (e.g., CJK, accented letters, emoji) are not restricted: any 
 
 ## Styles and Workbook Structure
 
-Implementations SHOULD preserve template workbook structure and formatting, including:
+Implementations MUST preserve the following template features verbatim
+in the rendered output (per ADR-0036):
 
-- Cell style
+- Cell style (font, fill, border, alignment)
 - Number/date format
-- Font, fill, border, alignment
 - Row height and column width
-- Merged cells where possible
-- Images where possible
+- Merged cells in both the template and source data rows (per ADR-0033
+  for source headers and ADR-0035 for source data rows)
+- Images and their anchor ranges
+- Conditional formatting rules and their `sqref` ranges
+- Named ranges / defined names (workbook-scope and sheet-scope)
+- Print area and print titles (repeating rows / columns)
+- Freeze pane / split (sheet `views`)
+- Sheet protection state and per-cell locked / hidden flags
+- Data validation rules (dropdowns, range constraints) and their ranges
+- Cell comments (notes)
 
-Style preservation does not override value semantics. For example, a string returned by `TEXT()` remains a string even if the template cell has a date format.
+These are preserved **verbatim**. Ranges, anchors, and references are
+**not** auto-extended when `@repeat` expands rows: the engine carries
+the template's encoding through to the output unchanged. Authors who
+need a rule (e.g., conditional formatting) to cover repeat-expanded
+rows SHOULD anchor it with whole-column references in the template
+(e.g., `$A:$A`) rather than relying on engine-side extension.
+
+Charts are **implementation-defined** in XTL 0.1 (per ADR-0036 item 3
+and ADR-0006); a port may preserve, lose, or partially preserve chart
+objects. A future ADR will normatively pin chart behavior when Stage 2
+conformance reaches charts.
+
+Style preservation does not override value semantics. For example, a
+string returned by `TEXT()` remains a string even if the template cell
+has a date format.
 
 ## Errors
 

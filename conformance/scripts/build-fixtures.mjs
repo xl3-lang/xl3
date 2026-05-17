@@ -5132,6 +5132,155 @@ async function build096() {
 // broadcast the master value (unchanged behavior).
 // Spec section: ADR-0033, evaluation.md "Source Data Model".
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 122 - source-data-row-merge-broadcast (ADR-0035)
+//
+// Concept: merged cells in data rows broadcast the merge master's value to
+// every slave. A vertical merge spanning N rows yields N data rows; a
+// horizontal merge in a data row fills every column in the merge with the
+// master's value. This pins ADR-0035 against ports that use libraries
+// (e.g., openpyxl) which would otherwise leave slaves as empty.
+// Spec section: ADR-0035, evaluation.md "Source Data Model".
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 123 - feature-preservation-matrix (ADR-0036)
+//
+// Concept: per ADR-0036 the engine preserves named ranges and cell
+// comments verbatim from the template to the output. Stage 1 cell-value
+// comparison is enough here because the preservation contract is about
+// cell-anchored data surviving the render cycle — the row that the
+// named range points at and the cell whose comment we authored continue
+// to hold the expected value after rendering. Stage 2 cross-writer
+// canonicalization of every preservation feature (sheet renumbering,
+// zoomScale defaults, comment-file numbering) is a separate ADR-0006
+// canonicalizer gap; this fixture deliberately stays at Stage 1 until
+// the canonicalizer catches up.
+// Spec section: ADR-0036, evaluation.md "Styles and Workbook Structure".
+// ---------------------------------------------------------------------------
+async function build123() {
+  const dir = join(FIXTURES, '123-feature-preservation');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — repeat row + a defined name "ReportTitle" pointing
+  // at A1, plus a cell comment on A1.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'feature-preservation'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A1').note = 'header row';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    wb.definedNames.add('R!$A$1', 'ReportTitle');
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — two source rows.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — two data rows under the preserved header.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+async function build122() {
+  const dir = join(FIXTURES, '122-source-data-row-merge-broadcast');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — straight per-row substitution; row template repeats.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'source-data-row-merge-broadcast'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Note';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ [Note] }}';
+    sh.getCell('C2').value = '{{ [Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — three kinds of merges in data rows:
+  //   1. Vertical A2:A4 = "Acme" (3-row span)
+  //   2. Horizontal B5:C5 = "memo" (one row, 2-column span)
+  //   3. Unmerged row A6, B6, C6 for the control case.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Note';
+    sh.getCell('C1').value = 'Amount';
+
+    sh.getCell('A2').value = 'Acme';
+    sh.mergeCells('A2:A4');
+    sh.getCell('B2').value = 'n1';
+    sh.getCell('C2').value = 100;
+    sh.getCell('B3').value = 'n2';
+    sh.getCell('C3').value = 200;
+    sh.getCell('B4').value = 'n3';
+    sh.getCell('C4').value = 300;
+
+    sh.getCell('A5').value = 'Beta';
+    sh.getCell('B5').value = 'memo';
+    sh.mergeCells('B5:C5');
+
+    sh.getCell('A6').value = 'Gamma';
+    sh.getCell('B6').value = 'plain';
+    sh.getCell('C6').value = 500;
+
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — five data rows: Acme×3 (broadcast vertical), Beta with
+  // Note=memo Amount=memo (broadcast horizontal), Gamma unmerged.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Note';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'n1';
+    sh.getCell('C2').value = 100;
+    sh.getCell('A3').value = 'Acme';
+    sh.getCell('B3').value = 'n2';
+    sh.getCell('C3').value = 200;
+    sh.getCell('A4').value = 'Acme';
+    sh.getCell('B4').value = 'n3';
+    sh.getCell('C4').value = 300;
+    sh.getCell('A5').value = 'Beta';
+    sh.getCell('B5').value = 'memo';
+    sh.getCell('C5').value = 'memo';
+    sh.getCell('A6').value = 'Gamma';
+    sh.getCell('B6').value = 'plain';
+    sh.getCell('C6').value = 500;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 async function build121() {
   const dir = join(FIXTURES, '121-source-merged-header');
   await mkdir(dir, { recursive: true });
@@ -6725,6 +6874,8 @@ const builders = [
   ['119', build119],
   ['120', build120],
   ['121', build121],
+  ['122', build122],
+  ['123', build123],
 ];
 
 const selected = new Set(process.argv.slice(2));
