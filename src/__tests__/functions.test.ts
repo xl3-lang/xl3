@@ -301,3 +301,104 @@ describe('HYPERLINK (ADR-0039)', () => {
     expect(() => functions.HYPERLINK('   ', 'label')).toThrow(/url argument must be a non-empty string/);
   });
 });
+
+describe('string functions (ADR-0044)', () => {
+  it('UPPER converts letters to uppercase; non-strings via canonicalString', () => {
+    expect(functions.UPPER('acme')).toBe('ACME');
+    expect(functions.UPPER('서울')).toBe('서울');           // Korean has no case
+    expect(functions.UPPER(true)).toBe('TRUE');             // canonicalString first
+    expect(functions.UPPER(123)).toBe('123');
+    expect(functions.UPPER(null)).toBe('');
+    expect(functions.UPPER('')).toBe('');
+  });
+
+  it('LOWER mirrors UPPER', () => {
+    expect(functions.LOWER('ACME')).toBe('acme');
+    expect(functions.LOWER(true)).toBe('true');             // canonicalString gives "TRUE", then lowercased
+  });
+
+  it('TRIM strips leading and trailing whitespace; preserves internal', () => {
+    expect(functions.TRIM('  acme  ')).toBe('acme');
+    expect(functions.TRIM('a  b\tc')).toBe('a  b\tc');      // internal preserved (XTL diverges from Excel TRIM here)
+    expect(functions.TRIM('\n   \t서울 강남구  \n')).toBe('서울 강남구');
+    expect(functions.TRIM(null)).toBe('');
+  });
+});
+
+describe('IFERROR (ADR-0044)', () => {
+  it('returns the value when it is not an error-cell marker', () => {
+    expect(functions.IFERROR(42, 'fallback')).toBe(42);
+    expect(functions.IFERROR('ok', 'fallback')).toBe('ok');
+    expect(functions.IFERROR(0, 'fallback')).toBe(0);
+    expect(functions.IFERROR(false, 'fallback')).toBe(false);
+    expect(functions.IFERROR('', 'fallback')).toBe('');
+  });
+
+  it('returns the fallback when value is an error-cell marker (#DIV/0!)', () => {
+    const divErr = { __xl3_error__: '#DIV/0!' };
+    expect(functions.IFERROR(divErr, 'guarded')).toBe('guarded');
+  });
+
+  it('arity-mismatch on wrong number of args', () => {
+    expect(() => functions.IFERROR(1)).toThrow(/IFERROR\(\) takes exactly 2 arguments/);
+    expect(() => functions.IFERROR(1, 2, 3)).toThrow(/IFERROR\(\) takes exactly 2 arguments/);
+  });
+});
+
+describe('IFS (ADR-0044)', () => {
+  it('returns the first truthy branch value', () => {
+    expect(functions.IFS(false, 'a', true, 'b', true, 'c')).toBe('b');
+    expect(functions.IFS(0, 'a', 1, 'b')).toBe('b');                    // 0 is falsy
+    expect(functions.IFS('non-empty', 'first')).toBe('first');
+  });
+
+  it('the "TRUE, default" idiom is the canonical fallback', () => {
+    expect(functions.IFS(false, 'a', false, 'b', true, 'default')).toBe('default');
+  });
+
+  it('throws xl3/eval/no-match when no condition is truthy', () => {
+    expect(() => functions.IFS(false, 'a', 0, 'b')).toThrow(/IFS\(\) no condition matched/);
+  });
+
+  it('arity-mismatch on odd or zero arguments', () => {
+    expect(() => functions.IFS()).toThrow(/IFS\(\) requires an even number/);
+    expect(() => functions.IFS(true, 'a', false)).toThrow(/IFS\(\) requires an even number/);
+  });
+});
+
+describe('DATE (ADR-0044)', () => {
+  it('composes a UTC-midnight date from 1-based month', () => {
+    const d = functions.DATE(2026, 5, 18) as Date;
+    expect(d.getUTCFullYear()).toBe(2026);
+    expect(d.getUTCMonth()).toBe(4);                   // May = 4 (0-indexed in JS)
+    expect(d.getUTCDate()).toBe(18);
+    expect(d.getUTCHours()).toBe(0);
+  });
+
+  it('rolls over out-of-range month/day (matches Excel DATE semantics)', () => {
+    const d = functions.DATE(2026, 13, 1) as Date;
+    expect(d.getUTCFullYear()).toBe(2027);
+    expect(d.getUTCMonth()).toBe(0);
+
+    const e = functions.DATE(2026, 2, 30) as Date;     // 2026-02-30 → 2026-03-02
+    expect(e.getUTCMonth()).toBe(2);
+    expect(e.getUTCDate()).toBe(2);
+  });
+
+  it('rejects negative year', () => {
+    expect(() => functions.DATE(-1, 1, 1)).toThrow(/DATE\(\) year must be non-negative/);
+  });
+
+  it('rejects non-finite arguments per argument name', () => {
+    expect(() => functions.DATE('abc', 1, 1)).toThrow(/DATE\(\) year must be a finite number/);
+    expect(() => functions.DATE(2026, 'xyz', 1)).toThrow(/DATE\(\) month must be a finite number/);
+    expect(() => functions.DATE(2026, 1, '')).toThrow(/DATE\(\) day must be a finite number/);
+  });
+
+  it('truncates fractional components', () => {
+    const d = functions.DATE(2026.7, 5.5, 18.9) as Date;
+    expect(d.getUTCFullYear()).toBe(2026);
+    expect(d.getUTCMonth()).toBe(4);
+    expect(d.getUTCDate()).toBe(18);
+  });
+});

@@ -79,7 +79,11 @@ Named here so the question stays settled. Each becomes a
 9. ✅ **ADR-0040 accepted** — CF/DV range PE extension + outline level preservation (CF/DV impl pending; outline impl landed)
 10. ✅ **ADR-0041 accepted** — multi-line cell text; pin + fixture 127
 11. ✅ **ADR-0042 rejected** — runtime cell mutation
-12. **Next:** ADR-0038 impl (parser + renderer for `@group`/`@subtotal`); ADR-0040 impl (CF/DV `sqref` extension at `spliceRowsPreservingMerges` time).
+12. ✅ **ADR-0043 informational** — Excel-native preference principle (the gate)
+13. ✅ **ADR-0044 accepted** — UPPER/LOWER/TRIM/IFERROR/IFS/DATE + impl + fixture 128
+14. ✅ **ADR-0045 rejected** — math/type-test/NOW/conditional-aggregate/TEXT-token-expansion bundle
+15. ✅ **Cookbook 16** — "XTL function vs Excel formula" recipe
+16. **Next:** ADR-0038 impl (parser + renderer for `@group`/`@subtotal`); ADR-0040 impl (CF/DV `sqref` extension at `spliceRowsPreservingMerges` time).
 
 ## How this doc evolves
 

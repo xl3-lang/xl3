@@ -470,6 +470,61 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   // ADR-0039: dynamic hyperlink — returns a marker the renderer unwraps
   // to ExcelJS's `{ text, hyperlink }` cell shape so the rendered cell
   // is clickable.
+  // ADR-0044: string functions justified by render-time use in
+  // @filter / @sort predicates (per ADR-0043 gate). For cell-output
+  // case conversion the author should prefer the cell formula
+  // `=UPPER(B2)` so Excel evaluates at open.
+  UPPER: (s) => canonicalString(s).toUpperCase(),
+  LOWER: (s) => canonicalString(s).toLowerCase(),
+  TRIM: (s) => canonicalString(s).trim(),
+
+  // ADR-0044: IFERROR / IFS. IFERROR catches xtlError or error-cell
+  // markers; IFS picks the first truthy branch and raises
+  // xl3/eval/no-match if nothing matches (the `TRUE, default` idiom
+  // provides a default).
+  IFERROR: (...args) => {
+    if (args.length !== 2) {
+      throw xtlError('xl3/eval/arity-mismatch', `IFERROR() takes exactly 2 arguments, got ${args.length}`);
+    }
+    const [value, fallback] = args;
+    if (isErrorCellMarker(value)) return fallback;
+    return value;
+  },
+  IFS: (...args) => {
+    if (args.length === 0 || args.length % 2 !== 0) {
+      throw xtlError('xl3/eval/arity-mismatch', `IFS() requires an even number of arguments (condition, value pairs); got ${args.length}`);
+    }
+    for (let i = 0; i < args.length; i += 2) {
+      if (isTruthy(args[i])) return args[i + 1];
+    }
+    throw xtlError('xl3/eval/no-match', `IFS() no condition matched; pass a trailing "TRUE, default" pair for a fallback`);
+  },
+
+  // ADR-0044: DATE(year, month, day) composes a UTC-midnight date
+  // from `__inputs__` integer components. Out-of-range month/day
+  // roll over (JS Date semantics, matching Excel's DATE).
+  DATE: (y, m, d) => {
+    const parse = (v: unknown, name: string): number => {
+      if (typeof v === 'number' && Number.isFinite(v)) return v;
+      if (typeof v === 'string') {
+        const trimmed = v.trim();
+        if (trimmed === '') {
+          throw xtlError('xl3/eval/type-mismatch', `DATE() ${name} must be a finite number; got empty string`);
+        }
+        const n = Number(trimmed);
+        if (Number.isFinite(n)) return n;
+      }
+      throw xtlError('xl3/eval/type-mismatch', `DATE() ${name} must be a finite number; got ${describeOperand(v)}`);
+    };
+    const yi = parse(y, 'year');
+    const mi = parse(m, 'month');
+    const di = parse(d, 'day');
+    if (yi < 0) {
+      throw xtlError('xl3/eval/type-mismatch', `DATE() year must be non-negative; got ${yi}`);
+    }
+    return new Date(Date.UTC(Math.trunc(yi), Math.trunc(mi) - 1, Math.trunc(di)));
+  },
+
   HYPERLINK: (url, label) => {
     const u = String(url ?? '').trim();
     if (u === '') throw xtlError('xl3/eval/type-mismatch', `HYPERLINK() url argument must be a non-empty string`);

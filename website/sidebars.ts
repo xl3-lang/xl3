@@ -19,6 +19,7 @@ const sidebars: SidebarsConfig = {
     { type: 'doc', id: 'guides/error-handling', label: '13 · Error handling for hosts' },
     { type: 'doc', id: 'guides/config-values', label: '14 · __config__ as a value dictionary' },
     { type: 'doc', id: 'guides/directive-composition', label: '15 · Composing directives' },
+    { type: 'doc', id: 'guides/xtl-vs-excel-formula', label: '16 · XTL function vs Excel formula' },
   ],
 
   // /api — auto-generated from typedoc output. Functions / Interfaces /

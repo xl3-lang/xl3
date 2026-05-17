@@ -36,6 +36,7 @@ shape but forget the syntax.
 | 13 | [Error handling for hosts](./13-error-handling.md) | Catching `XtlError`, the code catalog, `preview()` for fail-fast. |
 | 14 | [`__config__` as a value dictionary](./14-config-values.md) | Author-defined keys, type-awareness, `__config__` vs `__inputs__`. |
 | 15 | [Composing directives](./15-directive-composition.md) | Execution order, multi-`@filter` AND, forbidden compositions. |
+| 16 | [XTL function vs Excel formula](./16-xtl-vs-excel-formula.md) | When to use `{{ ... }}` vs an `=...` cell formula. The render-time / open-time boundary per ADR-0043. |
 
 ## How to read a recipe
 

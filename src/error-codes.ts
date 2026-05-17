@@ -45,6 +45,7 @@ export type XtlErrorCode =
   | 'xl3/eval/arity-mismatch'
   | 'xl3/eval/unsupported-syntax'
   | 'xl3/eval/type-mismatch'
+  | 'xl3/eval/no-match'
   // Cell evaluation
   | 'xl3/cell/numfmt-coercion'
   | 'xl3/cell/row-outside-repeat'

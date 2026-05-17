@@ -5156,6 +5156,81 @@ async function build096() {
 // "Source Data Model".
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+// 128 - function-batch-0044 (ADR-0044)
+//
+// Single fixture covering UPPER / LOWER / TRIM / IFERROR / IFS / DATE in
+// directive-use contexts (which is the render-time-critical justification
+// each function passes per ADR-0043).
+// ---------------------------------------------------------------------------
+async function build128() {
+  const dir = join(FIXTURES, '128-function-batch-0044');
+  await mkdir(dir, { recursive: true });
+
+  // Each function is used in a cell-substitution context to keep the
+  // fixture independent of @filter LHS extensions. The render-time
+  // justification per ADR-0043 is established in ADR-0044's prose; the
+  // fixture pins the per-function behavior.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'function-batch-0044'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Tier';
+    sh.getCell('C1').value = 'Month start';
+    sh.getCell('D1').value = 'Safe ratio';
+    sh.getCell('A2').value = '{{ UPPER(TRIM([Customer])) }}';
+    sh.getCell('B2').value = '{{ IFS([Renewal] > 10000, "VIP", [Renewal] > 1000, "Standard", TRUE, "Lite") }}';
+    sh.getCell('C2').value = '{{ TEXT(DATE(YEAR([Joined]), MONTH([Joined]), 1), "YYYY-MM-DD") }}';
+    sh.getCell('D2').value = '{{ IFERROR([Score] / [Cap], 0) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Renewal';
+    sh.getCell('C1').value = 'Joined';
+    sh.getCell('D1').value = 'Score';
+    sh.getCell('E1').value = 'Cap';
+    sh.getCell('A2').value = '  acme  ';                          // whitespace + lowercase
+    sh.getCell('B2').value = 18000;
+    sh.getCell('C2').value = new Date(Date.UTC(2026, 4, 18));
+    sh.getCell('D2').value = 80;
+    sh.getCell('E2').value = 100;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 5000;
+    sh.getCell('C3').value = new Date(Date.UTC(2026, 0, 15));
+    sh.getCell('D3').value = 50;
+    sh.getCell('E3').value = 0;                                   // triggers DIV/0
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Tier';
+    sh.getCell('C1').value = 'Month start';
+    sh.getCell('D1').value = 'Safe ratio';
+    sh.getCell('A2').value = 'ACME';                              // UPPER(TRIM('  acme  '))
+    sh.getCell('B2').value = 'VIP';                               // IFS 18000 > 10000
+    sh.getCell('C2').value = '2026-05-01';                        // first of May for Joined 2026-05-18
+    sh.getCell('D2').value = 0.8;                                 // 80/100
+    sh.getCell('A3').value = 'BETA';                              // UPPER applied
+    sh.getCell('B3').value = 'Standard';                          // IFS 5000 > 1000
+    sh.getCell('C3').value = '2026-01-01';
+    sh.getCell('D3').value = 0;                                   // IFERROR caught DIV/0
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 125 - hyperlink-function (ADR-0039)
 // ---------------------------------------------------------------------------
 async function build125() {
@@ -7111,6 +7186,7 @@ const builders = [
   ['125', build125],
   ['126', build126],
   ['127', build127],
+  ['128', build128],
 ];
 
 const selected = new Set(process.argv.slice(2));

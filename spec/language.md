@@ -256,6 +256,12 @@ operand evaluation.
 | `EDATE` | 2 | date `N` months from a date, same day clamped (UTC midnight) — ADR-0019 amendment |
 | `DATEDIF` | 3 | integer count of complete `"Y"`/`"M"`/`"D"` units between two dates (negative when start > end) — ADR-0019 amendment |
 | `HYPERLINK` | 2 | url, label — produces a clickable cell — ADR-0039 |
+| `UPPER` | 1 | uppercase letters in a string — ADR-0044 |
+| `LOWER` | 1 | lowercase letters in a string — ADR-0044 |
+| `TRIM` | 1 | strip leading/trailing whitespace (internal preserved) — ADR-0044 |
+| `IFERROR` | 2 | value, fallback — returns fallback when value is an error-cell marker — ADR-0044 |
+| `IFS` | even ≥ 2 | (cond, value) pairs; returns first truthy branch; `xl3/eval/no-match` if none — ADR-0044 |
+| `DATE` | 3 | year, 1-based month, day — UTC midnight — ADR-0044 |
 | `XLOOKUP` | 3 or 4 | value, lookup-array, return-array, [fallback] |
 | `SUM` | 1 | column ref |
 | `AVERAGE` (alias `AVG`) | 1 | column ref |

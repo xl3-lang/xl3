@@ -273,6 +273,8 @@ export const FUNCTION_ARITY: Record<string, { min: number; max: number }> = {
   IF: { min: 3, max: 3 },
   IFEMPTY: { min: 2, max: 2 },
   IFBLANK: { min: 2, max: 2 },
+  IFERROR: { min: 2, max: 2 },
+  IFS: { min: 2, max: Infinity },
   ROUND: { min: 2, max: 2 },
   ABS: { min: 1, max: 1 },
   TEXT: { min: 2, max: 2 },
@@ -286,6 +288,20 @@ export const FUNCTION_ARITY: Record<string, { min: number; max: number }> = {
   MAX: { min: 1, max: 1 },
   COUNT: { min: 0, max: 1 },
   CONCAT: { min: 1, max: Infinity },
+  // ADR-0019 amendment
+  YEAR: { min: 1, max: 1 },
+  MONTH: { min: 1, max: 1 },
+  DAY: { min: 1, max: 1 },
+  EOMONTH: { min: 2, max: 2 },
+  EDATE: { min: 2, max: 2 },
+  DATEDIF: { min: 3, max: 3 },
+  // ADR-0039
+  HYPERLINK: { min: 2, max: 2 },
+  // ADR-0044
+  UPPER: { min: 1, max: 1 },
+  LOWER: { min: 1, max: 1 },
+  TRIM: { min: 1, max: 1 },
+  DATE: { min: 3, max: 3 },
 };
 
 function checkArity(name: string, args: string[]): void {
@@ -338,6 +354,16 @@ function normalizeFunctionCall(
   }
   if (upper === 'CONCAT' && args.length > 0) {
     return `concat ${args.map((a) => normalizeValueArg(a, columns)).join(' ')}`;
+  }
+  // ADR-0044: IFS odd-indexed args are conditions (need comparison-op
+  // normalization); even-indexed are values.
+  if (upper === 'IFS' && args.length >= 2 && args.length % 2 === 0) {
+    const pairs: string[] = [];
+    for (let i = 0; i < args.length; i += 2) {
+      pairs.push(`(${normalizeCondition(args[i]!, columns)})`);
+      pairs.push(normalizeValueArg(args[i + 1]!, columns));
+    }
+    return `IFS ${pairs.join(' ')}`;
   }
   return `${name} ${args.map((a) => normalizeValueArg(a, columns)).join(' ')}`;
 }

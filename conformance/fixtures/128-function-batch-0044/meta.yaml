@@ -1,0 +1,5 @@
+description: ADR-0044 function batch (UPPER, LOWER, TRIM, IFERROR, IFS, DATE) exercised in directive-use contexts — the render-time-critical justification each function passes per ADR-0043. UPPER+TRIM in @filter for case-insensitive normalized matching; IFS replacing nested IFs for tiering; DATE composing the first-of-month from a date column.
+spec_section: ADR-0044, language.md function table
+spec_version: "0.1"
+tags: [adr-0044, adr-0043, function, string, conditional, date]
+verified_by: [hand]
