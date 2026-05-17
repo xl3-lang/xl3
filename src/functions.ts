@@ -43,6 +43,16 @@ export function isHyperlinkMarker(v: unknown): v is XtlHyperlinkCell {
 // they survive trim().
 const ZERO_WIDTH_RE = /[\u200B\uFEFF]/g;
 
+// ADR-0007 + ADR-0044 (TRIM): the ECMA-262 \s set MINUS U+200B and U+FEFF.
+// Used by TRIM and any other "trim leading/trailing whitespace" surface
+// that must honor the ADR-0007 zero-width-as-content rule. Anchored at
+// string edges only; internal whitespace is preserved.
+const TRIM_ADR_0007_EDGES_RE = new RegExp(
+  '^[\\t\\n\\v\\f\\r \\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]+' +
+  '|[\\t\\n\\v\\f\\r \\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]+$',
+  'g',
+);
+
 export function isEmpty(v: unknown): boolean {
   if (v === null || v === undefined) return true;
   if (typeof v === 'string') {
@@ -476,7 +486,11 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   // `=UPPER(B2)` so Excel evaluates at open.
   UPPER: (s) => canonicalString(s).toUpperCase(),
   LOWER: (s) => canonicalString(s).toLowerCase(),
-  TRIM: (s) => canonicalString(s).trim(),
+  // H3 (review followup): ECMAScript `String.prototype.trim()` strips
+  // U+200B / U+FEFF which ADR-0007 carves out as content, not whitespace.
+  // Use the ADR-0007 whitespace set explicitly (ECMA-262 \s minus the
+  // zero-width carve-out).
+  TRIM: (s) => canonicalString(s).replace(TRIM_ADR_0007_EDGES_RE, ''),
 
   // ADR-0044: IFERROR / IFS. IFERROR catches xtlError or error-cell
   // markers; IFS picks the first truthy branch and raises

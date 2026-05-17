@@ -172,6 +172,14 @@ export function evalExpression(
   const num = parseFloat(trimmed);
   if (!isNaN(num) && trimmed === String(num)) return num;
 
+  // H2 (review followup): bare `TRUE` / `FALSE` literals (case-insensitive,
+  // matching Excel) evaluate as the boolean. Without this, IFS's documented
+  // `(..., TRUE, default)` idiom only worked because non-empty-string is
+  // truthy — meaning `FOO` would have worked just as well. Match Excel
+  // semantics explicitly so the idiom is sound, not accidental.
+  if (trimmed === 'TRUE' || trimmed === 'true' || trimmed === 'True') return true;
+  if (trimmed === 'FALSE' || trimmed === 'false' || trimmed === 'False') return false;
+
   if (ctx[trimmed] !== undefined) return ctx[trimmed];
 
   // ADR-0028: literal-syntax constraints. Catch unary operator forms

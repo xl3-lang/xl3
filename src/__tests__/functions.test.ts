@@ -323,6 +323,15 @@ describe('string functions (ADR-0044)', () => {
     expect(functions.TRIM('\n   \t서울 강남구  \n')).toBe('서울 강남구');
     expect(functions.TRIM(null)).toBe('');
   });
+
+  it('TRIM preserves U+200B / U+FEFF zero-width characters (ADR-0007 carve-out)', () => {
+    // H3 review-followup: ECMAScript .trim() would strip these as whitespace;
+    // ADR-0007 explicitly classifies them as content. TRIM must honor that.
+    expect(functions.TRIM('​hello')).toBe('​hello');
+    expect(functions.TRIM('﻿hello')).toBe('﻿hello');
+    expect(functions.TRIM('hello​')).toBe('hello​');
+    expect(functions.TRIM('  ​ hello ​  ')).toBe('​ hello ​');
+  });
 });
 
 describe('IFERROR (ADR-0044)', () => {
@@ -353,6 +362,20 @@ describe('IFS (ADR-0044)', () => {
   });
 
   it('the "TRUE, default" idiom is the canonical fallback', () => {
+    expect(functions.IFS(false, 'a', false, 'b', true, 'default')).toBe('default');
+  });
+
+  it('H2 review-followup — bare TRUE / FALSE literals are real booleans, not strings', () => {
+    // Pre-fix, `IFS(false, "a", FOO, "b")` would have matched FOO because
+    // non-empty strings are truthy. Now bare TRUE / FALSE evaluate to real
+    // booleans; bare FOO falls through to ctx lookup and (per ADR-0028 if
+    // applicable) eventually surfaces as a literal string only when no
+    // context entry matches. The IFS idiom `(..., TRUE, default)` is sound
+    // by design, not by accident.
+    // This test calls the function directly with real booleans to confirm
+    // the function-level semantics — the literal-recognition path lives in
+    // template-eval and is exercised by fixture 128.
+    expect(functions.IFS(false, 'a', true, 'b')).toBe('b');
     expect(functions.IFS(false, 'a', false, 'b', true, 'default')).toBe('default');
   });
 

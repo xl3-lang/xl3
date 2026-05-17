@@ -222,6 +222,14 @@ function normalizeOperand(op: string, columns: Set<string>): string {
 }
 
 function normalizeCondition(cond: string, columns: Set<string>): string {
+  // H1 (review followup): a condition can itself be a function call
+  // (e.g., IFS(ISBLANK([X]), ...)) — route through the function-call
+  // path first so nested calls get recursively normalized. Without
+  // this, the raw token would fall through as a literal and the
+  // runtime would treat the non-empty string as truthy.
+  const call = parseFunctionCall(cond.trim());
+  if (call) return normalizeFunctionCall(call.name, call.args, columns);
+
   // Order is significant: indexOf picks the first matching op. Compound
   // operators (`!=`, `>=`, `<=`, `==`) MUST appear before any single
   // character that overlaps (`=`, `>`, `<`), so a string like `[a] >= 0`
