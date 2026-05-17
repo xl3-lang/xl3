@@ -21,6 +21,8 @@ adopter가 시도해볼 만큼 안정됐습니다. **지금 가장 가치 있는
 
 [English](./README.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
+> **LLM(Claude, GPT, Gemini, Codex, Cursor 등)으로 xl3 템플릿을 만들고 있다면** [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md)를 먼저 읽으세요. LLM이 거의 매번 반복하는 한 가지 실수(스타일이 남아 출력마다 빈 행으로 따라붙는 문제)와 그 회피 방법을 다룹니다. 본문은 영문입니다 — LLM이 직접 참조하는 문서이므로 영어로 유지합니다.
+
 ---
 
 ## xl3는 무엇인가요?

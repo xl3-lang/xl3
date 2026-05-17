@@ -22,6 +22,8 @@ protection, data validation, and cell comments (ADR-0036).
 
 [한국어](./README.ko.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
+> **Authoring an xl3 template with an LLM (Claude, GPT, Gemini, Codex, Cursor, …)?** Read [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md) first — it covers the one mistake LLMs reliably make (leftover styled rows polluting every output) and how to avoid it.
+
 ---
 
 ## What is xl3?
