@@ -176,3 +176,12 @@
 /* Inline `code` in body text keeps the light treatment in light mode
    (it's a noun inside a sentence — different role than a code block).
    Only fenced blocks get the dark code-card treatment above. */
+
+/* LocaleDropdownNavbarItem ships a small globe/language SVG before
+   the locale label ("文A 한국어"). We surface the label only; the
+   icon is redundant once "English" / "한국어" is the visible cue.
+   The class on the SVG is a CSS-modules hash whose stable substring
+   is `iconLanguage`. */
+.navbar [class*="iconLanguage"] {
+  display: none;
+}
