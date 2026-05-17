@@ -310,6 +310,8 @@ export const FUNCTION_ARITY: Record<string, { min: number; max: number }> = {
   LOWER: { min: 1, max: 1 },
   TRIM: { min: 1, max: 1 },
   DATE: { min: 3, max: 3 },
+  // ADR-0047
+  ISBLANK: { min: 1, max: 1 },
 };
 
 function checkArity(name: string, args: string[]): void {

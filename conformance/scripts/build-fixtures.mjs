@@ -5156,6 +5156,58 @@ async function build096() {
 // "Source Data Model".
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+// 130 - isblank-function (ADR-0047)
+// ---------------------------------------------------------------------------
+async function build130() {
+  const dir = join(FIXTURES, '130-isblank-function');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'isblank-function'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo present';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ IF(ISBLANK([Memo]), "no", "yes") }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'special-order';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = '';
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = '   ';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Memo present';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'yes';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'no';
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = 'no';     // whitespace-only is blank per ADR-0007
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 129 - cell-formula-preservation (ADR-0046)
 //
 // Pins the contract that template cell formulas survive @repeat row
@@ -7259,6 +7311,7 @@ const builders = [
   ['127', build127],
   ['128', build128],
   ['129', build129],
+  ['130', build130],
 ];
 
 const selected = new Set(process.argv.slice(2));

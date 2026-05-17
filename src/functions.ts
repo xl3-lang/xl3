@@ -484,6 +484,11 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   // @filter / @sort predicates (per ADR-0043 gate). For cell-output
   // case conversion the author should prefer the cell formula
   // `=UPPER(B2)` so Excel evaluates at open.
+  // ADR-0047: carved out from the ADR-0045 IS*-family rejection.
+  // Thin alias for the ADR-0007 empty predicate so Excel users
+  // can reach for the function name they already know.
+  ISBLANK: (v) => isEmpty(v),
+
   UPPER: (s) => canonicalString(s).toUpperCase(),
   LOWER: (s) => canonicalString(s).toLowerCase(),
   // H3 (review followup): ECMAScript `String.prototype.trim()` strips

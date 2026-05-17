@@ -15,6 +15,25 @@ Both inputs and outputs are Office Open XML `.xlsx` files, making XTL independen
 - [Stability](./STABILITY.md) — versioning, conformance, and compatibility policy.
 - [License](./LICENSE) — XTL spec license.
 
+## Scope of the language surface
+
+XTL deliberately ships a smaller function and directive set than
+Excel's full catalog. The rule (ADR-0043): a function lives in XTL
+only when its evaluation must happen *before* the workbook is
+written — for `@filter` / `@sort` / `@group` predicates, source
+aggregates, cross-source `XLOOKUP`, filename / sheet patterns, or
+`__inputs__` defaulting. Anything Excel can compute at workbook-open
+time goes in an output-cell formula and xl3 preserves it verbatim
+(ADR-0046).
+
+Background and the rationale for which functions are in / out are
+in:
+- [ADR-0043 Excel-native preference principle](./decisions/0043-excel-native-preference.md)
+- [ADR-0044 Function batch accepted](./decisions/0044-function-batch-accepted.md)
+- [ADR-0045 Function batch rejected](./decisions/0045-function-batch-rejected.md)
+- [ADR-0046 Cell formula preservation contract](./decisions/0046-cell-formula-preservation.md)
+- [ADR-0047 ISBLANK as IFEMPTY alias](./decisions/0047-isblank-as-ifempty-alias.md)
+
 ## Conformance Precedence
 
 When the spec prose, the conformance corpus, and an implementation disagree:

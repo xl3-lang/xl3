@@ -20,6 +20,16 @@ to slaves (ADR-0035). A normative feature-preservation matrix covers
 images, conditional formatting, named ranges, freeze pane, sheet
 protection, data validation, and cell comments (ADR-0036).
 
+**Scope (ADR-0043).** XTL's function surface is intentionally smaller
+than Excel's. The rule: a function lives in XTL only when its value
+must be known **before** the workbook is written — for `@filter`,
+`@sort`, `@group`, source aggregates, filename / sheet patterns, or
+`__inputs__` defaulting. Anything Excel can compute at workbook-open
+time (visual formatting, per-cell math, type tests) goes in a cell
+formula and xl3 preserves it verbatim. See
+[Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md) for the
+side-by-side guide.
+
 [한국어](./README.ko.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
 > **Authoring an xl3 template with an LLM (Claude, GPT, Gemini, Codex, Cursor, …)?** Read [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md) first — it covers the one mistake LLMs reliably make (leftover styled rows polluting every output) and how to avoid it.

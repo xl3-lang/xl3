@@ -154,12 +154,18 @@ midnight.
   values raise `xl3/eval/type-mismatch`.
 - `month` is **1-based** (matching Excel: `DATE(2026, 5, 18)`
   is May 18, 2026).
-- Out-of-range `month` or `day` values *roll over* using JS Date
-  semantics: `DATE(2026, 13, 1)` is January 1, 2027.
-  `DATE(2026, 2, 30)` is March 2, 2026.
+- Out-of-range `month` or `day` values — both positive AND
+  negative — *roll over* using JS Date semantics (matches Excel's
+  `DATE()` rollover behavior).
+  - `DATE(2026, 13, 1)` → 2027-01-01 (overflow into next year)
+  - `DATE(2026, 2, 30)` → 2026-03-02 (overflow past February)
+  - `DATE(2026, -1, 1)` → 2025-12-01 (negative month rolls back)
+  - `DATE(2026, 5, 0)` → 2026-04-30 (day 0 rolls back to prior
+    month's last day)
 - Negative `year` raises `xl3/eval/type-mismatch` (mirrors Excel's
   rejection of years < 1900 — but xl3 accepts the full positive
-  integer range).
+  integer range; specifically, year 0 is permitted and produces
+  the ECMA-262 date for that calendar year).
 
 **Per ADR-0043:** justified — `DATE` composes a date from
 `__inputs__` integer components (e.g., host passes `{ year: 2026,

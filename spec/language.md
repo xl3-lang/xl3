@@ -262,6 +262,7 @@ operand evaluation.
 | `IFERROR` | 2 | value, fallback — returns fallback when value is an error-cell marker — ADR-0044 |
 | `IFS` | even ≥ 2 | (cond, value) pairs; returns first truthy branch; `xl3/eval/no-match` if none — ADR-0044 |
 | `DATE` | 3 | year, 1-based month, day — UTC midnight — ADR-0044 |
+| `ISBLANK` | 1 | true if value is empty per ADR-0007; alias of the IFEMPTY predicate — ADR-0047 |
 | `XLOOKUP` | 3 or 4 | value, lookup-array, return-array, [fallback] |
 | `SUM` | 1 | column ref |
 | `AVERAGE` (alias `AVG`) | 1 | column ref |

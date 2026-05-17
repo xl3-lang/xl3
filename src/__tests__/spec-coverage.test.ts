@@ -39,7 +39,7 @@ const INFORMATIONAL_ADRS = new Set([
   '0038', // @group + @subtotal — accepted spec, impl pending; fixture follows the impl commit
   '0040', // preservation matrix amendment (impl pending for CF/DV range extension)
   '0042', // rejected — runtime cell mutation (rejection IS the contract)
-  '0043', // informational — Excel-native preference principle
+  '0043', // accepted (process gate) — Excel-native preference principle
   '0045', // rejected bundle — rejection IS the contract
 ]);
 

@@ -302,6 +302,25 @@ describe('HYPERLINK (ADR-0039)', () => {
   });
 });
 
+describe('ISBLANK (ADR-0047)', () => {
+  it('mirrors the ADR-0007 isEmpty predicate', () => {
+    expect(functions.ISBLANK(null)).toBe(true);
+    expect(functions.ISBLANK(undefined)).toBe(true);
+    expect(functions.ISBLANK('')).toBe(true);
+    expect(functions.ISBLANK('   ')).toBe(true);
+    expect(functions.ISBLANK('\t\n')).toBe(true);
+    expect(functions.ISBLANK('hello')).toBe(false);
+    expect(functions.ISBLANK(0)).toBe(false);
+    expect(functions.ISBLANK(false)).toBe(false);
+    expect(functions.ISBLANK(new Date())).toBe(false);
+  });
+
+  it('zero-width characters are content, not blank (ADR-0007 carve-out)', () => {
+    expect(functions.ISBLANK('​')).toBe(false);   // U+200B
+    expect(functions.ISBLANK('﻿')).toBe(false);   // U+FEFF
+  });
+});
+
 describe('string functions (ADR-0044)', () => {
   it('UPPER converts letters to uppercase; non-strings via canonicalString', () => {
     expect(functions.UPPER('acme')).toBe('ACME');

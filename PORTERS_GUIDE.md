@@ -33,6 +33,26 @@ miss simplifications.
 
 These are non-negotiable for any port that wants to claim XTL conformance.
 
+### Function table is bounded (ADR-0043)
+
+The XTL function set is *intentionally smaller* than Excel's catalog,
+gated by the Excel-native preference principle (ADR-0043): a function
+is in XTL only when its evaluation must happen *before* the workbook
+is written. Anything Excel can compute at workbook-open time stays in
+output-cell formulas, which xl3 preserves verbatim (ADR-0046).
+
+For your port this means: implement only the functions in
+[`spec/language.md`](./spec/language.md) "Functions" — don't add
+locally-popular Excel functions like `SQRT`, `ISNUMBER`, `SUMIF`,
+`NETWORKDAYS`, etc. as XTL functions, even if they are easy. Those
+are intentionally Excel-formula territory (see ADR-0045). Adding them
+would diverge your port from xl3 and produce templates that don't
+round-trip between implementations.
+
+If you have a real render-time use case that XTL doesn't currently
+support, open an issue using the **Function re-proposal** template
+so the maintainer can ADR-track the gap.
+
 ### Error codes (ADR-0015)
 
 Stable `error.code` strings of the form `xl3/<category>/<id>`. Hosts

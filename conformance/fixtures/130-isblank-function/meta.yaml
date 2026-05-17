@@ -1,0 +1,5 @@
+description: ISBLANK(value) (ADR-0047) returns true when value is empty per ADR-0007 — including null, undefined, empty string, and whitespace-only string. Numbers (including 0), booleans, dates, and non-empty strings are never blank.
+spec_section: ADR-0047, language.md function table
+spec_version: "0.1"
+tags: [adr-0047, adr-0043, function, predicate, excel-familiar]
+verified_by: [hand]
