@@ -80,6 +80,12 @@ async function main() {
   // `/api/` resolves.
   await preferIndexOverReadme(join(TARGET, 'api'));
 
+  // Strip the "Function: " / "Interface: " / "Type Alias: " prefix from
+  // typedoc's H1. The kind is already conveyed by the sidebar category
+  // and the URL segment (/api/functions/…), so repeating it on every
+  // page title and sidebar entry is redundant.
+  await stripApiKindPrefixes(join(TARGET, 'api'));
+
   // Conformance has both README.md (overview) and DASHBOARD.md.
   // README.md is fine as a separate doc here — no route collision since
   // there is no conformance/index.md.
@@ -129,6 +135,25 @@ async function rewriteDeadLinks(files) {
     });
     if (rewritten !== body) {
       await writeFile(file, rewritten);
+    }
+  }
+}
+
+const API_PREFIX_DIRS = ['functions', 'interfaces', 'type-aliases'];
+const API_PREFIX_RE = /^# (?:Function|Interface|Type Alias):\s+/;
+
+async function stripApiKindPrefixes(apiDir) {
+  const { readdir } = await import('node:fs/promises');
+  for (const sub of API_PREFIX_DIRS) {
+    const dir = join(apiDir, sub);
+    if (!existsSync(dir)) continue;
+    const entries = await readdir(dir, { withFileTypes: true });
+    for (const e of entries) {
+      if (!e.isFile() || !e.name.endsWith('.md')) continue;
+      const file = join(dir, e.name);
+      const body = await readFile(file, 'utf8');
+      const rewritten = body.replace(API_PREFIX_RE, '# ');
+      if (rewritten !== body) await writeFile(file, rewritten);
     }
   }
 }
