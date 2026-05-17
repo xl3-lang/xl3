@@ -104,18 +104,17 @@ const config: Config = {
       // parity is deferred to a future Docusaurus i18n migration; for now,
       // the `/ko/` link surfaces the Korean landing as a single entry point.
       items: [
-        { to: '/', label: 'Home', position: 'left' },
-        { to: '/converter', label: 'Converter', position: 'left' },
-        { to: '/cookbook/', label: 'Cookbook', position: 'left' },
-        { to: '/api/', label: 'API', position: 'left' },
-        { to: '/spec/', label: 'Spec', position: 'left' },
-        { to: '/PORTERS_GUIDE', label: "Porter's Guide", position: 'left' },
-        { to: '/conformance/DASHBOARD', label: 'Conformance', position: 'left' },
+        { to: '/converter', label: 'Try it', position: 'left' },
+        { to: '/cookbook', label: 'Guides', position: 'left' },
+        { to: '/api', label: 'API', position: 'left' },
         {
           type: 'dropdown',
-          label: 'Project',
+          label: 'Docs',
           position: 'left',
           items: [
+            { label: 'Spec', to: '/spec' },
+            { label: "Porter's Guide", to: '/PORTERS_GUIDE' },
+            { label: 'Conformance', to: '/conformance/DASHBOARD' },
             { label: 'Roadmap to 1.0', to: '/ROADMAP' },
             { label: 'Governance', to: '/GOVERNANCE' },
             { label: 'Contributing', to: '/CONTRIBUTING' },
@@ -134,8 +133,8 @@ const config: Config = {
         {
           title: 'Docs',
           items: [
-            { label: 'Cookbook', to: '/cookbook/' },
-            { label: 'Spec', to: '/spec/' },
+            { label: 'Guides', to: '/cookbook' },
+            { label: 'Spec', to: '/spec' },
             { label: "Porter's Guide", to: '/PORTERS_GUIDE' },
             { label: 'Conformance', to: '/conformance/DASHBOARD' },
           ],

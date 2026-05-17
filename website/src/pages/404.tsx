@@ -25,7 +25,7 @@ export default function NotFound() {
               <span>The xl3 landing page</span>
             </Link>
             <Link className={styles.card} to="/cookbook/">
-              <strong>Cookbook</strong>
+              <strong>Guides</strong>
               <span>Ten short, copy-paste recipes</span>
             </Link>
             <Link className={styles.card} to="/spec/">
@@ -33,7 +33,7 @@ export default function NotFound() {
               <span>The XTL 0.1 language reference</span>
             </Link>
             <Link className={styles.card} to="/converter">
-              <strong>Converter</strong>
+              <strong>Try it</strong>
               <span>Run xl3 in the browser</span>
             </Link>
             <Link className={clsx(styles.card, styles.outbound)} href="https://github.com/jinyoung4478/xl3">
