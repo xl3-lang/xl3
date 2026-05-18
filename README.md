@@ -7,8 +7,8 @@
 
 xl3 is technically capable but in its formative phase as a project: a single
 maintainer, no production reference cases yet, governance just documented.
-The audit pass closed every silent-fallthrough surface (50 ADRs, 134 fixtures —
-128 Stage 1 passing + 6 Stage 2 only, all green), so the language surface is
+The audit pass closed every silent-fallthrough surface (50 ADRs, 139 fixtures —
+133 Stage 1 passing + 6 Stage 2 only, all green), so the language surface is
 stable enough for early adopters. **Early adopter feedback is the most useful contribution right
 now** — see [ROADMAP.md](./ROADMAP.md) for what's blocking 1.0 and
 [GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made.

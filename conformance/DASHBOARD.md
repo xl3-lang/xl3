@@ -1,10 +1,10 @@
 # Conformance dashboard
 
-_Generated 2026-05-18T02:59:29.998Z by `conformance/scripts/dashboard.mjs`. Do not hand-edit; regenerate with `node conformance/scripts/dashboard.mjs`._
+_Generated 2026-05-18T05:43:01.361Z by `conformance/scripts/dashboard.mjs`. Do not hand-edit; regenerate with `node conformance/scripts/dashboard.mjs`._
 
 ## Reference implementation
 
-**xl3-js** 0.1.0-alpha.0 — 134/134 pass (100.0%); 0 fail, 0 error, 0 skip
+**xl3-js** 0.1.0-alpha.0 — 139/139 pass (100.0%); 0 fail, 0 error, 0 skip
 
 ## External implementations
 
@@ -44,14 +44,14 @@ _No external port reports under `conformance/reports/`. Drop a JSON report from 
 | ADR-0033 | 2 | 2 | 0 | 0 | 0 |
 | ADR-0035 | 1 | 1 | 0 | 0 | 0 |
 | ADR-0036 | 1 | 1 | 0 | 0 | 0 |
-| ADR-0038 | 4 | 4 | 0 | 0 | 0 |
+| ADR-0038 | 7 | 7 | 0 | 0 | 0 |
 | ADR-0039 | 1 | 1 | 0 | 0 | 0 |
 | ADR-0041 | 1 | 1 | 0 | 0 | 0 |
 | ADR-0043 | 2 | 2 | 0 | 0 | 0 |
 | ADR-0044 | 1 | 1 | 0 | 0 | 0 |
 | ADR-0046 | 1 | 1 | 0 | 0 | 0 |
 | ADR-0047 | 1 | 1 | 0 | 0 | 0 |
-| ADR-0050 | 1 | 1 | 0 | 0 | 0 |
+| ADR-0050 | 3 | 3 | 0 | 0 | 0 |
 | *(no ADR)* | 41 | 41 | 0 | 0 | 0 |
 
 ## How to add a port

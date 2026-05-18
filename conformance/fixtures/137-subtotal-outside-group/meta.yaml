@@ -1,0 +1,7 @@
+description: '@subtotal cell in a block with no active @group directive raises xl3/subtotal/outside-group (ADR-0038). Diagnostic substring: "@subtotal requires an active @group directive".'
+spec_section: ADR-0038
+spec_version: "0.1"
+tags: [adr-0038, subtotal, error, negative-path]
+verified_by: [manual-script]
+expected_error: '@subtotal requires an active @group directive'
+expected_error_code: 'xl3/subtotal/outside-group'

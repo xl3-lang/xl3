@@ -1,0 +1,7 @@
+description: '@group directive with no key list raises xl3/group/missing-key at parse time (ADR-0038). Diagnostic substring: "@group requires at least one column key".'
+spec_section: ADR-0038
+spec_version: "0.1"
+tags: [adr-0038, group, error, negative-path]
+verified_by: [manual-script]
+expected_error: '@group requires at least one column key'
+expected_error_code: 'xl3/group/missing-key'

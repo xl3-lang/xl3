@@ -1,0 +1,7 @@
+description: '__inputs__ default that references a bare [Column] is a forward reference — no source row context exists at input-read time. Raises xl3/inputs/forward-reference (ADR-0050).'
+spec_section: ADR-0050
+spec_version: "0.1"
+tags: [adr-0050, inputs, error, negative-path]
+verified_by: [manual-script]
+expected_error: 'is not available at input-read time'
+expected_error_code: 'xl3/inputs/forward-reference'

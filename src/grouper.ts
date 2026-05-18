@@ -31,6 +31,9 @@ export function partitionByGroupKeys(
 
   const top: GroupNode[] = [];
   const topIndex = new Map<string, GroupNode>();
+  // ADR-0038: use a WeakMap to track per-node child indexes so the
+  // GroupNode shape stays clean (no hidden mutable string-keyed props).
+  const childIndexes = new WeakMap<GroupNode, Map<string, GroupNode>>();
 
   for (const row of rows) {
     let level = 0;
@@ -48,18 +51,12 @@ export function partitionByGroupKeys(
       }
       node = next;
       // Descend: prepare for the next nesting level. We need a per-
-      // node child index to keep `O(N)` insertions. Lazily attach one
-      // via WeakMap-style closure: stash it on the node under a
-      // non-enumerable property name.
-      const childIndexKey = '__xl3_child_index__';
-      let childIndex: Map<string, GroupNode> | undefined =
-        (next as unknown as Record<string, Map<string, GroupNode>>)[childIndexKey];
+      // node child index to keep O(N) insertions without mutating
+      // the public GroupNode shape.
+      let childIndex: Map<string, GroupNode> | undefined = childIndexes.get(next);
       if (!childIndex) {
         childIndex = new Map<string, GroupNode>();
-        Object.defineProperty(next, childIndexKey, {
-          value: childIndex,
-          enumerable: false,
-        });
+        childIndexes.set(next, childIndex);
       }
       parentList = next.children;
       parentIndex = childIndex;
@@ -114,27 +111,24 @@ function walkAndEmit(
   depth: number,
   keyCount: number,
   events: EmitEvent[],
+  outRows?: Row[],
 ): void {
   for (const node of nodes) {
+    let groupRows: Row[];
     if (node.children.length > 0) {
-      walkAndEmit(node.children, depth + 1, keyCount, events);
+      groupRows = [];
+      walkAndEmit(node.children, depth + 1, keyCount, events, groupRows);
     } else {
+      groupRows = node.rows;
       for (const row of node.rows) events.push({ kind: 'data', row });
     }
     // ADR-0038 §"Nesting-level inference": level 1 = innermost,
     // increasing outward. depth=keyCount-1 is the innermost group
     // node; depth=0 is the outermost. So `level = keyCount - depth`.
     const level = keyCount - depth;
-    const groupRows = collectLeafRows(node);
     events.push({ kind: 'subtotal', level, groupRows });
+    outRows?.push(...groupRows);
   }
-}
-
-function collectLeafRows(node: GroupNode): Row[] {
-  if (node.children.length === 0) return node.rows;
-  const out: Row[] = [];
-  for (const child of node.children) out.push(...collectLeafRows(child));
-  return out;
 }
 
 export interface GroupedData {

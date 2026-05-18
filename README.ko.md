@@ -8,7 +8,7 @@
 xl3는 기술적으로는 안정되어 가는 단계지만 프로젝트로서는 아직 형성기에
 있습니다 — 메인테이너 1명, production reference case 없음, 거버넌스
 방금 문서화. Audit 패스로 silent-fallthrough 동작은 모두 정리됐고
-(ADR 50개, fixture 134개 — Stage 1 통과 128 + Stage 2 전용 6, 전부 green), 언어 표면은 early
+(ADR 50개, fixture 139개 — Stage 1 통과 133 + Stage 2 전용 6, 전부 green), 언어 표면은 early
 adopter가 시도해볼 만큼 안정됐습니다. **지금 가장 가치 있는 기여는
 실제 사용 후 피드백**입니다 — 1.0 blocker는 [ROADMAP.md](./ROADMAP.md),
 의사결정 방식은 [GOVERNANCE.md](./GOVERNANCE.md) 참고.

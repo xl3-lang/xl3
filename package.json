@@ -71,7 +71,7 @@
     "examples:build": "node examples/scripts/build.mjs",
     "examples:run": "node examples/scripts/run-all.mjs",
     "bench": "node scripts/bench.mjs",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build && npm run build:bundle"
+    "prepublishOnly": "npm run typecheck && npm test && npm run build && npm run build:bundle && npm run conformance && npm run conformance:stage2"
   },
   "dependencies": {
     "exceljs": "^4.4.0",

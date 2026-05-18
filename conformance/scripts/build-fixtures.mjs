@@ -7585,6 +7585,178 @@ async function build093() {
   // the fixture directory). The build script does not overwrite it.
 }
 
+// ---------------------------------------------------------------------------
+// 136 - group-missing-key (ADR-0038)
+//
+// Concept: `{{ @group }}` without at least one `[Column]` key is invalid.
+// The error is raised at directive parse time.
+// ---------------------------------------------------------------------------
+async function build136() {
+  const dir = join(FIXTURES, '136-group-missing-key');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'group-missing-key'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ @group }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 137 - subtotal-outside-group (ADR-0038)
+//
+// Concept: a `@subtotal` cell with no active `@group` directive is invalid.
+// ---------------------------------------------------------------------------
+async function build137() {
+  const dir = join(FIXTURES, '137-subtotal-outside-group');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'subtotal-outside-group'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ @subtotal SUM([Amount]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = 100;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 138 - subtotal-bad-aggregate (ADR-0038)
+//
+// Concept: `@subtotal` accepts SUM, COUNT, AVERAGE, MIN, MAX only.
+// ---------------------------------------------------------------------------
+async function build138() {
+  const dir = join(FIXTURES, '138-subtotal-bad-aggregate');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'subtotal-bad-aggregate'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ @group [Customer] }}';
+    sh.getCell('A2').value = '{{ @subtotal STDEV([Amount]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 100;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 139 - inputs-forward-reference (ADR-0050)
+//
+// Concept: __inputs__ defaults are evaluated before source row context
+// exists, so bare `[Column]` references are forward references.
+// ---------------------------------------------------------------------------
+async function build139() {
+  const dir = join(FIXTURES, '139-inputs-forward-reference');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'inputs-forward-reference'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addInputs(wb, ['name', 'type', 'default', 'label'], [
+      ['customer_default', 'text', '{{ [Customer] }}', 'Customer default'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ __inputs__[customer_default] }}';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 140 - inputs-runtime-only-fn (ADR-0050)
+//
+// Concept: __inputs__ defaults cannot call aggregate / lookup functions
+// because source data is not available at input-read time.
+// ---------------------------------------------------------------------------
+async function build140() {
+  const dir = join(FIXTURES, '140-inputs-runtime-only-fn');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'inputs-runtime-only-fn'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    // ROW() depends on the current @repeat row index — no row context
+    // exists at input-read time, so this fires runtime-only-fn (not the
+    // forward-reference pattern, which would match on a bare [Column]).
+    addInputs(wb, ['name', 'type', 'default', 'label'], [
+      ['row_default', 'text', '{{ ROW() }}', 'Row default'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ __inputs__[row_default] }}';
+    sh.getCell('A2').value = '{{ [Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = 100;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -7720,6 +7892,11 @@ const builders = [
   ['133', build133],
   ['134', build134],
   ['135', build135],
+  ['136', build136],
+  ['137', build137],
+  ['138', build138],
+  ['139', build139],
+  ['140', build140],
 ];
 
 const selected = new Set(process.argv.slice(2));

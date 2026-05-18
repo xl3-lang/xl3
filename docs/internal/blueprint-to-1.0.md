@@ -62,7 +62,7 @@ multi-source merge via `@join`.
 
 **Spec / process:**
 - 18 absorption-era ADRs (0033-0050)
-- 128 conformance fixtures (Stage 1) + 6 Stage-2-only = 134 total
+- 133 conformance fixtures (Stage 1) + 6 Stage-2-only = 139 total
 - Error code catalog with snapshot pinning (ADR-0015)
 - Spec / language / evaluation / glossary / stability docs
 - Multi-language docs (English source + Korean i18n for landing,
