@@ -131,12 +131,104 @@ intentional footer that aggregates the expanded block (see
   the directive row are fine and propagate per
   [`docs/guides/10-styling-and-branding.md`](./guides/10-styling-and-branding.md).
 - **Don't write Excel `=FORMULA()`s into the data block.** Use XTL
-  expressions inside `{{ … }}`. Native formulas inside data blocks
-  have ill-defined recalculation semantics across implementations.
+  expressions inside `{{ … }}`. The renderer copies a directive
+  row's formula verbatim onto every expanded row without adjusting
+  relative references, so `=A2+B2` stays `=A2+B2` on rows 3, 4, … —
+  not what you want. (Footer rows are different — see
+  [Footer escape hatch](#footer-escape-hatch-when-xtl-cant-express-the-total)
+  below.)
 - **Don't invent directives.** The full directive list is in
   [`spec/language.md`](../spec/language.md) §Directives: `@source`,
   `@join`, `@filter`, `@sort`, `@top`, `@repeat right`. Nothing else
   exists in XTL 0.x.
+
+---
+
+## Footer escape hatch — when XTL can't express the total
+
+XTL aggregates compose cleanly **only** as the entire expression in a
+footer cell:
+
+```text
+{{ SUM([Amount]) }}              # ✓
+{{ AVERAGE([Margin]) }}          # ✓
+```
+
+In xl3 0.5.x they do **not** compose with arithmetic operators, nor
+appear as the LHS of a comparison. All of these raise
+`xl3/eval/operand-coercion`-class errors or silently mis-evaluate:
+
+```text
+{{ SUM([Amount]) / 1.1 }}                                # ✗
+{{ SUM([Net]) - SUM([Cost]) }}                           # ✗
+{{ IF([Qty] * [Price] >= 80000, "Top", "Std") }}         # ✗ — comparison LHS is arithmetic
+```
+
+(The IF case also bites in data-block cells, not just footers.)
+
+Two safe paths:
+
+1. **Pre-compute the column upstream** so XTL only sees a simple column.
+   If raw has a `Sales` column equal to `Qty × Price`, then
+   `{{ SUM([Sales]) }}` and `{{ IF([Sales] >= 80000, …) }}` both work.
+2. **Drop down to a native Excel formula in the footer cell.** xl3
+   preserves cell formulas verbatim (ADR-0046); Excel computes them
+   when the workbook opens.
+
+If you choose (2), avoid the next two pitfalls.
+
+### Footer pitfall #1 — Self-column SUM raises 순환 참조 (circular reference)
+
+A footer cell sitting in column G that contains `=SUM(G:G)` or
+`=SUM(G5:G10000)` references its own cell. Excel opens the workbook and
+shows a **순환 참조** warning; the cell evaluates to 0.
+
+✗ Wrong (footer is in G, references G):
+
+```text
+G_footer = =SUM(G5:G10000)
+```
+
+✓ Right — reference *other* columns instead:
+
+```text
+G_footer = =SUMPRODUCT(E5:E10000, F5:F10000)    # qty × price; no G refs
+```
+
+`SUMPRODUCT(A_range, B_range)` is the go-to for "sum of A × B" totals.
+For other shapes use `SUMIF` (see pitfall #2).
+
+### Footer pitfall #2 — Overshoot range silently double-counts
+
+A footer at row N with `=SUM(H2:H10000)` includes H_N — which is itself
+the XTL `{{ SUM([…]) }}` aggregate for that column. The data total
+gets added twice.
+
+```text
+H_footer = {{ SUM([Amount]) }}                        # already the data total
+G_footer = =SUM(H2:H10000) / 1.1                      # = (total + total)/1.1 ✗ 2× wrong
+```
+
+Fix: filter out the footer row by its label column.
+
+```text
+A_footer = "합계"
+G_footer = =SUMIF(A2:A10000, "<>합계", H2:H10000) / 1.1                # ✓
+I_footer = =SUMIF(A2:A10000, "<>합계", H2:H10000)
+         - SUMIF(A2:A10000, "<>합계", F2:F10000)                       # ✓
+```
+
+The label column never contains the footer's text in real data rows, so
+`<>합계` (or `<>Total`, `<>Grand Total`, etc.) cleanly removes only the
+footer. Pick a label that no data row uses.
+
+### Footer formulas: range bounds
+
+Because the footer's actual rendered row number is unknown at template
+authoring time (it depends on source-row count), write **overshoot
+ranges** like `…2:…10000` rather than guessing the exact end. `SUM` /
+`SUMIF` / `SUMPRODUCT` ignore empty cells, so the overshoot is harmless
+as long as you have ruled out pitfalls #1 and #2.
 
 ---
 
@@ -161,6 +253,16 @@ intentional footer that aggregates the expanded block (see
 7. **One template block per cell.** A cell can contain literal text
    plus one or more `{{ … }}` blocks, but each `{{ … }}` must hold a
    single complete expression (no `{{ }}` nesting, no empty bodies).
+8. **Footer formula audit** (only if any footer cell uses a native
+   `=…` formula). For each such cell:
+   (a) Does the formula reference its own column range? If yes →
+   circular reference. Re-author with `SUMPRODUCT` over different
+   columns.
+   (b) Does the formula's range overlap a same-row XTL `{{ SUM(…) }}`
+   footer cell? If yes → double-counts. Re-author with
+   `SUMIF(label_col, "<>footer_label", …)`.
+   See [Footer escape hatch](#footer-escape-hatch-when-xtl-cant-express-the-total)
+   for the safe patterns.
 
 ---
 
@@ -262,4 +364,9 @@ Live examples to study:
 > blank styled bands in every output. Fix: Delete Row (not Clear) on
 > every non-directive, non-intentional-footer row. Verify by rendering
 > with a small sample and checking the output's used range ends at the
-> last intentional footer.
+> last intentional footer. When a derived total can't be written as a
+> standalone XTL aggregate (`SUM([col]) / 1.1` and similar fail),
+> drop down to a native Excel formula in the footer — but never
+> reference the formula cell's own column, and use
+> `SUMIF(label_col, "<>footer_label", …)` to exclude the footer row
+> from the sum.
