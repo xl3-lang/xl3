@@ -557,6 +557,8 @@ Implementations MAY provide warnings for non-fatal portability issues, but warni
 
 ## Resource limits
 
+### Spec-level stance
+
 Resource limits — maximum input template size, maximum source row
 count, maximum output workbook size, maximum iteration count for
 `@repeat`, maximum recursion depth — are **implementation-defined**.
@@ -570,3 +572,41 @@ Hosts that accept untrusted templates (e.g., a SaaS that accepts
 user-uploaded `.xlsx`) MUST enforce their own limits at a layer
 above the engine — sandboxing, request size caps, timeouts — and
 SHOULD NOT rely on the engine to detect malicious inputs.
+
+### Implementation limits — reference impl (xl3-js)
+
+The reference impl publishes the following soft caps (ROADMAP gate
+G21). These are *correctness boundaries*, not security boundaries —
+hosts that accept untrusted input MUST add their own enforcement
+layer per [`SECURITY.md`](../SECURITY.md). The values below are
+draft for 0.6.0 and tightened as the bench corpus (G8) lands.
+
+| Dimension | Soft cap (draft) | Behavior at limit |
+|---|---|---|
+| Source rows per block | 1,000,000 | implementation-defined; ExcelJS in-memory model is the bottleneck |
+| Total cells per output sheet | Excel's 17,179,869,184 (the 1,048,576 × 16,384 hard ceiling) | xl3 does not synthesize cells past Excel's sheet ceiling; an output that would exceed it raises an error |
+| `@repeat` iteration count | bounded by source row count | no separate iteration cap; the source itself is the throttle |
+| `__sources__` count | implementation-defined; no spec limit | declared upper bound surfaced via warnings only |
+| File-group output count | implementation-defined | reference impl emits one file per group; host SHOULD cap externally |
+
+### Streaming policy
+
+The reference impl loads templates and data fully into memory in
+1.x. **Streaming I/O is explicitly deferred to 1.1+**: it requires
+canonicalization, watermarking, and a back-pressure API that would
+change the public surface. Hosts that need conversion at scale
+SHOULD shard at the *source* boundary (split a 10M-row table into
+10 × 1M-row converts) rather than wait for streaming.
+
+### AbortSignal
+
+`convert()` and `preview()` accept an optional `AbortSignal` on
+their `options` argument (planned for 0.7-0.8 per gate G21). When
+the signal aborts, the in-flight conversion raises a stable error
+code (`xl3/abort/cancelled`); no partial output is emitted. Hosts
+that race conversions against a wall-clock budget use this hook
+to enforce timeouts deterministically.
+
+This API is **forward-compatible** — adding the optional argument
+to `ConvertOptions` does not affect existing callers; the error
+code is append-only per ADR-0015.

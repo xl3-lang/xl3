@@ -28,6 +28,11 @@ jobs:
       - run: npm run build:bundle
       - run: npm test
       - run: npm run conformance
+      # ROADMAP gate G11: Stage 2 OOXML canonicalization in CI. Runs
+      # the Stage 2 superset that includes merge / outline-level /
+      # styles checks. The default `npm run conformance` skips Stage 2
+      # fixtures; this command opts in.
+      - run: npm run conformance:stage2
 
   conformance-timezones:
     # ADR-0017 declares Date semantics UTC-normative. Run conformance
