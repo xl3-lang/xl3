@@ -40,7 +40,7 @@ milestone. Per-version step plan below references these gates by ID.
 | G2 | Stage 2 OOXML canonicalization spec'd | maintainer | ADR-0006 + canonicalizer in src/ | covered by fixtures 024-027, 093 + ADR-0006 amendment | — | DONE |
 | G3 | Error code catalog frozen | maintainer | `src/__tests__/error-codes.test.ts` snapshot | catalog snapshot unchanged for 30 days | — | 0.9-rc |
 | G4 | JXLS boundary published | maintainer | ADR-0048 | file exists, references PORTERS_GUIDE | — | DONE |
-| G5 | Deferred-impl ADRs landed | maintainer | ADR-0038 impl + ADR-0040 PE impl | `INFORMATIONAL_ADRS` no longer carries 0038/0040 | — | 0.6 / 0.6.1 |
+| G5 | Deferred-impl ADRs landed | maintainer | ADR-0038 impl ✅ (2026-05-18) + ADR-0040 PE impl | ADR-0038 portion shipped (fixtures 132-135); ADR-0040 CF/DV range-extension still pending for 0.6.1 | — | 0.6 (partial) / 0.6.1 |
 | G6 | Public API surface frozen | maintainer | `src/__tests__/api-surface.test.ts` snapshot | snapshot unchanged for 30 days | — | 0.9-rc |
 | G7 | JSDoc examples on @stable exports | maintainer | TypeDoc output | every `@stable` symbol has `@example` block | — | 0.7-0.8 |
 | G8 | Performance characterized | maintainer | `scripts/BENCH.md` | 1k/10k/100k row × 5/10/20 col matrix + memory-ceiling + parse/eval/write split published | — | 0.7 |

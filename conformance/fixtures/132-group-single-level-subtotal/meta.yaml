@@ -1,0 +1,5 @@
+description: Single-level @group + @subtotal SUM([Amount]) emits one subtotal row per group, after the last data row of that group (ADR-0038). Group order follows encounter order after @sort.
+spec_section: ADR-0038, language.md "Directives"
+spec_version: "0.1"
+tags: [adr-0038, group, subtotal, korean-b2b]
+verified_by: [hand]

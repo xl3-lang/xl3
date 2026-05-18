@@ -1,0 +1,5 @@
+description: @group composes with @filter — filtered rows are removed before grouping, so subtotals reflect post-filter values. A group whose all rows were filtered out simply does not appear (ADR-0038 §"Composition with other directives").
+spec_section: ADR-0038
+spec_version: "0.1"
+tags: [adr-0038, group, subtotal, filter, composition]
+verified_by: [hand]

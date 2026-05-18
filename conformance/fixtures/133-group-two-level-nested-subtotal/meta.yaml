@@ -1,0 +1,5 @@
+description: Two-level @group [Region], [Customer] with inner + outer @subtotal rows (ADR-0038). The topmost @subtotal in row order binds to the innermost group key (level 1); subsequent @subtotal rows bind to next-outer levels. Inner subtotals emit before outer at shared boundaries.
+spec_section: ADR-0038
+spec_version: "0.1"
+tags: [adr-0038, group, subtotal, nested, korean-b2b]
+verified_by: [hand]

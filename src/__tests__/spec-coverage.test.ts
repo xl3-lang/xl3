@@ -36,7 +36,7 @@ const INFORMATIONAL_ADRS = new Set([
   '0022', // Excel version compatibility (informational catalog; no dedicated fixture)
   '0034', // relationship to prior-art template engines (informational principle)
   '0037', // rejected — dynamic image insertion (rejection IS the contract; no fixture)
-  '0038', // @group + @subtotal — accepted spec, impl pending; fixture follows the impl commit
+  // 0038 — @group + @subtotal: impl shipped 2026-05-18, fixtures 132-135 cover it.
   '0040', // preservation matrix amendment: outline-level shipped in spliceRowsPreservingMerges 2026-05-18 (no semantic fixture; behavior is observable indirectly via Stage 2 OOXML diff); CF/DV range PE remains impl-pending — both parts intentionally untracked here until fixtures land
   '0042', // rejected — runtime cell mutation (rejection IS the contract)
   '0043', // accepted (process gate) — Excel-native preference principle

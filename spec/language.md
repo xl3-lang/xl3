@@ -400,6 +400,7 @@ Directives are written as template expressions, usually in rows immediately abov
 {{ @filter [Customer] in __lists__[IncludedCustomers] }}
 {{ @filter [Category] !in __lists__[ExcludedCategories] }}
 {{ @sort [total] desc }}
+{{ @group [Region], [Customer] }}
 {{ @top 10 }}
 {{ @repeat right 3 }}
 {{ @source Renewals }}
@@ -513,6 +514,71 @@ Both sides of the `on` clause MUST be source-prefixed bracket
 references; one side MUST name `<JoinedSource>` and the other
 `<PrimarySource>`. Either source being undeclared in `__sources__`,
 or a malformed `on` clause, is an error.
+
+### Group + Subtotal
+
+```text
+@group [Key1], [Key2], …, [KeyN]
+```
+
+`@group` partitions the active row set into N-level nested groups
+for interleaved `@subtotal` emission inside a single data block
+(ADR-0038). Group identity uses the ADR-0009 canonical-string
+equality rule; group order is encounter order **after** `@filter`
+and `@sort` have applied (`@group` itself does not reorder).
+
+A data block MAY contain at most one `@group`. `@group` with no
+key list raises `xl3/group/missing-key`. `@group` is incompatible
+with `@repeat right` (`xl3/directive/invalid-syntax`).
+
+A `@subtotal` row contains one or more `{{ @subtotal <aggregate> }}`
+expressions. Each subtotal row binds to one group nesting level —
+the **first** `@subtotal` row in source order binds to the
+innermost key (`[KeyN]`), the next binds to `[KeyN-1]`, and so on
+outward. The outermost `@subtotal` fires once at the end of the
+data block (it is the "grand total via outermost subtotal" pattern).
+
+Supported aggregate bodies — anything else raises
+`xl3/subtotal/bad-aggregate`:
+
+- `SUM(<column-ref>)`
+- `COUNT()` or `COUNT(<column-ref>)`
+- `AVERAGE(<column-ref>)`
+- `MIN(<column-ref>)`
+- `MAX(<column-ref>)`
+
+Composite expressions (`SUM([A]) - SUM([B])`, `IF(...)`, etc.) are
+deferred. The column reference inside the aggregate follows the
+same `[Column]` / `Source[Column]` form as elsewhere; the spec
+scoping rule from ADR-0038 § "Aggregate scoping" applies — the
+aggregate operates over the current group's row set, not the full
+block.
+
+A `@subtotal` row MAY also carry literal-text cells, static
+formulas, and other `{{ ... }}` expressions that do NOT reference
+the current row's columns (there is no "current row" at a group
+boundary). Referencing a current-row column outside an aggregate
+raises an `xl3/expression/unknown-name`-class error.
+
+Empty groups — all data rows empty (ADR-0007) — are skipped.
+
+```text
+{{ @sort [Region] }}
+{{ @sort [Customer] }}
+{{ @group [Region], [Customer] }}
+{{ [Region] }} | {{ [Customer] }} | {{ [Amount] }}
+"Customer subtotal" |                 | {{ @subtotal SUM([Amount]) }}
+"Region subtotal"   |                 | {{ @subtotal SUM([Amount]) }}
+```
+
+Errors:
+
+- `xl3/group/missing-key` — `@group` with no key list.
+- `xl3/subtotal/outside-group` — `@subtotal` cell in a block with
+  no `@group`, or more `@subtotal` rows than `@group` keys.
+- `xl3/subtotal/bad-aggregate` — `@subtotal` body is not one of
+  `SUM`, `COUNT`, `AVERAGE`, `MIN`, `MAX`, or its argument is not a
+  column reference of the allowed form.
 
 ## Group Keys
 

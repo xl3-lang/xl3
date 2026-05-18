@@ -1,10 +1,63 @@
 import type { Directive, FilterOp } from './types.js';
+import { xtlError } from './error-codes.js';
 
-const DIRECTIVE_RE = /^@(filter|sort|top|repeat|source|join)\b/i;
+const DIRECTIVE_RE = /^@(filter|sort|top|repeat|source|join|group)\b/i;
 const SOURCE_NAME_RE = /^[A-Za-z0-9_]+$/;
+// ADR-0038: @subtotal is a CELL expression marker, not a directive
+// row. It must travel through the directive-aware parser path (so
+// rows containing only @subtotal do NOT become regular per-row data
+// rows) but the parsed result is the inner aggregate, marked as
+// group-scoped.
+const SUBTOTAL_PREFIX_RE = /^@subtotal\b/i;
+const SUBTOTAL_BODY_RE = /^@subtotal\s+(SUM|COUNT|AVERAGE|AVG|MIN|MAX)\s*\(\s*([^)]*)\s*\)\s*$/i;
 
 export function isDirectiveExpression(expr: string): boolean {
   return DIRECTIVE_RE.test(expr.trim());
+}
+
+/** ADR-0038: the `@subtotal …` cell expression form. */
+export function isSubtotalExpression(expr: string): boolean {
+  return SUBTOTAL_PREFIX_RE.test(expr.trim());
+}
+
+export interface SubtotalAggregate {
+  fn: 'SUM' | 'COUNT' | 'AVERAGE' | 'MIN' | 'MAX';
+  arg: string; // raw inside-parens content (e.g., "[Amount]", "Source[Amount]", "")
+}
+
+/**
+ * ADR-0038: parse the `@subtotal <aggregate>` cell expression. Returns
+ * the inner aggregate descriptor, normalizes `AVG` to `AVERAGE`, and
+ * throws `xl3/subtotal/bad-aggregate` on any unsupported function or
+ * argument shape.
+ */
+export function parseSubtotalAggregate(expr: string): SubtotalAggregate {
+  const trimmed = expr.trim();
+  const m = trimmed.match(SUBTOTAL_BODY_RE);
+  if (!m) {
+    throw xtlError(
+      'xl3/subtotal/bad-aggregate',
+      `@subtotal accepts SUM, COUNT, AVERAGE, MIN, MAX only; got: ${trimmed}`,
+    );
+  }
+  const rawFn = m[1]!.toUpperCase();
+  const fn = (rawFn === 'AVG' ? 'AVERAGE' : rawFn) as SubtotalAggregate['fn'];
+  const arg = (m[2] ?? '').trim();
+  // COUNT() with no arg is allowed; other aggregates need a column ref.
+  if (fn !== 'COUNT' && arg === '') {
+    throw xtlError(
+      'xl3/subtotal/bad-aggregate',
+      `@subtotal ${fn}() requires a column reference argument`,
+    );
+  }
+  // Reject arbitrary expressions — only column-ref-style args are accepted.
+  if (arg !== '' && !/^([A-Za-z][A-Za-z0-9_]*)?\[[^\]\r\n]+\]$/.test(arg)) {
+    throw xtlError(
+      'xl3/subtotal/bad-aggregate',
+      `@subtotal ${fn}(${arg}) — only column references are accepted; arbitrary expressions are deferred`,
+    );
+  }
+  return { fn, arg };
 }
 
 export function parseDirective(expr: string): Directive | null {
@@ -17,8 +70,33 @@ export function parseDirective(expr: string): Directive | null {
   if (lower.startsWith('@repeat ')) return parseRepeat(trimmed.slice(8).trim());
   if (lower.startsWith('@source ')) return parseSource(trimmed.slice(8).trim());
   if (lower.startsWith('@join ')) return parseJoin(trimmed.slice(6).trim());
+  if (lower === '@group' || lower.startsWith('@group ')) return parseGroup(trimmed.slice(6).trim());
 
   return null;
+}
+
+function parseGroup(body: string): Directive {
+  if (body === '') {
+    throw xtlError('xl3/group/missing-key', '@group requires at least one column key');
+  }
+  // Split on `,` while respecting bracket pairs (keys are always
+  // [Col] forms, no nesting). Lightweight split is safe here.
+  const parts = body.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+  if (parts.length === 0) {
+    throw xtlError('xl3/group/missing-key', '@group requires at least one column key');
+  }
+  const keys: string[] = [];
+  for (const part of parts) {
+    const m = part.match(/^\[([^\]\r\n]+)\]$/);
+    if (!m) {
+      throw xtlError(
+        'xl3/directive/invalid-syntax',
+        `@group key must be a [Column] reference; got: ${part}`,
+      );
+    }
+    keys.push(m[1]!.trim());
+  }
+  return { kind: 'group', keys };
 }
 
 function parseSource(body: string): Directive | null {

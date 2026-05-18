@@ -78,10 +78,18 @@ except where called out under **Breaking**.
 - **Korean i18n** — Docusaurus `/ko/` routing + 15 cookbook recipes
   translated. README intro refreshed (en + ko) for the 0.5.x
   position.
-- **Conformance fixtures 124-131** — merged source headers,
+- **Conformance fixtures 124-135** — merged source headers,
   hyperlink, date arithmetic, multiline cell text, function batch
-  0044, cell-formula preservation, ISBLANK, and `__inputs__` XTL
-  evaluation.
+  0044, cell-formula preservation, ISBLANK, `__inputs__` XTL
+  evaluation, and `@group` / `@subtotal` (single-level subtotal,
+  two-level nested subtotal, grand-total-via-outermost-subtotal,
+  filter composition).
+- **`@group [Key1], [Key2], …` and `@subtotal SUM([Col])`** —
+  interleaved per-customer / per-month subtotal rows in a single
+  data block (ADR-0038 impl). Closes ROADMAP gate G5 partial (the
+  ADR-0040 CF/DV range-extension piece remains 0.6.1). Cookbook 18
+  (en + ko) walks through single-level + nested + grand-total +
+  filter-composition patterns.
 
 ### Fixed
 

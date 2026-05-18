@@ -39,6 +39,10 @@ export type XtlErrorCode =
   | 'xl3/join/bad-on-clause'
   // Directive (ADR-0027)
   | 'xl3/directive/invalid-syntax'
+  // Group + subtotal (ADR-0038)
+  | 'xl3/group/missing-key'
+  | 'xl3/subtotal/outside-group'
+  | 'xl3/subtotal/bad-aggregate'
   // Lists
   | 'xl3/lists/missing-reference'
   // Parser (ADR-0021)

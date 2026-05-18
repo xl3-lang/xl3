@@ -120,6 +120,16 @@ export interface JoinDirective {
   primaryKey: string;
 }
 
+// ADR-0038: partition the active row set into N-level nested groups
+// for interleaved @subtotal emission. Group identity uses ADR-0009's
+// canonical string equality; group order is encounter order after
+// @filter / @sort.
+/** @experimental */
+export interface GroupDirective {
+  kind: 'group';
+  keys: string[]; // column references, outermost first
+}
+
 /** @experimental */
 export type Directive =
   | FilterDirective
@@ -127,7 +137,8 @@ export type Directive =
   | TopDirective
   | RepeatDirective
   | SourceDirective
-  | JoinDirective;
+  | JoinDirective
+  | GroupDirective;
 
 // --- Template types ---
 
@@ -146,6 +157,11 @@ export interface DataBlock {
   // ADR-0014: optional single join — pairs each primary row with one
   // matching joined row.
   join?: JoinDirective;
+  // ADR-0038: row offsets (relative to startRow) of @subtotal rows
+  // inside the block, in source-template order. The level binding is
+  // inferred from order: index 0 → innermost group, increasing
+  // outward. Emitted at each group boundary at the bound level.
+  subtotalRowOffsets?: number[];
 }
 
 /**

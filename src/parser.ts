@@ -13,7 +13,12 @@ import type {
   JoinDirective,
 } from './types.js';
 import { isDataExpression, isAggregateExpression, extractColumnRefs, normalizeTemplate } from './normalizer.js';
-import { isDirectiveExpression, parseDirective } from './directive-parser.js';
+import {
+  isDirectiveExpression,
+  parseDirective,
+  isSubtotalExpression,
+  parseSubtotalAggregate,
+} from './directive-parser.js';
 import { xtlError } from './error-codes.js';
 import { evalCell } from './template-eval.js';
 import { canonicalString } from './functions.js';
@@ -218,6 +223,7 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
 
       // 2. Check for [field] expressions
       let hasDataVar = false;
+      let hasSubtotalCell = false;
       const dataColNumbers: number[] = [];
 
       row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
@@ -231,12 +237,55 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
             location: `cell:${worksheet.name}!${colLetter}${rowNumber}`,
           });
 
+          if (isSubtotalExpression(expr)) {
+            // ADR-0038: validate the aggregate shape eagerly so authors
+            // get xl3/subtotal/bad-aggregate at parse time rather than
+            // a render-time eval error.
+            parseSubtotalAggregate(expr);
+            hasSubtotalCell = true;
+            continue;
+          }
+
           if (isDataExpression(expr) && !isAggregateExpression(expr)) {
             hasDataVar = true;
             dataColNumbers.push(colNumber);
           }
         }
       });
+
+      // ADR-0038: a subtotal row is a row whose only relevant template
+      // cells are @subtotal expressions (no per-row [Col] refs). It
+      // extends the current block but does NOT clone per data row.
+      if (hasSubtotalCell && !hasDataVar) {
+        if (!currentBlock) {
+          // Start a 'down' block on the subtotal row so subsequent
+          // detection in the renderer can find it; this matches the
+          // case where a template starts with a header row using
+          // @subtotal (unusual but legal).
+          const downDirectives = [...pendingDirectives];
+          currentBlock = {
+            direction: 'down',
+            startRow: 0,
+            endRow: 0,
+            templateColStart: 0,
+            templateColEnd: 0,
+            directives: downDirectives,
+            directiveRows: [...pendingDirectiveRows],
+            source: extractSourceFromDirectives(downDirectives, 'default'),
+            join: extractJoinFromDirectives(downDirectives),
+          };
+          pendingDirectives = [];
+          pendingDirectiveRows = [];
+        }
+        if (currentBlock.startRow === 0) currentBlock.startRow = rowNumber;
+        currentBlock.endRow = rowNumber;
+        const subOffset = rowNumber - currentBlock.startRow;
+        if (!currentBlock.subtotalRowOffsets) currentBlock.subtotalRowOffsets = [];
+        currentBlock.subtotalRowOffsets.push(subOffset);
+        if (legacyDataStartRow === 0) legacyDataStartRow = rowNumber;
+        legacyDataEndRow = rowNumber;
+        return;
+      }
 
       if (hasDataVar) {
         // Detect row gap: if current block exists and there's a gap, close it

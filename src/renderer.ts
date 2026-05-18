@@ -15,6 +15,7 @@ import { applyDirectives } from './data-transform.js';
 import { canonicalString, isErrorCellMarker, isHyperlinkMarker } from './functions.js';
 import { xtlError } from './error-codes.js';
 import type { FileGroup } from './grouper.js';
+import { partitionByGroupKeys, planEmissionEvents } from './grouper.js';
 import type { SourceData } from './reader.js';
 import { ExcelJsWorkbookDocument, sanitizeFilename, sanitizeSheetName, type WorkbookDocument } from './excel-document.js';
 
@@ -199,9 +200,19 @@ export class Renderer {
               dataEndRow: shiftedBlock.endRow,
               directiveRows: [],
             };
-            this.renderDataRows(document, sheet, asSt, filteredRows, block.source);
+            const before = sheet.actualRowCount;
+            this.renderDataRows(document, sheet, asSt, filteredRows, block.source, block);
+            const after = sheet.actualRowCount;
+            // For grouped blocks the output row count is data + subtotal
+            // emissions, not data × templateRowCount. Derive rowShift
+            // from the actual row delta the renderer produced.
             const templateRowCount = shiftedBlock.endRow - shiftedBlock.startRow + 1;
-            rowShift += filteredRows.length - templateRowCount;
+            const groupDir = block.directives.find((d) => d.kind === 'group');
+            if (groupDir) {
+              rowShift += (after - before) - templateRowCount;
+            } else {
+              rowShift += filteredRows.length - templateRowCount;
+            }
           }
         }
       }
@@ -269,7 +280,7 @@ export class Renderer {
         return;
       }
 
-      this.renderDataRows(document, sheet, adjustedSt, filteredRows, activeSource);
+      this.renderDataRows(document, sheet, adjustedSt, filteredRows, activeSource, downBlock);
     }
   }
 
@@ -279,7 +290,25 @@ export class Renderer {
     st: SheetTemplate,
     dataRows: Row[],
     activeSource = 'default',
+    block?: DataBlock,
   ) {
+    // ADR-0038 dispatch: a block carrying a `@group` directive or
+    // any @subtotal rows takes the grouped emission path.
+    const groupDir = block?.directives.find((d) => d.kind === 'group');
+    const subtotalOffsets = block?.subtotalRowOffsets ?? [];
+    if (groupDir && groupDir.kind === 'group') {
+      this.renderGroupedDataRows(
+        document, sheet, st, dataRows, activeSource,
+        groupDir.keys, subtotalOffsets,
+      );
+      return;
+    }
+    if (subtotalOffsets.length > 0) {
+      throw xtlError(
+        'xl3/subtotal/outside-group',
+        '@subtotal requires an active @group directive',
+      );
+    }
     const templateRowCount = st.dataEndRow - st.dataStartRow + 1;
 
     // 1. Read all template rows in the block (including empty styled cells and heights)
@@ -353,6 +382,152 @@ export class Renderer {
         }
 
         targetRow.commit();
+      }
+    }
+  }
+
+  /**
+   * ADR-0038: render a data block with `@group` keys and interleaved
+   * `@subtotal` rows. Group order is post-filter / post-sort encounter
+   * order (`partitionByGroupKeys`); subtotal rows emit at each group
+   * boundary at the level inferred from their source-row order
+   * (topmost @subtotal → innermost level → first at every boundary).
+   */
+  private renderGroupedDataRows(
+    document: WorkbookDocument,
+    sheet: ExcelJS.Worksheet,
+    st: SheetTemplate,
+    dataRows: Row[],
+    activeSource: string,
+    groupKeys: string[],
+    subtotalOffsets: number[],
+  ) {
+    const templateRowCount = st.dataEndRow - st.dataStartRow + 1;
+
+    if (subtotalOffsets.length > groupKeys.length) {
+      throw xtlError(
+        'xl3/subtotal/outside-group',
+        `@subtotal at row ${st.dataStartRow + subtotalOffsets[subtotalOffsets.length - 1]!} has no matching @group level`,
+      );
+    }
+
+    // 1. Read template rows (same shape as renderDataRows so subtotal
+    //    rows retain their formatting / merges / static text).
+    const templateRows: {
+      height: number;
+      cells: Map<number, { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }>
+    }[] = [];
+    for (let i = 0; i < templateRowCount; i++) {
+      const row = sheet.getRow(st.dataStartRow + i);
+      const cells = new Map<number, { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }>();
+      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        const val = cellString(cell.value);
+        const style = cell.style;
+        if (val || (style && Object.keys(style).length > 0)) {
+          cells.set(colNumber, { template: val, rawValue: cell.value, style: style || {} });
+        }
+      });
+      templateRows.push({ height: row.height, cells });
+    }
+
+    // 2. Split template-row indices into data rows vs subtotal rows.
+    const subtotalSet = new Set(subtotalOffsets);
+    const dataRowOffsets: number[] = [];
+    for (let i = 0; i < templateRowCount; i++) {
+      if (!subtotalSet.has(i)) dataRowOffsets.push(i);
+    }
+    if (dataRowOffsets.length === 0) {
+      // Degenerate: only subtotal rows in the block. Remove the
+      // template rows and stop — there is no per-row content to clone.
+      document.spliceRowsPreservingMerges(sheet, st.dataStartRow, templateRowCount);
+      return;
+    }
+
+    // 3. Partition + plan emission.
+    const groupTree = partitionByGroupKeys(dataRows, groupKeys);
+    const events = planEmissionEvents(groupTree, groupKeys.length);
+
+    // 4. Compute total output rows so we can size the splice.
+    let totalOutputRows = 0;
+    for (const ev of events) {
+      if (ev.kind === 'data') totalOutputRows += dataRowOffsets.length;
+      else if (ev.level - 1 < subtotalOffsets.length) totalOutputRows += 1;
+    }
+
+    // Empty source after filter/sort: drop the block entirely.
+    if (totalOutputRows === 0) {
+      document.spliceRowsPreservingMerges(sheet, st.dataStartRow, templateRowCount);
+      return;
+    }
+
+    // 5. Resize the block.
+    if (totalOutputRows > templateRowCount) {
+      const insertCount = totalOutputRows - templateRowCount;
+      document.spliceRowsPreservingMerges(
+        sheet, st.dataStartRow + templateRowCount, 0,
+        ...Array(insertCount).fill([]),
+      );
+    } else if (totalOutputRows < templateRowCount) {
+      const deleteCount = templateRowCount - totalOutputRows;
+      document.spliceRowsPreservingMerges(
+        sheet, st.dataStartRow + totalOutputRows, deleteCount,
+      );
+    }
+
+    // 6. Walk events, writing one output Excel row per event.
+    const reservedCtx = { ...this.reservedSheetCtx(), __activeSource__: activeSource };
+    let outputRowIdx = 0;
+    let dataRowIter = 0;
+
+    const writeRow = (
+      targetRowNum: number,
+      tmpl: typeof templateRows[number],
+      ctx: Record<string, unknown>,
+    ) => {
+      const targetRow = sheet.getRow(targetRowNum);
+      if (tmpl.height) targetRow.height = tmpl.height;
+      for (const [colNumber, { template, rawValue, style }] of tmpl.cells) {
+        const cell = targetRow.getCell(colNumber);
+        if (style && Object.keys(style).length > 0) cell.style = { ...style };
+        if (VAR_PATTERN.test(template)) {
+          const normalized = normalizeTemplate(template, this.columns);
+          cell.value = renderCellValue(
+            normalized,
+            evalCellAt(sheet.name, cell.address, normalized, ctx),
+            style,
+          );
+        } else if (template) {
+          cell.value = rawValue;
+        }
+      }
+      targetRow.commit();
+    };
+
+    for (const ev of events) {
+      if (ev.kind === 'data') {
+        for (const tmplOffset of dataRowOffsets) {
+          const ctx = {
+            ...reservedCtx,
+            ...ev.row,
+            __rownum: dataRowIter + 1,
+            Rows: dataRows,
+          };
+          writeRow(st.dataStartRow + outputRowIdx, templateRows[tmplOffset]!, ctx);
+          outputRowIdx++;
+        }
+        dataRowIter++;
+      } else {
+        if (ev.level - 1 >= subtotalOffsets.length) continue;
+        const tmplOffset = subtotalOffsets[ev.level - 1]!;
+        // ADR-0038: subtotal aggregates scope to the current group's
+        // rows — bind `Rows` and `Source[Col]` resolution to that
+        // subset while keeping `__activeSource__` / reserved sheets.
+        const ctx = {
+          ...reservedCtx,
+          Rows: ev.groupRows,
+        };
+        writeRow(st.dataStartRow + outputRowIdx, templateRows[tmplOffset]!, ctx);
+        outputRowIdx++;
       }
     }
   }

@@ -25,6 +25,10 @@ const STATIC_CONTEXT_CALLS = new Set([
 ]);
 
 export function isDataExpression(expr: string): boolean {
+  // ADR-0038: a `@subtotal <agg>` cell is row-set scoped at render
+  // time, not per-row. Reject it from the "data expression" classifier
+  // so its host row does not become a regular per-row data row.
+  if (/^@subtotal\b/i.test(expr.trim())) return false;
   // A "data expression" is one whose value depends on the current
   // iterating row of a data block. Two shapes qualify:
   //
@@ -79,6 +83,18 @@ export function normalizeTemplate(
 }
 
 function normalizeInner(expr: string, columns: Set<string>): string {
+  // ADR-0038: `@subtotal <aggregate>` is the same aggregate normalization
+  // applied to its inner body. The renderer sets `ctx.Rows` to the
+  // current group's row set before evaluating, so the same `sumRows
+  // .Rows "Col"` form yields the group-scoped result.
+  if (/^@subtotal\s+/i.test(expr)) {
+    const inner = expr.replace(/^@subtotal\s+/i, '').trim();
+    if (isAggregateExpression(inner)) return normalizeAggregate(inner);
+    // The directive-parser layer validates aggregate shape and throws
+    // xl3/subtotal/bad-aggregate; reaching here means a shape we
+    // can't normalize.
+    return inner;
+  }
   // Aggregates
   if (isAggregateExpression(expr)) return normalizeAggregate(expr);
 

@@ -5158,6 +5158,346 @@ async function build096() {
 // ---------------------------------------------------------------------------
 // 130 - isblank-function (ADR-0047)
 // ---------------------------------------------------------------------------
+// 134 - group-grand-total-via-outermost-subtotal (ADR-0038)
+//
+// The outermost @subtotal row fires once — at the end of the data
+// block — because the outermost group's boundary IS the end of the
+// data. This is how authors get a grand total without a separate
+// directive: stack one outer-level @subtotal beyond the deepest
+// @group key. With a single @group key and two @subtotal rows, the
+// outer one is the grand total.
+// ---------------------------------------------------------------------------
+async function build134() {
+  const dir = join(FIXTURES, '134-group-grand-total-via-outermost-subtotal');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'group-grand-total-via-outermost-subtotal'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    // Two group keys: Customer is the only real partitioning; we
+    // would normally need a SECOND key for a 2-level group + 2
+    // subtotals. Use [Customer], [Item] but only one @subtotal at
+    // inner level → outer @subtotal acts as grand total.
+    sh.getCell('A2').value = '{{ @sort [Customer] }}';
+    sh.getCell('A3').value = '{{ @group [Customer], [Item] }}';
+    sh.getCell('A4').value = '{{ [Customer] }}';
+    sh.getCell('B4').value = '{{ [Amount] }}';
+    sh.getCell('A5').value = 'Item subtotal';
+    sh.getCell('B5').value = '{{ @subtotal SUM([Amount]) }}';
+    sh.getCell('A6').value = 'Customer subtotal';
+    sh.getCell('B6').value = '{{ @subtotal SUM([Amount]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Item';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Widget';
+    sh.getCell('C2').value = 100;
+    sh.getCell('A3').value = 'Acme';
+    sh.getCell('B3').value = 'Widget';
+    sh.getCell('C3').value = 50;
+    sh.getCell('A4').value = 'Acme';
+    sh.getCell('B4').value = 'Gear';
+    sh.getCell('C4').value = 200;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // Encounter order: Acme/Widget (2 rows, subtotal 150), then
+  // Acme/Gear (1 row, subtotal 200), then Customer-level subtotal
+  // for all Acme rows (350).
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 100;
+    sh.getCell('A3').value = 'Acme';
+    sh.getCell('B3').value = 50;
+    sh.getCell('A4').value = 'Item subtotal';
+    sh.getCell('B4').value = 150;
+    sh.getCell('A5').value = 'Acme';
+    sh.getCell('B5').value = 200;
+    sh.getCell('A6').value = 'Item subtotal';
+    sh.getCell('B6').value = 200;
+    sh.getCell('A7').value = 'Customer subtotal';
+    sh.getCell('B7').value = 350;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 135 - group-filter-composition (ADR-0038)
+//
+// @group composes with @filter: filtered rows do not appear in any
+// group, so subtotals reflect post-filter values. Also exercises the
+// edge case where filtering removes ALL rows of a potential outer
+// group — that group simply does not appear in the output.
+// ---------------------------------------------------------------------------
+async function build135() {
+  const dir = join(FIXTURES, '135-group-filter-composition');
+  await mkdir(dir, { recursive: true });
+
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'group-filter-composition'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Status';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = '{{ @filter [Status] = "active" }}';
+    sh.getCell('A3').value = '{{ @sort [Customer] }}';
+    sh.getCell('A4').value = '{{ @group [Customer] }}';
+    sh.getCell('A5').value = '{{ [Customer] }}';
+    sh.getCell('B5').value = '{{ [Status] }}';
+    sh.getCell('C5').value = '{{ [Amount] }}';
+    sh.getCell('A6').value = 'Customer subtotal';
+    sh.getCell('C6').value = '{{ @subtotal SUM([Amount]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Status';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'active';
+    sh.getCell('C2').value = 100;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'inactive';
+    sh.getCell('C3').value = 500; // filtered out
+    sh.getCell('A4').value = 'Acme';
+    sh.getCell('B4').value = 'active';
+    sh.getCell('C4').value = 200;
+    sh.getCell('A5').value = 'Gamma';
+    sh.getCell('B5').value = 'inactive';
+    sh.getCell('C5').value = 999; // filtered out — Gamma group never appears
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // Only Acme/active rows survive filter; one customer group; one
+  // subtotal at 300.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Status';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'active';
+    sh.getCell('C2').value = 100;
+    sh.getCell('A3').value = 'Acme';
+    sh.getCell('B3').value = 'active';
+    sh.getCell('C3').value = 200;
+    sh.getCell('A4').value = 'Customer subtotal';
+    sh.getCell('C4').value = 300;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 133 - group-two-level-nested-subtotal (ADR-0038)
+//
+// Two-level @group [Region], [Customer] with inner + outer
+// @subtotal rows. Inner (Customer) subtotal binds to level 1
+// (topmost @subtotal row → innermost group key). Outer (Region)
+// subtotal binds to level 2. Both emit at boundaries; inner fires
+// before outer when both end simultaneously.
+// ---------------------------------------------------------------------------
+async function build133() {
+  const dir = join(FIXTURES, '133-group-two-level-nested-subtotal');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'group-two-level-nested-subtotal'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = '{{ @sort [Region] }}';
+    sh.getCell('A3').value = '{{ @sort [Customer] }}';
+    sh.getCell('A4').value = '{{ @group [Region], [Customer] }}';
+    sh.getCell('A5').value = '{{ [Region] }}';
+    sh.getCell('B5').value = '{{ [Customer] }}';
+    sh.getCell('C5').value = '{{ [Amount] }}';
+    sh.getCell('B6').value = 'Customer subtotal';
+    sh.getCell('C6').value = '{{ @subtotal SUM([Amount]) }}';
+    sh.getCell('A7').value = 'Region subtotal';
+    sh.getCell('C7').value = '{{ @subtotal SUM([Amount]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'KR';
+    sh.getCell('B2').value = 'Acme';
+    sh.getCell('C2').value = 100;
+    sh.getCell('A3').value = 'KR';
+    sh.getCell('B3').value = 'Acme';
+    sh.getCell('C3').value = 50;
+    sh.getCell('A4').value = 'KR';
+    sh.getCell('B4').value = 'Beta';
+    sh.getCell('C4').value = 200;
+    sh.getCell('A5').value = 'JP';
+    sh.getCell('B5').value = 'Acme';
+    sh.getCell('C5').value = 75;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — encounter order after @sort: JP first
+  // (alphabetical), then KR. Within KR: Acme (sorted) then Beta.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('C1').value = 'Amount';
+    // JP — Acme
+    sh.getCell('A2').value = 'JP';
+    sh.getCell('B2').value = 'Acme';
+    sh.getCell('C2').value = 75;
+    sh.getCell('B3').value = 'Customer subtotal';
+    sh.getCell('C3').value = 75;
+    // JP — region subtotal (single customer in JP)
+    sh.getCell('A4').value = 'Region subtotal';
+    sh.getCell('C4').value = 75;
+    // KR — Acme
+    sh.getCell('A5').value = 'KR';
+    sh.getCell('B5').value = 'Acme';
+    sh.getCell('C5').value = 100;
+    sh.getCell('A6').value = 'KR';
+    sh.getCell('B6').value = 'Acme';
+    sh.getCell('C6').value = 50;
+    sh.getCell('B7').value = 'Customer subtotal';
+    sh.getCell('C7').value = 150;
+    // KR — Beta
+    sh.getCell('A8').value = 'KR';
+    sh.getCell('B8').value = 'Beta';
+    sh.getCell('C8').value = 200;
+    sh.getCell('B9').value = 'Customer subtotal';
+    sh.getCell('C9').value = 200;
+    // KR region subtotal
+    sh.getCell('A10').value = 'Region subtotal';
+    sh.getCell('C10').value = 350;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 132 - group-single-level-subtotal (ADR-0038)
+//
+// Single-level @group + one @subtotal row. Subtotal emits once per
+// group, after the last data row of that group. The outermost
+// subtotal is also the grand total when the dataset has one group
+// key — but here we exercise two distinct keys so subtotals fire
+// twice. Composition with @sort (same key order) keeps group order
+// stable across encounter.
+// ---------------------------------------------------------------------------
+async function build132() {
+  const dir = join(FIXTURES, '132-group-single-level-subtotal');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'group-single-level-subtotal'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Item';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = '{{ @sort [Customer] }}';
+    sh.getCell('A3').value = '{{ @group [Customer] }}';
+    sh.getCell('A4').value = '{{ [Customer] }}';
+    sh.getCell('B4').value = '{{ [Item] }}';
+    sh.getCell('C4').value = '{{ [Amount] }}';
+    sh.getCell('A5').value = 'Subtotal';
+    sh.getCell('C5').value = '{{ @subtotal SUM([Amount]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Item';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Widget';
+    sh.getCell('C2').value = 100;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'Bolt';
+    sh.getCell('C3').value = 50;
+    sh.getCell('A4').value = 'Acme';
+    sh.getCell('B4').value = 'Gear';
+    sh.getCell('C4').value = 200;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Item';
+    sh.getCell('C1').value = 'Amount';
+    // Acme group (sorted first)
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Widget';
+    sh.getCell('C2').value = 100;
+    sh.getCell('A3').value = 'Acme';
+    sh.getCell('B3').value = 'Gear';
+    sh.getCell('C3').value = 200;
+    sh.getCell('A4').value = 'Subtotal';
+    sh.getCell('C4').value = 300;
+    // Beta group
+    sh.getCell('A5').value = 'Beta';
+    sh.getCell('B5').value = 'Bolt';
+    sh.getCell('C5').value = 50;
+    sh.getCell('A6').value = 'Subtotal';
+    sh.getCell('C6').value = 50;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 131 - inputs-with-xtl-default (ADR-0050)
 //
 // Pins that __inputs__ default / label / description / options cells
@@ -7376,6 +7716,10 @@ const builders = [
   ['129', build129],
   ['130', build130],
   ['131', build131],
+  ['132', build132],
+  ['133', build133],
+  ['134', build134],
+  ['135', build135],
 ];
 
 const selected = new Set(process.argv.slice(2));
