@@ -139,23 +139,41 @@ intentional footer that aggregates the expanded block (see
   below.)
 - **Don't invent directives.** The full directive list is in
   [`spec/language.md`](../spec/language.md) §Directives: `@source`,
-  `@join`, `@filter`, `@sort`, `@top`, `@repeat right`. Nothing else
-  exists in XTL 0.x.
+  `@join`, `@filter`, `@sort`, `@top`, `@group`, `@subtotal`,
+  `@repeat right`. Nothing else exists in XTL 0.x.
 
 ---
 
 ## Footer escape hatch — when XTL can't express the total
 
-XTL aggregates compose cleanly **only** as the entire expression in a
-footer cell:
+**Before reaching for a native Excel formula**, check whether the
+footer is per-group or a grand-total. If yes, prefer `@group` +
+`@subtotal` (ADR-0038) over a hand-written `SUMIF` — it composes with
+`@filter`/`@sort`, evaluates against the rendered row set (no
+overshoot-range guessing), and is the XTL-native expression for the
+interleaved-subtotal Korean B2B pattern. See
+[`docs/guides/18-group-and-subtotal.md`](./guides/18-group-and-subtotal.md).
+
+The grand-total special case: with a single `@group [Key]` plus one
+`@subtotal` row, the subtotal emits once at the end — a clean
+"grand-total via outermost subtotal" pattern that works even when the
+key takes only one distinct value (degenerate single-group case is
+explicitly supported by ADR-0038).
+
+XTL aggregates — `SUM`, `COUNT`, `AVERAGE`, `MIN`, `MAX` — compose
+cleanly **only** as the entire expression in a footer cell, OR as
+the body of a `@subtotal` row:
 
 ```text
-{{ SUM([Amount]) }}              # ✓
+{{ SUM([Amount]) }}              # ✓ block-level footer
 {{ AVERAGE([Margin]) }}          # ✓
+{{ @subtotal SUM([Amount]) }}    # ✓ per-group emission (ADR-0038)
 ```
 
-In xl3 0.5.x they do **not** compose with arithmetic operators, nor
-appear as the LHS of a comparison. All of these raise
+In xl3 0.6 they do **not** compose with arithmetic operators or
+appear as the LHS of a comparison. `@subtotal` has the same restriction
+(per ADR-0038, composite-expression bodies raise
+`xl3/subtotal/bad-aggregate` and are deferred). All of these raise
 `xl3/eval/operand-coercion`-class errors or silently mis-evaluate:
 
 ```text
@@ -304,6 +322,51 @@ re-render.
 
 ---
 
+## `__inputs__` defaults can be computed (ADR-0050)
+
+The `default`, `label`, `description`, and `options` cells of the
+`__inputs__` sheet are themselves XTL templates — they are evaluated
+once, at `readTemplateInputs()` time, before the host UI ever shows
+them to the operator. You no longer have to choose between a literal
+placeholder string and "force the host to compute the default."
+
+```text
+| name        | type   | default                                | label             |
+|-------------|--------|----------------------------------------|-------------------|
+| report_date | date   | {{ TODAY() }}                          | Report date       |
+| filename    | text   | {{ TEXT(TODAY(), "YYYY-MM") }}-report  | Output filename   |
+| title       | text   | {{ __config__[region] }} 거래명세서    | Title             |
+```
+
+The evaluation context is **constrained**:
+
+- ✓ Available: `__config__[key]`, `TODAY()`, `DATE(y,m,d)`, `IF`,
+  `IFEMPTY`, `IFS`, `IFERROR`, `UPPER`, `LOWER`, `TRIM`, `TEXT`,
+  `YEAR`, `MONTH`, `DAY`, `EOMONTH`, `EDATE`, `DATEDIF`, `ROUND`,
+  `ABS`.
+- ✗ Forbidden — raises `xl3/inputs/forward-reference`:
+  `[Column]`, `Source[Column]`, `__sources__[…]`, `__inputs__[name]`
+  (no input-to-input refs), `ROW()`, and any aggregate / lookup
+  (`SUM`, `COUNT`, `AVERAGE`, `MIN`, `MAX`, `XLOOKUP`) — these need
+  data the renderer has not loaded yet.
+
+What this rules out:
+
+- **`=TODAY()` as the cell formula in the default column.** xl3
+  reads the cell's *string* value, not Excel's recalculated date.
+  Use `{{ TODAY() }}` (the XTL form) instead — it is evaluated
+  *every* time `readTemplateInputs()` runs, so the default is
+  always "right now," not "last save."
+- **Defaults that look up source data.** They cannot. Default
+  values are static at input-read time. If the value must come
+  from the data file, expose it as an `__inputs__` row the host
+  supplies, not as a derived default.
+
+See [`docs/guides/06-runtime-inputs.md`](./guides/06-runtime-inputs.md)
+§"Computed defaults and labels" for the full recipe.
+
+---
+
 ## When `@filter`, `@sort`, `@top`, `@source`, `@join` enter
 
 These are written as full-row template expressions placed in the rows
@@ -336,10 +399,18 @@ Concrete recipes:
   — the minimum complete example.
 - [`docs/guides/03-aggregates.md`](./guides/03-aggregates.md) — footer
   totals over a data block.
+- [`docs/guides/06-runtime-inputs.md`](./guides/06-runtime-inputs.md)
+  — `__inputs__` declarations and computed defaults (ADR-0050).
 - [`docs/guides/10-styling-and-branding.md`](./guides/10-styling-and-branding.md)
   — how styling propagates; merged-header rules.
 - [`docs/guides/15-directive-composition.md`](./guides/15-directive-composition.md)
   — when multiple directives stack on one block.
+- [`docs/guides/16-xtl-vs-excel-formula.md`](./guides/16-xtl-vs-excel-formula.md)
+  — the render-time boundary; when XTL is required vs when a cell
+  formula is the right answer.
+- [`docs/guides/18-group-and-subtotal.md`](./guides/18-group-and-subtotal.md)
+  — `@group` / `@subtotal` for interleaved per-customer / per-month
+  subtotals (the Korean B2B invoice / settlement pattern).
 
 Behavior preservation matrix:
 - [`spec/decisions/0036-feature-preservation-matrix.md`](../spec/decisions/0036-feature-preservation-matrix.md)
@@ -364,9 +435,14 @@ Live examples to study:
 > blank styled bands in every output. Fix: Delete Row (not Clear) on
 > every non-directive, non-intentional-footer row. Verify by rendering
 > with a small sample and checking the output's used range ends at the
-> last intentional footer. When a derived total can't be written as a
-> standalone XTL aggregate (`SUM([col]) / 1.1` and similar fail),
+> last intentional footer. For per-group or grand-total footers reach
+> first for `@group` + `@subtotal` (ADR-0038, xl3 0.6). When a derived
+> total can't be written as a single-column XTL aggregate
+> (`SUM([col]) / 1.1` and `SUM([A]) - SUM([B])` are both rejected),
 > drop down to a native Excel formula in the footer — but never
 > reference the formula cell's own column, and use
 > `SUMIF(label_col, "<>footer_label", …)` to exclude the footer row
-> from the sum.
+> from the sum. `__inputs__` defaults can themselves be XTL
+> (`{{ TODAY() }}`, `{{ __config__[region] }}`) — evaluated once per
+> `readTemplateInputs()` call (ADR-0050), so date defaults stay
+> current without host-side computation.
