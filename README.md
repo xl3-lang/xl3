@@ -255,10 +255,11 @@ and group keys.
 
 ## Examples
 
-Three production-shaped templates live in [`examples/`](./examples):
-basic renewal report, sheet-per-region with list-filter, and a
-multi-source join with runtime inputs. Run them with
-`npm run examples:build && npm run examples:run`.
+Four production-shaped templates live in [`examples/`](./examples):
+basic renewal report, sheet-per-region with list-filter, a
+multi-source join with runtime inputs, and a cafe weekly report
+showcasing `@group` + `@subtotal` per-category subtotals. Run them
+with `npm run examples:build && npm run examples:run`.
 
 ## Guides
 

@@ -1,6 +1,6 @@
 # Examples
 
-Three production-shaped XTL templates. Each is a complete `template.xlsx`
+Four production-shaped XTL templates. Each is a complete `template.xlsx`
 + `data.xlsx` pair that runs through `convert()`.
 
 | # | Folder | Demonstrates |
@@ -8,6 +8,7 @@ Three production-shaped XTL templates. Each is a complete `template.xlsx`
 | 01 | `01-basic-renewal-report/` | Single source, `IF`, `SUM`, `@sort`, `@top`. The "hello world" of XTL. |
 | 02 | `02-sheet-per-region/` | One sheet per group key (Region), `@filter ... in __lists__[…]`, per-sheet aggregate footer. |
 | 03 | `03-multi-source-join/` | `__sources__` + `@source` + `@join` + `XLOOKUP` + `__inputs__`. The full XTL 0.1 surface in one template. |
+| 04 | `04-cafe-weekly-report/` | `@group` + `@subtotal` per-category subtotals (ADR-0038), nested `IF`, ADR-0050 computed `__inputs__` default. The 0.6 grouping showcase. |
 
 ## Running the examples
 
