@@ -87,6 +87,12 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
       try { sheet.unMergeCells(merge.top, merge.left, merge.bottom, merge.right); } catch { /* ok */ }
     }
 
+    // ADR-0040: outline-level is preservation matrix entry "P". ExcelJS
+    // spliceRows rebuilds row metadata on shifted rows, so capture
+    // outline-levels for rows >= preserveFromRow before splicing and
+    // restore them on the post-shift row numbers.
+    const savedOutlineLevels = saveOutlineLevelsFromRow(sheet, preserveFromRow);
+
     sheet.spliceRows(start, deleteCount, ...rows);
 
     for (const merge of saved) {
@@ -99,6 +105,11 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
         );
       } catch { /* overlap guard */ }
     }
+
+    for (const [rowNum, level] of savedOutlineLevels) {
+      const target = sheet.getRow(rowNum + rowDelta);
+      target.outlineLevel = level;
+    }
   }
 
   async writeBuffer(): Promise<ArrayBuffer> {
@@ -107,6 +118,21 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
 }
 
 interface MergeRect { top: number; left: number; bottom: number; right: number }
+
+function saveOutlineLevelsFromRow(
+  sheet: ExcelJS.Worksheet,
+  fromRow: number,
+): Array<[number, number]> {
+  const result: Array<[number, number]> = [];
+  const lastRow = sheet.actualRowCount;
+  for (let r = fromRow; r <= lastRow; r++) {
+    const row = sheet.getRow(r);
+    if (row.outlineLevel && row.outlineLevel > 0) {
+      result.push([r, row.outlineLevel]);
+    }
+  }
+  return result;
+}
 
 function saveMergesFromRow(sheet: ExcelJS.Worksheet, fromRow: number): MergeRect[] {
   const result: MergeRect[] = [];

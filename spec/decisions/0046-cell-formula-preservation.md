@@ -22,47 +22,82 @@ what gets adjusted, what gets lost. Without this ADR, the
 Excel-native preference principle is asking porters to honor an
 unspecified behavior.
 
-## What the reference impl does today
+## What the contract is (in OOXML terms)
 
-Two observations from running fixture 129 against the impl:
+Two observations, stated in OOXML element terms so any port
+matches the contract regardless of which XLSX library it uses:
 
-1. **Formula text is preserved verbatim.** A template cell with
-   `{ formula: "B2*2" }` is cloned into every row produced by
-   `@repeat`. The formula text is copied byte-for-byte.
+1. **The `<f>` element text is preserved verbatim** across
+   `@repeat` row expansion. A template cell with `<f>B2*2</f>` is
+   cloned into every row produced by `@repeat`; the `<f>` text is
+   copied byte-for-byte.
 
-2. **References inside formulas are NOT adjusted.** When the
-   `@repeat` block expands from 1 template row to N rendered rows,
-   each rendered row's cloned formula keeps the original
-   reference. A formula `=B2*2` on the template row 2 becomes
-   `=B2*2` on rendered rows 2, 3, 4, … — every row references
-   row 2's `B`, not its own row's `B`.
+2. **References inside the `<f>` element text are NOT adjusted.**
+   When the `@repeat` block expands from 1 template row to N
+   rendered rows, each cloned cell's `<f>` text keeps the original
+   reference. A formula `<f>B2*2</f>` on the template row 2 stays
+   `<f>B2*2</f>` on rendered rows 2, 3, 4, … — every row
+   references row 2's `B`, not its own row's `B`.
 
-   Similarly, a footer formula `=SUM(B2:B5)` placed below a
-   `@repeat` block that expands the block from 4 rows to 10
-   rows stays `=SUM(B2:B5)` — the range is not extended.
+   Similarly, a footer formula `<f>SUM(B2:B5)</f>` placed below a
+   `@repeat` block that expands from 4 rows to 10 rows stays
+   `<f>SUM(B2:B5)</f>` — the range is not extended.
+
+### How specific impls satisfy the OOXML contract
+
+The contract is OOXML-element-level. Implementations may use any
+library, but the I/O round-trip must produce equivalent `<f>` /
+`<v>` element text. Two example mappings:
+
+- **ExcelJS (xl3-js):** template cells with shape
+  `{ formula: "B2*2" }` round-trip to `<f>B2*2</f>` in OOXML
+  output. Cached results, if present in source `{ formula, result }`,
+  emit a `<v>` element on the template row; cloned rows omit `<v>`
+  (Excel re-evaluates at open time).
+- **openpyxl (xl3-py):** template cells with shape
+  `cell.value = "=B2*2"` plus `cell.data_type = 'f'` round-trip
+  identically. Cloned cells set `cell.value = "=B2*2"` and do not
+  set a cached result attribute.
+
+Implementations using library-specific shapes (ExcelJS objects,
+openpyxl attributes, OOXML element types in Rust crates, …) MUST
+translate to/from the OOXML element form at their I/O boundary.
+The normative form is the OOXML XML; library shapes are
+convenience.
 
 ## Decision
 
 ### What is normative (preserved verbatim) — MUST
 
-Per ADR-0036 plus this ADR's amendment:
+Per ADR-0036 plus this ADR's amendment, stated in OOXML element
+terms:
 
-1. **Cell formula text** is preserved through `convert()`,
-   verbatim. A `{ formula: "..." }` cell in the template appears
-   as `{ formula: "..." }` in every rendered row that the cell
+1. **`<f>` element text** is preserved through `convert()`,
+   byte-for-byte. A formula cell in the template appears with the
+   same `<f>` text in every rendered row that the cell
    participates in (the template row itself when no `@repeat`
    touches it; every cloned row when `@repeat` does).
 
-2. **Formula cached results** (`{ formula, result }`) are
-   preserved on the template row only. Cloned rows do not carry
-   the original `result`; Excel re-evaluates at open time.
+2. **`<v>` element (cached result)** is preserved on the template
+   row only. Cloned rows MAY omit `<v>` (Excel re-evaluates at
+   open time). Whether cloned rows omit or copy `<v>` is
+   implementation-defined; impls MUST NOT compute new `<v>`
+   values for cloned rows from the source data — that would
+   silently diverge from the formula's intent.
 
-3. **Cross-sheet formula references** are preserved verbatim.
+3. **Cross-sheet `<f>` references** (e.g., `<f>Data!B2</f>`) are
+   preserved verbatim, including the sheet-name quoting form the
+   author wrote.
 
-4. **Defined-name references inside formulas** are preserved
+4. **Defined-name references inside `<f>` text** are preserved
    verbatim. Whether the defined name still resolves correctly
    depends on whether the defined name was preserved (ADR-0036
    matrix item 4: yes, verbatim).
+
+5. **Structured-table references** (e.g., `<f>Table1[Amount]</f>`)
+   are preserved verbatim. Whether the underlying table is
+   preserved is governed by ADR-0036's pivot/ListObject row (still
+   undefined as of 2026-05-18; see G12 in ROADMAP).
 
 ### What is intentionally NOT yet adjusted — MUST NOT silently change
 

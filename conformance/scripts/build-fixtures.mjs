@@ -5158,6 +5158,69 @@ async function build096() {
 // ---------------------------------------------------------------------------
 // 130 - isblank-function (ADR-0047)
 // ---------------------------------------------------------------------------
+// 131 - inputs-with-xtl-default (ADR-0050)
+//
+// Pins that __inputs__ default / label / description / options cells
+// evaluate XTL `{{ ... }}` blocks at input-read time against a
+// constrained context — __config__ values + pure scalar functions
+// (TODAY, DATE, IF, IFEMPTY, UPPER, ...) — and the post-evaluation
+// canonical strings flow into the render-time __inputs__[name]
+// lookups. Pre-ADR-0050 these cells were literal strings, leaving
+// the host UI to display "{{ TODAY() }}" verbatim.
+// ---------------------------------------------------------------------------
+async function build131() {
+  const dir = join(FIXTURES, '131-inputs-with-xtl-default');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'inputs-with-xtl-default'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+      ['region', 'KR'],
+      ['period', '2026-05'],
+    ]);
+    // `default` for `title_prefix` reads __config__[region]; `default`
+    // for `report_label` composes a string from __config__ + an Excel
+    // function (UPPER). Both evaluate at input-read time; the
+    // post-evaluation strings flow into render-time __inputs__[name].
+    addInputs(wb, ['name', 'type', 'default', 'label'], [
+      ['title_prefix', 'text', '{{ __config__[region] }} 거래명세서', 'Title prefix'],
+      ['report_label', 'text', '{{ UPPER(__config__[region]) }}-{{ __config__[period] }}', 'Report label'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = '{{ __inputs__[title_prefix] }}';
+    sh.getCell('A2').value = '{{ __inputs__[report_label] }}';
+    sh.getCell('A3').value = 'Customer';
+    sh.getCell('A4').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('A2').value = 'Acme';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'KR 거래명세서';
+    sh.getCell('A2').value = 'KR-2026-05';
+    sh.getCell('A3').value = 'Customer';
+    sh.getCell('A4').value = 'Acme';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
 async function build130() {
   const dir = join(FIXTURES, '130-isblank-function');
   await mkdir(dir, { recursive: true });
@@ -7312,6 +7375,7 @@ const builders = [
   ['128', build128],
   ['129', build129],
   ['130', build130],
+  ['131', build131],
 ];
 
 const selected = new Set(process.argv.slice(2));

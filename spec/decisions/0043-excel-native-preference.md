@@ -1,6 +1,6 @@
 # ADR 0043 - Excel-native preference principle
 
-- **Status:** accepted
+- **Status:** process-normative
 - **Date:** 2026-05-18
 - **Spec target:** XTL 0.x (process)
 - **Affects:** future function / directive additions; ADR governance
@@ -9,11 +9,12 @@
   function surface as a whole
 
 > **Status note.** This ADR was first labeled `informational` because
-> it does not change runtime behavior. The review of 2026-05-18 (post-
-> commit `2d76913`) surfaced that the ADR creates **normative MUST
-> obligations on future ADR authors** ("MUST cite this ADR in their
-> Context section…") and therefore should be `accepted`, not
-> informational. ADR-0034 stays informational because it carries only
+> it does not change runtime behavior, then briefly relabeled
+> `accepted` to reflect its MUST obligations on future ADR authors.
+> After the 2026-05-18 reviewer pass, ADR template `0000-template.md`
+> gained a fifth status — `process-normative` — for exactly this
+> case: accepted and binding on future ADR authors, but not on
+> runtime impl. ADR-0034 stays informational because it carries only
 > SHOULD-level obligations; this ADR's process gate is stricter.
 
 ## Context

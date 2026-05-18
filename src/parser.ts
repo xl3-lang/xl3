@@ -12,9 +12,11 @@ import type {
   SourceSpec,
   JoinDirective,
 } from './types.js';
-import { isDataExpression, isAggregateExpression, extractColumnRefs } from './normalizer.js';
+import { isDataExpression, isAggregateExpression, extractColumnRefs, normalizeTemplate } from './normalizer.js';
 import { isDirectiveExpression, parseDirective } from './directive-parser.js';
 import { xtlError } from './error-codes.js';
+import { evalCell } from './template-eval.js';
+import { canonicalString } from './functions.js';
 
 const CONFIG_SHEET = '__config__';
 const INPUTS_SHEET = '__inputs__';
@@ -56,7 +58,10 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
   await workbook.xlsx.load(buffer);
 
   const { meta, configVars } = readConfigSheet(workbook);
-  const inputs = readInputsSheet(workbook);
+  // ADR-0050: __inputs__ default/label/description/options cells are
+  // XTL templates evaluated against a constrained context that exposes
+  // only __config__ + pure functions (no source data, no forward refs).
+  const inputs = readInputsSheet(workbook, configVars);
   const listSheets = readListsSheet(workbook);
   const sources = readSourcesSheet(workbook);
 
@@ -398,14 +403,85 @@ const VALID_INPUT_TYPES: ReadonlySet<InputType> = new Set([
 
 const NAME_RE = /^[A-Za-z0-9_]+$/;
 
+// ADR-0050: detect uses of `__inputs__` cells that depend on render-time
+// state (source data, repeat blocks, other inputs). These MUST throw
+// because the inputs sheet is read before any of that exists. The check
+// runs against the RAW {{ ... }} block content before normalization so
+// the diagnostic points at the form the author actually wrote.
+// ADR-0050 input-read-time forbidden patterns. Two error-code buckets:
+//   - `xl3/inputs/forward-reference` for data refs (sources, other
+//     inputs) that have not been read yet.
+//   - `xl3/inputs/runtime-only-fn` for functions whose semantics only
+//     make sense during render (ROW() inside a repeat block; aggregates
+//     and lookups that operate on source rows).
+const INPUT_FORBIDDEN_PATTERNS: Array<[RegExp, 'xl3/inputs/forward-reference' | 'xl3/inputs/runtime-only-fn', string]> = [
+  [/(?<!\w)\[[^\]\r\n]+\]/, 'xl3/inputs/forward-reference', 'bare [Column] references (no source row context at input-read time)'],
+  [/(?<!\w)[A-Za-z]\w*\[[^\]\r\n]+\]/, 'xl3/inputs/forward-reference', 'Source[Column] references (sources are not loaded yet)'],
+  [/__sources__\[/, 'xl3/inputs/forward-reference', '__sources__ lookups'],
+  [/__inputs__\[/, 'xl3/inputs/forward-reference', '__inputs__ forward references (input rows are independent)'],
+  [/\bROW\s*\(/, 'xl3/inputs/runtime-only-fn', 'ROW() (no repeat block at input-read time)'],
+  [/\b(?:SUM|COUNT|AVERAGE|AVG|MIN|MAX|XLOOKUP)\s*\(/, 'xl3/inputs/runtime-only-fn', 'aggregate / lookup functions over source data'],
+];
+
+function assertInputExpressionAllowed(
+  raw: string,
+  rowNum: number,
+  name: string,
+  column: string,
+): void {
+  for (const block of raw.matchAll(/\{\{\s*([\s\S]+?)\s*\}\}/g)) {
+    const inner = block[1] ?? '';
+    for (const [re, code, why] of INPUT_FORBIDDEN_PATTERNS) {
+      const hit = inner.match(re);
+      if (hit) {
+        throw xtlError(
+          code,
+          `__inputs__ row ${rowNum} (name "${name}") ${column} references "${hit[0]}" which is not available at input-read time — ${why}`,
+        );
+      }
+    }
+  }
+}
+
+function evalInputCellTemplate(
+  raw: string,
+  configVars: Record<string, string>,
+  rowNum: number,
+  name: string,
+  column: string,
+): string {
+  if (raw === '' || !raw.includes('{{')) return raw;
+  assertInputExpressionAllowed(raw, rowNum, name, column);
+  // Normalize with empty column set; __inputs__ has no source columns to
+  // resolve. Bracket forms have already been rejected above.
+  const normalized = normalizeTemplate(raw, new Set<string>());
+  try {
+    const result = evalCell(normalized, { __config__: configVars });
+    return canonicalString(result);
+  } catch (e) {
+    if (e instanceof Error) {
+      e.message = `${e.message} (at __inputs__ row ${rowNum} ${column})`;
+    }
+    throw e;
+  }
+}
+
 /**
  * Parse the optional `__inputs__` sheet (ADR-0010 / ADR-0011). The
  * first row is the header; each subsequent row declares one input.
  * Columns are identified by header text, case-insensitive.
  *
+ * Per ADR-0050, cells in the `default`, `label`, `description`, and
+ * `options` columns are XTL templates evaluated against a constrained
+ * context (only `__config__` + pure scalar functions; no source data,
+ * no forward refs to other inputs).
+ *
  * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
  */
-export function readInputsSheet(workbook: ExcelJS.Workbook): InputSpec[] {
+export function readInputsSheet(
+  workbook: ExcelJS.Workbook,
+  configVars: Record<string, string> = {},
+): InputSpec[] {
   const sheet = workbook.getWorksheet(INPUTS_SHEET);
   if (!sheet) return [];
 
@@ -457,10 +533,18 @@ export function readInputsSheet(workbook: ExcelJS.Workbook): InputSpec[] {
     }
     const type = typeRaw as InputType;
 
-    const defaultRaw = defaultCol ? String(row.getCell(defaultCol).value ?? '').trim() : '';
-    const label = labelCol ? String(row.getCell(labelCol).value ?? '').trim() : '';
-    const description = descCol ? String(row.getCell(descCol).value ?? '').trim() : '';
-    const optionsRaw = optionsCol ? String(row.getCell(optionsCol).value ?? '').trim() : '';
+    const defaultLiteral = defaultCol ? String(row.getCell(defaultCol).value ?? '').trim() : '';
+    const labelLiteral = labelCol ? String(row.getCell(labelCol).value ?? '').trim() : '';
+    const descLiteral = descCol ? String(row.getCell(descCol).value ?? '').trim() : '';
+    const optionsLiteral = optionsCol ? String(row.getCell(optionsCol).value ?? '').trim() : '';
+
+    // ADR-0050: evaluate `{{ ... }}` blocks in each column against the
+    // constrained input-read context (configVars only, no sources / no
+    // forward refs).
+    const defaultRaw = evalInputCellTemplate(defaultLiteral, configVars, r, name, 'default');
+    const label = evalInputCellTemplate(labelLiteral, configVars, r, name, 'label');
+    const description = evalInputCellTemplate(descLiteral, configVars, r, name, 'description');
+    const optionsRaw = evalInputCellTemplate(optionsLiteral, configVars, r, name, 'options');
 
     let options: string[] | undefined;
     if (type === 'select') {

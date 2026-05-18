@@ -36,13 +36,29 @@ in:
 
 ## Conformance Precedence
 
-When the spec prose, the conformance corpus, and an implementation disagree:
+The **spec prose is the contract**. The **conformance corpus is the
+executable check** of the contract. Both must agree; when they
+diverge, file a bug.
 
-1. **Spec prose** wins.
-2. **Conformance fixtures** win over implementations.
+In strict precedence order:
+
+1. **Spec prose** ([`language.md`](./language.md),
+   [`evaluation.md`](./evaluation.md), plus `accepted` /
+   `process-normative` ADRs in [`decisions/`](./decisions/)) is the
+   normative contract.
+2. **Conformance fixtures** ([`../conformance/fixtures/`](../conformance/fixtures/))
+   are the executable check. A fixture passing on an impl that
+   violates spec prose is a bug — the fixture is under-asserting.
+   A fixture failing on an impl that matches spec prose is a bug —
+   either in the impl or in the fixture's expected output.
 3. **Implementations** are last and MUST be updated to match.
 
-This precedence keeps multiple implementations aligned without making the TypeScript reference implementation the de-facto specification.
+This precedence keeps multiple implementations aligned without
+making the TypeScript reference implementation the de-facto
+specification.
+
+[`../PORTERS_GUIDE.md`](../PORTERS_GUIDE.md) carries the porter-
+facing version of this precedence; the two MUST stay in sync.
 
 ## Core 0.1 Features
 

@@ -34,6 +34,8 @@ const EXPECTED_CODES: XtlErrorCode[] = [
   'xl3/inputs/parse-date',
   'xl3/inputs/parse-number',
   'xl3/inputs/select-option',
+  'xl3/inputs/forward-reference',
+  'xl3/inputs/runtime-only-fn',
   'xl3/directive/invalid-syntax',
   'xl3/join/bad-on-clause',
   'xl3/join/undeclared-source',

@@ -1,0 +1,5 @@
+description: __inputs__ default / label / description / options cells are XTL templates (ADR-0050). `{{ __config__[key] }}` and pure scalar functions (UPPER, IF, TODAY, ...) evaluate at input-read time; the post-evaluation strings flow into the render-time __inputs__[name] lookups. Bare [Column], Source[Column], __sources__, __inputs__ forward refs, ROW(), and aggregate / lookup functions are rejected with xl3/inputs/forward-reference.
+spec_section: ADR-0050, ADR-0010, ADR-0011
+spec_version: "0.1"
+tags: [adr-0050, inputs, xtl-evaluation, config-substitution]
+verified_by: [hand]

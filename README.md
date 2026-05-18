@@ -7,9 +7,9 @@
 
 xl3 is technically capable but in its formative phase as a project: a single
 maintainer, no production reference cases yet, governance just documented.
-The audit pass closed every silent-fallthrough surface (37 ADRs, 123 fixtures,
-all green at Stage 2), so the language surface is stable enough for early
-adopters. **Early adopter feedback is the most useful contribution right
+The audit pass closed every silent-fallthrough surface (50 ADRs, 130 fixtures —
+124 Stage 1 passing + 6 Stage 2 only, all green), so the language surface is
+stable enough for early adopters. **Early adopter feedback is the most useful contribution right
 now** — see [ROADMAP.md](./ROADMAP.md) for what's blocking 1.0 and
 [GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made.
 
@@ -23,8 +23,10 @@ protection, data validation, and cell comments (ADR-0036).
 **Scope (ADR-0043).** XTL's function surface is intentionally smaller
 than Excel's. The rule: a function lives in XTL only when its value
 must be known **before** the workbook is written — for `@filter`,
-`@sort`, `@group`, source aggregates, filename / sheet patterns, or
-`__inputs__` defaulting. Anything Excel can compute at workbook-open
+`@sort`, source aggregates, filename / sheet patterns, or
+`__inputs__` defaulting. (`@group` / `@subtotal` are accepted in the
+spec per ADR-0038 but not yet wired in the 0.5.x reference impl — see
+ROADMAP gate G7.) Anything Excel can compute at workbook-open
 time (visual formatting, per-cell math, type tests) goes in a cell
 formula and xl3 preserves it verbatim. See
 [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md) for the

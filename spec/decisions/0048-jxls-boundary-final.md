@@ -1,10 +1,15 @@
 # ADR 0048 - Relationship to JXLS — final boundary and inconvenience refinement
 
-- **Status:** accepted (informational + process-level normative)
+- **Status:** process-normative
 - **Date:** 2026-05-18
 - **Spec target:** XTL 1.0 (boundary definition)
 - **Affects:** ADR-0034 (extends), ADR-0043 (refines), all future feature
   ADRs (binds the scope question)
+
+> The earlier compound `accepted (informational + process-level normative)`
+> status was replaced 2026-05-18 with the new `process-normative` status
+> added to `0000-template.md`. Semantics identical: future ADR authors
+> MUST cite this ADR; impl authors need not honor it at runtime.
 
 ## Context
 
@@ -41,7 +46,7 @@ must address the thesis cost, not just the feature ask.
 | 2 | **Directive placement** | Cell comments | Cell value `{{ @... }}` | "Template = handover artifact." Authors must SEE the directive when opening the file. Cell comments are hidden by default in Excel UI. |
 | 3 | **Host extension (escape hatch)** | Java SPI custom commands | None (TypeScript host API only) | Escape hatches are not portable. Any port that doesn't expose the same SPI shape produces non-interchangeable templates. ADR-0034 Corollary 3. |
 | 4 | **Function surface** | JEXL's entire library + Excel's full catalog | Minimal, ADR-0043-gated | Smaller spec → faster ports → faster ecosystem alignment. Surface bloat is the opposite of the "single source of truth" goal. |
-| 5 | **External data sources** | JDBC / REST / arbitrary inputs via custom commands | XLSX in, XLSX out | "Templates = files, not host environments." External I/O is the host's responsibility, not the template's. |
+| 5 | **External data sources** | JDBC / REST / arbitrary inputs via custom commands | XLSX in, XLSX out | "Templates = files, not host environments." External I/O is the host's responsibility, not the template's. **"XLSX"** here means OPC-packaged SpreadsheetML (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`). **XLSM** is accepted on input as XLSX-with-macros-stripped and a warning is emitted; macros never execute. **XLSB, XLS (legacy), XLTX, CSV** are out of scope — a re-proposal must address conformance corpus + porter cost. |
 | 6 | **Output formats** | XLSX + PDF + HTML (via Apache POI) | XLSX only | Browser-first design (xl3.io playground). PDF conversion in-browser is infeasible. Single output format also simplifies the conformance corpus. |
 | 7 | **Library-vs-spec primacy** | Java library is the de-facto spec | `spec/` + `conformance/` is the spec; impl is fourth tiebreaker | Multi-language port viability. ADR-0034 + PORTERS_GUIDE.md make this explicit, but it bears repeating: xl3 will NEVER make its JavaScript impl the contract. |
 
@@ -95,6 +100,25 @@ When proposing a new function under the inconvenience carve-out:
 A proposal that fails (1) or (2) is rejected by default. A proposal
 that passes (1) and (2) but fails (3) becomes a borderline case
 documented in ADR-0043's retroactive table (the 🟡 marker).
+
+## Grandfather rule (added 2026-05-18 per reviewer feedback)
+
+Functions that landed before ADR-0043 / ADR-0048 (marked 🟡 in
+ADR-0043's retroactive table — TEXT, HYPERLINK, YEAR, MONTH, DAY,
+EOMONTH, EDATE, DATEDIF) were **not** required to clear the gate
+in this ADR. They carry a "documented-choice" tag, NOT a
+"passed-the-gate" tag. Concretely:
+
+- They MUST NOT be cited as precedent in future re-proposals.
+- A future proposer who matches a 🟡 function's strength of
+  justification is not entitled to acceptance.
+- The post-ADR-0048 evidence bar (two real-world templates
+  authored by distinct people; at least one of the five
+  render-time-critical categories from ADR-0043) applies uniformly
+  to all post-0048 proposals.
+
+This avoids the asymmetric situation where TEXT cleared no
+evidence bar but a future SUMIF proposer is held to one.
 
 ## Consequences
 

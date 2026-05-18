@@ -61,13 +61,55 @@ const inputs = await readTemplateInputs(templateBuffer);
 Use this in a host UI to render a form before the operator has
 uploaded the data file.
 
+## Computed defaults and labels (ADR-0050)
+
+The `default`, `label`, `description`, and `options` columns are XTL
+templates evaluated at input-read time. You can compose values from
+`__config__` or call pure scalar functions:
+
+| name | type | default | label |
+|---|---|---|---|
+| `title_prefix` | `text` | `{{ __config__[region] }} 거래명세서` | `Title prefix` |
+| `report_date` | `text` | `{{ TEXT(TODAY(), "YYYY-MM-DD") }}` | `Report date` |
+| `report_label` | `text` | `{{ UPPER(__config__[region]) }}-{{ __config__[period] }}` | `Report label` |
+
+The host UI calling `readTemplateInputs()` sees the post-evaluation
+strings (e.g., `"KR 거래명세서"`, the current UTC date). The user no
+longer sees the raw `{{ ... }}` placeholder.
+
+**Available bindings at input-read time:**
+
+- `__config__[key]` — values declared earlier in the `__config__`
+  sheet.
+- Pure scalar functions: `TODAY`, `DATE`, `IF`, `IFEMPTY`, `IFS`,
+  `IFERROR`, `UPPER`, `LOWER`, `TRIM`, `TEXT`, `YEAR`, `MONTH`, `DAY`,
+  `EOMONTH`, `EDATE`, `DATEDIF`, `ROUND`, `ABS`.
+
+**Not available — these throw at input-read time:**
+
+- `[Column]` / `Source[Column]` — no source row context yet.
+  Error code: `xl3/inputs/forward-reference`.
+- `__inputs__[name]` — input rows are independent declarations, not
+  a dependency graph. Same error code.
+- `ROW()`, `SUM`, `COUNT`, `AVERAGE`, `MIN`, `MAX`, `XLOOKUP` — these
+  read render-state or source data that does not exist yet. Error
+  code: `xl3/inputs/runtime-only-fn`.
+
+> **Migration note.** Before 0.6, `{{ ... }}` in `__inputs__` cells
+> was treated as literal text. If an existing template had a closed
+> `{{ ... }}` block intended as literal characters, that string now
+> evaluates as an expression. Most authors will not be affected — the
+> prior behavior was surprising in practice.
+
 ## Notes
 
 - `select` options are pipe-separated in the `__inputs__` row (e.g.
   `Seoul|Busan|Daegu`). A supplied value not in the options raises
-  `xl3/inputs/select-option`.
+  `xl3/inputs/select-option`. The pipe split runs **after** the cell
+  template evaluates, so `options: {{ __config__[regions] }}` works
+  when `__config__[regions]` is the literal string `Seoul|Busan|Daegu`.
 - Date inputs are parsed as `YYYY-MM-DD` or `YYYY-MM-DDTHH:mm:ss`.
 - Number inputs accept JS number literals; trailing whitespace is
   allowed.
 - Spec reference: [`spec/evaluation.md`](../../spec/evaluation.md)
-  "Inputs"; ADR-0010, ADR-0011.
+  "Inputs"; ADR-0010, ADR-0011, ADR-0050.

@@ -17,6 +17,9 @@ export type XtlErrorCode =
   | 'xl3/inputs/conflict-config'
   | 'xl3/inputs/missing-header'
   | 'xl3/inputs/missing-options'
+  // ADR-0050: __inputs__ XTL evaluation
+  | 'xl3/inputs/forward-reference'
+  | 'xl3/inputs/runtime-only-fn'
   // Sources (ADR-0012)
   | 'xl3/source/undeclared'
   | 'xl3/source/sheet-missing'

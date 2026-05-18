@@ -366,6 +366,36 @@ xl3 cuts 1.0 when **all** of the following hold:
 > production user is publicly listed; and when at least one
 > external contributor has driven an ADR end-to-end.*
 
+### Definitions (mirror of ROADMAP)
+
+The terms below are the testable forms used by the public ROADMAP's
+gate table. This doc and `ROADMAP.md` MUST agree on these; if they
+drift, fix `ROADMAP.md` first (it is the public commitment) and then
+update here. The exact wording lives in `ROADMAP.md` under
+"Definitions (testable)" — these are paraphrased pointers:
+
+- **External contributor (G14):** non-maintainer (per GOVERNANCE.md)
+  who is the named Author in an ADR front-matter and authored ≥ 60%
+  of the Context / Decision sections by line count. Typo-only PRs do
+  not count.
+- **Breaking change (G23, G24):** change to (a) the public API
+  surface snapshot, (b) the error-code catalog (rename / removal /
+  repurpose), or (c) an `accepted` ADR's MUST flipping to `rejected`
+  or contradicting status. Patch releases and additive ADRs do NOT
+  reset the quarter clock.
+- **Critical bug fix (G23 RC-soak exception):** (a) silent data loss
+  in `convert()`, (b) catalog-vs-runtime error-code drift, or (c) an
+  `accepted` ADR MUST that cannot be implemented as written. The
+  maintainer cites which of (a)/(b)/(c) in the PR.
+- **Data-loss test (G24):** a dedicated `data-loss/` fixture group
+  (≥ 8 fixtures) exercising silent-stringify, numFmt drop, formula
+  rewrite, and date round-trip paths; all pass on the reference impl.
+- **Quarter clock start (G24 vs G23):** the 90-day quarter starts
+  the day the LAST G1-G22 gate ticks ✅. RC publication does NOT
+  start the clock; the clock must have started BEFORE RC. A breaking
+  change during RC soak resets BOTH the soak (G23) and the quarter
+  (G24).
+
 The 1.0 cut is **not** about feature completeness vs JXLS — xl3
 intentionally ships a smaller surface. It is about earning the
 same kind of trust JXLS earned: a spec that doesn't shift, a

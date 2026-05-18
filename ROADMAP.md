@@ -12,100 +12,160 @@ the items below, not on a calendar date.
 > — gap analysis, philosophy boundary (xl3 ≠ JXLS), per-version step
 > plan. This document is the elevator pitch; the blueprint is the
 > rationale.
+>
+> **Single source of truth for 1.0 gates is the table below.** When this
+> file and the blueprint conflict, this table wins; the blueprint is
+> updated to match.
 
 ## What 1.0 means for xl3
 
-The 1.0 target is **JXLS-class trust**: a spec that doesn't shift, a
-reference impl that doesn't surprise, and an ecosystem big enough that
-the project isn't single-maintainer-fragile. It is **not** about feature
-completeness vs JXLS — xl3 intentionally ships a smaller surface
-(ADR-0043 + ADR-0048).
+The 1.0 target is **operator-readable trust**: a spec that doesn't
+shift, a reference impl that doesn't surprise, and a surface small
+enough that an operator can review a template without reading code.
+It is **not** about feature completeness vs JXLS — xl3 intentionally
+ships a smaller surface (ADR-0043 + ADR-0048). The intended audience
+is **Korean operations teams that manage many customer-specific
+invoice formats** (거래명세서, 정산서, 발주서); the engine
+generalizes beyond this niche, but the niche is the wedge.
 
-## 1.0 readiness checklist
+## 1.0 gate table (single source of truth)
 
-A 1.0 cut requires **all** of the following:
+Each gate has an owner, the artifact that closes it, the pass-fail
+criterion, a fallback if the gate is unreachable, and the target
+milestone. Per-version step plan below references these gates by ID.
 
-### Spec maturity
+| ID | Gate | Owner | Artifact | Pass criterion | Fallback | Target |
+|----|------|-------|----------|----------------|----------|--------|
+| G1 | Conformance corpus ≥ 140 | maintainer | `conformance/fixtures/` | `ls conformance/fixtures/ \| wc -l` ≥ 140 | — | 0.6/0.7 |
+| G2 | Stage 2 OOXML canonicalization spec'd | maintainer | ADR-0006 + canonicalizer in src/ | covered by fixtures 024-027, 093 + ADR-0006 amendment | — | DONE |
+| G3 | Error code catalog frozen | maintainer | `src/__tests__/error-codes.test.ts` snapshot | catalog snapshot unchanged for 30 days | — | 0.9-rc |
+| G4 | JXLS boundary published | maintainer | ADR-0048 | file exists, references PORTERS_GUIDE | — | DONE |
+| G5 | Deferred-impl ADRs landed | maintainer | ADR-0038 impl + ADR-0040 PE impl | `INFORMATIONAL_ADRS` no longer carries 0038/0040 | — | 0.6 / 0.6.1 |
+| G6 | Public API surface frozen | maintainer | `src/__tests__/api-surface.test.ts` snapshot | snapshot unchanged for 30 days | — | 0.9-rc |
+| G7 | JSDoc examples on @stable exports | maintainer | TypeDoc output | every `@stable` symbol has `@example` block | — | 0.7-0.8 |
+| G8 | Performance characterized | maintainer | `scripts/BENCH.md` | 1k/10k/100k row × 5/10/20 col matrix + memory-ceiling + parse/eval/write split published | — | 0.7 |
+| G9 | Perf regression fixtures | maintainer | conformance corpus | ≥ 2 large fixtures with ratio-based assertion | — | 0.7 |
+| G10 | Cross-browser smoke | maintainer | `ci.yml` | Safari + Firefox bundle-load + 1 convert() per run | — | 0.7 |
+| G11 | Stage 2 in CI | maintainer | `ci.yml` | `npm run conformance:stage2` runs on every PR | — | 0.7 |
+| G12 | Undecided behavior pinned (pivot/sparkline/ListObject/page break) | maintainer | conformance fixtures + ADR per item | each: fixture pinning current behavior OR ADR explicitly deferring to 1.x | defer to 1.1 with ADR | 0.6 / 0.7 |
+| G13 | Second-language impl validation | external (xl3-py) | `conformance/reports/*.json` | xl3-py passes ≥ 80% Stage 1 OR ≥ 80% Stage 2, OR documented 50% skeleton in another language (Rust/Go/Java) within 12 months of all other gates closing | accept single-impl 1.0 via public ADR amending GOVERNANCE | 0.7-0.8 |
+| G14 | External-contributor ADR | external | `spec/decisions/NNNN-*.md` | ≥ 1 ADR with non-maintainer as Author (≥ 60% of Context/Decision sections by line count) | 18-month time-box, then: ≥ 2 external-authored cookbook recipes OR ≥ 5 external-authored conformance fixtures | 0.8 |
+| G15 | Production reference case | external (with maintainer help) | `IMPLEMENTATIONS.md` "Production users" row | ≥ 1 named user, satisfied by EITHER (a) external company with permission to list, OR (b) the maintainer's own employer running xl3 in scheduled production with a public case study | — | 0.8 |
+| G16 | Maintainer set widening | maintainer | `GOVERNANCE.md` | ≥ 2 people with accept/reject rights for ADRs and impl PRs | explicit accept of single-maintainer 1.0 governance shape via amendment to GOVERNANCE | 0.8 |
+| G17 | Korean cookbook i18n complete | maintainer | `website/i18n/ko/.../guides/` | all cookbook recipes have Korean translation | — | 0.6 |
+| G18 | Production use case in README | maintainer | `README.md` | replaces "alpha" status with concrete production reference (tied to G15) | — | 1.0 (with G15) |
+| G19 | Migration guide 0.x → 1.0 | maintainer | `docs/migration-0.x-to-1.0.md` | documents every behavior change or confirms additive-only | downgrade to CHANGELOG note if confirmed additive-only | 0.8 |
+| G20 | SECURITY.md + threat model | maintainer | `SECURITY.md` + spec amendment | docs zip-bomb / oversized workbook / formula-execution stance + limits API | — | 0.7-0.8 |
+| G21 | Hard limits documented (no streaming until 1.1) | maintainer | spec/evaluation.md | row / memory hard limit values + AbortSignal API documented | — | 0.7-0.8 |
+| G22 | API surface — internal model types separated | maintainer | `src/index.ts` exports + STABILITY.md | only `convert`/`preview`/`analyze` + stable interfaces marked `@stable`; model/parser types marked `@experimental` or moved to `xl3/internal` | — | 0.6 (before @group impl) |
+| G23 | RC soak | maintainer | git tags | RC published; ≥ 21-day soak (extended from 7 day per review feedback); 0 critical issues | — | 0.9-rc |
+| G24 | "Stable quarter" post-checklist | maintainer | release calendar | 90-day window after the FINAL gate above ticks ✅; no breaking spec/API/error-code change during the window | breaking change → restart clock | between final-gate-tick and 1.0 cut |
 
-- [x] **Spec audit pass complete.** Every silent-fallthrough surface
-      either errors with a stable code or is normatively pinned by an ADR.
-      (Closed 2026-05-12.)
-- [x] **Conformance corpus ≥ 100 fixtures.** Currently 130.
-- [x] **Stage 2 OOXML canonicalization spec'd.** ADR-0006.
-- [x] **Error code catalog frozen as stable contract.** ADR-0015,
-      snapshot test pinning.
-- [x] **JXLS boundary published.** ADR-0048 codifies the
-      seven-axis deliberate divergence + the inconvenience refinement
-      to ADR-0043.
-- [ ] **All deferred-impl ADRs landed.** `INFORMATIONAL_ADRS` no
-      longer carries ADR-0038 (`@group`/`@subtotal`) or the
-      impl-pending half of ADR-0040 (CF/DV `sqref` PE).
-- [ ] **Second independent implementation passes ≥ 80% Stage 1
-      fixtures.** Forces external validation of every normative claim.
-      Current: xl3-py (draft) — see [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md).
-- [ ] **At least one ADR has been driven by an external contributor.**
-      Tests that the governance process described in [GOVERNANCE.md](./GOVERNANCE.md)
-      works in practice, not just on paper.
+### Definitions (testable)
 
-### Impl maturity
+- **External contributor (G14):** not in `GOVERNANCE.md` maintainer set
+  AND not in `Co-authored-by` history of merged ADR commits at PR open
+  time. Drive-by typo edits do not count; named Author in ADR
+  front-matter; authored ≥ 60% of Context/Decision sections by line
+  count.
+- **Breaking change (G24, G23):** any change to (a) public API
+  surface snapshot, (b) error code catalog (rename/removal/repurpose),
+  (c) ADR `accepted` → `rejected` or contradicting status flip.
+  Patch releases and additive ADRs do NOT reset the quarter clock.
+- **Critical bug fix (G23 RC exception):** (a) silent data loss in
+  `convert()`, (b) error code catalog inconsistency between docs and
+  runtime, OR (c) an `accepted` ADR's MUST that cannot be implemented
+  as written. Maintainer cites which of (a)/(b)/(c) in the PR.
+- **Data-loss test (G24 testable form):** corpus has a dedicated
+  `data-loss/` fixture group (≥ 8 fixtures) exercising silent-
+  stringify, numFmt drop, formula rewrite, and date round-trip paths;
+  all pass on the reference impl.
+- **Quarter clock start (G24 vs G23):** the 90-day quarter starts on
+  the day the LAST gate ticks ✅. RC publication does NOT start the
+  clock; the clock must have started BEFORE RC publication. If a
+  breaking change happens during RC soak, both the soak (G23) and the
+  quarter (G24) reset.
 
-- [x] **Public API surface snapshot-pinned.** `src/__tests__/api-surface.test.ts`.
-- [x] **CI matrix covers Node 20 + 22, three time zones.** UTC,
-      America/New_York, Asia/Seoul.
-- [x] **Bundle smoke test in CI.** IIFE bundle exercised on every PR.
-- [ ] **No unresolved `@stable` symbols missing JSDoc examples.** Each
-      public function has an `@example` block.
-- [ ] **Performance characterized.** A documented benchmark for typical
-      report sizes (1k / 10k / 100k rows × 5-20 columns). Currently
-      `scripts/bench.mjs` exists but results aren't published.
-- [ ] **Cross-browser smoke test.** Safari + Firefox added to the
-      bundle smoke test (currently Chrome only).
-- [ ] **Perf regression fixtures.** Conformance corpus carries 1-2
-      large-row fixtures to catch perf regressions.
+## Per-version step plan
 
-### Undecided behavior pinned
+Gate-based, not date-based. Calendar estimates have been removed —
+each milestone closes when its listed gates close.
 
-These behaviors are currently implementation-defined; 1.0 requires each
-to either be normatively pinned (with a fixture) or explicitly deferred
-to 1.x via ADR:
+### 0.6.0 — Deferred-impl, narrow scope
 
-- [ ] Pivot table preservation
-- [ ] Sparkline preservation
-- [ ] Excel `ListObject` (structured tables)
-- [ ] Page break preservation
+Theme: close the highest-impact deferred-impl gate cleanly.
 
-### Documentation
+Gates closed: **G5** (`@group`/`@subtotal` impl only — the rest of
+ADR-0040 PE moves to 0.6.1), **G17** (Korean cookbook 16/17 missing
+translations), **G22** (API surface cleanup before @group exposes
+new internal types).
 
-- [x] **Cookbook covers the spec surface.** 17 recipes covering every
-      normative directive and function.
-- [x] **API reference auto-generated.** TypeDoc, 43 pages.
-- [x] **Spec reading order documented.** PORTERS_GUIDE.md "Recommended
-      development order."
-- [x] **Korean cookbook i18n.** All 16 recipes + landing + try +
-      404 translated; 17 (template-authoring) is the most recent and
-      may follow in 0.6.
-- [ ] **Production use case section in README.** Today the README says
-      "alpha"; 1.0 swaps in concrete reference cases.
-- [ ] **Migration guide 0.x → 1.0.** What's stable, what's changing,
-      what's deprecated.
+The previous "single 0.6.0 with everything" plan was scoped too
+ambitiously per the engineering-feasibility review. ADR-0038 impl
+alone is a full pipeline insertion (new directive, group-boundary
+state machine, transform-pass partition, renderer rewrite,
+group-scoped aggregate eval). Splitting 0.6.0 keeps the milestone
+shippable.
 
-### Governance
+### 0.6.1 — Rest of deferred-impl
 
-- [x] **ADR process documented.** [GOVERNANCE.md](./GOVERNANCE.md).
-- [x] **Backward-compatibility commitments named.** Spec versioning,
-      error code stability, API snapshot.
-- [ ] **More than one accepter for ADRs and impl PRs**, OR the
-      single-maintainer status is explicitly accepted in `GOVERNANCE.md`
-      as the 1.0 governance shape.
+Gates closed: **G5** completion (ADR-0040 PE: CF/DV `sqref`
+extension), pivot/page-break behavior fixtures toward **G12**.
 
-### Adoption signals
+### 0.7.0 — Performance + external validation begins
 
-- [ ] **At least one production reference case.** A team using xl3 for
-      real reporting work, publicly acknowledged in
-      [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) or via a case study.
-- [ ] **At least one external contributor with merged work.** A
-      contributor list, even a small one, demonstrates the project is
-      not a single-person effort.
+Gates closed: **G8** (perf benchmarks), **G9** (perf regression
+fixtures), **G10** (cross-browser), **G11** (Stage 2 in CI),
+**G20** (SECURITY.md draft), **G21** (hard limits).
+
+Progress toward: **G13** (xl3-py).
+
+Relabel: `alpha` → `beta` after G8 publishes and xl3-py reaches
+≥ 50% Stage 1.
+
+### 0.8.0 — Sociological gates
+
+Gates closed: **G14** (external ADR), **G15** (production case),
+**G16** (maintainer widening or explicit single-maintainer
+acceptance), **G19** (migration guide), **G20** completion.
+
+This milestone is the long one. The plan is to ship 0.8.x patches
+during the recruitment period rather than wait silently.
+
+### 0.9.0-rc.x — Pre-1.0 freeze
+
+Gates closed: **G3**, **G6**, **G7**, **G23** (≥ 21-day RC soak).
+
+After G23 starts, the quarter clock for G24 begins (it must have
+ticked while G3/G6/G7/etc. were closing — see definitions above).
+
+### 1.0.0 — Final cut
+
+Gate closed: **G24** (90-day quarter complete after last gate
+ticked).
+
+## Recruitment and outreach
+
+Sociological gates (G13/G14/G15/G16) require people, not code. The
+project has two distinct recruitment surfaces:
+
+### Korean operations audience (G15, future cookbook contributors)
+
+Channels: Korean developer communities (Naver Café, Kakao 오픈톡,
+LinkedIn KR), internal company / vendor template-author surveys.
+Each minor release publishes a Korean-language post tied to the
+release moment (0.6 = `@group`/`@subtotal` demo for invoice
+subtotal patterns; 0.7 = perf numbers; 0.8 = case study).
+
+### English OSS audience (G13, G14)
+
+Channels: HN, lobste.rs, r/excel, conference CFPs (JSConf, EuroPython
+for xl3-py). Each major moment ships with one specific external
+artifact:
+
+- 0.7.0 release: "Show HN: xl3 0.7 — 100k-row Excel template engine"
+- 0.8.0 release: case study + xl3-py conformance dashboard
+- 1.0.0 release: spec + multi-impl validation
 
 ## Non-goals for 1.0
 
@@ -126,7 +186,8 @@ These are intentionally deferred. Each has an ADR explaining why:
   tests (except `ISBLANK` per ADR-0047), NOW / WEEKDAY etc., conditional
   aggregates, TEXT() format-token expansion. See
   [ADR-0045](./spec/decisions/0045-function-batch-rejected.md).
-- **Streaming output / SXSSF analog.** Deferred to 1.1+.
+- **Streaming output / SXSSF analog.** Deferred to 1.1+. **At 1.0,
+  hard memory/row limits are documented (G21) instead.**
 - **Template compile caching API.** Deferred to 1.1+.
 - **PDF / HTML output.** Out of scope; xl3 is xlsx-in, xlsx-out.
 - **Cross-writer Stage 2 fixtures beyond `093`** —
@@ -134,99 +195,26 @@ These are intentionally deferred. Each has an ADR explaining why:
 
 These remain candidates for **XTL 1.1, 1.2, 1.x** based on demand.
 
-## Per-version step plan
-
-The path to 1.0 is broken into four pre-release milestones plus the RC
-cycle. Each is gate-based, not date-based.
-
-### 0.6.0 — Deferred-impl cleanup (~6–8 weeks)
-
-**Theme:** close the gap between accepted spec and implemented behavior.
-
-- F1 `@group` + `@subtotal` parser + renderer + conformance fixture
-- F2 CF/DV `sqref` auto-extension impl (ADR-0040 PE part)
-- F4/F7 pivot table + page break behavior pinned by fixture
-- Korean translation of cookbook 16 + 17
-- One Korean B2B invoice production-shaped example using `@group`/`@subtotal`
-
-### 0.7.0 — Performance + xl3-py 80% (~3 months)
-
-**Theme:** earn the ROADMAP "performance characterized" + "second impl"
-checkpoints.
-
-- Perf benchmarks published in `scripts/BENCH.md` (1k / 10k / 100k rows)
-- Perf regression fixtures added to corpus
-- xl3-py reaches ≥ 80% Stage 1 (port maintainer's responsibility)
-- Memory profile published
-- Safari + Firefox smoke test in CI
-- Examples gallery expanded to 6+ production-shaped templates
-
-### 0.8.0 — External validation (~3 months, sociological)
-
-**Theme:** the work that requires people, not code.
-
-- At least one ADR authored by a non-maintainer
-- One production reference case listed in `IMPLEMENTATIONS.md`
-- Migration guide 0.x → 1.0 drafted
-- Maintainer set widening (target: one additional reviewer)
-- Production case study writeup
-
-### 0.9.0-rc.x — Pre-1.0 freeze (~1 month)
-
-**Theme:** lock everything down.
-
-- Spec freeze (new ADRs deferred to 1.1 unless critical bug fix)
-- Public API surface frozen (snapshot test is the gate)
-- Error code catalog frozen
-- RC published with `--tag rc`
-- 7-day soak with no critical issues
-
-### 1.0.0 — Final cut
-
-All checklist items above ✅, RC clean, 0.x has had ≥ 1 quarter of
-stable behavior since the checklist became complete.
-
-## Path to 1.0 — what to expect
-
-The remaining checkboxes are gated mainly on **external validation**
-rather than internal work. The single-maintainer project has done what
-it can do alone (audit pass, conformance, docs). The next phase is
-sociological:
-
-1. **xl3-py reaches 80%+ Stage 1.** Forces every normative claim through
-   a second implementation. Spec gaps surface as fixture failures.
-2. **First production user.** Real usage finds the patterns the synthetic
-   fixtures missed.
-3. **First external ADR.** A contributor proposes a normative change,
-   the governance process runs end to end.
-4. **Maintainer set widens.** At least one additional reviewer (or
-   explicit accept of single-maintainer 1.0).
-
-When (1)–(4) land, the remaining checkboxes mostly close themselves
-(reference case from the production user, perf published as production
-characterization, etc.). 1.0 is cut once the checklist above is
-complete and the project has run at 0.x for at least one quarter
-post-checklist-completion.
-
 ## How to help close items
 
 | Item | How to help |
 |---|---|
-| Second-language port at 80%+ | Contribute to [xl3-py](https://github.com/jinyoung4478/xl3-py), or start a new port (Rust, Java, Go). See [PORTERS_GUIDE.md](./PORTERS_GUIDE.md). |
-| First external ADR | Pick a deferred item, draft an ADR in `spec/decisions/`. See [GOVERNANCE.md](./GOVERNANCE.md) "How changes enter the project." |
-| Production reference case | Use xl3 internally, share what worked / didn't. Drop a row in [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) if appropriate. |
-| Korean cookbook 16+17 i18n | Translate the two newest recipes (the rest are done). |
-| Benchmarks published | Run `npm run bench` on representative templates, share results. |
-| Cross-browser smoke | Add Safari + Firefox to the bundle smoke test. |
+| G13 second-impl ≥ 80% | Contribute to [xl3-py](https://github.com/jinyoung4478/xl3-py), or start a new port (Rust, Java, Go). See [PORTERS_GUIDE.md](./PORTERS_GUIDE.md). |
+| G14 external ADR | Pick a deferred item (pivot table preservation, page-break, ADR-0045 carved-out function), draft an ADR in `spec/decisions/`. See [GOVERNANCE.md](./GOVERNANCE.md) "How changes enter the project." A few "starter ADR stubs" are available as `good-first-ADR` issues on GitHub. |
+| G15 production case | Use xl3 internally, share what worked / didn't. Drop a row in [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) if appropriate. The maintainer's own employer (Snack24h) qualifies if it ships a public case study. |
+| G17 Korean cookbook 16+17 i18n | Translate the two newest recipes (the rest are done). |
+| G8 benchmarks | Run `npm run bench` on representative templates, share results. |
+| G10 cross-browser | Add Safari + Firefox to the bundle smoke test. |
 | Function re-proposal | If you need a function rejected per ADR-0045, file the [`Function re-proposal`](https://github.com/jinyoung4478/xl3/issues/new?template=function-reproposal.md) issue template. |
 
 ## How this roadmap evolves
 
-This document is the public elevator pitch. The deeper
+This document is the public elevator pitch + the gate table is the
+single source of truth. The deeper
 [`docs/internal/blueprint-to-1.0.md`](./docs/internal/blueprint-to-1.0.md)
 carries the gap analysis, philosophy boundary, and per-version
-rationale. As items close, both documents are updated. As new gaps
-surface, both add them.
+rationale. As gates tick, both documents update. As new gaps surface,
+both add them.
 
-Cuts and additions to the 1.0 checklist are discussed via the same
+Cuts and additions to the 1.0 gate table are discussed via the same
 ADR/issue process as everything else.

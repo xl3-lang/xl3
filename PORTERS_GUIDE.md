@@ -11,23 +11,40 @@ there. This document complements them; it does not replace them.
 
 ## Where the contract lives
 
+The spec prose is the contract. The conformance corpus is the
+executable check of the contract. Both must agree; when they
+diverge, file a bug.
+
 In strict precedence order:
 
-1. **The conformance corpus** ([`conformance/fixtures/`](./conformance/fixtures/))
-   is the executable contract. If your impl produces the same output for
-   every fixture under Stage 1, you are conformant for everything those
-   fixtures cover. Spec prose is non-binding when it disagrees with a
-   passing fixture.
-2. **The spec prose** ([`spec/language.md`](./spec/language.md),
-   [`spec/evaluation.md`](./spec/evaluation.md)) defines the language.
-   Where prose is silent or ambiguous, the corpus disambiguates.
-3. **The ADRs** ([`spec/decisions/`](./spec/decisions/)) record why the
-   prose is what it is. Read them when you hit a "but why is it like
-   this?" — the rationale is usually there.
+1. **The spec prose** ([`spec/language.md`](./spec/language.md),
+   [`spec/evaluation.md`](./spec/evaluation.md)) defines the
+   language. When prose is silent or ambiguous, this is a spec
+   bug — file an issue. The corpus should not be used to
+   disambiguate ambiguous prose; the prose itself should be
+   amended.
+2. **The ADRs** ([`spec/decisions/`](./spec/decisions/)) record
+   why the prose is what it is. Read them when you hit a "but why
+   is it like this?" — the rationale is usually there. ADRs are
+   normatively part of the spec when their `Status:` is `accepted`
+   or `process-normative`.
+3. **The conformance corpus** ([`conformance/fixtures/`](./conformance/fixtures/))
+   is the executable check. A fixture failing on a port that
+   otherwise matches the spec prose is a bug — either in the port
+   or in the fixture. A fixture passing on a port that violates
+   spec prose is also a bug — the fixture is under-asserting.
+4. **The reference implementation** is a fourth-place tiebreaker
+   and NOT a specification. Mimicking its internals will copy
+   bugs and miss simplifications.
 
-The TypeScript reference impl is a fourth-place tiebreaker, NOT a
-specification. Mimicking its internals will make you copy bugs and
-miss simplifications.
+> **Note on this precedence vs the older "fixtures-first" reading.**
+> Earlier versions of this guide put the corpus first, on the
+> theory that "what runs is what's true." The 2026-05-18 reviewer
+> pass surfaced that this conflicts with `spec/README.md`'s
+> "Conformance Precedence" section (spec prose wins). The version
+> above is the harmonized form: **spec is the contract; corpus is
+> the test that the contract is being honored**. Disagreement
+> between them is a bug, not a resolved ordering.
 
 ## What you MUST match
 
