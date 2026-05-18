@@ -1,14 +1,25 @@
 # JXLS absorption plan
 
+> **STATUS: ARCHIVED 2026-05-18.** This working doc captured the
+> JXLS-comparison backlog as it stood on 2026-05-17. The categorized
+> items are now either landed (ADRs 0035–0042, 0044, 0046, 0047),
+> rejected (ADR-0042 cell-mutation, ADR-0045 batch, ADR-0037 dynamic
+> image insertion), or refined into governance gates (ADR-0043,
+> ADR-0048). Future "where does xl3 stop matching JXLS?" questions
+> should cite **ADR-0048** (the final boundary ADR) and **ADR-0043**
+> (the Excel-native preference gate), not this doc.
+>
+> Kept in-tree for traceability — anything in the tables below is
+> superseded by the cited ADR. Do NOT use this doc as a working
+> backlog; the live equivalent is `ROADMAP.md` (gate table G1-G24).
+
 > **Operating principle (ADR-0034):**
 > Borrow JXLS's experience, not its syntax. Prior-art engines'
 > *decisions* are an asset; their *decision form* (cell-comment
 > directives, library-as-spec, JEXL, escape hatches) is an
 > anti-pattern relative to XTL's thesis.
 
-This is a working doc, not user-facing spec. Captures the
-categorized backlog from the JXLS-strategy conversation
-(2026-05-17).
+Working doc — content below is historical (2026-05-17 snapshot).
 
 ## Category A — Absorb (edge cases worth importing as ADRs)
 

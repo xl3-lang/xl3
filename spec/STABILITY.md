@@ -51,7 +51,9 @@ removing or renaming any of them is a 2.0-only change.
 
 - `readConfigSheet(workbook) → ConfigResult`
 - `writeConfigSheet(workbook, meta) → void`
-- `readInputsSheet(workbook) → InputSpec[]`
+- `readInputsSheet(workbook, configVars?) → InputSpec[]` (the
+  optional `configVars` argument was added in 0.6.0 per ADR-0050;
+  one-argument calls remain valid)
 - `batchMatch(...)` — file-pattern matching helper
 - `toTemplateModel(parsed) → TemplateModel`
 

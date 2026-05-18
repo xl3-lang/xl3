@@ -6,6 +6,134 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+Pre-0.6.0 batch. Spec-side work (13 new ADRs from 0038 through 0050)
+plus the runtime support, governance, and docs that 1.0 needs to
+land cleanly. No 1.0 freeze yet — this batch is the audit pass that
+makes the function surface, error catalog, and decision pipeline
+review-ready. Reference impl is unchanged for correct templates
+except where called out under **Breaking**.
+
+### Added
+
+- **ADR-0038** — `@group` / `@subtotal` directive accepted in spec
+  (impl deferred to 0.6.0; tracked as gate G5 in ROADMAP).
+- **ADR-0039** — `HYPERLINK(url, label)` function (renderer unwraps
+  to ExcelJS `{ text, hyperlink }`; canonical stringification yields
+  the visible label).
+- **ADR-0040** — Preservation matrix amendment: CF / DV `sqref`
+  range extension (impl-pending, gate G5) and **row outline-level**
+  (now shipped in `spliceRowsPreservingMerges`, this release).
+- **ADR-0041** — Multi-line cell text contract (`\n` preserved
+  verbatim; wrap behavior author-controlled).
+- **ADR-0042** — Rejected: runtime cell mutation. Rejection IS the
+  contract; recorded for traceability.
+- **ADR-0043** — Excel-native preference principle (process-
+  normative). New gate on function additions: a function lives in
+  XTL only when evaluation must happen before rendering.
+- **ADR-0044** — Function batch accepted: `UPPER`, `LOWER`, `TRIM`,
+  `IFERROR`, `IFS`, `DATE(y, m, d)`.
+- **ADR-0045** — Function batch rejected: `SQRT`, `POWER`, `MOD`,
+  `INT`, `ISNUMBER`, `ISTEXT`, `ISERROR`, `NOW`, `WEEKDAY`,
+  `WEEKNUM`, `NETWORKDAYS`, `SUMIF`, `COUNTIF`, `AVERAGEIF`, and
+  proposed TEXT() format-token expansions.
+- **ADR-0046** — Cell formula preservation contract (rewritten in
+  OOXML element terms: `<f>` and `<v>`). Cross-impl mapping section
+  shows how ExcelJS- and openpyxl-shaped values translate to the
+  same normative form.
+- **ADR-0047** — `ISBLANK(value)` as `IFEMPTY` alias (inconvenience
+  carve-out: canonical Excel entry point).
+- **ADR-0048** — Final JXLS-boundary ADR (process-normative). Seven-
+  axis divergence table + the *inconvenience carve-out* refining
+  ADR-0043's gate + grandfather rule for pre-0048 functions.
+- **ADR-0049** — Template-display vs render-output asymmetry
+  (informational): templates are review artifacts, output is the
+  audit artifact.
+- **ADR-0050** — `__inputs__` `default` / `label` / `description` /
+  `options` cells accept XTL templates. Evaluated at input-read time
+  against a constrained context (`__config__` + pure scalar
+  functions). Two new error codes (append-only per ADR-0015):
+  `xl3/inputs/forward-reference`, `xl3/inputs/runtime-only-fn`.
+- **`process-normative`** ADR status added to `0000-template.md` for
+  ADRs that bind the ADR pipeline (not runtime impl).
+- **`spec/README.md` + `PORTERS_GUIDE.md`** precedence sections
+  harmonized: spec prose > conformance fixtures > implementations.
+- **`ROADMAP.md`** single-source-of-truth gate table (G1-G24) with
+  owner / artifact / criterion / fallback / target. Per-version
+  step plan (0.6.0 → 1.0.0) is gate-based, not date-based.
+- **Testable definitions** in ROADMAP: "external contributor",
+  "breaking change", "critical bug fix", "data-loss test", "quarter
+  clock start". Mirrored in `docs/internal/blueprint-to-1.0.md`.
+- **`GOVERNANCE.md`** drafted (single-maintainer phase explicitly
+  scoped; ADR pipeline + status-flip rules).
+- **`docs/llm-template-authoring.md`** Footer escape hatch section:
+  when to drop down to native Excel formulas in footer cells, the
+  SUMPRODUCT pattern for "sum of A × B", and the self-column-SUM
+  circular-reference pitfall.
+- **Cookbook 16** — "XTL function vs Excel formula" recipe with
+  ✅ / ⚠️ / ❌ markers per case.
+- **Cookbook 17** — "Template-authoring display" recipe (matches
+  ADR-0049).
+- **Cookbook 06** — "Computed defaults and labels" section
+  documenting ADR-0050 input-read-time evaluation.
+- **Korean i18n** — Docusaurus `/ko/` routing + 15 cookbook recipes
+  translated. README intro refreshed (en + ko) for the 0.5.x
+  position.
+- **Conformance fixtures 124-131** — merged source headers,
+  hyperlink, date arithmetic, multiline cell text, function batch
+  0044, cell-formula preservation, ISBLANK, and `__inputs__` XTL
+  evaluation.
+
+### Fixed
+
+- **`spliceRowsPreservingMerges`** now preserves `outlineLevel` on
+  rows shifted by `@repeat` expansion. Previously only
+  `cloneWorksheet` carried outline level, so non-grouped templates
+  silently dropped it (visible in Stage 2 OOXML diff). Matches
+  ADR-0040 preservation matrix entry P.
+- **IFS normalizer** recurses into function-call conditions; the
+  documented `IFS(c1, v1, ..., TRUE, default)` idiom previously
+  worked only by accident when `TRUE` was a non-empty truthy string.
+- **TRIM** honors ADR-0007's zero-width carve-out (`U+200B`,
+  `U+FEFF`) — Excel-native `.trim()` would silently strip them.
+- **Bare TRUE/FALSE literals** recognized case-insensitively
+  (matches Excel semantics; documents prior accidental success).
+- **Conformance runner** handles hyperlink and formula objects in
+  `comparable()` cell stringification (previously stringified to
+  `[object Object]`).
+- **Site:** logo aspect ratio preserved (square-padded favicon);
+  external-link arrows hidden on navbar GitHub/npm items; language
+  icon next to locale dropdown removed; unused `RESULT_PREVIEW`
+  workbook constant removed; result card readability improved.
+
+### Breaking (0.6 only)
+
+> Each item below is an *intentional* behavior change relative to
+> 0.5.x. None affect correct templates that did not rely on the
+> prior surprising behavior.
+
+- **ADR-0050: `__inputs__` cells with closed `{{ ... }}` blocks now
+  evaluate as expressions.** If a template was authored with the
+  curly braces intended as literal text in the `default`, `label`,
+  `description`, or `options` columns, the cell now throws or
+  evaluates differently. Migration: most authors will not be
+  affected — the prior literal-passthrough behavior left the host
+  UI showing `{{ TODAY() }}` verbatim, which was uniformly reported
+  as a bug. If you have a genuine literal need, split the curly
+  braces across two cells or post-process in the host.
+- **Status `accepted (informational + process-level normative)`
+  retired in favor of the new `process-normative` status.** Any
+  external port referencing the old phrasing should update.
+
+### Changed
+
+- **`readInputsSheet(workbook, configVars?)`** — optional second
+  parameter for ADR-0050 evaluation. Calling with one argument
+  keeps existing behavior for templates that don't use `{{ ... }}`
+  in input cells. Frozen at 1.0.
+- **`INFORMATIONAL_ADRS`** exclusion list in spec-coverage test
+  trimmed where fixtures landed; ADR-0040 comment updated to
+  reflect the outline-level fix.
+
 ## [0.5.1] - 2026-05-17
 
 Patch release closing the 0.5.0 reviewer punch-list (M1/M2/M3
