@@ -1,6 +1,7 @@
 # ADR 0040 - Preservation matrix amendment: CF / DV range extension + outline level
 
-- **Status:** accepted
+- **Status:** accepted (outline-level impl shipped 0.6.0; CF/DV
+  `sqref` range extension impl pending 0.6.1)
 - **Date:** 2026-05-18
 - **Spec target:** XTL 0.1
 - **Affects:** ADR-0036 (template feature preservation matrix),

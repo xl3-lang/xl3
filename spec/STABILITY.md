@@ -109,9 +109,26 @@ contract. Breaking changes require an XTL 2.0 cut.
 - ADR-0015 — structured error reporting (`xl3/...` codes + English
   conformance messages)
 - ADR-0016 — ordering and sort stability
+- ADR-0033 — merged-cell source headers
+- ADR-0035 — data-row merge-cell broadcast
+- ADR-0036 — template feature preservation matrix
+- ADR-0038 — `@group` + `@subtotal` directives (interleaved
+  subtotal emission)
+- ADR-0039 — `HYPERLINK` cell output
+- ADR-0040 — preservation matrix amendment (outline level shipped;
+  CF/DV range PE pending 0.6.1)
+- ADR-0041 — multi-line cell text contract
+- ADR-0044 — function batch (UPPER, LOWER, TRIM, IFERROR, IFS, DATE)
+- ADR-0046 — cell formula preservation (OOXML element contract)
+- ADR-0047 — `ISBLANK` as `IFEMPTY` alias
+- ADR-0050 — `__inputs__` `default`/`label`/`description`/`options`
+  as XTL templates
 
-ADR-0004 is informational (reference-impl coupling audit) and not
-part of the spec contract.
+ADR-0043 and ADR-0048 are **process-normative** — they bind future
+ADR authors but not the runtime contract. ADR-0034 and ADR-0049 are
+informational. ADR-0004 is informational (reference-impl coupling
+audit). ADR-0037, ADR-0042, ADR-0045 are rejected (rejection IS the
+contract).
 
 ### What 1.0 does NOT include
 

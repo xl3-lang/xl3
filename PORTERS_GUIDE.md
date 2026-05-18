@@ -172,6 +172,47 @@ place. The contract is the absence in output, not the mechanism.
   tiebreakers (Excel/SQL convention).
 - File groups and sheet groups emit in **first-seen** order.
 
+### Group + subtotal (ADR-0038)
+
+- `@group [Key1], [Key2], …` partitions the post-filter / post-sort
+  row set into N-level nested groups. `@group` itself does NOT
+  reorder; group order is encounter order after `@sort`.
+- A row whose only template cells are `{{ @subtotal SUM([Col]) }}`-
+  shaped expressions is a **subtotal row** — it emits once per
+  group boundary at the bound nesting level.
+- Topmost `@subtotal` row in source order binds to the **innermost**
+  group key (level 1); subsequent rows bind to next-outer keys.
+- Supported aggregates: `SUM`, `COUNT`, `AVERAGE`, `MIN`, `MAX`.
+  Composite expressions (e.g., `SUM([A]) - SUM([B])`) are out of
+  scope in 1.0 — raise `xl3/subtotal/bad-aggregate`.
+- Subtotal aggregates scope to the current group's row set, NOT
+  the full block. Ports MUST make this distinction visible —
+  setting `Rows` (or the port's equivalent) to the group subset
+  before evaluating the aggregate is the reference approach.
+- Empty groups (all data rows empty per ADR-0007) are skipped.
+- `@group` is incompatible with `@repeat right` — raise
+  `xl3/directive/invalid-syntax`.
+
+### Runtime input templates (ADR-0050)
+
+`__inputs__` cells in the `default`, `label`, `description`, and
+`options` columns are XTL templates evaluated **before** any source
+row is loaded. The evaluation context is constrained:
+
+- Available: `__config__[key]` + pure scalar functions (`TODAY`,
+  `DATE`, `IF`, `IFEMPTY`, `IFS`, `IFERROR`, `UPPER`, `LOWER`,
+  `TRIM`, `TEXT`, `YEAR`, `MONTH`, `DAY`, `EOMONTH`, `EDATE`,
+  `DATEDIF`, `ROUND`, `ABS`).
+- Forbidden: `[Column]` / `Source[Column]` (no row context) →
+  `xl3/inputs/forward-reference`. `__sources__[…]`,
+  `__inputs__[name]` forward refs → same code. `ROW()`, `SUM`,
+  `COUNT`, `AVERAGE`, `MIN`, `MAX`, `XLOOKUP` → `xl3/inputs/runtime-only-fn`.
+
+The post-evaluation canonical-string form is what the host UI sees
+via `readTemplateInputs()`. For `default`, the evaluated string
+then flows through the existing per-type coercion (number / date /
+select).
+
 ### Language-specific gotchas (informational)
 
 These are real differences porters have hit. Documented from xl3-py

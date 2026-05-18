@@ -245,24 +245,27 @@ Diagnostic substrings (stable for fixtures):
   the block-evaluation pipeline. Renderer impls must thread group
   context through aggregate evaluation so each `@subtotal`
   evaluates against its current group's row set, not the block's.
-- **Implementation pending.** The reference impl does not yet ship
-  `@group` / `@subtotal`. A follow-up commit will land:
-  1. Parser additions for the two directives (block-level
-     `@group`, row-level `@subtotal`).
-  2. Group boundary detection in the row-expansion pass.
-  3. Group-scoped aggregate evaluation.
-  4. Conformance fixture(s) pinning the Korean
-     invoice/settlement use cases, including:
-     - single-level group with one subtotal row,
-     - two-level group with inner + outer subtotals,
-     - grand-total-via-outermost-subtotal,
-     - empty-group skip,
-     - composition with `@filter` + `@sort`.
-- Until the impl lands, the spec is binding for any port and for
-  future-impl planning; the reference impl SHOULD raise
-  `xl3/directive/invalid-syntax` for `@group` / `@subtotal` so
-  authors get a clear "not yet supported" signal rather than a
-  silent no-op.
+- **Implementation shipped in 0.6.0.** The reference impl now
+  carries:
+  1. Parser additions for `@group` (directive row) and `@subtotal`
+     (cell expression) in `src/directive-parser.ts` +
+     `src/normalizer.ts` + `src/parser.ts`.
+  2. Group boundary detection via `partitionByGroupKeys` +
+     `planEmissionEvents` in `src/grouper.ts`.
+  3. Group-scoped aggregate evaluation through
+     `Renderer.renderGroupedDataRows` in `src/renderer.ts` (sets
+     `ctx.Rows` to the current group's row set before evaluating
+     each subtotal cell).
+  4. Conformance fixtures pinning the Korean invoice/settlement
+     use cases:
+     - `132-group-single-level-subtotal` — single key, one subtotal.
+     - `133-group-two-level-nested-subtotal` — inner + outer.
+     - `134-group-grand-total-via-outermost-subtotal` — the grand-
+       total pattern via the outer @subtotal.
+     - `135-group-filter-composition` — filtered-out groups skipped.
+     - `136-group-missing-key`, `137-subtotal-outside-group`,
+       `138-subtotal-bad-aggregate` — negative-path coverage for
+       the three new error codes.
 - This ADR does **not** introduce the explicit-binding form
   (`@subtotal … on [Key]`), per-group `@top`, or composite-
   expression `@subtotal` bodies. Those are future-ADR territory.

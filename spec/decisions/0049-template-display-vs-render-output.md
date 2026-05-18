@@ -1,6 +1,6 @@
 # ADR 0049 - Template-display vs render-output: intentional asymmetry
 
-- **Status:** accepted (informational)
+- **Status:** informational
 - **Date:** 2026-05-18
 - **Spec target:** XTL 0.x (clarification)
 - **Affects:** authoring UX expectations; cookbook 16, cookbook 17;

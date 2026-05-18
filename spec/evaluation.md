@@ -190,6 +190,43 @@ Inputs are coerced from host-supplied values:
 Coerced input values participate in `IF()`, `@filter`, `&`,
 comparisons, and `TEXT()` like any other value.
 
+### Template evaluation in `default` / `label` / `description` / `options`
+
+Per ADR-0050, cells in the `default`, `label`, `description`, and
+`options` columns are XTL templates: contiguous text plus zero or
+more `{{ ... }}` blocks, evaluated at input-read time (before any
+source row is loaded). The evaluation context is intentionally
+constrained.
+
+Available bindings:
+
+- `__config__[key]` — author-defined values from the `__config__`
+  sheet (parsed before `__inputs__`).
+- Pure scalar functions: `TODAY`, `DATE`, `IF`, `IFEMPTY`, `IFS`,
+  `IFERROR`, `UPPER`, `LOWER`, `TRIM`, `TEXT`, `YEAR`, `MONTH`,
+  `DAY`, `EOMONTH`, `EDATE`, `DATEDIF`, `ROUND`, `ABS`.
+
+Forbidden bindings (raise stable error codes):
+
+- Bare `[Column]` or `Source[Column]` refs — no source row context
+  yet at input-read time. Error: `xl3/inputs/forward-reference`.
+- `__sources__[…]` or `__inputs__[name]` — sources not loaded;
+  input rows are independent declarations. Error:
+  `xl3/inputs/forward-reference`.
+- `ROW()`, `SUM`, `COUNT`, `AVERAGE`, `MIN`, `MAX`, `XLOOKUP` —
+  render-time or source-data dependent. Error:
+  `xl3/inputs/runtime-only-fn`.
+
+The post-evaluation canonical-string form (see ADR-0009) is what
+flows back through the host UI as `InputSpec.default` /
+`InputSpec.label` / `InputSpec.description`. For `options`, the
+evaluated string is then split on `|` to produce the array.
+
+For `default`, the evaluated string is subsequently coerced by the
+input's declared `type` per the rules above. So `default = {{
+TODAY() }}` with `type = date` yields the render-time ISO date in
+the post-coercion default.
+
 ## Source Data Model
 
 The source data model is an ordered list of rows. Each row is a mapping from
@@ -364,11 +401,18 @@ Sort stability is defined under
 Directives apply in this order:
 
 ```text
-filter -> sort -> top
+source -> join -> filter -> sort -> group -> top -> repeat
 ```
 
 Multiple filters are combined with logical AND. With multiple sorts,
 the first `@sort` is the primary key and later sorts are tiebreakers.
+
+`@group` (ADR-0038) partitions the post-filter / post-sort row set
+into N-level nested groups and drives interleaved `@subtotal` row
+emission inside a single data block. Group order is encounter order
+*after* `@sort`; `@group` itself does not reorder. `@top` applies
+after grouping at the row level — subtotal rows emit only for
+groups whose data rows survived the `@top` cut.
 
 `@repeat right` changes block expansion direction and is not a data
 filtering directive. Without an explicit `@repeat`, data blocks
