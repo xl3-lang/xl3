@@ -41,6 +41,8 @@ const INFORMATIONAL_ADRS = new Set([
   '0042', // rejected — runtime cell mutation (rejection IS the contract)
   '0043', // accepted (process gate) — Excel-native preference principle
   '0045', // rejected bundle — rejection IS the contract
+  '0048', // accepted (informational + process gate) — JXLS boundary
+  '0049', // accepted (informational) — template display vs render output
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.

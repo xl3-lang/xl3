@@ -37,6 +37,7 @@ shape but forget the syntax.
 | 14 | [`__config__` as a value dictionary](./14-config-values.md) | Author-defined keys, type-awareness, `__config__` vs `__inputs__`. |
 | 15 | [Composing directives](./15-directive-composition.md) | Execution order, multi-`@filter` AND, forbidden compositions. |
 | 16 | [XTL function vs Excel formula](./16-xtl-vs-excel-formula.md) | When to use `{{ ... }}` vs an `=...` cell formula. The render-time / open-time boundary per ADR-0043. |
+| 17 | [Template-authoring display](./17-template-authoring-display.md) | What you see in Excel while editing the template (errors, placeholders), why it's expected, and the `IFERROR`-wrap convention for dashboards. |
 
 ## How to read a recipe
 
