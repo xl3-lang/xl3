@@ -56,9 +56,24 @@ export interface TemplateVariable {
 }
 
 // --- Directive types ---
+//
+// ADR-0048 / ROADMAP gate G22 (API surface): the Directive union and
+// its variants are part of the **experimental** internal model that
+// `analyze()` returns. They MAY change shape between minor versions
+// even though `convert()` / `preview()` / `analyzeModel()` remain
+// stable. Hosts that hold a directive object should treat it as
+// opaque (read `kind` for dispatch; do not store shape-dependent
+// references). Tooling that depends on the field set should pin a
+// specific xl3 version.
+//
+// The stable serializable counterpart is `TemplateModel` (returned by
+// `analyzeModel()`), which intentionally exposes the same fields but
+// behind a slower-moving compatibility commitment in STABILITY.md.
 
+/** @experimental — see G22 note above. */
 export type FilterOp = '>' | '<' | '>=' | '<=' | '=' | '!=' | 'in' | '!in';
 
+/** @experimental */
 export interface FilterDirective {
   kind: 'filter';
   field: string;
@@ -67,17 +82,20 @@ export interface FilterDirective {
   listRef?: string;
 }
 
+/** @experimental */
 export interface SortDirective {
   kind: 'sort';
   field: string;
   order: 'asc' | 'desc';
 }
 
+/** @experimental */
 export interface TopDirective {
   kind: 'top';
   count: number;
 }
 
+/** @experimental */
 export interface RepeatDirective {
   kind: 'repeat';
   direction: 'right';
@@ -85,6 +103,7 @@ export interface RepeatDirective {
 }
 
 // ADR-0012: scopes the surrounding data block to a named source.
+/** @experimental */
 export interface SourceDirective {
   kind: 'source';
   name: string;
@@ -92,6 +111,7 @@ export interface SourceDirective {
 
 // ADR-0014: pair the primary source's row with one row of the joined
 // source whose `joinedKey` column equals the primary's `primaryKey`.
+/** @experimental */
 export interface JoinDirective {
   kind: 'join';
   joinedSource: string;
@@ -100,6 +120,7 @@ export interface JoinDirective {
   primaryKey: string;
 }
 
+/** @experimental */
 export type Directive =
   | FilterDirective
   | SortDirective
@@ -110,6 +131,7 @@ export type Directive =
 
 // --- Template types ---
 
+/** @experimental — block layout / range shape may change between minor versions. */
 export interface DataBlock {
   direction: 'down' | 'right';
   startRow: number;
@@ -136,6 +158,7 @@ export interface DataBlock {
  * you MUST NOT copy from the TS impl"); use it only to inspect the TS
  * impl's parsed output.
  */
+/** @experimental — internal sheet template structure. */
 export interface SheetTemplate {
   originalName: string;
   groupKeys: string[];
@@ -169,6 +192,7 @@ export interface TemplateModel {
 // `location` is a free-form string ("sheet \"Report\" cell A5",
 // "__inputs__ row 3", filename) — present when known, omitted when
 // the warning is global.
+/** @stable */
 export type XtlWarningCode =
   | 'xl3w/parser/missing-column'
   | 'xl3w/filename/sanitized';
@@ -179,6 +203,16 @@ export interface XtlWarning {
   location?: string;
 }
 
+/**
+ * The full template parse output, including the live ExcelJS workbook.
+ *
+ * @experimental — the `workbook` field leaks the underlying library;
+ * any non-trivial use of this type couples host code to ExcelJS. Hosts
+ * SHOULD prefer `TemplateModel` (returned by {@link analyzeModel}) for
+ * a serializable workbook-free view. `ParsedTemplate.workbook` is
+ * subject to library upgrades and may change shape across xl3 minor
+ * versions.
+ */
 export interface ParsedTemplate extends TemplateModel {
   workbook: ExcelJS.Workbook;
 }

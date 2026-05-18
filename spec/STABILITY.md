@@ -62,11 +62,25 @@ removing or renaming any of them is a 2.0-only change.
 - `xtlError(code, message) → XtlError`
 - `isXtlError(value) → boolean`
 
-**Type re-exports** also frozen at 1.0:
-`TemplateMeta`, `TemplateModel`, `ParsedTemplate`, `OutputFile`,
-`PreviewResult`, `PreviewSource`, `ConvertOptions`, `InputSpec`,
-`InputType`, `SourceSpec`, `XtlError`, `XtlErrorCode`, `XtlWarning`,
-`XtlWarningCode`.
+**Stable type re-exports** — frozen at 1.0:
+`TemplateMeta`, `TemplateModel`, `OutputFile`, `PreviewResult`,
+`PreviewSource`, `PreviewFile`, `PreviewSheet`, `ConvertOptions`,
+`InputSpec`, `InputType`, `SourceSpec`, `XtlError`, `XtlErrorCode`,
+`XtlWarning`, `XtlWarningCode`.
+
+**Experimental type re-exports** (ROADMAP G22) — exported for
+tooling, but their shape MAY change between minor versions:
+`ParsedTemplate`, `SheetTemplate`, `TemplateVariable`, `DataBlock`,
+`Directive`, `FilterDirective`, `FilterOp`, `SortDirective`,
+`TopDirective`, `RepeatDirective`, `SourceDirective`,
+`JoinDirective`.
+
+Each experimental type carries an `@experimental` JSDoc tag. Hosts
+that hold one of these objects SHOULD dispatch on `kind` (for
+directives) or treat the shape as opaque, and SHOULD pin a specific
+xl3 minor version if they rely on a particular field set. The
+serializable, slower-moving alternative for most tooling needs is
+`TemplateModel` (returned by `analyzeModel`).
 
 The snapshot test in `src/__tests__/api-surface.test.ts` pins the
 runtime list and fails CI on silent changes. New exports require

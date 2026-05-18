@@ -10,6 +10,13 @@ import * as api from '../index.js';
 // re-exports are checked indirectly through `npm run typecheck` —
 // dependents that import them by name will fail to compile if a
 // type export disappears.
+//
+// ROADMAP gate G22: the runtime exports listed below are 1.0-stable.
+// `ParsedTemplate` and the directive / data-block types in
+// `src/types.ts` are exported but tagged `@experimental` — they
+// remain importable for tooling without entering the 1.0 freeze.
+// See `spec/STABILITY.md` "Stable type re-exports" vs "Experimental
+// type re-exports" for the formal split.
 const EXPECTED_RUNTIME_EXPORTS = [
   // Conversion entry points
   'convert',

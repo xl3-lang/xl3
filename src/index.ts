@@ -289,10 +289,16 @@ export async function readTemplateInputs(
 
 /**
  * Analyze a template file and return its full parsed model
- * (including the underlying ExcelJS workbook). Mostly useful for
- * tooling that needs to inspect template internals.
+ * (including the underlying ExcelJS workbook). Useful for tooling
+ * that needs to inspect template internals.
  *
- * @stable Frozen at 1.0.
+ * @stable The entry point itself is frozen at 1.0 (per
+ *   `spec/STABILITY.md` "Public API surface"). The **return type**
+ *   `ParsedTemplate` is `@experimental`: it exposes internal model
+ *   shapes (`Directive`, `DataBlock`, `SheetTemplate`) and the live
+ *   `ExcelJS.Workbook`, which MAY change between minor versions.
+ *   For a stable serializable view, prefer
+ *   {@link analyzeModel} (which returns `TemplateModel`).
  *
  * @example
  * ```ts
