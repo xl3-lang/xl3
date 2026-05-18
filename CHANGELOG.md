@@ -6,7 +6,9 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
-Pre-0.6.0 batch. Spec-side work (13 new ADRs from 0038 through 0050)
+## [0.6.0] - 2026-05-18
+
+0.6.0 batch. Spec-side work (13 new ADRs from 0038 through 0050)
 plus the runtime support, governance, and docs that 1.0 needs to
 land cleanly. No 1.0 freeze yet — this batch is the audit pass that
 makes the function surface, error catalog, and decision pipeline

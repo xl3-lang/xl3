@@ -1,4 +1,4 @@
-# Blueprint: 0.5.1 → 1.0
+# Blueprint: 0.6.0 → 1.0
 
 > **Working doc, not normative.** Lives in `docs/internal/` because
 > it captures the maintainer's roadmap and gap analysis, not the
@@ -7,7 +7,7 @@
 > *background* behind both.
 
 This document settles the version-management question for
-xl3 0.5.1 → 1.0. Five parts:
+xl3 0.6.0 → 1.0. Five parts:
 
 1. Current state audit
 2. Philosophy conflicts with JXLS (the deliberate boundary)
@@ -21,7 +21,7 @@ fraction of the surface area.
 
 ---
 
-## Part 1 — Current state audit (as of 0.5.1)
+## Part 1 — Current state audit (as of 0.6.0)
 
 ### IN (implemented + spec'd + fixture-pinned)
 
@@ -69,7 +69,7 @@ multi-source merge via `@join`.
   Try-it, 404, 18 cookbook recipes)
 
 **Runtime:**
-- TypeScript reference impl (`@jinyoung4478/xl3` v0.5.1 on npm)
+- TypeScript reference impl (`@jinyoung4478/xl3` v0.6.0 on npm)
 - xl3-py port (draft — % unknown, target 80% Stage 1 for 1.0)
 - Browser IIFE bundle (~1 MB minified, ~300 KB gzipped)
 - Node ≥ 20.12
@@ -186,7 +186,7 @@ classifies each item as MUST / SHOULD / MAY for xl3 1.0.
 | P3 | Production reference case | 0 | **MUST** (ROADMAP gate) |
 | P4 | Maintainer set widening | single maintainer | **MUST** (ROADMAP gate) |
 | P5 | Migration guide (0.x → 1.0) | not written | **MUST** |
-| P6 | CHANGELOG completeness | 0.1.0-alpha → 0.5.1 covered | DONE |
+| P6 | CHANGELOG completeness | 0.1.0-alpha → 0.6.0 covered | DONE |
 | P7 | Korean i18n (cookbook 100%) | 18 recipes + landing/try/404 ko | DONE |
 | P8 | 0.x stability for ≥ 1 quarter post-checklist-complete | 5월 시작 — 7월 말 earliest | **MUST** (ROADMAP gate) |
 
