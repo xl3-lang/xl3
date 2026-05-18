@@ -28,11 +28,15 @@ time goes in an output-cell formula and xl3 preserves it verbatim
 
 Background and the rationale for which functions are in / out are
 in:
+- [ADR-0038 @group and @subtotal directives](./decisions/0038-group-and-subtotal.md)
 - [ADR-0043 Excel-native preference principle](./decisions/0043-excel-native-preference.md)
 - [ADR-0044 Function batch accepted](./decisions/0044-function-batch-accepted.md)
 - [ADR-0045 Function batch rejected](./decisions/0045-function-batch-rejected.md)
 - [ADR-0046 Cell formula preservation contract](./decisions/0046-cell-formula-preservation.md)
 - [ADR-0047 ISBLANK as IFEMPTY alias](./decisions/0047-isblank-as-ifempty-alias.md)
+- [ADR-0048 JXLS boundary final (process-normative)](./decisions/0048-jxls-boundary-final.md)
+- [ADR-0049 Template-display vs render-output (informational)](./decisions/0049-template-display-vs-render-output.md)
+- [ADR-0050 Template inputs as XTL expressions](./decisions/0050-template-inputs-as-xtl-expressions.md)
 
 ## Conformance Precedence
 

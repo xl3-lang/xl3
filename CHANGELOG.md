@@ -90,6 +90,19 @@ except where called out under **Breaking**.
   ADR-0040 CF/DV range-extension piece remains 0.6.1). Cookbook 18
   (en + ko) walks through single-level + nested + grand-total +
   filter-composition patterns.
+- **Stage 2 OOXML conformance in CI (ROADMAP G11).** New
+  `npm run conformance:stage2` script + `.github/workflows/ci.yml`
+  step. Every PR now exercises the 6 Stage 2 fixtures (merge /
+  outline-level / styles) on top of the 128 Stage 1 fixtures —
+  130/130 → 134/134 fixtures pass under both stages.
+- **`SECURITY.md` (ROADMAP G20 draft).** Threat model, attack-class
+  stance table, hardening checklist for host integrators, and the
+  jykim@snack24h.com reporting path.
+- **Resource-limit + AbortSignal stance (ROADMAP G21 draft).**
+  `spec/evaluation.md` "Resource limits" split into spec-level
+  implementation-defined stance + reference-impl `xl3-js` limit
+  table. Streaming explicitly deferred to 1.1+; `AbortSignal` hook
+  planned for 0.7-0.8 with stable `xl3/abort/cancelled` code.
 
 ### Fixed
 

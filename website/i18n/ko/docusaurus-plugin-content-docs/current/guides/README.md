@@ -28,6 +28,9 @@
 | 13 | [호스트를 위한 에러 처리](./13-error-handling.md) | `XtlError` 잡기, 코드 카탈로그, fail-fast 를 위한 `preview()`. |
 | 14 | [값 사전으로서의 `__config__`](./14-config-values.md) | 작성자 정의 키, 타입 인식, `__config__` vs `__inputs__`. |
 | 15 | [디렉티브 조합하기](./15-directive-composition.md) | 실행 순서, 여러 `@filter` 의 AND 결합, 금지된 조합. |
+| 16 | [XTL 함수 vs Excel 수식](./16-xtl-vs-excel-formula.md) | `{{ ... }}` 와 `=...` 셀 수식을 어떻게 나눠 쓸지. ADR-0043 의 render-time / open-time 경계. |
+| 17 | [템플릿 작성 시 표시 동작](./17-template-authoring-display.md) | 템플릿 편집 중 Excel 에서 보이는 모습 (에러, 플레이스홀더), 그게 의도된 이유, 대시보드용 `IFERROR` wrap 관행. |
+| 18 | [`@group` 과 `@subtotal`](./18-group-and-subtotal.md) | 하나의 데이터 블록 안에 그룹별 소계 행을 끼워 넣기 (ADR-0038) — 단일 레벨, 중첩, 가장 바깥 @subtotal 로 만드는 총계. |
 
 ## 레시피를 읽는 법
 

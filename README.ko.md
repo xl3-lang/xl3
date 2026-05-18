@@ -13,11 +13,16 @@ adopter가 시도해볼 만큼 안정됐습니다. **지금 가장 가치 있는
 실제 사용 후 피드백**입니다 — 1.0 blocker는 [ROADMAP.md](./ROADMAP.md),
 의사결정 방식은 [GOVERNANCE.md](./GOVERNANCE.md) 참고.
 
-**0.5.x 주요 변경** (2026년 5월): 소스 워크북의 **병합 헤더 셀** 네이티브
+**0.5.x → 0.6.0 주요 변경** (2026년 5월): 소스 워크북의 **병합 헤더 셀** 네이티브
 지원 (ADR-0033) — 한국식 vendor 양식(거래명세서, 정산서, 발주서) 에서
 흔한 패턴. 데이터 행의 병합 셀은 마스터 값을 슬레이브에 broadcast
 (ADR-0035). 이미지·조건부서식·이름 정의·틀고정·시트 보호·데이터 유효성·
-셀 주석을 다루는 정규 보존 매트릭스 추가 (ADR-0036).
+셀 주석을 다루는 정규 보존 매트릭스 추가 (ADR-0036). 0.6.0 에서는 **`@group`
+/ `@subtotal`** 디렉티브가 추가되어 — 거래명세서·정산서의 고객별/월별 소계
+행을 하나의 데이터 블록 안에 자연스럽게 끼워 넣을 수 있습니다 (ADR-0038).
+또한 `__inputs__` 의 `default` / `label` 셀이 XTL 표현식을 평가하도록 바뀌어,
+호스트 UI 에서 `{{ TODAY() }}` 같은 placeholder 가 그대로 보이던 문제가
+해결됩니다 (ADR-0050).
 
 [English](./README.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
@@ -219,10 +224,11 @@ const outputs = await convert(templateBuffer, dataBuffer);
 
 ## 가이드
 
-자주 쓰는 패턴을 모은 짧은 레시피 10 개가
+자주 쓰는 패턴을 모은 짧은 레시피 18 개가
 [`docs/guides/`](./docs/guides) 에 있습니다. 시작하기, 조건문, 집계,
-파일·시트 그룹화, 런타임 입력값, 조인, `XLOOKUP`, 정렬·Top-N, 브랜딩까지
-다룹니다.
+파일·시트 그룹화, 런타임 입력값, 조인, `XLOOKUP`, 정렬·Top-N, 브랜딩,
+멀티라인 텍스트, 빈 값, 에러 처리, `__config__` 값, 디렉티브 조합, XTL
+vs Excel 수식, 템플릿 작성 시 표시, `@group` / `@subtotal` 까지 다룹니다.
 
 ## Spec
 

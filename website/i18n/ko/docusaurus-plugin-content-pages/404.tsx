@@ -26,7 +26,7 @@ export default function NotFoundKo() {
             </Link>
             <Link className={styles.card} to="/guides">
               <strong>가이드</strong>
-              <span>복사해서 바로 쓰는 짧은 레시피 10 개</span>
+              <span>복사해서 바로 쓰는 짧은 레시피 18 개</span>
             </Link>
             <Link className={styles.card} to="/spec/">
               <strong>Spec</strong>

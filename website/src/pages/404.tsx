@@ -26,7 +26,7 @@ export default function NotFound() {
             </Link>
             <Link className={styles.card} to="/guides">
               <strong>Guides</strong>
-              <span>Ten short, copy-paste recipes</span>
+              <span>Eighteen short, copy-paste recipes</span>
             </Link>
             <Link className={styles.card} to="/spec/">
               <strong>Spec</strong>

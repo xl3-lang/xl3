@@ -13,20 +13,25 @@ stable enough for early adopters. **Early adopter feedback is the most useful co
 now** — see [ROADMAP.md](./ROADMAP.md) for what's blocking 1.0 and
 [GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made.
 
-**0.5.x highlights** (May 2026): native support for **merged-cell headers**
-in source workbooks (ADR-0033) — common in Korean vendor templates
-(거래명세서, 정산서, 발주서). Merged data rows broadcast the master value
-to slaves (ADR-0035). A normative feature-preservation matrix covers
-images, conditional formatting, named ranges, freeze pane, sheet
-protection, data validation, and cell comments (ADR-0036).
+**0.5.x → 0.6.0 highlights** (May 2026): native support for **merged-cell
+headers** in source workbooks (ADR-0033) — common in Korean vendor
+templates (거래명세서, 정산서, 발주서). Merged data rows broadcast the
+master value to slaves (ADR-0035). A normative feature-preservation
+matrix covers images, conditional formatting, named ranges, freeze
+pane, sheet protection, data validation, and cell comments (ADR-0036).
+0.6.0 adds **`@group` / `@subtotal`** for interleaved per-customer /
+per-month subtotal rows in a single data block (ADR-0038) — the
+canonical pattern in Korean B2B invoices. `__inputs__` cells (default,
+label, description, options) are now XTL templates evaluated against a
+constrained context, so host UIs no longer show `{{ TODAY() }}`
+verbatim (ADR-0050).
 
 **Scope (ADR-0043).** XTL's function surface is intentionally smaller
 than Excel's. The rule: a function lives in XTL only when its value
 must be known **before** the workbook is written — for `@filter`,
-`@sort`, source aggregates, filename / sheet patterns, or
-`__inputs__` defaulting. (`@group` / `@subtotal` are accepted in the
-spec per ADR-0038 but not yet wired in the 0.5.x reference impl — see
-ROADMAP gate G7.) Anything Excel can compute at workbook-open
+`@sort`, `@group`, `@subtotal`, source aggregates, filename / sheet
+patterns, or `__inputs__` defaulting. Anything Excel can compute at
+workbook-open
 time (visual formatting, per-cell math, type tests) goes in a cell
 formula and xl3 preserves it verbatim. See
 [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md) for the
@@ -258,9 +263,12 @@ multi-source join with runtime inputs. Run them with
 ## Guides
 
 Short, copy-paste recipes for common workflows live in
-[`docs/guides/`](./docs/guides). Ten recipes covering getting
+[`docs/guides/`](./docs/guides). Eighteen recipes covering getting
 started, conditionals, aggregates, file/sheet grouping, runtime
-inputs, joins, `XLOOKUP`, sort/top, and styling.
+inputs, joins, `XLOOKUP`, sort/top, styling, multi-line text, empty
+values, error handling, `__config__` values, directive composition,
+XTL vs Excel-formula, template-authoring display, and `@group` /
+`@subtotal`.
 
 ## Spec
 

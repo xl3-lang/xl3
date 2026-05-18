@@ -61,12 +61,12 @@ fraction of the surface area.
 multi-source merge via `@join`.
 
 **Spec / process:**
-- 17 ADRs (0033-0049)
-- 130 conformance fixtures (Stage 1) + 6 Stage-2-only
+- 18 absorption-era ADRs (0033-0050)
+- 128 conformance fixtures (Stage 1) + 6 Stage-2-only = 134 total
 - Error code catalog with snapshot pinning (ADR-0015)
 - Spec / language / evaluation / glossary / stability docs
 - Multi-language docs (English source + Korean i18n for landing,
-  Try-it, 404, 16 cookbook recipes)
+  Try-it, 404, 18 cookbook recipes)
 
 **Runtime:**
 - TypeScript reference impl (`@jinyoung4478/xl3` v0.5.1 on npm)
@@ -187,14 +187,14 @@ classifies each item as MUST / SHOULD / MAY for xl3 1.0.
 | P4 | Maintainer set widening | single maintainer | **MUST** (ROADMAP gate) |
 | P5 | Migration guide (0.x → 1.0) | not written | **MUST** |
 | P6 | CHANGELOG completeness | 0.1.0-alpha → 0.5.1 covered | DONE |
-| P7 | Korean i18n (cookbook 100%) | 16 recipes + landing/try/404 ko | DONE |
+| P7 | Korean i18n (cookbook 100%) | 18 recipes + landing/try/404 ko | DONE |
 | P8 | 0.x stability for ≥ 1 quarter post-checklist-complete | 5월 시작 — 7월 말 earliest | **MUST** (ROADMAP gate) |
 
 ### D. Documentation
 
 | # | Item | Status | 1.0 priority |
 |---|---|---|---|
-| D1 | Cookbook ≥ 15 recipes | 17 | DONE |
+| D1 | Cookbook ≥ 15 recipes | 18 | DONE |
 | D2 | TypeDoc API pages | 43 | DONE |
 | D3 | Reading-order guide for porters | PORTERS_GUIDE | DONE |
 | D4 | Interactive demo (xl3.io playground) | live | DONE |

@@ -21,6 +21,7 @@ const sidebars: SidebarsConfig = {
     { type: 'doc', id: 'guides/directive-composition', label: '15 · Composing directives' },
     { type: 'doc', id: 'guides/xtl-vs-excel-formula', label: '16 · XTL function vs Excel formula' },
     { type: 'doc', id: 'guides/template-authoring-display', label: '17 · Template-authoring display' },
+    { type: 'doc', id: 'guides/group-and-subtotal', label: '18 · Group and subtotal' },
   ],
 
   // /api — auto-generated from typedoc output. Functions / Interfaces /
