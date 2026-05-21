@@ -7,8 +7,8 @@
 ## `@sort`
 
 ```text
-{{ @sort [Renewal] desc }}
-{{ [Account] }} | {{ [Renewal] }}
+{{ @sort [갱신액] desc }}
+{{ [계정] }} | {{ [갱신액] }}
 ```
 
 방향은 `asc` (기본값) 또는 `desc` 입니다. `@sort` 는 **안정 정렬** — 정렬 키가 같은 행은 원래 순서 (먼저 등장한 순서) 를 그대로 유지합니다.
@@ -16,19 +16,19 @@
 ## 다중 키 정렬
 
 ```text
-{{ @sort [Region] asc }}
-{{ @sort [Renewal] desc }}
-{{ [Account] }} | {{ [Region] }} | {{ [Renewal] }}
+{{ @sort [지역] asc }}
+{{ @sort [갱신액] desc }}
+{{ [계정] }} | {{ [지역] }} | {{ [갱신액] }}
 ```
 
-첫 번째 `@sort` 가 **1차 키** 이고, 그다음에 오는 `@sort` 디렉티브는 동률을 가르는 보조 키입니다 (Excel/SQL 관례). 위 예시는 Region 알파벳순으로 묶은 뒤, 각 Region 안에서 Renewal 내림차순으로 정렬합니다.
+첫 번째 `@sort` 가 **1차 키** 이고, 그다음에 오는 `@sort` 디렉티브는 동률을 가르는 보조 키입니다 (Excel/SQL 관례). 위 예시는 지역 알파벳순으로 묶은 뒤, 각 지역 안에서 갱신액 내림차순으로 정렬합니다.
 
 ## `@top`
 
 ```text
-{{ @sort [Renewal] desc }}
+{{ @sort [갱신액] desc }}
 {{ @top 10 }}
-{{ [Account] }} | {{ [Renewal] }}
+{{ [계정] }} | {{ [갱신액] }}
 ```
 
 `@top N` 은 모든 필터와 정렬이 끝난 뒤 첫 `N` 개 행만 남깁니다. `@top` 은 반드시 `@sort` 뒤에 둡니다 — 먼저 정렬하고 그다음에 상위만 추립니다.
@@ -38,10 +38,10 @@
 ## `@filter` 와 함께 쓰기
 
 ```text
-{{ @filter [Renewal] > 1000 }}
-{{ @sort [Renewal] desc }}
+{{ @filter [갱신액] > 1000 }}
+{{ @sort [갱신액] desc }}
 {{ @top 5 }}
-{{ [Account] }} | {{ [Renewal] }}
+{{ [계정] }} | {{ [갱신액] }}
 ```
 
 순서는 filter → sort → top 입니다. `@filter` 가 여러 개면 AND 로 합쳐집니다 (ADR-0029 관련 — 리스트 필터는 [Recipe 05](./05-sheet-per-group.md) 참고).

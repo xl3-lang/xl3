@@ -8,38 +8,38 @@
 
 | key | value |
 |---|---|
-| `source_sheet` | `Raw` |
+| `source_sheet` | `원본` |
 | `source_table` | `1` |
-| `output_file_pattern` | `{{ [Region] }}.xlsx` |
+| `output_file_pattern` | `{{ [지역] }}.xlsx` |
 
 그룹 키는 `output_file_pattern` 에서 참조한 값입니다. xl3 는 그 패턴이 평가된 값을 기준으로 원본 행을 그룹화하고, 서로 다른 값마다 파일을 하나씩 만들어 냅니다.
 
-## 원본 데이터 (시트 `Raw`)
+## 원본 데이터 (시트 `원본`)
 
-| Account | Region | Renewal |
+| 계정 | 지역 | 갱신액 |
 |---|---|---:|
-| Acme | Seoul | 18400 |
-| Beta | Busan | 7200 |
-| Coreon | Seoul | 25100 |
+| 한솔 | 서울 | 18400 |
+| 베타 | 부산 | 7200 |
+| 코어 | 서울 | 25100 |
 
 ## 결과
 
 파일 두 개:
 
-- `Seoul.xlsx` — Acme 와 Coreon 행이 들어갑니다.
-- `Busan.xlsx` — Beta 가 들어갑니다.
+- `서울.xlsx` — 한솔과 코어 행이 들어갑니다.
+- `부산.xlsx` — 베타가 들어갑니다.
 
 ## 다중 키로 그룹화
 
 ```text
-output_file_pattern = {{ [Region] }}-{{ [Tier] }}.xlsx
+output_file_pattern = {{ [지역] }}-{{ [등급] }}.xlsx
 ```
 
-그룹 키가 튜플 `(Region, Tier)` 이 됩니다. 서로 다른 튜플마다 별도 파일이 만들어집니다 — `Seoul-A.xlsx`, `Seoul-B.xlsx`, `Busan-A.xlsx` 같은 식으로요.
+그룹 키가 튜플 `(지역, 등급)` 이 됩니다. 서로 다른 튜플마다 별도 파일이 만들어집니다 — `서울-A.xlsx`, `서울-B.xlsx`, `부산-A.xlsx` 같은 식으로요.
 
 ## 파일명 정리(sanitization)
 
-xl3 는 ADR-0002 에 따라 파일명을 정리합니다 — `/ \ : * ? " < > |` 에 속한 금지 문자와 제어 문자는 각각 `_` 하나로 1:1 치환되고, 앞쪽 공백과 뒤쪽 점·공백은 잘려 나갑니다. 연속된 `_` 는 합쳐지지 **않습니다**. 서로 다른 두 그룹 값이 같은 파일명으로 정리되면 — 예를 들어 `Seoul/Korea` 와 `Seoul:Korea` 가 모두 `Seoul_Korea.xlsx` 가 되는 경우(금지 문자 하나당 `_` 하나씩) — xl3 는 ADR-0031 에 따라 조용히 덮어쓰는 대신 `xl3/filename/collision` 에러를 던집니다.
+xl3 는 ADR-0002 에 따라 파일명을 정리합니다 — `/ \ : * ? " < > |` 에 속한 금지 문자와 제어 문자는 각각 `_` 하나로 1:1 치환되고, 앞쪽 공백과 뒤쪽 점·공백은 잘려 나갑니다. 연속된 `_` 는 합쳐지지 **않습니다**. 서로 다른 두 그룹 값이 같은 파일명으로 정리되면 — 예를 들어 `서울/한국` 와 `서울:한국` 가 모두 `서울_한국.xlsx` 가 되는 경우(금지 문자 하나당 `_` 하나씩) — xl3 는 ADR-0031 에 따라 조용히 덮어쓰는 대신 `xl3/filename/collision` 에러를 던집니다.
 
 ## 그룹 키가 비어 있을 때
 

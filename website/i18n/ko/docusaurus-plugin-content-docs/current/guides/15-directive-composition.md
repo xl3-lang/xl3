@@ -14,20 +14,20 @@
 
 ## 디렉티브 조합
 
-자주 쓰이는 모양: Seoul 의 고액 갱신 상위 5건.
+자주 쓰이는 모양: 서울 의 고액 갱신 상위 5건.
 
 ```text
-{{ @filter [Region] = "Seoul" }}
-{{ @filter [Amount] > 1000 }}
-{{ @sort [Amount] desc }}
+{{ @filter [지역] = "서울" }}
+{{ @filter [금액] > 1000 }}
+{{ @sort [금액] desc }}
 {{ @top 5 }}
-{{ [Account] }} | {{ [Amount] }}
+{{ [계정] }} | {{ [금액] }}
 ```
 
 평가 순서:
-1. Region=Seoul 으로 필터.
-2. Amount>1000 으로 필터 (AND 로 결합).
-3. 살아남은 행을 Amount 내림차순으로 정렬.
+1. 지역=서울 으로 필터.
+2. 금액>1000 으로 필터 (AND 로 결합).
+3. 살아남은 행을 금액 내림차순으로 정렬.
 4. 앞에서 5건.
 
 ## 여러 `@filter` 는 AND 로 결합됩니다
@@ -35,28 +35,28 @@
 ADR-0029 에 따라, 한 블록 안의 여러 `@filter` 는 서로 AND 로 묶입니다. `OR` 키워드는 없습니다. OR 을 표현하려면 다음 중 하나를 쓰세요:
 
 - `IN` 으로 하나의 필터로 합치기:
-  `{{ @filter [Region] in __lists__[active_regions] }}`
+  `{{ @filter [지역] in __lists__[활성지역] }}`
 - 두 개의 데이터 블록으로 쪼개기 (각각을 자기 영역에 두고, 양쪽이 렌더링되면서 자연스럽게 행 집합이 union 되게 합니다).
 - 위쪽 단계에서 미리 처리하기.
 
 ## `@source` + `@join` 조합
 
 ```text
-{{ @source Renewals }}
-{{ @join Customers on Renewals[customer_id] = Customers[id] }}
-{{ @filter Customers[tier] = "A" }}
-{{ @sort Renewals[amount] desc }}
+{{ @source 갱신현황 }}
+{{ @join 거래처 on 갱신현황[거래처코드] = 거래처[id] }}
+{{ @filter 거래처[등급] = "A" }}
+{{ @sort 갱신현황[금액] desc }}
 {{ @top 10 }}
-{{ Renewals[customer_id] }}
-{{ Customers[name] }}
-{{ Renewals[amount] }}
+{{ 갱신현황[거래처코드] }}
+{{ 거래처[name] }}
+{{ 갱신현황[금액] }}
 ```
 
 단계:
-1. Renewals 순회 (`@source` 가 지정).
-2. id 로 Customers 와 inner join. 매칭 안 된 행은 빠집니다.
-3. Customers 의 tier 가 "A" 인 행만 남기기.
-4. Renewals.amount 내림차순 정렬.
+1. 갱신현황 순회 (`@source` 가 지정).
+2. id 로 거래처 와 inner join. 매칭 안 된 행은 빠집니다.
+3. 거래처 의 tier 가 "A" 인 행만 남기기.
+4. 갱신현황.amount 내림차순 정렬.
 5. 상위 10건.
 
 `@filter` 는 어느 쪽 소스의 컬럼이든 참조할 수 있습니다. 컬럼 해석은 대괄호만 쓰는 경우엔 활성 블록의 소스를 쓰고, join 쪽은 명시적으로 `Source[Column]` 형식을 씁니다.
@@ -72,7 +72,7 @@ ADR-0029 기준:
 ## `@sort` 다음의 `@top`
 
 ```text
-{{ @sort [Amount] desc }}
+{{ @sort [금액] desc }}
 {{ @top 10 }}
 ```
 

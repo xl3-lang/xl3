@@ -24,17 +24,17 @@
 
 | name | sheet | table |
 |---|---|---|
-| `Customers` | `Customers` | `1` |
+| `거래처` | `거래처` | `1` |
 
 템플릿 셀:
 
 ```text
-A2: {{ [customer_id] }}
-B2: {{ XLOOKUP([customer_id], Customers[id], Customers[name]) }}
-C2: {{ XLOOKUP([customer_id], Customers[id], Customers[tier]) }}
+A2: {{ [거래처코드] }}
+B2: {{ XLOOKUP([거래처코드], 거래처[id], 거래처[name]) }}
+C2: {{ XLOOKUP([거래처코드], 거래처[id], 거래처[등급]) }}
 ```
 
-기본 원본의 각 행마다, xl3 가 `id` 로 매치되는 Customers 행을 찾아 `name` / `tier` 를 끌어옵니다.
+기본 원본의 각 행마다, xl3 가 `id` 로 매치되는 거래처 행을 찾아 `name` / `tier` 를 끌어옵니다.
 
 ## 매치 실패 시 동작
 
@@ -43,14 +43,14 @@ C2: {{ XLOOKUP([customer_id], Customers[id], Customers[tier]) }}
 에러를 피하고 싶다면 네 번째 인자로 fallback 값을 넘기세요.
 
 ```text
-{{ XLOOKUP([customer_id], Customers[id], Customers[name], "(unknown)") }}
+{{ XLOOKUP([거래처코드], 거래처[id], 거래처[name], "(unknown)") }}
 ```
 
 매치되는 행이 없으면 fallback 값이 반환됩니다. 자리표시자 없이 누락을 허용하고 싶다면 상류에서 미리 필터링하거나, 매치 없는 행을 아예 떨어뜨려 버리는 `@join` 을 쓰세요.
 
 ## 원본 불일치 방지
 
-`lookup_array` 와 `return_array` 는 **같은 원본** 의 컬럼이어야 합니다. `XLOOKUP([id], Customers[id], Renewals[name])` 는 `xl3/xlookup/source-mismatch` 가 발생합니다 — 다른 원본을 섞으면, 매치된 행과 아무런 의미상 관계가 없는 위치의 값을 돌려주게 되기 때문입니다.
+`lookup_array` 와 `return_array` 는 **같은 원본** 의 컬럼이어야 합니다. `XLOOKUP([id], 거래처[id], 갱신현황[name])` 는 `xl3/xlookup/source-mismatch` 가 발생합니다 — 다른 원본을 섞으면, 매치된 행과 아무런 의미상 관계가 없는 위치의 값을 돌려주게 되기 때문입니다.
 
 ## 성능
 
@@ -58,6 +58,6 @@ xl3 는 어떤 `(원본, 컬럼)` 쌍에 대해 XLOOKUP 이 처음 실행될 때
 
 ## 참고
 
-- 비교는 타입을 인지합니다 — 숫자와 숫자형 문자열은 경계를 넘어 매치되므로, `XLOOKUP("42", Customers[id], ...)` 는 `id` 가 숫자 `42` 인 행을 찾아냅니다.
+- 비교는 타입을 인지합니다 — 숫자와 숫자형 문자열은 경계를 넘어 매치되므로, `XLOOKUP("42", 거래처[id], ...)` 는 `id` 가 숫자 `42` 인 행을 찾아냅니다.
 - 주 원본의 모든 행을 다른 원본의 행과 짝지어야 한다면 `@join` 을, 다른 원본에서 셀 하나만 끌어오면 된다면 `XLOOKUP` 을 쓰세요.
 - 스펙 참조: [`spec/language.md`](../../spec/language.md) 의 "XLOOKUP"; ADR-0013.

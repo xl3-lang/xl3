@@ -1,11 +1,15 @@
+---
+slug: /guides
+---
+
 # XTL 가이드
 
 자주 쓰는 리포트 워크플로를 위한, 바로 복붙해 쓸 수 있는 짧은 레시피 모음입니다. 각 레시피는 시나리오, 템플릿 셀, 기대 결과로 구성된 짧은 마크다운 페이지입니다.
 
 이 가이드들은 기존에 있는 두 자료를 보완합니다:
 
-- **[`examples/`](../../examples/)** 에는 세 개의 실행 가능한 템플릿 (`renewal-report`, `sheet-per-region`, `multi-source-join`) 이 있고, 조합된 형태를 end-to-end 로 보여줍니다. 하나 복사해서 출발점으로 쓰세요.
-- **[`spec/language.md`](../../spec/language.md)** 는 각 함수와 디렉티브에 대한 정식 레퍼런스입니다. 레시피로 커버되지 않는 케이스를 만났을 때 참고하세요.
+- **[`examples/`](https://github.com/jinyoung4478/xl3/tree/main/examples/)** 에는 네 개의 실행 가능한 템플릿이 있고, 조합된 형태를 end-to-end 로 보여줍니다. 하나 복사해서 출발점으로 쓰세요. 한국어 예시는 `04-cafe-weekly-report` 를 참고하세요.
+- **[`spec/language.md`](../spec/language.md)** 는 각 함수와 디렉티브에 대한 정식 레퍼런스입니다(영문). 레시피로 커버되지 않는 케이스를 만났을 때 참고하세요.
 
 여기 있는 레시피들은 "프로덕션 수준의 현실성" 보다 "X 를 보여주는 가장 작은 템플릿" 을 우선합니다 — 모양은 기억나는데 문법이 가물가물할 때 빠르게 찾아보는 것이 목적입니다.
 
@@ -21,15 +25,15 @@
 | 06 | [런타임 입력](./06-runtime-inputs.md) | 실행 단위 값 (월, 지역 등) 을 위한 `__inputs__`. |
 | 07 | [멀티 소스 + `@join`](./07-multi-source-join.md) | `__sources__`, `@source`, `@join`. |
 | 08 | [`XLOOKUP`](./08-xlookup.md) | 크로스 소스 조회. |
-| 09 | [Sort 와 Top-N](./09-sort-and-top.md) | `@sort` (stable), `@top`, 다중 키 정렬. |
+| 09 | [정렬과 상위 N개](./09-sort-and-top.md) | `@sort` (stable), `@top`, 다중 키 정렬. |
 | 10 | [스타일과 브랜딩](./10-styling-and-branding.md) | `tabColor`, 셀 병합, `numFmt`, `TEXT()`. |
 | 11 | [`TEXT()` 포맷팅](./11-text-formatting.md) | 통화, 날짜, 퍼센트. `numFmt` 와 `TEXT()` 의 사용처 구분. |
 | 12 | [빈 값 깊이 다루기](./12-empty-values.md) | `IFEMPTY`, empty 와 0 의 함정, `(blank)`, 희소 데이터의 집계. |
 | 13 | [호스트를 위한 에러 처리](./13-error-handling.md) | `XtlError` 잡기, 코드 카탈로그, fail-fast 를 위한 `preview()`. |
-| 14 | [값 사전으로서의 `__config__`](./14-config-values.md) | 작성자 정의 키, 타입 인식, `__config__` vs `__inputs__`. |
+| 14 | [값 사전으로 쓰는 `__config__`](./14-config-values.md) | 작성자 정의 키, 타입 인식, `__config__` vs `__inputs__`. |
 | 15 | [디렉티브 조합하기](./15-directive-composition.md) | 실행 순서, 여러 `@filter` 의 AND 결합, 금지된 조합. |
-| 16 | [XTL 함수 vs Excel 수식](./16-xtl-vs-excel-formula.md) | `{{ ... }}` 와 `=...` 셀 수식을 어떻게 나눠 쓸지. ADR-0043 의 render-time / open-time 경계. |
-| 17 | [템플릿 작성 시 표시 동작](./17-template-authoring-display.md) | 템플릿 편집 중 Excel 에서 보이는 모습 (에러, 플레이스홀더), 그게 의도된 이유, 대시보드용 `IFERROR` wrap 관행. |
+| 16 | [XTL 함수 vs 엑셀 수식](./16-xtl-vs-excel-formula.md) | `{{ ... }}` 와 `=...` 셀 수식을 어떻게 나눠 쓸지. ADR-0043 의 render-time / open-time 경계. |
+| 17 | [템플릿 작성용 표시값](./17-template-authoring-display.md) | 템플릿 편집 중 엑셀에서 보이는 모습 (에러, 플레이스홀더), 그게 의도된 이유, 대시보드용 `IFERROR` wrap 관행. |
 | 18 | [`@group` 과 `@subtotal`](./18-group-and-subtotal.md) | 하나의 데이터 블록 안에 그룹별 소계 행을 끼워 넣기 (ADR-0038) — 단일 레벨, 중첩, 가장 바깥 @subtotal 로 만드는 총계. |
 
 ## 레시피를 읽는 법
@@ -58,6 +62,6 @@
 3. `source_sheet` 와 같은 이름의 데이터 시트를 추가합니다.
 4. 레시피의 셀들로 템플릿 시트를 추가합니다.
 5. `template.xlsx` 로 저장하고, 데이터는 `data.xlsx` 로 저장합니다.
-6. `convert(templateBuffer, dataBuffer)` 를 실행합니다 ([README](../../README.md#usage) 참고).
+6. `convert(templateBuffer, dataBuffer)` 를 실행합니다 ([README](/readme#usage) 참고).
 
-또는 더 빠르게는, [실행 가능한 예제](../../examples/) 중 하나를 복사해서 입맛에 맞게 고쳐 쓰세요.
+또는 더 빠르게는, [실행 가능한 예제](https://github.com/jinyoung4478/xl3/tree/main/examples/) 중 하나를 복사해서 입맛에 맞게 고쳐 쓰세요.

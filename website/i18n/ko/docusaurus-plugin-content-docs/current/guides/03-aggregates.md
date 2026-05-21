@@ -7,44 +7,44 @@
 ## 대괄호 집계 — 데이터 블록을 대상으로
 
 ```text
-{{ SUM([Renewal]) }}
-{{ COUNT([Renewal]) }}
-{{ AVERAGE([Renewal]) }}
-{{ MIN([Renewal]) }}
-{{ MAX([Renewal]) }}
+{{ SUM([갱신액]) }}
+{{ COUNT([갱신액]) }}
+{{ AVERAGE([갱신액]) }}
+{{ MIN([갱신액]) }}
+{{ MAX([갱신액]) }}
 ```
 
 **데이터 블록** 안에서 쓰면 반복되는 원본 행 위에서 누적됩니다. **푸터 행**(데이터 블록 아래쪽 행, 같은 데이터 블록 행에는 템플릿 블록이 없는 경우)에서 쓰면 방금 펼쳐진 블록의 결과를 가리킵니다.
 
 ```text
-| A1: Account     | B1: Renewal             |
-| A2: {{ [Acct] }}| B2: {{ [Renewal] }}     | ← 데이터 블록
-| A3: Total       | B3: {{ SUM([Renewal]) }}| ← 푸터
+| A1: 계정     | B1: 갱신액             |
+| A2: {{ [계정] }}| B2: {{ [갱신액] }}     | ← 데이터 블록
+| A3: 합계       | B3: {{ SUM([갱신액]) }}| ← 푸터
 ```
 
-원본 행 3개로 펼치면 3행이 5행으로 밀려나고, `B5` 에는 세 `Renewal` 값의 합이 들어갑니다.
+원본 행 3개로 펼치면 3행이 5행으로 밀려나고, `B5` 에는 세 `갱신액` 값의 합이 들어갑니다.
 
 ## 원본 한정 집계 — 원본 전체를 대상으로
 
 ```text
-{{ SUM(Renewals[Amount]) }}        # 활성 블록이 아니라 원본 전체
-{{ COUNT(Customers[Account]) }}
+{{ SUM(갱신현황[금액]) }}        # 활성 블록이 아니라 원본 전체
+{{ COUNT(거래처[계정]) }}
 ```
 
 `SUM(SourceName[Column])` 으로 쓰면 xl3 는 이름으로 지정한 **원본 전체**를 합칩니다 — 필터나 조인을 거친 블록이 아닙니다. 블록이 필터되어도 값이 바뀌면 안 되는 헤더의 "전체 합계" 셀에서 이 형태를 씁니다.
 
-`Renewals` 는 `__sources__` 에서 선언한 이름입니다. [Recipe 07](./07-multi-source-join.md) 을 참고하세요.
+`갱신현황` 는 `__sources__` 에서 선언한 이름입니다. [Recipe 07](./07-multi-source-join.md) 을 참고하세요.
 
 ## 필터는 블록만 바꾸고 원본은 건드리지 않음
 
 ```text
-{{ @filter [Region] = "Seoul" }}
-{{ [Account] }}    | {{ [Renewal] }}
-Total:              | {{ SUM([Renewal]) }}        # Seoul 행만
-Overall:            | {{ SUM(Source[Renewal]) }}  # 전체 행
+{{ @filter [지역] = "서울" }}
+{{ [계정] }}    | {{ [갱신액] }}
+합계:              | {{ SUM([갱신액]) }}        # 서울 행만
+Overall:            | {{ SUM(Source[갱신액]) }}  # 전체 행
 ```
 
-`SUM([Renewal])` 은 필터 적용 후의 블록을 반영합니다. `SUM(Source[Renewal])` 은 필터를 무시합니다.
+`SUM([갱신액])` 은 필터 적용 후의 블록을 반영합니다. `SUM(Source[갱신액])` 은 필터를 무시합니다.
 
 ## 참고
 
