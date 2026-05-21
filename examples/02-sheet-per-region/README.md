@@ -1,5 +1,7 @@
 # 02 · Sheet per region with list filter
 
+> 🌐 **이 예제는 영어 데이터 기준입니다.** 한국어 컬럼·회사명·상태값을 쓰는 운영 예제는 [`04-cafe-weekly-report`](../04-cafe-weekly-report/) 를 참고하세요.
+
 One sheet per `Region`, filtered to a curated `__lists__[ActiveRegions]`.
 
 ## What this demonstrates

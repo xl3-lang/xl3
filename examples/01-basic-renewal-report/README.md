@@ -1,5 +1,7 @@
 # 01 · Basic renewal report
 
+> 🌐 **이 예제는 영어 데이터 기준입니다.** 한국어 컬럼·회사명·상태값을 쓰는 운영 예제는 [`04-cafe-weekly-report`](../04-cafe-weekly-report/) 를 참고하세요.
+
 The "hello world" of XTL — single source, `IF`, `SUM`, `@sort`, `@top`.
 
 ## What this demonstrates

@@ -3,6 +3,10 @@
 Four production-shaped XTL templates. Each is a complete `template.xlsx`
 + `data.xlsx` pair that runs through `convert()`.
 
+> 🌐 **For Korean operators / 한국어 운영팀**: `04-cafe-weekly-report` 는
+> 한국어 컬럼·회사명·상태값 기준의 운영 예제입니다 (거래명세서·정산
+> 워크플로 모양). `01–03` 은 의도적으로 영어 데이터로 둡니다.
+
 | # | Folder | Demonstrates |
 |---|---|---|
 | 01 | `01-basic-renewal-report/` | Single source, `IF`, `SUM`, `@sort`, `@top`. The "hello world" of XTL. |

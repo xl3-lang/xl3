@@ -56,7 +56,7 @@ result.xlsx     (완성된 엑셀 파일)
 끝입니다.
 
 템플릿은 **엑셀에서 직접 작성**합니다. `__config__` 시트에 설정을 넣고,
-`{{ [Account] }}` 또는 `{{ IF([Renewal] > 10000, "Priority", "Standard") }}`
+`{{ [거래처] }}` 또는 `{{ IF([갱신액] > 10000, "우선", "일반") }}`
 같은 표현식을 셀에 입력하고, 저장한 뒤 xl3 를 실행하면 됩니다. 매크로도,
 숨겨진 스크립트도, 외부 클라우드도 필요 없습니다.
 
@@ -69,30 +69,30 @@ result.xlsx     (완성된 엑셀 파일)
 
 | `__config__` key | 값 |
 |---|---|
-| `source_sheet` | `Raw` |
+| `source_sheet` | `원본` |
 | `source_table` | `1` |
-| `output_file_pattern` | `customer-renewal-report.xlsx` |
+| `output_file_pattern` | `거래처-갱신-리포트.xlsx` |
 
 | 셀 | 템플릿 값 |
 |---|---|
-| A5 | `{{ [Account] }}` |
-| B5 | `{{ [Region] }}` |
-| C5 | `{{ [Renewal] }}` |
-| E5 | `{{ IF([Renewal] > 10000, "Priority", "Standard") }}` |
+| A5 | `{{ [거래처] }}` |
+| B5 | `{{ [지역] }}` |
+| C5 | `{{ [갱신액] }}` |
+| E5 | `{{ IF([갱신액] > 10000, "우선", "일반") }}` |
 
 데이터 Excel 파일이 다음과 같다면:
 
-| Account | Region | Renewal | Owner |
+| 거래처 | 지역 | 갱신액 | 담당자 |
 |---|---|---:|---|
-| Acme Logistics | Seoul | 18400 | Mina |
-| Beta Works | Busan | 7200 | Joon |
+| 한솔물산 | 서울 | 18400 | 민아 |
+| 베타웍스 | 부산 | 7200 | 준호 |
 
 xl3는 다음 결과를 렌더링합니다.
 
-| Account | Region | Renewal | Owner | Tier |
+| 거래처 | 지역 | 갱신액 | 담당자 | 등급 |
 |---|---|---:|---|---|
-| Acme Logistics | Seoul | 18400 | Mina | Priority |
-| Beta Works | Busan | 7200 | Joon | Standard |
+| 한솔물산 | 서울 | 18400 | 민아 | 우선 |
+| 베타웍스 | 부산 | 7200 | 준호 | 일반 |
 
 출력은 여전히 `.xlsx` 파일입니다. 템플릿의 서식, 숫자 형식, 병합 셀은
 우연히 따라오는 부가 요소가 아니라 결과의 일부로 취급됩니다.
@@ -182,7 +182,7 @@ const outputs = await convert(templateBuffer, dataBuffer);
 
 | 키 | 예시 | 의미 |
 |---|---|---|
-| `source_sheet` | `Raw` | 원본 시트 이름, 또는 `*` 로 끝나는 접두사 패턴 |
+| `source_sheet` | `원본` | 원본 시트 이름, 또는 `*` 로 끝나는 접두사 패턴 |
 | `source_table` | `1` | 1 행을 컬럼명으로 읽고, 그 아래 행들을 데이터로 처리 |
 | `source_table` | `A1:D` | A1-D1 을 컬럼명으로 읽고, 그 아래 행들을 데이터로 처리 |
 | `source_table` | `A1:D200` | A1-D1 을 컬럼명으로 읽고, A2-D200 영역을 데이터로 처리 |
@@ -212,9 +212,9 @@ const outputs = await convert(templateBuffer, dataBuffer);
 선언하고 엑셀 구조화 참조 (structured reference) 형식으로 가져올 수 있습니다.
 
 ```text
-{{ Customers[Account] }}
-{{ SUM(Renewals[Amount]) }}
-{{ XLOOKUP([Account], Customers[Account], Customers[Name]) }}
+{{ 거래처[거래처명] }}
+{{ SUM(갱신현황[금액]) }}
+{{ XLOOKUP([거래처코드], 거래처[코드], 거래처[거래처명]) }}
 ```
 
 `@source <Name>` 은 데이터 블록의 기본 소스를 `<Name>` 으로 바꿔서 단축형
