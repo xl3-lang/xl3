@@ -1,5 +1,7 @@
 ---
 slug: /guides
+sidebar_label: '개요'
+pagination_label: '개요'
 ---
 
 # XTL 가이드

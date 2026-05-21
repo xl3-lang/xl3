@@ -1,3 +1,8 @@
+---
+sidebar_label: '08 · XLOOKUP 조회'
+pagination_label: '08 · XLOOKUP 조회'
+---
+
 # 08 · `XLOOKUP`
 
 ## 시나리오

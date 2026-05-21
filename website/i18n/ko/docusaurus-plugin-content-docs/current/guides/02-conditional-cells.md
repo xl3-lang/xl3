@@ -1,3 +1,8 @@
+---
+sidebar_label: '02 · 조건부 셀'
+pagination_label: '02 · 조건부 셀'
+---
+
 # 02 · 조건부 셀
 
 ## 시나리오

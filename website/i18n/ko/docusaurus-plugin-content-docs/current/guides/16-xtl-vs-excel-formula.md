@@ -1,3 +1,8 @@
+---
+sidebar_label: '16 · XTL 함수와 엑셀 수식 비교'
+pagination_label: '16 · XTL 함수와 엑셀 수식 비교'
+---
+
 # 16 · XTL 함수 vs Excel 수식
 
 ## 자주 부딪히는 함정 — 여기서부터 시작

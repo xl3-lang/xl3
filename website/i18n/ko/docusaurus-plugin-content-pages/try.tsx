@@ -319,11 +319,11 @@ export default function ConverterPageKo() {
             <p className={styles.crosslinks}>
               <Link to="/ko/">홈</Link>
               {' · '}
-              <Link to="/guides/getting-started">Cookbook 01</Link>
+              <Link to="/guides/getting-started">레시피 01</Link>
               {' · '}
-              <Link to="/spec/">Spec</Link>
+              <Link to="/spec/">명세 (영문)</Link>
               {' · '}
-              <Link to="/porters-guide">Porter&apos;s Guide</Link>
+              <Link to="/porters-guide">포팅 가이드 (영문)</Link>
             </p>
           </div>
           <BrowserOnly fallback={<div className={styles.previewEmpty}>변환기 로딩 중…</div>}>

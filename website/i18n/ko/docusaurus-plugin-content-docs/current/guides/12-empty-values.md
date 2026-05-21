@@ -1,3 +1,8 @@
+---
+sidebar_label: '12 · 빈 값 심화'
+pagination_label: '12 · 빈 값 심화'
+---
+
 # 12 · 빈 값 자세히 보기
 
 ## XTL 에서 "빈 값" 이란

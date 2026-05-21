@@ -1,3 +1,8 @@
+---
+sidebar_label: '15 · 디렉티브 조합하기'
+pagination_label: '15 · 디렉티브 조합하기'
+---
+
 # 15 · 디렉티브 조합하기 (`@filter`, `@sort`, `@top`, `@source`, `@join`)
 
 ## 디렉티브가 무엇이고 무엇이 아닌가

@@ -1,3 +1,8 @@
+---
+sidebar_label: '07 · 다중 소스와 @join'
+pagination_label: '07 · 다중 소스와 @join'
+---
+
 # 07 · 다중 원본 + `@join`
 
 ## 시나리오

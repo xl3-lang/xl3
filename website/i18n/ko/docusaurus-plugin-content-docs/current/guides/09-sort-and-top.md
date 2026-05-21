@@ -1,3 +1,8 @@
+---
+sidebar_label: '09 · 정렬과 상위 N개'
+pagination_label: '09 · 정렬과 상위 N개'
+---
+
 # 09 · 정렬과 상위 N
 
 ## 시나리오

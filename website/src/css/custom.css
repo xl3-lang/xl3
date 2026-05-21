@@ -177,6 +177,24 @@
    (it's a noun inside a sentence — different role than a code block).
    Only fenced blocks get the dark code-card treatment above. */
 
+/* Korean text wrapping: break at spaces/punctuation only (don't split
+   mid-word the way Latin word-break does). Combined with break-word as
+   a safety net for very long unbroken tokens (URLs, code). Scoped to
+   `:lang(ko)` so English content is unaffected. */
+:lang(ko) {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* Inline code in Korean prose still needs to break — long identifiers
+   like `customer-renewal-report.xlsx` would otherwise overflow narrow
+   containers. */
+:lang(ko) code,
+:lang(ko) pre {
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
 /* LocaleDropdownNavbarItem ships a small globe/language SVG before
    the locale label ("文A 한국어"). We surface the label only; the
    icon is redundant once "English" / "한국어" is the visible cue.

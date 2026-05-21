@@ -1,3 +1,8 @@
+---
+sidebar_label: '04 · 그룹별로 파일 나누기'
+pagination_label: '04 · 그룹별로 파일 나누기'
+---
+
 # 04 · 그룹별로 파일 나누기
 
 ## 시나리오
@@ -6,7 +11,7 @@
 
 ## `__config__`
 
-| key | value |
+| 키 | 값 |
 |---|---|
 | `source_sheet` | `원본` |
 | `source_table` | `1` |

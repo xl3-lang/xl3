@@ -1,3 +1,8 @@
+---
+sidebar_label: '11 · TEXT() 서식'
+pagination_label: '11 · TEXT() 서식'
+---
+
 # 11 · TEXT() 형식 지정
 
 ## 시나리오
