@@ -16,9 +16,9 @@ const CONFIG_PREVIEW_KO: Workbook = {
   formula: 'B2  source_table = 1',
   sheetName: '__config__',
   rows: [
-    ['key', 'value', 'notes'],
-    ['source_sheet', 'Raw', 'worksheet to read'],
-    ['source_table', '1', 'column names and data rows'],
+    ['키', '값', '메모'],
+    ['source_sheet', '원본', '읽어 들일 워크시트'],
+    ['source_table', '1', '컬럼명과 데이터 행 위치'],
   ],
   classes: [
     ['header', 'header', 'header'],
@@ -265,7 +265,7 @@ function Reliability() {
           포함하며 Stage 2 까지 모두 통과합니다. TypeScript 레퍼런스 구현은{' '}
           <a href="https://www.npmjs.com/package/@jinyoung4478/xl3">@jinyoung4478/xl3</a>로
           공개되어 있습니다 — 다른 언어로의 포팅은{' '}
-          <Link to="/porters-guide">Porter&apos;s Guide</Link>를 참고하세요.
+          <Link to="/porters-guide">포팅 가이드 (영문)</Link>를 참고하세요.
         </p>
       </div>
     </section>
@@ -332,11 +332,11 @@ function DeveloperApi() {
           />
         </div>
         <p className={styles.apiCta}>
-          <Link to="/guides/getting-started">Cookbook 01 — 5 분 시작하기</Link>
+          <Link to="/guides/getting-started">레시피 01 — 5분 시작하기</Link>
           {' · '}
-          <Link to="/spec/">Spec 읽기</Link>
+          <Link to="/spec/">명세 읽기 (영문)</Link>
           {' · '}
-          <Link to="/porters-guide">Porter&apos;s Guide</Link>
+          <Link to="/porters-guide">포팅 가이드 (영문)</Link>
         </p>
       </div>
     </section>

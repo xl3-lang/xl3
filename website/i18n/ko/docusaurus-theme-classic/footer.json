@@ -16,15 +16,15 @@
     "description": "The label of footer link with label=Guides linking to /guides"
   },
   "link.item.label.Spec": {
-    "message": "Spec",
+    "message": "명세",
     "description": "The label of footer link with label=Spec linking to /spec"
   },
   "link.item.label.Porter's Guide": {
-    "message": "Porter's Guide",
+    "message": "포팅 가이드",
     "description": "The label of footer link with label=Porter's Guide linking to /porters-guide"
   },
   "link.item.label.Conformance": {
-    "message": "Conformance",
+    "message": "적합성",
     "description": "The label of footer link with label=Conformance linking to /conformance"
   },
   "link.item.label.Browser converter": {
@@ -33,23 +33,23 @@
   },
   "link.item.label.Sample raw.xlsx": {
     "message": "샘플 raw.xlsx",
-    "description": "The label of footer link with label=Sample raw.xlsx"
+    "description": "The label of footer link with label=Sample raw.xlsx linking to pathname:///playground-samples/sample-raw.xlsx"
   },
   "link.item.label.Sample template.xlsx": {
     "message": "샘플 template.xlsx",
-    "description": "The label of footer link with label=Sample template.xlsx"
+    "description": "The label of footer link with label=Sample template.xlsx linking to pathname:///playground-samples/sample-template.xlsx"
   },
   "link.item.label.GitHub": {
     "message": "GitHub",
-    "description": "The label of footer link with label=GitHub"
+    "description": "The label of footer link with label=GitHub linking to https://github.com/jinyoung4478/xl3"
   },
   "link.item.label.npm": {
     "message": "npm",
-    "description": "The label of footer link with label=npm"
+    "description": "The label of footer link with label=npm linking to https://www.npmjs.com/package/@jinyoung4478/xl3"
   },
   "link.item.label.Changelog": {
     "message": "변경 이력",
-    "description": "The label of footer link with label=Changelog"
+    "description": "The label of footer link with label=Changelog linking to https://github.com/jinyoung4478/xl3/blob/main/CHANGELOG.md"
   },
   "copyright": {
     "message": "Code MIT · Spec CC-BY-4.0. Microsoft 와 Excel 은 Microsoft Corporation 의 상표입니다. xl3 는 Microsoft 와 무관합니다.",

@@ -8,7 +8,7 @@ export default function NotFoundKo() {
   return (
     <Layout
       title="404 — 페이지를 찾을 수 없습니다"
-      description="찾으시는 페이지가 여기에 없습니다. 가이드, Spec, 또는 변환기를 살펴보세요."
+      description="찾으시는 페이지가 여기에 없습니다. 가이드, 명세, 또는 변환기를 살펴보세요."
     >
       <main className={styles.page}>
         <div className="container">
@@ -29,8 +29,8 @@ export default function NotFoundKo() {
               <span>복사해서 바로 쓰는 짧은 레시피 18 개</span>
             </Link>
             <Link className={styles.card} to="/spec/">
-              <strong>Spec</strong>
-              <span>XTL 0.1 언어 레퍼런스</span>
+              <strong>명세</strong>
+              <span>XTL 0.1 언어 레퍼런스 (영문)</span>
             </Link>
             <Link className={styles.card} to="/ko/try">
               <strong>변환기</strong>
@@ -41,8 +41,8 @@ export default function NotFoundKo() {
               <span>소스 코드, 이슈, 토론</span>
             </Link>
             <Link className={styles.card} to="/porters-guide">
-              <strong>Porter&apos;s Guide</strong>
-              <span>다른 언어 구현체용 가이드</span>
+              <strong>포팅 가이드</strong>
+              <span>다른 언어 구현체용 가이드 (영문)</span>
             </Link>
           </div>
 

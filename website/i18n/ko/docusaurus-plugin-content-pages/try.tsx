@@ -5,8 +5,8 @@ import BrowserOnly from '@docusaurus/BrowserOnly';
 import clsx from 'clsx';
 import styles from '@site/src/pages/try.module.css';
 
-const SAMPLE_RAW_URL = '/playground-samples/sample-raw.xlsx';
-const SAMPLE_TEMPLATE_URL = '/playground-samples/sample-template.xlsx';
+const SAMPLE_RAW_URL = '/playground-samples/sample-raw-ko.xlsx';
+const SAMPLE_TEMPLATE_URL = '/playground-samples/sample-template-ko.xlsx';
 
 type OutputFile = { filename: string; data: Uint8Array };
 type Xl3Module = {

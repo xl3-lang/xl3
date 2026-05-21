@@ -24,15 +24,15 @@
     "description": "Navbar item with label Docs"
   },
   "item.label.Spec": {
-    "message": "Spec",
+    "message": "명세",
     "description": "Navbar item with label Spec"
   },
   "item.label.Porter's Guide": {
-    "message": "Porter's Guide",
+    "message": "포팅 가이드",
     "description": "Navbar item with label Porter's Guide"
   },
   "item.label.Conformance": {
-    "message": "Conformance",
+    "message": "적합성",
     "description": "Navbar item with label Conformance"
   },
   "item.label.Roadmap to 1.0": {
