@@ -148,19 +148,19 @@
     "description": "The label for the doc item 'Authoring fixtures' in sidebar 'docsSidebar', linking to the doc conformance/AUTHORING"
   },
   "sidebar.docsSidebar.doc.Roadmap to 1.0": {
-    "message": "1.0 路线图（英文）",
+    "message": "1.0 路线图",
     "description": "The label for the doc item 'Roadmap to 1.0' in sidebar 'docsSidebar', linking to the doc ROADMAP"
   },
   "sidebar.docsSidebar.doc.Governance": {
-    "message": "治理（英文）",
+    "message": "治理",
     "description": "The label for the doc item 'Governance' in sidebar 'docsSidebar', linking to the doc GOVERNANCE"
   },
   "sidebar.docsSidebar.doc.Contributing": {
-    "message": "参与贡献（英文）",
+    "message": "参与贡献",
     "description": "The label for the doc item 'Contributing' in sidebar 'docsSidebar', linking to the doc CONTRIBUTING"
   },
   "sidebar.docsSidebar.doc.Implementations": {
-    "message": "实现清单（英文）",
+    "message": "实现清单",
     "description": "The label for the doc item 'Implementations' in sidebar 'docsSidebar', linking to the doc IMPLEMENTATIONS"
   },
   "sidebar.docsSidebar.doc.Releasing": {

@@ -148,19 +148,19 @@
     "description": "The label for the doc item 'Authoring fixtures' in sidebar 'docsSidebar', linking to the doc conformance/AUTHORING"
   },
   "sidebar.docsSidebar.doc.Roadmap to 1.0": {
-    "message": "1.0 ロードマップ(英語)",
+    "message": "1.0 ロードマップ",
     "description": "The label for the doc item 'Roadmap to 1.0' in sidebar 'docsSidebar', linking to the doc ROADMAP"
   },
   "sidebar.docsSidebar.doc.Governance": {
-    "message": "ガバナンス(英語)",
+    "message": "ガバナンス",
     "description": "The label for the doc item 'Governance' in sidebar 'docsSidebar', linking to the doc GOVERNANCE"
   },
   "sidebar.docsSidebar.doc.Contributing": {
-    "message": "コントリビューション(英語)",
+    "message": "コントリビューション",
     "description": "The label for the doc item 'Contributing' in sidebar 'docsSidebar', linking to the doc CONTRIBUTING"
   },
   "sidebar.docsSidebar.doc.Implementations": {
-    "message": "実装(英語)",
+    "message": "実装",
     "description": "The label for the doc item 'Implementations' in sidebar 'docsSidebar', linking to the doc IMPLEMENTATIONS"
   },
   "sidebar.docsSidebar.doc.Releasing": {
