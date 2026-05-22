@@ -177,20 +177,29 @@
    (it's a noun inside a sentence — different role than a code block).
    Only fenced blocks get the dark code-card treatment above. */
 
-/* Korean text wrapping: break at spaces/punctuation only (don't split
+/* CJK text wrapping: break at spaces/punctuation only (don't split
    mid-word the way Latin word-break does). Combined with break-word as
    a safety net for very long unbroken tokens (URLs, code). Scoped to
-   `:lang(ko)` so English content is unaffected. */
-:lang(ko) {
+   the CJK locales so Latin-script content is unaffected. */
+:lang(ko),
+:lang(ja),
+:lang(zh-CN),
+:lang(zh-TW) {
   word-break: keep-all;
   overflow-wrap: break-word;
 }
 
-/* Inline code in Korean prose still needs to break — long identifiers
+/* Inline code in CJK prose still needs to break — long identifiers
    like `customer-renewal-report.xlsx` would otherwise overflow narrow
    containers. */
 :lang(ko) code,
-:lang(ko) pre {
+:lang(ja) code,
+:lang(zh-CN) code,
+:lang(zh-TW) code,
+:lang(ko) pre,
+:lang(ja) pre,
+:lang(zh-CN) pre,
+:lang(zh-TW) pre {
   word-break: normal;
   overflow-wrap: anywhere;
 }
