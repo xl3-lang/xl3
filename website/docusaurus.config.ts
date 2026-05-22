@@ -66,10 +66,14 @@ const config: Config = {
   // Non-default locales route under `/<locale>/...` (e.g. `/ko/`).
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'ko'],
+    locales: ['en', 'ko', 'ja', 'zh-CN', 'zh-TW', 'es'],
     localeConfigs: {
       en: { label: 'English', htmlLang: 'en-US' },
       ko: { label: '한국어', htmlLang: 'ko-KR' },
+      ja: { label: '日本語', htmlLang: 'ja-JP' },
+      'zh-CN': { label: '简体中文', htmlLang: 'zh-CN' },
+      'zh-TW': { label: '繁體中文', htmlLang: 'zh-TW' },
+      es: { label: 'Español', htmlLang: 'es' },
     },
   },
 

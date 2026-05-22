@@ -1,0 +1,66 @@
+{
+  "title": {
+    "message": "xl3",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "xl3",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.Try it": {
+    "message": "試す",
+    "description": "Navbar item with label Try it"
+  },
+  "item.label.Guides": {
+    "message": "ガイド",
+    "description": "Navbar item with label Guides"
+  },
+  "item.label.API": {
+    "message": "API",
+    "description": "Navbar item with label API"
+  },
+  "item.label.Docs": {
+    "message": "ドキュメント",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Spec": {
+    "message": "仕様",
+    "description": "Navbar item with label Spec"
+  },
+  "item.label.Porter's Guide": {
+    "message": "移植ガイド",
+    "description": "Navbar item with label Porter's Guide"
+  },
+  "item.label.Conformance": {
+    "message": "適合性",
+    "description": "Navbar item with label Conformance"
+  },
+  "item.label.Roadmap to 1.0": {
+    "message": "1.0 へのロードマップ",
+    "description": "Navbar item with label Roadmap to 1.0"
+  },
+  "item.label.Governance": {
+    "message": "ガバナンス",
+    "description": "Navbar item with label Governance"
+  },
+  "item.label.Contributing": {
+    "message": "コントリビュート",
+    "description": "Navbar item with label Contributing"
+  },
+  "item.label.Implementations": {
+    "message": "実装一覧",
+    "description": "Navbar item with label Implementations"
+  },
+  "item.label.Releasing": {
+    "message": "リリース手順",
+    "description": "Navbar item with label Releasing"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  },
+  "item.label.npm": {
+    "message": "npm",
+    "description": "Navbar item with label npm"
+  }
+}

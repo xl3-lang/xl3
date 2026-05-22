@@ -238,12 +238,16 @@ async function rewriteRelativePaths(target) {
     if (next !== body) await writeFile(conf, next);
   }
 
-  // Top-level README.md → `./README.ko.md`: the Korean README is not
-  // synced into the site. Send the link out to GitHub instead.
+  // Top-level README.md → `./README.<lang>.md`: language READMEs are
+  // not synced into the site (they'd collide with /readme). Send the
+  // links out to GitHub instead.
+  const README_LANG_RE = /\]\(\.\/README\.([a-z]{2}(?:-[A-Z]{2})?)\.md(#[^)]*)?\)/g;
   const readme = join(target, 'README.md');
   if (existsSync(readme)) {
     const body = await readFile(readme, 'utf8');
-    const next = body.replace(/\]\(\.\/README\.ko\.md(#[^)]*)?\)/g, `](${GH_BLOB}/README.ko.md$1)`);
+    const next = body.replace(README_LANG_RE, (_, lang, frag = '') =>
+      `](${GH_BLOB}/README.${lang}.md${frag})`
+    );
     if (next !== body) await writeFile(readme, next);
   }
 }

@@ -1,0 +1,58 @@
+{
+  "link.title.Docs": {
+    "message": "文件",
+    "description": "The title of the footer links column with title=Docs in the footer"
+  },
+  "link.title.Try": {
+    "message": "試用",
+    "description": "The title of the footer links column with title=Try in the footer"
+  },
+  "link.title.Code": {
+    "message": "原始碼",
+    "description": "The title of the footer links column with title=Code in the footer"
+  },
+  "link.item.label.Guides": {
+    "message": "指南",
+    "description": "The label of footer link with label=Guides linking to /guides"
+  },
+  "link.item.label.Spec": {
+    "message": "規範",
+    "description": "The label of footer link with label=Spec linking to /spec"
+  },
+  "link.item.label.Porter's Guide": {
+    "message": "移植指南",
+    "description": "The label of footer link with label=Porter's Guide linking to /porters-guide"
+  },
+  "link.item.label.Conformance": {
+    "message": "符合性",
+    "description": "The label of footer link with label=Conformance linking to /conformance"
+  },
+  "link.item.label.Browser converter": {
+    "message": "瀏覽器轉換器",
+    "description": "The label of footer link with label=Browser converter linking to /try"
+  },
+  "link.item.label.Sample raw.xlsx": {
+    "message": "範例 raw.xlsx",
+    "description": "The label of footer link with label=Sample raw.xlsx linking to pathname:///playground-samples/sample-raw.xlsx"
+  },
+  "link.item.label.Sample template.xlsx": {
+    "message": "範例 template.xlsx",
+    "description": "The label of footer link with label=Sample template.xlsx linking to pathname:///playground-samples/sample-template.xlsx"
+  },
+  "link.item.label.GitHub": {
+    "message": "GitHub",
+    "description": "The label of footer link with label=GitHub linking to https://github.com/jinyoung4478/xl3"
+  },
+  "link.item.label.npm": {
+    "message": "npm",
+    "description": "The label of footer link with label=npm linking to https://www.npmjs.com/package/@jinyoung4478/xl3"
+  },
+  "link.item.label.Changelog": {
+    "message": "更新紀錄",
+    "description": "The label of footer link with label=Changelog linking to https://github.com/jinyoung4478/xl3/blob/main/CHANGELOG.md"
+  },
+  "copyright": {
+    "message": "Code MIT · Spec CC-BY-4.0. Microsoft 與 Excel 是 Microsoft Corporation 的商標。xl3 與 Microsoft 無關。",
+    "description": "The footer copyright"
+  }
+}

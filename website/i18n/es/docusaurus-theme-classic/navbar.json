@@ -1,0 +1,66 @@
+{
+  "title": {
+    "message": "xl3",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "xl3",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.Try it": {
+    "message": "Probar",
+    "description": "Navbar item with label Try it"
+  },
+  "item.label.Guides": {
+    "message": "Guías",
+    "description": "Navbar item with label Guides"
+  },
+  "item.label.API": {
+    "message": "API",
+    "description": "Navbar item with label API"
+  },
+  "item.label.Docs": {
+    "message": "Documentación",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Spec": {
+    "message": "Especificación",
+    "description": "Navbar item with label Spec"
+  },
+  "item.label.Porter's Guide": {
+    "message": "Guía de portado",
+    "description": "Navbar item with label Porter's Guide"
+  },
+  "item.label.Conformance": {
+    "message": "Conformidad",
+    "description": "Navbar item with label Conformance"
+  },
+  "item.label.Roadmap to 1.0": {
+    "message": "Hoja de ruta a 1.0",
+    "description": "Navbar item with label Roadmap to 1.0"
+  },
+  "item.label.Governance": {
+    "message": "Gobernanza",
+    "description": "Navbar item with label Governance"
+  },
+  "item.label.Contributing": {
+    "message": "Contribuir",
+    "description": "Navbar item with label Contributing"
+  },
+  "item.label.Implementations": {
+    "message": "Implementaciones",
+    "description": "Navbar item with label Implementations"
+  },
+  "item.label.Releasing": {
+    "message": "Publicación",
+    "description": "Navbar item with label Releasing"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  },
+  "item.label.npm": {
+    "message": "npm",
+    "description": "Navbar item with label npm"
+  }
+}

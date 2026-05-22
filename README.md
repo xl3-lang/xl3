@@ -54,7 +54,7 @@ formula and xl3 preserves it verbatim. See
 [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md) for the
 side-by-side guide.
 
-[한국어](./README.ko.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
+**English** · [한국어](./README.ko.md) · [日本語](./README.ja.md) · [简体中文](./README.zh-CN.md) · [繁體中文](./README.zh-TW.md) · [Español](./README.es.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
 > **Authoring an xl3 template with an LLM (Claude, GPT, Gemini, Codex, Cursor, …)?** Read [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md) first — it covers the one mistake LLMs reliably make (leftover styled rows polluting every output) and how to avoid it.
 
