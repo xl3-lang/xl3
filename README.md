@@ -7,13 +7,30 @@
 
 xl3 is technically capable but in its formative phase as a project: a single
 maintainer, no production reference cases yet, governance just documented.
-The audit pass closed every silent-fallthrough surface (50 ADRs, 139 fixtures —
-133 Stage 1 passing + 6 Stage 2 only, all green), so the language surface is
-stable enough for early adopters. **Early adopter feedback is the most useful contribution right
+The audit pass closed every silent-fallthrough surface (66 ADRs, 139
+fixtures, all green), so the language surface is stable enough for early
+adopters. **Early adopter feedback is the most useful contribution right
 now** — see [ROADMAP.md](./ROADMAP.md) for what's blocking 1.0 and
 [GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made.
 
-**0.5.x → 0.6.0 highlights** (May 2026): native support for **merged-cell
+**0.6.0 → 0.7.0 highlights** (May 2026): a 15-ADR pass (ADR-0051..0065)
+closed every remaining syntactic-conflict surface — places where a
+template shape could be parsed two ways or silently fall through. The
+most user-visible change is **aggregate argument shape** (ADR-0059):
+`SUM`, `AVERAGE`, `MIN`, `MAX`, and 1-arg `COUNT` now require a single
+column reference (`[Column]` or `Source[Column]`) and reject per-row
+arithmetic like `SUM([Qty] * [Price])` at parse time with
+`xl3/eval/bad-aggregate-arg` — use a helper column upstream or a
+native `=SUMPRODUCT(...)` in the footer cell (see
+[Cookbook 03](./docs/guides/03-aggregates.md) and
+[Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md)). Other 0.7.0
+pinned-behavior ADRs cover string-literal delimiter boundaries (0051),
+mixed-text error propagation (0053), bare-name resolution (0054),
+`@subtotal` row composition (0058), `XLOOKUP` value-arg rules (0060),
+`__inputs__` default / options split rules (0062, 0063), and
+string-to-number coercion scope (0064).
+
+**0.5.x → 0.6.0** (earlier in May 2026): native support for **merged-cell
 headers** in source workbooks (ADR-0033) — common in Korean vendor
 templates (거래명세서, 정산서, 발주서). Merged data rows broadcast the
 master value to slaves (ADR-0035). A normative feature-preservation
@@ -176,7 +193,7 @@ For projects that don't use a bundler, a self-contained IIFE bundle
 exposes `window.xl3`:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.6.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.7.0/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

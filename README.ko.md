@@ -8,12 +8,28 @@
 xl3는 기술적으로는 안정되어 가는 단계지만 프로젝트로서는 아직 형성기에
 있습니다 — 메인테이너 1명, production reference case 없음, 거버넌스
 방금 문서화. Audit 패스로 silent-fallthrough 동작은 모두 정리됐고
-(ADR 50개, fixture 139개 — Stage 1 통과 133 + Stage 2 전용 6, 전부 green), 언어 표면은 early
+(ADR 66개, fixture 139개, 전부 green), 언어 표면은 early
 adopter가 시도해볼 만큼 안정됐습니다. **지금 가장 가치 있는 기여는
 실제 사용 후 피드백**입니다 — 1.0 blocker는 [ROADMAP.md](./ROADMAP.md),
 의사결정 방식은 [GOVERNANCE.md](./GOVERNANCE.md) 참고.
 
-**0.5.x → 0.6.0 주요 변경** (2026년 5월): 소스 워크북의 **병합 헤더 셀** 네이티브
+**0.6.0 → 0.7.0 주요 변경** (2026년 5월): 15개의 ADR (ADR-0051..0065) 로
+"같은 템플릿 모양이 두 가지로 해석되거나 조용히 흘러가버리던" 문법 충돌
+지점을 모두 닫았습니다. 가장 사용자 영향이 큰 변경은 **집계 인자 형태
+제한** (ADR-0059) — `SUM`, `AVERAGE`, `MIN`, `MAX`, 1-arg `COUNT` 의
+인자는 이제 단일 컬럼 참조(`[Column]` 또는 `Source[Column]`) 만
+허용하며, `SUM([수량] * [단가])` 같은 행별 산술식은 파싱 시점에
+`xl3/eval/bad-aggregate-arg` 로 거부됩니다. 회피책은 원본에 헬퍼 컬럼을
+추가하거나, 푸터 셀에 네이티브 엑셀 `=SUMPRODUCT(...)` 를 넣는 것 —
+자세한 내용은 [Cookbook 03](./docs/guides/03-aggregates.md) 과
+[Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md) 참조. 0.7.0
+에서 함께 고정된 다른 동작들: 문자열 리터럴 구분자 경계 (0051),
+혼합 텍스트 에러 sentinel 전파 (0053), 셀 컨텍스트의 bare-name 해석
+(0054), `@subtotal` 행 구성 (0058), `XLOOKUP` value 인자 규칙 (0060),
+`__inputs__` 의 default / options 분리 규칙 (0062, 0063), 문자열-숫자
+강제 변환 범위 (0064).
+
+**0.5.x → 0.6.0** (2026년 5월 초): 소스 워크북의 **병합 헤더 셀** 네이티브
 지원 (ADR-0033) — 한국식 vendor 양식(거래명세서, 정산서, 발주서) 에서
 흔한 패턴. 데이터 행의 병합 셀은 마스터 값을 슬레이브에 broadcast
 (ADR-0035). 이미지·조건부서식·이름 정의·틀고정·시트 보호·데이터 유효성·
@@ -162,7 +178,7 @@ const outputs = await convert(templateBuffer, dataBuffer);
 `window.xl3` 로 사용할 수 있습니다.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.6.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.7.0/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
