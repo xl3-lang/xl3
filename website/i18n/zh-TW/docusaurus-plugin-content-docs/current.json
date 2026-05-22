@@ -112,7 +112,7 @@
     "description": "The label for the doc item 'Language' in sidebar 'docsSidebar', linking to the doc spec/language"
   },
   "sidebar.docsSidebar.doc.Evaluation": {
-    "message": "評估模型（英文）",
+    "message": "評估模型",
     "description": "The label for the doc item 'Evaluation' in sidebar 'docsSidebar', linking to the doc spec/evaluation"
   },
   "sidebar.docsSidebar.doc.Stability": {

@@ -112,7 +112,7 @@
     "description": "The label for the doc item 'Language' in sidebar 'docsSidebar', linking to the doc spec/language"
   },
   "sidebar.docsSidebar.doc.Evaluation": {
-    "message": "評価モデル(英語)",
+    "message": "評価モデル",
     "description": "The label for the doc item 'Evaluation' in sidebar 'docsSidebar', linking to the doc spec/evaluation"
   },
   "sidebar.docsSidebar.doc.Stability": {
