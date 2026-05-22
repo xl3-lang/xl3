@@ -108,11 +108,11 @@
     "description": "The label for the doc item 'Spec overview' in sidebar 'docsSidebar', linking to the doc spec/index"
   },
   "sidebar.docsSidebar.doc.Language": {
-    "message": "Lenguaje (en inglés)",
+    "message": "Lenguaje",
     "description": "The label for the doc item 'Language' in sidebar 'docsSidebar', linking to the doc spec/language"
   },
   "sidebar.docsSidebar.doc.Evaluation": {
-    "message": "Modelo de evaluación (en inglés)",
+    "message": "Modelo de evaluación",
     "description": "The label for the doc item 'Evaluation' in sidebar 'docsSidebar', linking to the doc spec/evaluation"
   },
   "sidebar.docsSidebar.doc.Stability": {
