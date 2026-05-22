@@ -43,6 +43,27 @@ const INFORMATIONAL_ADRS = new Set([
   '0045', // rejected bundle — rejection IS the contract
   '0048', // accepted (informational + process gate) — JXLS boundary
   '0049', // accepted (informational) — template display vs render output
+  // 0.7.0 spec-audit batch — fixtures 141–187 reserved by these ADRs
+  // but impl-pending. Each ADR's Consequences section names the
+  // fixture number(s) it intends to land in 0.7.1. Listed here so
+  // the corpus≥140 floor and the per-ADR coverage requirement do
+  // not block the 0.7.0 tag; revisit and remove from this list as
+  // each fixture lands (tracked in ROADMAP G1 / 0.7.1 milestone).
+  '0051', // string literal / block delimiter boundary
+  '0052', // cell expression classification (single vs mixed-text)
+  '0053', // mixed-text error sentinel propagation
+  '0054', // bare name in cell context
+  '0055', // directive integer bounds (positive_integer)
+  '0056', // reserved sheet read policy (__config__ system keys)
+  '0057', // __lists__ misuse error code
+  '0058', // @subtotal row composition
+  '0059', // aggregate argument shape
+  '0060', // XLOOKUP value / fallback arg rules
+  '0061', // source name lexical disambiguation
+  '0062', // __inputs__ default empty string semantics
+  '0063', // __inputs__ options pipe-split rules
+  '0064', // string→number coercion scope
+  '0065', // @source default explicit form
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.

@@ -3,7 +3,7 @@
 What needs to happen for **XTL 1.0** (spec) and **xl3 1.0** (reference
 implementation).
 
-The current version is **0.6.0** (npm) targeting **XTL 0.1 (draft)**.
+The current version is **0.7.0** (npm) targeting **XTL 0.1 (draft)**.
 Breaking changes are still possible during 0.x. The 1.0 cut is gated on
 the items below, not on a calendar date.
 
@@ -36,28 +36,28 @@ milestone. Per-version step plan below references these gates by ID.
 
 | ID | Gate | Owner | Artifact | Pass criterion | Fallback | Target |
 |----|------|-------|----------|----------------|----------|--------|
-| G1 | Conformance corpus ≥ 140 | maintainer | `conformance/fixtures/` | `ls conformance/fixtures/ \| wc -l` ≥ 140 | — | 0.6/0.7 |
+| G1 | Conformance corpus ≥ 140 | maintainer | `conformance/fixtures/` | `ls conformance/fixtures/ \| wc -l` ≥ 140 | — | 0.7.1 (139 today; 0.7.0 ADRs reserved 141–187) |
 | G2 | Stage 2 OOXML canonicalization spec'd | maintainer | ADR-0006 + canonicalizer in src/ | covered by fixtures 024-027, 093 + ADR-0006 amendment | — | DONE |
-| G3 | Error code catalog frozen | maintainer | `src/__tests__/error-codes.test.ts` snapshot | catalog snapshot unchanged for 30 days | — | 0.9-rc |
+| G3 | Error code catalog frozen | maintainer | `src/__tests__/error-codes.test.ts` snapshot | catalog snapshot unchanged for 30 days | — | 0.9-rc (clock reset 2026-05-22 by 0.7.0's 4 new codes) |
 | G4 | JXLS boundary published | maintainer | ADR-0048 | file exists, references PORTERS_GUIDE | — | DONE |
-| G5 | Deferred-impl ADRs landed | maintainer | ADR-0038 impl ✅ (2026-05-18) + ADR-0040 PE impl | ADR-0038 portion shipped (fixtures 132-135); ADR-0040 CF/DV range-extension still pending for 0.6.1 | — | 0.6 (partial) / 0.6.1 |
+| G5 | Deferred-impl ADRs landed | maintainer | ADR-0038 impl ✅ (2026-05-18) + ADR-0040 PE impl | ADR-0038 portion shipped (fixtures 132-135); ADR-0040 CF/DV range-extension still pending | — | 0.6 (partial) / 0.7.1 |
 | G6 | Public API surface frozen | maintainer | `src/__tests__/api-surface.test.ts` snapshot | snapshot unchanged for 30 days | — | 0.9-rc |
-| G7 | JSDoc examples on @stable exports | maintainer | TypeDoc output | every `@stable` symbol has `@example` block | — | 0.7-0.8 |
-| G8 | Performance characterized | maintainer | `scripts/BENCH.md` | 1k/10k/100k row × 5/10/20 col matrix + memory-ceiling + parse/eval/write split published | — | 0.7 |
-| G9 | Perf regression fixtures | maintainer | conformance corpus | ≥ 2 large fixtures with ratio-based assertion | — | 0.7 |
-| G10 | Cross-browser smoke | maintainer | `ci.yml` | Safari + Firefox bundle-load + 1 convert() per run | — | 0.7 |
-| G11 | Stage 2 in CI | maintainer | `ci.yml` | `npm run conformance:stage2` runs on every PR | — | 0.7 |
-| G12 | Undecided behavior pinned (pivot/sparkline/ListObject/page break) | maintainer | conformance fixtures + ADR per item | each: fixture pinning current behavior OR ADR explicitly deferring to 1.x | defer to 1.1 with ADR | 0.6 / 0.7 |
-| G13 | Second-language impl validation | external (xl3-py) | `conformance/reports/*.json` | xl3-py passes ≥ 80% Stage 1 OR ≥ 80% Stage 2, OR documented 50% skeleton in another language (Rust/Go/Java) within 12 months of all other gates closing | accept single-impl 1.0 via public ADR amending GOVERNANCE | 0.7-0.8 |
+| G7 | JSDoc examples on @stable exports | maintainer | TypeDoc output | every `@stable` symbol has `@example` block | — | 0.8 |
+| G8 | Performance characterized | maintainer | `scripts/BENCH.md` | 1k/10k/100k row × 5/10/20 col matrix + memory-ceiling + parse/eval/write split published | — | 0.7.1 |
+| G9 | Perf regression fixtures | maintainer | conformance corpus | ≥ 2 large fixtures with ratio-based assertion | — | 0.7.1 |
+| G10 | Cross-browser smoke | maintainer | `ci.yml` | Safari + Firefox bundle-load + 1 convert() per run | — | 0.7.1 |
+| G11 | Stage 2 in CI | maintainer | `ci.yml` | `npm run conformance:stage2` runs on every PR | — | 0.7.1 |
+| G12 | Undecided behavior pinned (pivot/sparkline/ListObject/page break) | maintainer | conformance fixtures + ADR per item | each: fixture pinning current behavior OR ADR explicitly deferring to 1.x | defer to 1.1 with ADR | 0.7.1 / 0.8 |
+| G13 | Second-language impl validation | external (xl3-py) | `conformance/reports/*.json` | xl3-py passes ≥ 80% Stage 1 OR ≥ 80% Stage 2, OR documented 50% skeleton in another language (Rust/Go/Java) within 12 months of all other gates closing | accept single-impl 1.0 via public ADR amending GOVERNANCE | 0.7.x–0.8.x |
 | G14 | External-contributor ADR | external | `spec/decisions/NNNN-*.md` | ≥ 1 ADR with non-maintainer as Author (≥ 60% of Context/Decision sections by line count) | 18-month time-box, then: ≥ 2 external-authored cookbook recipes OR ≥ 5 external-authored conformance fixtures | 0.8 |
 | G15 | Production reference case | external (with maintainer help) | `IMPLEMENTATIONS.md` "Production users" row | ≥ 1 named user, satisfied by EITHER (a) external company with permission to list, OR (b) the maintainer's own employer running xl3 in scheduled production with a public case study | — | 0.8 |
 | G16 | Maintainer set widening | maintainer | `GOVERNANCE.md` | ≥ 2 people with accept/reject rights for ADRs and impl PRs | explicit accept of single-maintainer 1.0 governance shape via amendment to GOVERNANCE | 0.8 |
-| G17 | Korean cookbook i18n complete | maintainer | `website/i18n/ko/.../guides/` | all cookbook recipes have Korean translation | — | 0.6 |
+| G17 | Korean cookbook i18n complete | maintainer | `website/i18n/ko/.../guides/` | all cookbook recipes have Korean translation | — | DONE (0.6) |
 | G18 | Production use case in README | maintainer | `README.md` | replaces "alpha" status with concrete production reference (tied to G15) | — | 1.0 (with G15) |
 | G19 | Migration guide 0.x → 1.0 | maintainer | `docs/migration-0.x-to-1.0.md` | documents every behavior change or confirms additive-only | downgrade to CHANGELOG note if confirmed additive-only | 0.8 |
-| G20 | SECURITY.md + threat model | maintainer | `SECURITY.md` + spec amendment | docs zip-bomb / oversized workbook / formula-execution stance + limits API | — | 0.7-0.8 |
-| G21 | Hard limits documented (no streaming until 1.1) | maintainer | spec/evaluation.md | row / memory hard limit values + AbortSignal API documented | — | 0.7-0.8 |
-| G22 | API surface — internal model types separated | maintainer | `src/index.ts` exports + STABILITY.md | only `convert`/`preview`/`analyze` + stable interfaces marked `@stable`; model/parser types marked `@experimental` or moved to `xl3/internal` | — | 0.6 (before @group impl) |
+| G20 | SECURITY.md + threat model | maintainer | `SECURITY.md` + spec amendment | docs zip-bomb / oversized workbook / formula-execution stance + limits API | — | 0.7.1 |
+| G21 | Hard limits documented (no streaming until 1.1) | maintainer | spec/evaluation.md | row / memory hard limit values + AbortSignal API documented | — | 0.7.1 |
+| G22 | API surface — internal model types separated | maintainer | `src/index.ts` exports + STABILITY.md | only `convert`/`preview`/`analyze` + stable interfaces marked `@stable`; model/parser types marked `@experimental` or moved to `xl3/internal` | — | DONE (0.6) |
 | G23 | RC soak | maintainer | git tags | RC published; ≥ 21-day soak (extended from 7 day per review feedback); 0 critical issues | — | 0.9-rc |
 | G24 | "Stable quarter" post-checklist | maintainer | release calendar | 90-day window after the FINAL gate above ticks ✅; no breaking spec/API/error-code change during the window | breaking change → restart clock | between final-gate-tick and 1.0 cut |
 
@@ -107,18 +107,59 @@ state machine, transform-pass partition, renderer rewrite,
 group-scoped aggregate eval). Splitting 0.6.0 keeps the milestone
 shippable.
 
-### 0.6.1 — Rest of deferred-impl
+### 0.6.1 — Rest of deferred-impl (planned, not yet shipped)
 
 Gates closed: **G5** completion (ADR-0040 PE: CF/DV `sqref`
 extension), pivot/page-break behavior fixtures toward **G12**.
 
-### 0.7.0 — Performance + external validation begins
+Status as of 0.7.0 shipping: this milestone was bypassed by the
+spec-audit batch (0.7.0). G5/G12 work folded into 0.7.1.
 
-Gates closed: **G8** (perf benchmarks), **G9** (perf regression
-fixtures), **G10** (cross-browser), **G11** (Stage 2 in CI),
-**G20** (SECURITY.md draft), **G21** (hard limits).
+### 0.7.0 — Spec-audit batch (shipped 2026-05-22)
 
-Progress toward: **G13** (xl3-py).
+Theme: close 17 syntactic-conflict gaps surfaced by a deep audit
+of the lexer, cell classification, directive composition,
+aggregate args, and reserved-sheet semantics. Unplanned in the
+original gate table; the perf/CI/limits work originally tagged
+0.7.0 moves to **0.7.1**.
+
+Shipped artifacts:
+
+- 15 new ADRs (0051–0065) + amendments to ADR-0021 (group-order
+  catalog entry) and ADR-0041 (header-cell multi-line
+  normalization).
+- 4 new error codes — `xl3/parser/unbalanced-literal`,
+  `xl3/lists/invalid-use`, `xl3/eval/bad-aggregate-arg`,
+  `xl3/expression/unknown-name`.
+- Grammar additions: `positive_integer`, `group_directive`,
+  `subtotal_directive`, `aggregate_call`, lexical-disambiguation
+  note.
+- `src/directive-parser.ts` strictness for leading-zero integers.
+- Two-pass parallel review (claude-general + codex); all
+  CRITICAL/HIGH findings closed before tag.
+
+Gate impact:
+
+- **G1** — 139 fixtures today. The 0.7.0 ADRs reserved fixture
+  numbers **141–187**; impl is pending. G1 closes when those
+  fixtures land in 0.7.1.
+- **G3** — 30-day error-code-catalog clock **reset** on 2026-05-22
+  by the 4 new codes.
+- **G6** — no public API surface change; G6 clock unaffected.
+
+### 0.7.1 — Performance + external validation begins (relabeled from old 0.7.0)
+
+Gates closed: **G5** completion (ADR-0040 CF/DV `sqref` range),
+**G8** (perf benchmarks), **G9** (perf regression fixtures),
+**G10** (cross-browser), **G11** (Stage 2 in CI), **G20**
+(SECURITY.md draft + threat model), **G21** (hard limits +
+AbortSignal docs).
+
+Also closes the **G1 ≥ 140 fixtures** floor by landing fixtures
+141–187 reserved by the 0.7.0 ADRs.
+
+Progress toward: **G12** (undecided behavior pinning), **G13**
+(xl3-py).
 
 Relabel: `alpha` → `beta` after G8 publishes and xl3-py reaches
 ≥ 50% Stage 1.

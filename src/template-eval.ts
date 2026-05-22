@@ -196,6 +196,18 @@ export function evalExpression(
     );
   }
 
+  // ADR-0054: a bare identifier in a template block resolves via
+  // boolean literal → ctx (group key / inputs / config) chain. If
+  // nothing matched up to this point and the token looks like a
+  // plain identifier (letter-led, word characters only), it was an
+  // unknown name — raise instead of silently returning the literal.
+  if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(trimmed)) {
+    throw xtlError(
+      'xl3/expression/unknown-name',
+      `Unknown name \`${trimmed}\` — bare identifiers in cell expressions must be \`[Column]\`, \`__config__[key]\`, \`__inputs__[name]\`, or a function call. For sheet / file patterns, declare \`${trimmed}\` as a group key.`,
+    );
+  }
+
   return trimmed;
 }
 

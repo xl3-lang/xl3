@@ -59,6 +59,11 @@ const EXPECTED_CODES: XtlErrorCode[] = [
   'xl3/xlookup/bare-bracket',
   'xl3/xlookup/no-match',
   'xl3/xlookup/source-mismatch',
+  // 0.7.0 batch (ADR-0051, ADR-0057, ADR-0059, ADR-0054)
+  'xl3/parser/unbalanced-literal',
+  'xl3/lists/invalid-use',
+  'xl3/eval/bad-aggregate-arg',
+  'xl3/expression/unknown-name',
 ];
 
 describe('error code catalog (ADR-0015)', () => {

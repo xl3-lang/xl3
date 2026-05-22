@@ -76,6 +76,26 @@ export function normalizeTemplate(
     if (trimmed === '') {
       throw xtlError('xl3/parser/empty-block', 'Empty template block: {{ ... }} must contain an expression');
     }
+    // ADR-0051: an expression body whose `"` count is odd usually
+    // means the author embedded `}}` inside a string literal — the
+    // outer scanner closed at the inner `}}` and orphaned the
+    // trailing `"`. Raise loudly instead of silently miscompiling.
+    if ((trimmed.match(/"/g) ?? []).length % 2 === 1) {
+      throw xtlError(
+        'xl3/parser/unbalanced-literal',
+        `Template block contains an unbalanced string literal; \`}}\` inside \`"..."\` does not close the block. Got: {{ ${trimmed} }}`,
+      );
+    }
+    // ADR-0057: __lists__[name] is a list array and only valid as
+    // the RHS of `@filter ... in` / `@filter ... !in`. Any other
+    // shape (cell expression, function arg, non-filter directive)
+    // is rejected.
+    if (/__lists__\[/.test(trimmed) && !/^@filter\b[\s\S]*\b!?in\b[\s\S]*__lists__\[/i.test(trimmed)) {
+      throw xtlError(
+        'xl3/lists/invalid-use',
+        `__lists__[...] is a list array and may only be used as the RHS of \`@filter ... in\` or \`@filter ... !in\`. Got: {{ ${trimmed} }}`,
+      );
+    }
     if (isGoKeyword(trimmed)) return `{{ ${trimmed} }}`;
 
     return `{{ ${normalizeInner(trimmed, columns)} }}`;
@@ -143,8 +163,17 @@ function normalizeAggregate(expr: string): string {
     };
     if (rowsFn[name] && call.args.length === 1) {
       const ref = parseFieldRef(call.args[0]);
-      const rowsExpr = ref?.source ? `(sourceRows "${ref.source}")` : '.Rows';
-      return `${rowsFn[name]} ${rowsExpr} "${ref?.field ?? fieldNameFromOperand(call.args[0])}"`;
+      // ADR-0059: SUM/AVERAGE/MIN/MAX (and 1-arg COUNT) arguments
+      // MUST be column references — `[Column]` or `Source[Column]`.
+      // Literals, expressions, and function calls are rejected.
+      if (!ref) {
+        throw xtlError(
+          'xl3/eval/bad-aggregate-arg',
+          `${name} requires a column reference as its argument (\`[Column]\` or \`Source[Column]\`); got \`${call.args[0]}\``,
+        );
+      }
+      const rowsExpr = ref.source ? `(sourceRows "${ref.source}")` : '.Rows';
+      return `${rowsFn[name]} ${rowsExpr} "${ref.field}"`;
     }
   }
   return e;

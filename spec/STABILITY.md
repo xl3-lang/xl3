@@ -123,6 +123,30 @@ contract. Breaking changes require an XTL 2.0 cut.
 - ADR-0047 — `ISBLANK` as `IFEMPTY` alias
 - ADR-0050 — `__inputs__` `default`/`label`/`description`/`options`
   as XTL templates
+- ADR-0051 — `{{ ... }}` block delimiter boundary + unbalanced-
+  literal detection
+- ADR-0052 — Single-expression vs. mixed-text cell classification
+  (trim then anchored match; adjacent blocks always mixed-text)
+- ADR-0053 — Mixed-text propagation of Excel error sentinels
+- ADR-0054 — Bare names in cells / file / sheet patterns
+  (shorthand resolution + `xl3/expression/unknown-name`)
+- ADR-0055 — `@top` / `@repeat right` positive-integer grammar
+- ADR-0056 — `__config__[system-key]` read policy
+- ADR-0057 — `__lists__[name]` outside `@filter in/!in` rejection
+- ADR-0058 — `@subtotal` row composition (same-row level binding)
+- ADR-0059 — Aggregate argument shape (column ref only)
+- ADR-0060 — `XLOOKUP` value / fallback arg rules (lazy fallback)
+- ADR-0061 — Source-name vs. function-name lexical
+  disambiguation (preserves ADR-0024 extension pass-through)
+- ADR-0062 — `__inputs__` `default = ""` semantics
+- ADR-0063 — `__inputs__` `options` pipe-split rules
+- ADR-0064 — String→number coercion scope (scientific notation
+  accepted; hex / binary / octal rejected)
+- ADR-0065 — `@source default` explicit form + source-name case
+  sensitivity
+- ADR-0021 (group-order amendment) — group order under non-
+  matching `@sort` is implementation-defined
+- ADR-0041 (header amendment) — header-cell newline normalization
 
 ADR-0043 and ADR-0048 are **process-normative** — they bind future
 ADR authors but not the runtime contract. ADR-0034 and ADR-0049 are
