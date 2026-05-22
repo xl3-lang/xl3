@@ -69,6 +69,18 @@ XTL의 `HYPERLINK()` 함수를 쓰세요 (URL/label 모두 컬럼 참조 가능)
 {{ IFS([R] > 10000, "VIP", [R] > 1000, "일반", TRUE, "Lite") }}
 ```
 
+### "`SUMPRODUCT` 처럼 `SUM(수량 * 단가)` 를 쓰고 싶어요"
+
+XTL 집계는 인자 안에 행별 산술식을 받지 않습니다. `{{ SUM([수량] * [단가]) }}`, `{{ SUM([A] + [B]) }}`, `{{ AVERAGE([매출] - [원가]) }}` 같은 형태는 파싱 시점에 `xl3/eval/bad-aggregate-arg` 로 거부됩니다 (ADR-0059). 인자는 컬럼 참조 한 개여야 합니다: `[Column]` 또는 `Source[Column]`.
+
+세 가지 해결책 (선호 순):
+
+1. **원본에 헬퍼 컬럼 추가** — 원본에 `금액` 컬럼(계산식 또는 미리 곱해진 값)을 만들고 `{{ SUM([금액]) }}` 사용. "A × B 의 합계" 표준 XTL 패턴.
+2. **푸터 셀에 네이티브 엑셀 `SUMPRODUCT`** — xl3 는 셀 수식을 그대로 보존합니다 (ADR-0046). 푸터 셀에 `=SUMPRODUCT(E2:E10000, F2:F10000)` 을 직접 작성. 렌더 시점의 실제 행 수를 모르므로 `E2:E10000` 처럼 오버슈트 범위를 씁니다. 두 가지 푸터 함정(자기 컬럼 참조; 행 오버슈트 이중 합산)을 피해야 함 — [LLM 작성 가이드 § Footer pitfalls](../llm-template-authoring.md#footer-pitfall-1--self-column-sum-raises-순환-참조-circular-reference) 참고.
+3. **행 단위 XTL 셀 + 렌더 출력의 헬퍼 컬럼** — `{{ [수량] * [단가] }}` 를 행 단위 셀에 둡니다(집계가 아니므로 정상 동작). 그 값까지 footer 로 합치려면 결국 1번 또는 2번으로 돌아갑니다.
+
+왜 이 제약이 있는가: XTL 0.x 는 함수 표면을 작고 예측 가능하게 유지합니다. 행별 계산 후 집계(엑셀 배열 수식 동작)는 의도적으로 deferred — ADR-0059 § "Why not allow `SUM([a] + [b])`".
+
 ### "`SUMIF` / `COUNTIF` / `AVERAGEIF` 찾고 있어요"
 
 함수를 찾지 말고 데이터 블록 패턴을 쓰세요. "상태가 VIP인 행의 amount 합계":
@@ -127,6 +139,7 @@ XTL의 `HYPERLINK()` 함수를 쓰세요 (URL/label 모두 컬럼 참조 가능)
 | 음수를 괄호로 표시 | (미지원) | 셀 `numFmt = #,##0;(#,##0)` | **Excel 수식** |
 | 행별 곱셈 (`*2`) | `{{ [A] * 2 }}` | `=B2*2` ❌ 행마다 다시 쓰이지 않음 | **XTL** |
 | 행 확장 위에 합계 footer | `{{ SUM([A]) }}` | `=SUM(B:B)` 전체 열 가능 | 둘 다 가능 |
+| A × B 의 합계 (SUMPRODUCT) | 원본에 헬퍼 컬럼 + `{{ SUM([금액]) }}` | 푸터 셀에 `=SUMPRODUCT(E2:E10000, F2:F10000)` | **Excel 수식** 또는 헬퍼 컬럼 — `SUM([A]*[B])` 는 `xl3/eval/bad-aggregate-arg` 발생 |
 | 정적 하이퍼링크 | (필요 없음) | `=HYPERLINK("...", "label")` | **Excel 수식** |
 | 행별 동적 하이퍼링크 | `{{ HYPERLINK([URL], [표시명]) }}` | quoting 지옥으로 비현실적 | **XTL** |
 | "이번 달" 행만 필터 | `{{ @filter MONTH([일자]) = MONTH(TODAY()) }}` | (Excel은 렌더 전 필터 불가) | **XTL 전용** |

@@ -170,15 +170,21 @@ the body of a `@subtotal` row:
 {{ @subtotal SUM([Amount]) }}    # ✓ per-group emission (ADR-0038)
 ```
 
-In xl3 0.6 they do **not** compose with arithmetic operators or
+In xl3 0.7+ they do **not** compose with arithmetic operators or
 appear as the LHS of a comparison. `@subtotal` has the same restriction
 (per ADR-0038, composite-expression bodies raise
-`xl3/subtotal/bad-aggregate` and are deferred). All of these raise
-`xl3/eval/operand-coercion`-class errors or silently mis-evaluate:
+`xl3/subtotal/bad-aggregate` and are deferred). Per-row arithmetic /
+literals / function calls **inside** the aggregate argument raise
+`xl3/eval/bad-aggregate-arg` at parse time (ADR-0059); arithmetic
+*around* the aggregate result raises `xl3/eval/operand-coercion`-class
+errors or silently mis-evaluates:
 
 ```text
-{{ SUM([Amount]) / 1.1 }}                                # ✗
-{{ SUM([Net]) - SUM([Cost]) }}                           # ✗
+{{ SUM([Qty] * [Price]) }}                               # ✗ — bad-aggregate-arg (ADR-0059)
+{{ SUM([A] + [B]) }}                                     # ✗ — bad-aggregate-arg (ADR-0059)
+{{ AVERAGE(IF([Region]="Seoul", [Amount], 0)) }}         # ✗ — bad-aggregate-arg (ADR-0059)
+{{ SUM([Amount]) / 1.1 }}                                # ✗ — operand-coercion
+{{ SUM([Net]) - SUM([Cost]) }}                           # ✗ — operand-coercion
 {{ IF([Qty] * [Price] >= 80000, "Top", "Std") }}         # ✗ — comparison LHS is arithmetic
 ```
 

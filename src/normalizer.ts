@@ -167,9 +167,17 @@ function normalizeAggregate(expr: string): string {
       // MUST be column references — `[Column]` or `Source[Column]`.
       // Literals, expressions, and function calls are rejected.
       if (!ref) {
+        // ADR-0059: the leading sentence is the stable diagnostic
+        // substring that fixtures match on; the remediation block
+        // after it is informational and may evolve.
         throw xtlError(
           'xl3/eval/bad-aggregate-arg',
-          `${name} requires a column reference as its argument (\`[Column]\` or \`Source[Column]\`); got \`${call.args[0]}\``,
+          `${name} requires a column reference as its argument (\`[Column]\` or \`Source[Column]\`); got \`${call.args[0]}\`. ` +
+            `Aggregates over per-row arithmetic / expressions are out of scope in XTL 0.x (ADR-0059). ` +
+            `Fix options: (1) add a helper column in the source (e.g., \`Amount = Qty * Price\`) and use \`${name}([Amount])\`; ` +
+            `(2) put a native Excel formula in the cell — xl3 preserves it verbatim per ADR-0046 (e.g., \`=SUMPRODUCT(E2:E10000, F2:F10000)\`); ` +
+            `(3) compute the per-row value in a non-aggregate cell first. ` +
+            `See docs/guides/03-aggregates.md "What doesn't work".`,
         );
       }
       const rowsExpr = ref.source ? `(sourceRows "${ref.source}")` : '.Rows';

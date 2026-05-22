@@ -69,6 +69,37 @@ conditionals. End with `TRUE, default` as the fallback:
 {{ IFS([R] > 10000, "VIP", [R] > 1000, "Standard", TRUE, "Lite") }}
 ```
 
+### "I want `SUM(Qty * Price)` like `SUMPRODUCT` or an array formula"
+
+XTL aggregates don't accept per-row arithmetic inside the argument.
+`{{ SUM([Qty] * [Price]) }}`, `{{ SUM([A] + [B]) }}`,
+`{{ AVERAGE([Net] - [Cost]) }}` and similar shapes raise
+`xl3/eval/bad-aggregate-arg` at parse time (ADR-0059). The argument
+must be a single column reference: `[Column]` or `Source[Column]`.
+
+Three options, in order of preference:
+
+1. **Helper column upstream** — add an `Amount` column to the source
+   (computed or pre-multiplied), then `{{ SUM([Amount]) }}`. This is
+   the canonical XTL pattern for "sum of A × B" totals.
+2. **Native Excel `SUMPRODUCT` in the footer cell** — xl3 preserves
+   cell formulas verbatim (ADR-0046). Write
+   `=SUMPRODUCT(E2:E10000, F2:F10000)` directly in the footer cell.
+   Use overshoot ranges (`E2:E10000`) since the rendered row count is
+   unknown at authoring time. Mind the two footer pitfalls (self-
+   column reference; row-overshoot double-count) — see
+   [LLM authoring guide § Footer pitfalls](../llm-template-authoring.md#footer-pitfall-1--self-column-sum-raises-순환-참조-circular-reference).
+3. **Per-row XTL cell + helper column in the rendered output** —
+   put `{{ [Qty] * [Price] }}` in a row-level cell (this works,
+   it's a non-aggregate context) and footer it with
+   `{{ SUM([HelperColumn]) }}` only if HelperColumn is also a source
+   column. Otherwise you're back to option 1 or 2.
+
+Why the restriction: XTL 0.x keeps the function surface small and
+predictable. Per-row computed aggregation (Excel's array-formula
+behavior) is a deferred feature — see ADR-0059 § "Why not allow
+`SUM([a] + [b])`".
+
 ### "I'm looking for `SUMIF` / `COUNTIF` / `AVERAGEIF`"
 
 Don't reach for the function — use the data-block pattern.
@@ -133,6 +164,7 @@ in XTL's table is intentionally an Excel-formula path.
 | Show negative in parens | (not supported) | Cell `numFmt = #,##0;(#,##0)` | **Excel-formula** |
 | Per-row math (`*2`) | `{{ [A] * 2 }}` | `=B2*2` ❌ doesn't rewrite per row | **XTL** |
 | Footer SUM over expanding range | `{{ SUM([A]) }}` | `=SUM(B:B)` whole-column works | Either |
+| Sum of A × B (SUMPRODUCT) | helper column upstream + `{{ SUM([Amount]) }}` | `=SUMPRODUCT(E2:E10000, F2:F10000)` in footer cell | **Excel-formula** or helper column — `SUM([A]*[B])` raises `xl3/eval/bad-aggregate-arg` |
 | Static hyperlink | (no need) | `=HYPERLINK("...", "label")` | **Excel-formula** |
 | Per-row dynamic hyperlink | `{{ HYPERLINK([Url], [Label]) }}` | not feasible (quoting hell) | **XTL** |
 | Filter rows for "this month" | `{{ @filter MONTH([Date]) = MONTH(TODAY()) }}` | (Excel can't filter pre-render) | **XTL only** |
