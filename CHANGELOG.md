@@ -6,6 +6,102 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-05-22
+
+0.7.0 batch. Spec-side audit closing 17 syntactic-conflict gaps
+across the lexer, cell-classification, directive composition,
+aggregate args, and reserved-sheet surfaces. 15 new ADRs (0051–
+0065) plus amendments to ADR-0021 and ADR-0041. Reviewed in
+parallel by claude-general (consistency) and codex (spec design).
+XTL stays at 0.1 — these ADRs pin previously-impl-defined or
+silent-fallthrough shapes as normative without expanding the
+language surface.
+
+### Added
+
+- **ADR-0051** — `{{ ... }}` block delimiter rule: first `}}`
+  closes; unbalanced string literal raises
+  `xl3/parser/unbalanced-literal` (supersedes ADR-0028's impl-
+  defined unbalanced-quote stance).
+- **ADR-0052** — Single-expression vs. mixed-text classification:
+  cell text is trimmed before matching; adjacent blocks
+  (`{{ A }}{{ B }}`) are always mixed-text.
+- **ADR-0053** — Source-side error sentinels (`#N/A`, `#VALUE!`,
+  `#REF!`, `#NAME?`, `#NUM!`, `#NULL!`) flow as empty in all
+  positions; first-encounter warning is normative MUST.
+- **ADR-0054** — Bare names in data cells resolve via group-key /
+  inputs / config shorthand; column refs MUST use `[Column]`.
+  Adds `xl3/expression/unknown-name`.
+- **ADR-0055** — `@top` and `@repeat right` require positive
+  integers (≥1, no leading zeros); new `positive_integer`
+  grammar production.
+- **ADR-0056** — `__config__[system-key]` read is legal; only the
+  declaration side has the system-name restriction.
+- **ADR-0057** — `__lists__[name]` outside `@filter in/!in`
+  raises `xl3/lists/invalid-use`.
+- **ADR-0058** — Multiple `@subtotal` expressions on one row
+  share the row's single nesting-level binding; mixed-level on
+  one row is unsupported.
+- **ADR-0059** — Aggregate arguments MUST be column refs; new
+  `xl3/eval/bad-aggregate-arg`.
+- **ADR-0060** — `XLOOKUP` value/fallback args follow the
+  active-source rule; fallback evaluation is lazy.
+- **ADR-0061** — Lexical disambiguation between `Source[` and
+  `Source(`; ADR-0024's extension pass-through preserved.
+- **ADR-0062** — `__inputs__` `default = ""` (or any empty
+  post-evaluation value) means required.
+- **ADR-0063** — `__inputs__` `options` trim + drop empties;
+  duplicates preserved; empty-option intentionally inexpressible.
+- **ADR-0064** — String→number coercion accepts scientific
+  notation; hex / binary / octal prefixes rejected per
+  Excel-default principle.
+- **ADR-0065** — `@source default` explicit form is legal;
+  source-name arguments are case-sensitive.
+- **ADR-0021 amendment** — Group order with non-matching `@sort`
+  keys is implementation-defined (catalog entry); reference impl
+  uses encounter order.
+- **ADR-0041 amendment** — Header cells normalize CRLF/CR/LF to
+  a single space at read time; data cells preserve LF unchanged.
+- Grammar additions: `positive_integer`, `non_zero_digit`,
+  `group_directive`, `subtotal_directive`, `aggregate_call`,
+  `aggregate_name`, `aggregate_arg`; lexical-disambiguation note.
+
+### Error codes (4 new)
+
+- `xl3/parser/unbalanced-literal` (ADR-0051)
+- `xl3/lists/invalid-use` (ADR-0057)
+- `xl3/eval/bad-aggregate-arg` (ADR-0059)
+- `xl3/expression/unknown-name` (ADR-0054)
+
+All append-only per ADR-0015.
+
+### Changed
+
+- `src/directive-parser.ts` — `parseTop` and `parseRepeat` add a
+  shape pre-check (`/^[1-9][0-9]*$/`) rejecting leading zeros
+  before `parseInt`. Previously `@top 05` parsed as 5; now raises
+  `xl3/directive/invalid-syntax`.
+
+### Breaking (narrow)
+
+- `@top 05` / `@repeat right 05` (leading-zero directives) — now
+  parse error. No production template observed using this shape.
+- A cell of `  {{ [Amount] }}` (leading/trailing whitespace
+  around a single block) is now a single-expression cell — numFmt
+  coercion applies (per ADR-0052). Previously this was silently
+  mixed-text. Behavior change is more user-helpful; no fixture
+  affected.
+- `SUM(literal)` / `SUM([a] + [b])` and similar non-column-ref
+  aggregate arguments now raise `xl3/eval/bad-aggregate-arg`.
+  Previously silently produced `literal * row_count`.
+- `{{ __lists__[x] }}` (list reference outside `@filter in/!in`)
+  now raises `xl3/lists/invalid-use`. Previously stringified to
+  the underlying array representation.
+- String coercion of `"0x10"`, `"0b101"`, `"0o17"` now raises
+  `xl3/eval/operand-coercion`. Previously silently parsed via
+  JavaScript `Number()`. Scientific notation (`"1e5"`) remains
+  accepted.
+
 ## [0.6.0] - 2026-05-18
 
 0.6.0 batch. Spec-side work (13 new ADRs from 0038 through 0050)
