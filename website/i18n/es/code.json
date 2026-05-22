@@ -325,5 +325,269 @@
   "theme.tags.tagsPageTitle": {
     "message": "Etiquetas",
     "description": "The title of the tag list page"
+  },
+  "homepage.hero.kicker": {
+    "message": "Excel a Excel · la lógica vive dentro del libro",
+    "description": "Hero section eyebrow / kicker line"
+  },
+  "homepage.hero.title": {
+    "message": "Lógica de transformación de Excel, dentro del archivo de Excel.",
+    "description": "Hero section H1"
+  },
+  "homepage.hero.lead": {
+    "message": "xl3 coloca las reglas de transformación dentro de {template}, no en el código. Las personas no técnicas pueden abrirlo y editar las reglas directamente: están escritas con las mismas funciones {if}, {sum} y referencias de columna que ya usan a diario.",
+    "description": "Hero section lead paragraph; {template}, {if}, {sum} are inline code refs"
+  },
+  "homepage.hero.cta.try": {
+    "message": "Probar el conversor",
+    "description": "Hero primary CTA button"
+  },
+  "homepage.hero.cta.workflow": {
+    "message": "Ver el flujo de trabajo",
+    "description": "Hero secondary CTA — scroll to workflow section"
+  },
+  "homepage.hero.flowPanel.ariaLabel": {
+    "message": "Flujo de trabajo de xl3",
+    "description": "Aria label for the workflow diagram aside"
+  },
+  "homepage.hero.flow.role.developer": {
+    "message": "Desarrollador",
+    "description": "Workflow diagram — actor label"
+  },
+  "homepage.hero.flow.role.developerRole": {
+    "message": "define el motor una sola vez",
+    "description": "What the developer does in the workflow"
+  },
+  "homepage.hero.flowStack.ariaLabel": {
+    "message": "Flujo de archivos del operador",
+    "description": "Aria label for the file-flow stack inside the workflow diagram"
+  },
+  "homepage.hero.flow.raw.label": {
+    "message": "datos del operador",
+    "description": "Workflow diagram — what raw.xlsx is"
+  },
+  "homepage.hero.flow.template.label": {
+    "message": "reglas archivadas",
+    "description": "Workflow diagram — what template.xlsx is"
+  },
+  "homepage.hero.flow.result.label": {
+    "message": "libro terminado",
+    "description": "Workflow diagram — output label"
+  },
+  "homepage.hero.flow.result.sublabel": {
+    "message": "para el operador",
+    "description": "Workflow diagram — output sublabel"
+  },
+  "homepage.walkthrough.step01.title": {
+    "message": "Define el contrato en Excel",
+    "description": "Walkthrough step 01 title"
+  },
+  "homepage.walkthrough.step01.body": {
+    "message": "Usa __config__, source_table y expresiones XTL para describir cómo los libros en bruto se convierten en informes.",
+    "description": "Walkthrough step 01 body"
+  },
+  "homepage.walkthrough.step02.title": {
+    "message": "Expón un flujo de carga sencillo",
+    "description": "Walkthrough step 02 title"
+  },
+  "homepage.walkthrough.step02.body": {
+    "message": "Quienes no programan eligen un archivo de Excel en bruto y la plantilla aprobada, y luego ejecutan el conversor.",
+    "description": "Walkthrough step 02 body"
+  },
+  "homepage.walkthrough.step03.title": {
+    "message": "Genera libros terminados",
+    "description": "Walkthrough step 03 title"
+  },
+  "homepage.walkthrough.step03.body": {
+    "message": "La salida conserva la estructura de hojas, los formatos de número, los estilos y las celdas combinadas, mientras que los valores se renderizan a partir de los datos.",
+    "description": "Walkthrough step 03 body"
+  },
+  "homepage.walkthrough.step04.title": {
+    "message": "Archiva las reglas operativas",
+    "description": "Walkthrough step 04 title"
+  },
+  "homepage.walkthrough.step04.body": {
+    "message": "La plantilla se convierte en el artefacto de traspaso: un archivo portátil que captura cómo funciona el trabajo recurrente de Excel.",
+    "description": "Walkthrough step 04 body"
+  },
+  "homepage.walkthrough.kicker": {
+    "message": "Modelo de flujo de trabajo",
+    "description": "Walkthrough section kicker"
+  },
+  "homepage.walkthrough.title": {
+    "message": "Mantén el motor en el código y el flujo de trabajo en el libro de Excel.",
+    "description": "Walkthrough section H2"
+  },
+  "homepage.walkthrough.lead": {
+    "message": "Los desarrolladores construyen el conversor una sola vez. Las reglas de negocio recurrentes, la asignación de la tabla origen, el diseño y la forma de la salida permanecen dentro de la plantilla del libro, que los equipos pueden archivar y traspasar.",
+    "description": "Walkthrough section lead paragraph"
+  },
+  "homepage.handoff.kicker": {
+    "message": "Por qué lo usan los desarrolladores",
+    "description": "Handoff section kicker"
+  },
+  "homepage.handoff.title": {
+    "message": "Saca la lógica de informes recurrentes de los scripts puntuales.",
+    "description": "Handoff section H2"
+  },
+  "homepage.handoff.body.p1": {
+    "message": "Los scripts de Python, las macros de VBA y los flujos específicos de cada servicio pueden automatizar Excel, pero las reglas de negocio acaban dispersas entre el código, las cuentas y el conocimiento tácito.",
+    "description": "Handoff body paragraph 1"
+  },
+  "homepage.handoff.body.p2": {
+    "message": "xl3 separa el motor reutilizable del contrato específico de cada libro. Los desarrolladores mantienen la integración en TypeScript, mientras que cada trabajo recurrente de Excel viaja como una plantilla de libro.",
+    "description": "Handoff body paragraph 2"
+  },
+  "homepage.reliability.card01.title": {
+    "message": "La plantilla como traspaso",
+    "description": "Reliability card 01 title"
+  },
+  "homepage.reliability.card01.body": {
+    "message": "Las reglas del informe viven en un archivo de libro que se puede revisar, versionar, archivar y entregar al siguiente operador.",
+    "description": "Reliability card 01 body"
+  },
+  "homepage.reliability.card02.title": {
+    "message": "Ejecución pensada para operadores",
+    "description": "Reliability card 02 title"
+  },
+  "homepage.reliability.card02.body": {
+    "message": "El runtime se puede exponer como una página de navegador: sube los datos en bruto, selecciona la plantilla y descarga el libro.",
+    "description": "Reliability card 02 body"
+  },
+  "homepage.reliability.card03.title": {
+    "message": "Motor en manos de los desarrolladores",
+    "description": "Reliability card 03 title"
+  },
+  "homepage.reliability.card03.body": {
+    "message": "Mantén el despliegue, la validación y la integración en código, mientras las reglas de flujo específicas de cada plantilla permanecen en Excel.",
+    "description": "Reliability card 03 body"
+  },
+  "homepage.reliability.kicker": {
+    "message": "Encaje operativo",
+    "description": "Reliability section kicker"
+  },
+  "homepage.reliability.title": {
+    "message": "Diseñado para el traspaso, no solo para la automatización.",
+    "description": "Reliability section H2"
+  },
+  "homepage.reliability.lead": {
+    "message": "Las personas que ejecutan el flujo de trabajo no deberían tener que leer código. Necesitan un conversor estable, una plantilla aprobada y un libro de resultado predecible.",
+    "description": "Reliability section lead paragraph"
+  },
+  "homepage.reliability.fact": {
+    "message": "XTL 0.1 se publica con {adrCount} y {fixtureCount}, todos en verde en la Etapa 2. La implementación de referencia en TypeScript está publicada en {npmLink}; la {portersGuideLink} documenta el contrato para que un port a un segundo lenguaje pueda igualarlo.",
+    "description": "Reliability section conformance stats sentence; {adrCount} and {fixtureCount} are pre-bolded counts, {npmLink} and {portersGuideLink} are inline links"
+  },
+  "homepage.reliability.fact.portersGuideLabel": {
+    "message": "Guía del portador",
+    "description": "Link label inside the conformance fact sentence"
+  },
+  "homepage.comparison.xl3.bestAt": {
+    "message": "Transformación de Excel basada en archivos. Las reglas del flujo de trabajo viven en template.xlsx.",
+    "description": "Comparison row xl3 — best at"
+  },
+  "homepage.comparison.xl3.tradeoff": {
+    "message": "Alfa. La superficie de XTL es deliberadamente pequeña y aún está evolucionando.",
+    "description": "Comparison row xl3 — tradeoff"
+  },
+  "homepage.comparison.scripts.bestAt": {
+    "message": "Automatización puntual y rápida, cercana a las hojas de cálculo existentes.",
+    "description": "Comparison row Python/VBA — best at"
+  },
+  "homepage.comparison.scripts.tradeoff": {
+    "message": "Las reglas viven en el código o en la memoria de quien lo mantiene; el traspaso y la revisión son más complicados.",
+    "description": "Comparison row Python/VBA — tradeoff"
+  },
+  "homepage.comparison.powerQuery.bestAt": {
+    "message": "Flujos de trabajo en Microsoft 365 y modelado de datos dentro del ecosistema Excel.",
+    "description": "Comparison row Power Query — best at"
+  },
+  "homepage.comparison.powerQuery.tradeoff": {
+    "message": "Los flujos quedan atados a un tenant o cuenta, en lugar de ser artefactos de libro portátiles.",
+    "description": "Comparison row Power Query — tradeoff"
+  },
+  "homepage.comparison.sdk.bestAt": {
+    "message": "Generación programática de libros de bajo nivel o con funcionalidades completas.",
+    "description": "Comparison row spreadsheet SDKs — best at"
+  },
+  "homepage.comparison.sdk.tradeoff": {
+    "message": "Los desarrolladores suelen codificar las reglas de los informes directamente en el código de la aplicación.",
+    "description": "Comparison row spreadsheet SDKs — tradeoff"
+  },
+  "homepage.comparison.templateEngines.bestAt": {
+    "message": "Generación de informes en servidor a partir de plantillas tipo hoja de cálculo.",
+    "description": "Comparison row template engines — best at"
+  },
+  "homepage.comparison.templateEngines.tradeoff": {
+    "message": "Suelen estar atados a un lenguaje o runtime; los flujos orientados al operador no son el foco.",
+    "description": "Comparison row template engines — tradeoff"
+  },
+  "homepage.comparison.docgen.bestAt": {
+    "message": "Flujos de documentos gestionados, integraciones y aprobaciones.",
+    "description": "Comparison row doc-gen SaaS — best at"
+  },
+  "homepage.comparison.docgen.tradeoff": {
+    "message": "Las reglas viven en un servicio del proveedor, no en una plantilla portátil y autoalojable.",
+    "description": "Comparison row doc-gen SaaS — tradeoff"
+  },
+  "homepage.comparison.llm.bestAt": {
+    "message": "Exploración y borradores ad hoc.",
+    "description": "Comparison row LLM — best at"
+  },
+  "homepage.comparison.llm.tradeoff": {
+    "message": "No es un contrato de transformación determinista para el trabajo operativo recurrente.",
+    "description": "Comparison row LLM — tradeoff"
+  },
+  "homepage.comparison.kicker": {
+    "message": "Cómo se compara",
+    "description": "Comparison section kicker"
+  },
+  "homepage.comparison.title": {
+    "message": "El mismo problema, distintas formas.",
+    "description": "Comparison section H2"
+  },
+  "homepage.comparison.col.approach": {
+    "message": "Enfoque",
+    "description": "Comparison table column header — tool/approach name"
+  },
+  "homepage.comparison.col.bestAt": {
+    "message": "Mejor para",
+    "description": "Comparison table column header — best at"
+  },
+  "homepage.comparison.col.tradeoff": {
+    "message": "Contrapartida",
+    "description": "Comparison table column header — tradeoff"
+  },
+  "homepage.api.kicker": {
+    "message": "API para desarrolladores",
+    "description": "Developer API section kicker"
+  },
+  "homepage.api.title": {
+    "message": "Conecta el mismo flujo de trabajo en tu producto.",
+    "description": "Developer API section H2"
+  },
+  "homepage.api.lead": {
+    "message": "Usa el paquete cuando el flujo de demostración deba convertirse en un portal interno, una CLI o un endpoint de servicio. La experiencia del operador puede seguir siendo basada en archivos, mientras tu app se encarga del despliegue y la validación.",
+    "description": "Developer API section lead paragraph"
+  },
+  "homepage.api.cta.cookbook": {
+    "message": "Cookbook 01 — Empieza en 5 minutos",
+    "description": "Bottom CTA link — cookbook 01"
+  },
+  "homepage.api.cta.spec": {
+    "message": "Leer la especificación",
+    "description": "Bottom CTA link — spec"
+  },
+  "homepage.api.cta.porters": {
+    "message": "Guía del portador",
+    "description": "Bottom CTA link — Porter's Guide"
+  },
+  "homepage.layout.title": {
+    "message": "xl3 — Lógica de transformación de Excel, dentro del archivo de Excel",
+    "description": "HTML <title> for the landing page"
+  },
+  "homepage.layout.description": {
+    "message": "xl3 coloca la lógica de transformación de Excel dentro del archivo de Excel, no en el código. Las personas no técnicas pueden leer y editar las reglas directamente, con la misma sintaxis de Excel que ya conocen.",
+    "description": "HTML <meta description> for the landing page"
   }
 }

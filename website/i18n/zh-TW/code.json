@@ -325,5 +325,269 @@
   "theme.tags.tagsPageTitle": {
     "message": "標籤",
     "description": "The title of the tag list page"
+  },
+  "homepage.hero.kicker": {
+    "message": "Excel 轉 Excel · 轉換邏輯留在活頁簿裡",
+    "description": "Hero section eyebrow / kicker line"
+  },
+  "homepage.hero.title": {
+    "message": "把 Excel 的轉換邏輯,留在 Excel 檔案裡。",
+    "description": "Hero section H1"
+  },
+  "homepage.hero.lead": {
+    "message": "xl3 把轉換規則寫進 {template},而不是寫進程式碼。非開發人員可以直接打開檔案修改規則——使用的是他們每天都在用的 {if}、{sum} 與欄位參照。",
+    "description": "Hero section lead paragraph; {template}, {if}, {sum} are inline code refs"
+  },
+  "homepage.hero.cta.try": {
+    "message": "試用轉換器",
+    "description": "Hero primary CTA button"
+  },
+  "homepage.hero.cta.workflow": {
+    "message": "了解工作流程",
+    "description": "Hero secondary CTA — scroll to workflow section"
+  },
+  "homepage.hero.flowPanel.ariaLabel": {
+    "message": "xl3 工作流程",
+    "description": "Aria label for the workflow diagram aside"
+  },
+  "homepage.hero.flow.role.developer": {
+    "message": "開發者",
+    "description": "Workflow diagram — actor label"
+  },
+  "homepage.hero.flow.role.developerRole": {
+    "message": "一次定義引擎",
+    "description": "What the developer does in the workflow"
+  },
+  "homepage.hero.flowStack.ariaLabel": {
+    "message": "營運人員檔案流程",
+    "description": "Aria label for the file-flow stack inside the workflow diagram"
+  },
+  "homepage.hero.flow.raw.label": {
+    "message": "營運資料",
+    "description": "Workflow diagram — what raw.xlsx is"
+  },
+  "homepage.hero.flow.template.label": {
+    "message": "封存的規則",
+    "description": "Workflow diagram — what template.xlsx is"
+  },
+  "homepage.hero.flow.result.label": {
+    "message": "完成的活頁簿",
+    "description": "Workflow diagram — output label"
+  },
+  "homepage.hero.flow.result.sublabel": {
+    "message": "交給營運人員",
+    "description": "Workflow diagram — output sublabel"
+  },
+  "homepage.walkthrough.step01.title": {
+    "message": "在 Excel 裡定義合約",
+    "description": "Walkthrough step 01 title"
+  },
+  "homepage.walkthrough.step01.body": {
+    "message": "使用 __config__、source_table 與 XTL 運算式,描述原始活頁簿如何轉成報表。",
+    "description": "Walkthrough step 01 body"
+  },
+  "homepage.walkthrough.step02.title": {
+    "message": "提供簡單的上傳流程",
+    "description": "Walkthrough step 02 title"
+  },
+  "homepage.walkthrough.step02.body": {
+    "message": "非開發人員選擇原始 Excel 檔案與核可的範本,就能執行轉換器。",
+    "description": "Walkthrough step 02 body"
+  },
+  "homepage.walkthrough.step03.title": {
+    "message": "產出完成的活頁簿",
+    "description": "Walkthrough step 03 title"
+  },
+  "homepage.walkthrough.step03.body": {
+    "message": "輸出檔案會保留工作表結構、數值格式、樣式與合併儲存格,並由資料動態填入數值。",
+    "description": "Walkthrough step 03 body"
+  },
+  "homepage.walkthrough.step04.title": {
+    "message": "封存營運規則",
+    "description": "Walkthrough step 04 title"
+  },
+  "homepage.walkthrough.step04.body": {
+    "message": "範本本身就是交接文件:一個可攜的檔案,完整記錄這份例行 Excel 工作的運作方式。",
+    "description": "Walkthrough step 04 body"
+  },
+  "homepage.walkthrough.kicker": {
+    "message": "工作流程模型",
+    "description": "Walkthrough section kicker"
+  },
+  "homepage.walkthrough.title": {
+    "message": "引擎放在程式碼裡,工作流程留在活頁簿裡。",
+    "description": "Walkthrough section H2"
+  },
+  "homepage.walkthrough.lead": {
+    "message": "開發者只需建置轉換器一次。例行的商業規則、來源工作表對應、版面配置與輸出格式,全都留在團隊可封存、可移交的活頁簿範本裡。",
+    "description": "Walkthrough section lead paragraph"
+  },
+  "homepage.handoff.kicker": {
+    "message": "開發者為何選擇 xl3",
+    "description": "Handoff section kicker"
+  },
+  "homepage.handoff.title": {
+    "message": "把例行報表邏輯,搬出一次性腳本之外。",
+    "description": "Handoff section H2"
+  },
+  "homepage.handoff.body.p1": {
+    "message": "Python 腳本、VBA 巨集與各種服務專屬的工作流程都能自動化 Excel,但商業規則往往散落在程式碼、帳號與個人經驗之中。",
+    "description": "Handoff body paragraph 1"
+  },
+  "homepage.handoff.body.p2": {
+    "message": "xl3 把可重用的引擎和活頁簿專屬的合約清楚分離。開發者維護 TypeScript 整合,每一份例行 Excel 工作則以範本活頁簿的形式流通。",
+    "description": "Handoff body paragraph 2"
+  },
+  "homepage.reliability.card01.title": {
+    "message": "範本即交接文件",
+    "description": "Reliability card 01 title"
+  },
+  "homepage.reliability.card01.body": {
+    "message": "報表規則存放於一個可審閱、可版控、可封存,並能交給下一位營運人員的活頁簿檔案中。",
+    "description": "Reliability card 01 body"
+  },
+  "homepage.reliability.card02.title": {
+    "message": "營運人員也能輕鬆上手",
+    "description": "Reliability card 02 title"
+  },
+  "homepage.reliability.card02.body": {
+    "message": "Runtime 可包裝成瀏覽器頁面:上傳原始資料、選擇範本、下載活頁簿。",
+    "description": "Reliability card 02 body"
+  },
+  "homepage.reliability.card03.title": {
+    "message": "引擎由開發者掌握",
+    "description": "Reliability card 03 title"
+  },
+  "homepage.reliability.card03.body": {
+    "message": "佈署、驗證與整合留在程式碼中,範本專屬的工作流程規則則留在 Excel 裡。",
+    "description": "Reliability card 03 body"
+  },
+  "homepage.reliability.kicker": {
+    "message": "貼合營運場景",
+    "description": "Reliability section kicker"
+  },
+  "homepage.reliability.title": {
+    "message": "為交接而設計,不只是自動化。",
+    "description": "Reliability section H2"
+  },
+  "homepage.reliability.lead": {
+    "message": "實際執行工作流程的人不需要讀程式碼,只需要一個穩定的轉換器、一份核可的範本,以及一個可預期的結果活頁簿。",
+    "description": "Reliability section lead paragraph"
+  },
+  "homepage.reliability.fact": {
+    "message": "XTL 0.1 隨附 {adrCount} 與 {fixtureCount},於 Stage 2 全數通過。TypeScript 參考實作已發佈於 {npmLink}——{portersGuideLink} 完整記錄合約規範,讓第二語言移植也能對齊一致。",
+    "description": "Reliability section conformance stats sentence; {adrCount} and {fixtureCount} are pre-bolded counts, {npmLink} and {portersGuideLink} are inline links"
+  },
+  "homepage.reliability.fact.portersGuideLabel": {
+    "message": "移植指南",
+    "description": "Link label inside the conformance fact sentence"
+  },
+  "homepage.comparison.xl3.bestAt": {
+    "message": "以檔案為核心的 Excel 轉換。工作流程規則留在 template.xlsx 裡。",
+    "description": "Comparison row xl3 — best at"
+  },
+  "homepage.comparison.xl3.tradeoff": {
+    "message": "Alpha 階段。XTL 的語法面刻意精簡,且仍在演進。",
+    "description": "Comparison row xl3 — tradeoff"
+  },
+  "homepage.comparison.scripts.bestAt": {
+    "message": "貼近既有試算表、快速完成的一次性自動化。",
+    "description": "Comparison row Python/VBA — best at"
+  },
+  "homepage.comparison.scripts.tradeoff": {
+    "message": "規則藏在程式碼或某位維護者的腦袋裡;交接與審閱都更困難。",
+    "description": "Comparison row Python/VBA — tradeoff"
+  },
+  "homepage.comparison.powerQuery.bestAt": {
+    "message": "Microsoft 365 工作流程,以及 Excel 生態系內的資料整理。",
+    "description": "Comparison row Power Query — best at"
+  },
+  "homepage.comparison.powerQuery.tradeoff": {
+    "message": "工作流程綁定租戶或帳號,而非可攜的活頁簿產出物。",
+    "description": "Comparison row Power Query — tradeoff"
+  },
+  "homepage.comparison.sdk.bestAt": {
+    "message": "底層或功能完整的程式化活頁簿產生。",
+    "description": "Comparison row spreadsheet SDKs — best at"
+  },
+  "homepage.comparison.sdk.tradeoff": {
+    "message": "開發者通常會把報表規則直接寫死在應用程式碼裡。",
+    "description": "Comparison row spreadsheet SDKs — tradeoff"
+  },
+  "homepage.comparison.templateEngines.bestAt": {
+    "message": "從類試算表範本產生伺服器端報表。",
+    "description": "Comparison row template engines — best at"
+  },
+  "homepage.comparison.templateEngines.tradeoff": {
+    "message": "經常綁定特定語言或 Runtime;面向營運人員的流程並非設計重點。",
+    "description": "Comparison row template engines — tradeoff"
+  },
+  "homepage.comparison.docgen.bestAt": {
+    "message": "託管式文件工作流程、整合與簽核。",
+    "description": "Comparison row doc-gen SaaS — best at"
+  },
+  "homepage.comparison.docgen.tradeoff": {
+    "message": "規則被綁在供應商服務裡,不是可攜、可自架的範本。",
+    "description": "Comparison row doc-gen SaaS — tradeoff"
+  },
+  "homepage.comparison.llm.bestAt": {
+    "message": "臨時探索與草稿撰寫。",
+    "description": "Comparison row LLM — best at"
+  },
+  "homepage.comparison.llm.tradeoff": {
+    "message": "對於例行營運工作,缺乏確定性的轉換合約。",
+    "description": "Comparison row LLM — tradeoff"
+  },
+  "homepage.comparison.kicker": {
+    "message": "與其他做法相比",
+    "description": "Comparison section kicker"
+  },
+  "homepage.comparison.title": {
+    "message": "同樣的問題,不同的解法。",
+    "description": "Comparison section H2"
+  },
+  "homepage.comparison.col.approach": {
+    "message": "做法",
+    "description": "Comparison table column header — tool/approach name"
+  },
+  "homepage.comparison.col.bestAt": {
+    "message": "擅長之處",
+    "description": "Comparison table column header — best at"
+  },
+  "homepage.comparison.col.tradeoff": {
+    "message": "取捨",
+    "description": "Comparison table column header — tradeoff"
+  },
+  "homepage.api.kicker": {
+    "message": "開發者 API",
+    "description": "Developer API section kicker"
+  },
+  "homepage.api.title": {
+    "message": "把同一套工作流程,接進你的產品裡。",
+    "description": "Developer API section H2"
+  },
+  "homepage.api.lead": {
+    "message": "當示範流程要演變為內部入口、CLI 或服務端點時,直接使用這個套件。營運人員的操作體驗可以保持以檔案為核心,佈署與驗證則由你的應用程式掌控。",
+    "description": "Developer API section lead paragraph"
+  },
+  "homepage.api.cta.cookbook": {
+    "message": "Cookbook 01 — 5 分鐘快速上手",
+    "description": "Bottom CTA link — cookbook 01"
+  },
+  "homepage.api.cta.spec": {
+    "message": "閱讀規格",
+    "description": "Bottom CTA link — spec"
+  },
+  "homepage.api.cta.porters": {
+    "message": "移植指南",
+    "description": "Bottom CTA link — Porter's Guide"
+  },
+  "homepage.layout.title": {
+    "message": "xl3 — 把 Excel 的轉換邏輯,留在 Excel 檔案裡",
+    "description": "HTML <title> for the landing page"
+  },
+  "homepage.layout.description": {
+    "message": "xl3 把 Excel 的轉換邏輯放進 Excel 檔案裡,而不是程式碼裡。非開發人員可以直接讀取與修改規則,使用的就是他們早已熟悉的 Excel 語法。",
+    "description": "HTML <meta description> for the landing page"
   }
 }

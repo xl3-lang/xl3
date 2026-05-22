@@ -325,5 +325,269 @@
   "theme.tags.tagsPageTitle": {
     "message": "标签",
     "description": "The title of the tag list page"
+  },
+  "homepage.hero.kicker": {
+    "message": "Excel 到 Excel · 逻辑留在工作簿里",
+    "description": "Hero section eyebrow / kicker line"
+  },
+  "homepage.hero.title": {
+    "message": "把 Excel 变换逻辑，留在 Excel 文件里。",
+    "description": "Hero section H1"
+  },
+  "homepage.hero.lead": {
+    "message": "xl3 把转换规则放进 {template}，而不是代码里。非开发人员可以直接打开并编辑规则——它们就是用大家每天都在用的 {if}、{sum} 和列引用写出来的。",
+    "description": "Hero section lead paragraph; {template}, {if}, {sum} are inline code refs"
+  },
+  "homepage.hero.cta.try": {
+    "message": "试用转换器",
+    "description": "Hero primary CTA button"
+  },
+  "homepage.hero.cta.workflow": {
+    "message": "查看工作流",
+    "description": "Hero secondary CTA — scroll to workflow section"
+  },
+  "homepage.hero.flowPanel.ariaLabel": {
+    "message": "xl3 工作流",
+    "description": "Aria label for the workflow diagram aside"
+  },
+  "homepage.hero.flow.role.developer": {
+    "message": "开发者",
+    "description": "Workflow diagram — actor label"
+  },
+  "homepage.hero.flow.role.developerRole": {
+    "message": "一次性定义引擎",
+    "description": "What the developer does in the workflow"
+  },
+  "homepage.hero.flowStack.ariaLabel": {
+    "message": "业务人员文件流",
+    "description": "Aria label for the file-flow stack inside the workflow diagram"
+  },
+  "homepage.hero.flow.raw.label": {
+    "message": "业务原始数据",
+    "description": "Workflow diagram — what raw.xlsx is"
+  },
+  "homepage.hero.flow.template.label": {
+    "message": "归档的规则",
+    "description": "Workflow diagram — what template.xlsx is"
+  },
+  "homepage.hero.flow.result.label": {
+    "message": "成品工作簿",
+    "description": "Workflow diagram — output label"
+  },
+  "homepage.hero.flow.result.sublabel": {
+    "message": "交付业务人员",
+    "description": "Workflow diagram — output sublabel"
+  },
+  "homepage.walkthrough.step01.title": {
+    "message": "在 Excel 中定义契约",
+    "description": "Walkthrough step 01 title"
+  },
+  "homepage.walkthrough.step01.body": {
+    "message": "用 __config__、source_table 和 XTL 表达式描述原始工作簿如何转化为报表。",
+    "description": "Walkthrough step 01 body"
+  },
+  "homepage.walkthrough.step02.title": {
+    "message": "提供简单的上传流程",
+    "description": "Walkthrough step 02 title"
+  },
+  "homepage.walkthrough.step02.body": {
+    "message": "非开发人员只需选择原始 Excel 文件和已审核的模板，再运行转换器即可。",
+    "description": "Walkthrough step 02 body"
+  },
+  "homepage.walkthrough.step03.title": {
+    "message": "生成成品工作簿",
+    "description": "Walkthrough step 03 title"
+  },
+  "homepage.walkthrough.step03.body": {
+    "message": "输出保留工作表结构、数字格式、样式和合并单元格，同时以数据填充对应的值。",
+    "description": "Walkthrough step 03 body"
+  },
+  "homepage.walkthrough.step04.title": {
+    "message": "归档运营规则",
+    "description": "Walkthrough step 04 title"
+  },
+  "homepage.walkthrough.step04.body": {
+    "message": "模板成为移交产物：一份可携带的文件，完整记录这项例行 Excel 作业的运作方式。",
+    "description": "Walkthrough step 04 body"
+  },
+  "homepage.walkthrough.kicker": {
+    "message": "工作流模型",
+    "description": "Walkthrough section kicker"
+  },
+  "homepage.walkthrough.title": {
+    "message": "引擎留在代码里，工作流留在工作簿里。",
+    "description": "Walkthrough section H2"
+  },
+  "homepage.walkthrough.lead": {
+    "message": "开发者只需构建一次转换器。例行的业务规则、源表映射、版式和输出形态都留在工作簿模板中，便于团队归档和移交。",
+    "description": "Walkthrough section lead paragraph"
+  },
+  "homepage.handoff.kicker": {
+    "message": "开发者为什么用它",
+    "description": "Handoff section kicker"
+  },
+  "homepage.handoff.title": {
+    "message": "把例行报表逻辑从一次性脚本中解放出来。",
+    "description": "Handoff section H2"
+  },
+  "homepage.handoff.body.p1": {
+    "message": "Python 脚本、VBA 宏和特定服务的工作流都能自动化 Excel，但业务规则往往散落在代码、账号和个人经验之中。",
+    "description": "Handoff body paragraph 1"
+  },
+  "homepage.handoff.body.p2": {
+    "message": "xl3 把可复用的引擎和工作簿专属的契约分离开来。开发者负责维护 TypeScript 集成，每项例行 Excel 作业则以模板工作簿的形式自由流转。",
+    "description": "Handoff body paragraph 2"
+  },
+  "homepage.reliability.card01.title": {
+    "message": "模板即移交",
+    "description": "Reliability card 01 title"
+  },
+  "homepage.reliability.card01.body": {
+    "message": "报表规则就在一份工作簿文件里——可审阅、可版本化、可归档，也可以直接交给下一位运营人员。",
+    "description": "Reliability card 01 body"
+  },
+  "homepage.reliability.card02.title": {
+    "message": "业务人员友好的运行方式",
+    "description": "Reliability card 02 title"
+  },
+  "homepage.reliability.card02.body": {
+    "message": "运行时可以作为一个浏览器页面对外提供：上传原始数据、选择模板、下载工作簿。",
+    "description": "Reliability card 02 body"
+  },
+  "homepage.reliability.card03.title": {
+    "message": "开发者掌控的引擎",
+    "description": "Reliability card 03 title"
+  },
+  "homepage.reliability.card03.body": {
+    "message": "部署、校验和集成都留在代码里，而模板专属的工作流规则则留在 Excel 中。",
+    "description": "Reliability card 03 body"
+  },
+  "homepage.reliability.kicker": {
+    "message": "贴合运营",
+    "description": "Reliability section kicker"
+  },
+  "homepage.reliability.title": {
+    "message": "为移交而生，不只是自动化。",
+    "description": "Reliability section H2"
+  },
+  "homepage.reliability.lead": {
+    "message": "运行这套工作流的人不必读代码。他们需要的是一个稳定的转换器、一份已审核的模板，以及一份可预期的结果工作簿。",
+    "description": "Reliability section lead paragraph"
+  },
+  "homepage.reliability.fact": {
+    "message": "XTL 0.1 已交付 {adrCount}、{fixtureCount}，在 Stage 2 全部通过。TypeScript 参考实现已发布于 {npmLink}——{portersGuideLink}详细记录了契约，可供第二种语言的移植版本对齐。",
+    "description": "Reliability section conformance stats sentence; {adrCount} and {fixtureCount} are pre-bolded counts, {npmLink} and {portersGuideLink} are inline links"
+  },
+  "homepage.reliability.fact.portersGuideLabel": {
+    "message": "移植者指南",
+    "description": "Link label inside the conformance fact sentence"
+  },
+  "homepage.comparison.xl3.bestAt": {
+    "message": "基于文件的 Excel 转换。工作流规则留在 template.xlsx 中。",
+    "description": "Comparison row xl3 — best at"
+  },
+  "homepage.comparison.xl3.tradeoff": {
+    "message": "尚处 Alpha 阶段。XTL 表面有意保持精简，仍在演进。",
+    "description": "Comparison row xl3 — tradeoff"
+  },
+  "homepage.comparison.scripts.bestAt": {
+    "message": "贴近现有电子表格的快速一次性自动化。",
+    "description": "Comparison row Python/VBA — best at"
+  },
+  "homepage.comparison.scripts.tradeoff": {
+    "message": "规则藏在代码或某个维护者的记忆里，移交与评审都更困难。",
+    "description": "Comparison row Python/VBA — tradeoff"
+  },
+  "homepage.comparison.powerQuery.bestAt": {
+    "message": "Microsoft 365 工作流，在 Excel 生态内整形数据。",
+    "description": "Comparison row Power Query — best at"
+  },
+  "homepage.comparison.powerQuery.tradeoff": {
+    "message": "工作流绑定到租户或账号，而不是可携带的工作簿产物。",
+    "description": "Comparison row Power Query — tradeoff"
+  },
+  "homepage.comparison.sdk.bestAt": {
+    "message": "底层或功能完备的程序化工作簿生成。",
+    "description": "Comparison row spreadsheet SDKs — best at"
+  },
+  "homepage.comparison.sdk.tradeoff": {
+    "message": "开发者通常把报表规则直接写进应用代码。",
+    "description": "Comparison row spreadsheet SDKs — tradeoff"
+  },
+  "homepage.comparison.templateEngines.bestAt": {
+    "message": "基于类电子表格模板的服务端报表生成。",
+    "description": "Comparison row template engines — best at"
+  },
+  "homepage.comparison.templateEngines.tradeoff": {
+    "message": "往往与特定语言或运行时绑定，且不以业务人员的使用流程为重点。",
+    "description": "Comparison row template engines — tradeoff"
+  },
+  "homepage.comparison.docgen.bestAt": {
+    "message": "托管式文档工作流、集成与审批。",
+    "description": "Comparison row doc-gen SaaS — best at"
+  },
+  "homepage.comparison.docgen.tradeoff": {
+    "message": "规则放在厂商服务里，而不是一份可自托管、可携带的模板。",
+    "description": "Comparison row doc-gen SaaS — tradeoff"
+  },
+  "homepage.comparison.llm.bestAt": {
+    "message": "临时探索与初稿生成。",
+    "description": "Comparison row LLM — best at"
+  },
+  "homepage.comparison.llm.tradeoff": {
+    "message": "不适合作为例行运营工作的确定性转换契约。",
+    "description": "Comparison row LLM — tradeoff"
+  },
+  "homepage.comparison.kicker": {
+    "message": "横向对比",
+    "description": "Comparison section kicker"
+  },
+  "homepage.comparison.title": {
+    "message": "同一个问题，不同的解法。",
+    "description": "Comparison section H2"
+  },
+  "homepage.comparison.col.approach": {
+    "message": "方案",
+    "description": "Comparison table column header — tool/approach name"
+  },
+  "homepage.comparison.col.bestAt": {
+    "message": "擅长场景",
+    "description": "Comparison table column header — best at"
+  },
+  "homepage.comparison.col.tradeoff": {
+    "message": "取舍",
+    "description": "Comparison table column header — tradeoff"
+  },
+  "homepage.api.kicker": {
+    "message": "开发者 API",
+    "description": "Developer API section kicker"
+  },
+  "homepage.api.title": {
+    "message": "把同一套工作流接入你的产品。",
+    "description": "Developer API section H2"
+  },
+  "homepage.api.lead": {
+    "message": "当 Demo 流程要演进为内部门户、CLI 或服务端接口时，请使用这个包。业务人员可以继续以文件为中心，部署与校验则由你的应用来掌控。",
+    "description": "Developer API section lead paragraph"
+  },
+  "homepage.api.cta.cookbook": {
+    "message": "Cookbook 01——5 分钟快速上手",
+    "description": "Bottom CTA link — cookbook 01"
+  },
+  "homepage.api.cta.spec": {
+    "message": "阅读规范",
+    "description": "Bottom CTA link — spec"
+  },
+  "homepage.api.cta.porters": {
+    "message": "移植者指南",
+    "description": "Bottom CTA link — Porter's Guide"
+  },
+  "homepage.layout.title": {
+    "message": "xl3——把 Excel 变换逻辑留在 Excel 文件里",
+    "description": "HTML <title> for the landing page"
+  },
+  "homepage.layout.description": {
+    "message": "xl3 把 Excel 转换逻辑放进 Excel 文件，而不是代码里。非开发人员可以用他们熟悉的 Excel 语法直接阅读和编辑规则。",
+    "description": "HTML <meta description> for the landing page"
   }
 }

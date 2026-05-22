@@ -325,5 +325,269 @@
   "theme.tags.tagsPageTitle": {
     "message": "タグ",
     "description": "The title of the tag list page"
+  },
+  "homepage.hero.kicker": {
+    "message": "Excel-to-Excel・ロジックはワークブックの中に",
+    "description": "Hero section eyebrow / kicker line"
+  },
+  "homepage.hero.title": {
+    "message": "Excel の変換ロジックを、Excel ファイルの中に。",
+    "description": "Hero section H1"
+  },
+  "homepage.hero.lead": {
+    "message": "xl3 は変換ルールをコードではなく {template} の中に置きます。開発者ではないメンバーもファイルを開いてルールを直接編集でき、しかも普段使い慣れた {if}、{sum}、列参照と同じ書き方で記述できます。",
+    "description": "Hero section lead paragraph; {template}, {if}, {sum} are inline code refs"
+  },
+  "homepage.hero.cta.try": {
+    "message": "コンバーターを試す",
+    "description": "Hero primary CTA button"
+  },
+  "homepage.hero.cta.workflow": {
+    "message": "ワークフローを見る",
+    "description": "Hero secondary CTA — scroll to workflow section"
+  },
+  "homepage.hero.flowPanel.ariaLabel": {
+    "message": "xl3 のワークフロー",
+    "description": "Aria label for the workflow diagram aside"
+  },
+  "homepage.hero.flow.role.developer": {
+    "message": "開発者",
+    "description": "Workflow diagram — actor label"
+  },
+  "homepage.hero.flow.role.developerRole": {
+    "message": "エンジンを一度だけ定義",
+    "description": "What the developer does in the workflow"
+  },
+  "homepage.hero.flowStack.ariaLabel": {
+    "message": "オペレーターのファイルフロー",
+    "description": "Aria label for the file-flow stack inside the workflow diagram"
+  },
+  "homepage.hero.flow.raw.label": {
+    "message": "運用担当のデータ",
+    "description": "Workflow diagram — what raw.xlsx is"
+  },
+  "homepage.hero.flow.template.label": {
+    "message": "アーカイブされたルール",
+    "description": "Workflow diagram — what template.xlsx is"
+  },
+  "homepage.hero.flow.result.label": {
+    "message": "完成ワークブック",
+    "description": "Workflow diagram — output label"
+  },
+  "homepage.hero.flow.result.sublabel": {
+    "message": "運用担当向け",
+    "description": "Workflow diagram — output sublabel"
+  },
+  "homepage.walkthrough.step01.title": {
+    "message": "Excel で契約を定義する",
+    "description": "Walkthrough step 01 title"
+  },
+  "homepage.walkthrough.step01.body": {
+    "message": "__config__、source_table、XTL 式を使って、元データのワークブックをどのようにレポートへ変換するかを記述します。",
+    "description": "Walkthrough step 01 body"
+  },
+  "homepage.walkthrough.step02.title": {
+    "message": "シンプルなアップロード画面を提供する",
+    "description": "Walkthrough step 02 title"
+  },
+  "homepage.walkthrough.step02.body": {
+    "message": "開発者ではないメンバーが元データの Excel ファイルと承認済みテンプレートを選び、コンバーターを実行します。",
+    "description": "Walkthrough step 02 body"
+  },
+  "homepage.walkthrough.step03.title": {
+    "message": "完成したワークブックを生成する",
+    "description": "Walkthrough step 03 title"
+  },
+  "homepage.walkthrough.step03.body": {
+    "message": "出力はシート構成、数値書式、スタイル、結合セルをそのまま維持しつつ、値はデータから差し替えられます。",
+    "description": "Walkthrough step 03 body"
+  },
+  "homepage.walkthrough.step04.title": {
+    "message": "運用ルールをアーカイブする",
+    "description": "Walkthrough step 04 title"
+  },
+  "homepage.walkthrough.step04.body": {
+    "message": "テンプレートは引き継ぎの成果物となり、定期的な Excel 業務の動き方をそのまま持ち運べる 1 つのファイルに収まります。",
+    "description": "Walkthrough step 04 body"
+  },
+  "homepage.walkthrough.kicker": {
+    "message": "ワークフローモデル",
+    "description": "Walkthrough section kicker"
+  },
+  "homepage.walkthrough.title": {
+    "message": "エンジンはコードに、ワークフローはワークブックに。",
+    "description": "Walkthrough section H2"
+  },
+  "homepage.walkthrough.lead": {
+    "message": "開発者はコンバーターを一度だけ構築します。繰り返し使う業務ルール、ソーステーブルのマッピング、レイアウト、出力の形は、チームがアーカイブして引き継げるワークブックテンプレートの中にとどまります。",
+    "description": "Walkthrough section lead paragraph"
+  },
+  "homepage.handoff.kicker": {
+    "message": "開発者が選ぶ理由",
+    "description": "Handoff section kicker"
+  },
+  "homepage.handoff.title": {
+    "message": "定期レポートのロジックを、使い捨てスクリプトから卒業させる。",
+    "description": "Handoff section H2"
+  },
+  "homepage.handoff.body.p1": {
+    "message": "Python scripts や VBA macros、サービス固有のワークフローでも Excel を自動化できますが、業務ルールがコードやアカウント、暗黙知の中に散らばってしまいがちです。",
+    "description": "Handoff body paragraph 1"
+  },
+  "homepage.handoff.body.p2": {
+    "message": "xl3 は再利用可能なエンジンと、ワークブック固有の契約を分離します。開発者は TypeScript の統合部分を保守し、定期的な Excel 業務はそれぞれテンプレートワークブックとして持ち運べます。",
+    "description": "Handoff body paragraph 2"
+  },
+  "homepage.reliability.card01.title": {
+    "message": "引き継げるテンプレート",
+    "description": "Reliability card 01 title"
+  },
+  "homepage.reliability.card01.body": {
+    "message": "レポートのルールはワークブックファイルに収まり、レビュー・バージョン管理・アーカイブ・次の運用担当への受け渡しがすべて可能です。",
+    "description": "Reliability card 01 body"
+  },
+  "homepage.reliability.card02.title": {
+    "message": "運用担当にやさしい実行体験",
+    "description": "Reliability card 02 title"
+  },
+  "homepage.reliability.card02.body": {
+    "message": "ランタイムはブラウザページとして公開できます。元データをアップロードし、テンプレートを選び、ワークブックをダウンロードするだけです。",
+    "description": "Reliability card 02 body"
+  },
+  "homepage.reliability.card03.title": {
+    "message": "開発者が握るエンジン",
+    "description": "Reliability card 03 title"
+  },
+  "homepage.reliability.card03.body": {
+    "message": "デプロイ・バリデーション・統合はコード側に残しつつ、テンプレート固有のワークフロールールは Excel の中にとどめます。",
+    "description": "Reliability card 03 body"
+  },
+  "homepage.reliability.kicker": {
+    "message": "運用へのフィット",
+    "description": "Reliability section kicker"
+  },
+  "homepage.reliability.title": {
+    "message": "ただの自動化ではなく、引き継ぎのために設計。",
+    "description": "Reliability section H2"
+  },
+  "homepage.reliability.lead": {
+    "message": "ワークフローを回す人がコードを読む必要はありません。安定したコンバーター、承認済みのテンプレート、そして予測可能な結果ワークブックがあれば十分です。",
+    "description": "Reliability section lead paragraph"
+  },
+  "homepage.reliability.fact": {
+    "message": "XTL 0.1 は {adrCount} と {fixtureCount} を備え、Stage 2 ですべてグリーンです。TypeScript リファレンス実装は {npmLink} で公開されており、{portersGuideLink} が契約を明文化しているので、別言語への移植でも同じ挙動を再現できます。",
+    "description": "Reliability section conformance stats sentence; {adrCount} and {fixtureCount} are pre-bolded counts, {npmLink} and {portersGuideLink} are inline links"
+  },
+  "homepage.reliability.fact.portersGuideLabel": {
+    "message": "Porter's Guide",
+    "description": "Link label inside the conformance fact sentence"
+  },
+  "homepage.comparison.xl3.bestAt": {
+    "message": "ファイルベースの Excel 変換。ワークフロールールは template.xlsx の中にとどまります。",
+    "description": "Comparison row xl3 — best at"
+  },
+  "homepage.comparison.xl3.tradeoff": {
+    "message": "アルファ版。XTL の機能セットは意図的に小さく、まだ進化中です。",
+    "description": "Comparison row xl3 — tradeoff"
+  },
+  "homepage.comparison.scripts.bestAt": {
+    "message": "既存スプレッドシートに寄り添った、素早い使い捨て自動化。",
+    "description": "Comparison row Python/VBA — best at"
+  },
+  "homepage.comparison.scripts.tradeoff": {
+    "message": "ルールがコードや担当者の頭の中に閉じこもり、引き継ぎやレビューが難しくなります。",
+    "description": "Comparison row Python/VBA — tradeoff"
+  },
+  "homepage.comparison.powerQuery.bestAt": {
+    "message": "Microsoft 365 のワークフロー、Excel エコシステム内でのデータ整形。",
+    "description": "Comparison row Power Query — best at"
+  },
+  "homepage.comparison.powerQuery.tradeoff": {
+    "message": "ワークフローがテナントやアカウントに紐づき、持ち運べるワークブック成果物にはなりません。",
+    "description": "Comparison row Power Query — tradeoff"
+  },
+  "homepage.comparison.sdk.bestAt": {
+    "message": "低レベル、あるいはフル機能のプログラムによるワークブック生成。",
+    "description": "Comparison row spreadsheet SDKs — best at"
+  },
+  "homepage.comparison.sdk.tradeoff": {
+    "message": "レポートのルールはたいていアプリケーションコードに直書きされます。",
+    "description": "Comparison row spreadsheet SDKs — tradeoff"
+  },
+  "homepage.comparison.templateEngines.bestAt": {
+    "message": "スプレッドシート風テンプレートからのサーバーサイドレポート生成。",
+    "description": "Comparison row template engines — best at"
+  },
+  "homepage.comparison.templateEngines.tradeoff": {
+    "message": "言語・ランタイム依存になりがちで、運用担当向けの体験は重視されません。",
+    "description": "Comparison row template engines — tradeoff"
+  },
+  "homepage.comparison.docgen.bestAt": {
+    "message": "マネージド型のドキュメントワークフロー、各種連携、承認フロー。",
+    "description": "Comparison row doc-gen SaaS — best at"
+  },
+  "homepage.comparison.docgen.tradeoff": {
+    "message": "ルールがベンダーのサービス側にあり、持ち運べるセルフホスト可能なテンプレートにはなりません。",
+    "description": "Comparison row doc-gen SaaS — tradeoff"
+  },
+  "homepage.comparison.llm.bestAt": {
+    "message": "アドホックな探索やドラフト作成。",
+    "description": "Comparison row LLM — best at"
+  },
+  "homepage.comparison.llm.tradeoff": {
+    "message": "繰り返しの運用業務に必要な、決定論的な変換契約にはなりません。",
+    "description": "Comparison row LLM — tradeoff"
+  },
+  "homepage.comparison.kicker": {
+    "message": "他の選択肢との比較",
+    "description": "Comparison section kicker"
+  },
+  "homepage.comparison.title": {
+    "message": "同じ課題に、違うかたち。",
+    "description": "Comparison section H2"
+  },
+  "homepage.comparison.col.approach": {
+    "message": "アプローチ",
+    "description": "Comparison table column header — tool/approach name"
+  },
+  "homepage.comparison.col.bestAt": {
+    "message": "得意なこと",
+    "description": "Comparison table column header — best at"
+  },
+  "homepage.comparison.col.tradeoff": {
+    "message": "トレードオフ",
+    "description": "Comparison table column header — tradeoff"
+  },
+  "homepage.api.kicker": {
+    "message": "開発者向け API",
+    "description": "Developer API section kicker"
+  },
+  "homepage.api.title": {
+    "message": "同じワークフローを、あなたのプロダクトに組み込む。",
+    "description": "Developer API section H2"
+  },
+  "homepage.api.lead": {
+    "message": "デモのフローを社内ポータルや CLI、サービスエンドポイントへ昇格させたいときは、このパッケージを使えます。運用担当の体験はファイルベースのまま、デプロイとバリデーションはアプリ側で持てます。",
+    "description": "Developer API section lead paragraph"
+  },
+  "homepage.api.cta.cookbook": {
+    "message": "Cookbook 01 — 5 分ではじめる",
+    "description": "Bottom CTA link — cookbook 01"
+  },
+  "homepage.api.cta.spec": {
+    "message": "仕様を読む",
+    "description": "Bottom CTA link — spec"
+  },
+  "homepage.api.cta.porters": {
+    "message": "Porter's Guide",
+    "description": "Bottom CTA link — Porter's Guide"
+  },
+  "homepage.layout.title": {
+    "message": "xl3 — Excel の変換ロジックを、Excel ファイルの中に",
+    "description": "HTML <title> for the landing page"
+  },
+  "homepage.layout.description": {
+    "message": "xl3 は Excel の変換ロジックをコードではなく Excel ファイルの中に置きます。開発者ではないメンバーも、すでに知っている Excel と同じ構文でルールを読み書きできます。",
+    "description": "HTML <meta description> for the landing page"
   }
 }

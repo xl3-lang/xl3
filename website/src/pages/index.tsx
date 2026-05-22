@@ -1,6 +1,7 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
+import Translate, { translate } from '@docusaurus/Translate';
 import clsx from 'clsx';
 import { CodeCard } from '@site/src/components/CodeCard';
 import { ExcelPreview, ExcelPreviewFrame } from '@site/src/components/ExcelPreview';
@@ -32,20 +33,41 @@ function Hero() {
     <header className={clsx('hero', styles.heroBanner)}>
       <div className={clsx('container', styles.heroLayout)}>
         <div className={styles.heroCopy}>
-          <p className={styles.kicker}>Excel-to-Excel · logic stays in the workbook</p>
-          <h1 className={styles.heroTitle}>Excel transformation logic, inside the Excel file.</h1>
+          <p className={styles.kicker}>
+            <Translate id="homepage.hero.kicker" description="Hero section eyebrow / kicker line">
+              Excel-to-Excel · logic stays in the workbook
+            </Translate>
+          </p>
+          <h1 className={styles.heroTitle}>
+            <Translate id="homepage.hero.title" description="Hero section H1">
+              Excel transformation logic, inside the Excel file.
+            </Translate>
+          </h1>
           <p className={styles.heroLead}>
-            xl3 puts the transformation rules inside <code>template.xlsx</code>,
-            not in code. Non-developers can open it and edit the rules
-            directly — they are written with the same <code>IF</code>,{' '}
-            <code>SUM</code>, and column references they already use day to day.
+            <Translate
+              id="homepage.hero.lead"
+              description="Hero section lead paragraph; {template}, {if}, {sum} are inline code refs"
+              values={{
+                template: <code>template.xlsx</code>,
+                if: <code>IF</code>,
+                sum: <code>SUM</code>,
+              }}
+            >
+              {
+                'xl3 puts the transformation rules inside {template}, not in code. Non-developers can open it and edit the rules directly — they are written with the same {if}, {sum}, and column references they already use day to day.'
+              }
+            </Translate>
           </p>
           <div className={styles.heroLinks}>
             <Link className="button button--primary button--lg" to="/try">
-              Try the converter
+              <Translate id="homepage.hero.cta.try" description="Hero primary CTA button">
+                Try the converter
+              </Translate>
             </Link>
             <Link className="button button--secondary button--lg" to="#walkthrough">
-              See the workflow
+              <Translate id="homepage.hero.cta.workflow" description="Hero secondary CTA — scroll to workflow section">
+                See the workflow
+              </Translate>
             </Link>
             <Link
               className="button button--secondary button--lg"
@@ -61,25 +83,63 @@ function Hero() {
             </Link>
           </div>
         </div>
-        <aside className={styles.flowPanel} aria-label="xl3 workflow">
+        <aside
+          className={styles.flowPanel}
+          aria-label={translate({
+            id: 'homepage.hero.flowPanel.ariaLabel',
+            message: 'xl3 workflow',
+            description: 'Aria label for the workflow diagram aside',
+          })}
+        >
           <div className={styles.flowRole}>
-            <span>Developer</span>
-            <strong>defines the engine once</strong>
+            <span>
+              <Translate id="homepage.hero.flow.role.developer" description="Workflow diagram — actor label">
+                Developer
+              </Translate>
+            </span>
+            <strong>
+              <Translate id="homepage.hero.flow.role.developerRole" description="What the developer does in the workflow">
+                defines the engine once
+              </Translate>
+            </strong>
           </div>
-          <div className={styles.flowStack} aria-label="Operator file flow">
+          <div
+            className={styles.flowStack}
+            aria-label={translate({
+              id: 'homepage.hero.flowStack.ariaLabel',
+              message: 'Operator file flow',
+              description: 'Aria label for the file-flow stack inside the workflow diagram',
+            })}
+          >
             <div className={styles.flowFile}>
               <span>raw.xlsx</span>
-              <small>operator data</small>
+              <small>
+                <Translate id="homepage.hero.flow.raw.label" description="Workflow diagram — what raw.xlsx is">
+                  operator data
+                </Translate>
+              </small>
             </div>
             <div className={styles.flowPlus}>+</div>
             <div className={styles.flowFile}>
               <span>template.xlsx</span>
-              <small>archived rules</small>
+              <small>
+                <Translate id="homepage.hero.flow.template.label" description="Workflow diagram — what template.xlsx is">
+                  archived rules
+                </Translate>
+              </small>
             </div>
             <div className={styles.flowArrow}>↓</div>
             <div className={styles.flowResult}>
-              <span>finished workbook</span>
-              <small>for the operator</small>
+              <span>
+                <Translate id="homepage.hero.flow.result.label" description="Workflow diagram — output label">
+                  finished workbook
+                </Translate>
+              </span>
+              <small>
+                <Translate id="homepage.hero.flow.result.sublabel" description="Workflow diagram — output sublabel">
+                  for the operator
+                </Translate>
+              </small>
             </div>
           </div>
           <code>convert(template, raw)</code>
@@ -89,45 +149,92 @@ function Hero() {
   );
 }
 
-const WALKTHROUGH_STEPS = [
-  {
-    index: '01',
-    title: 'Define the contract in Excel',
-    body: 'Use __config__, source_table, and XTL expressions to describe how raw workbooks become reports.',
-  },
-  {
-    index: '02',
-    title: 'Expose a simple upload flow',
-    body: 'Non-developers choose a raw Excel file and the approved template, then run the converter.',
-  },
-  {
-    index: '03',
-    title: 'Generate finished workbooks',
-    body: 'The output keeps sheet structure, number formats, styles, and merged cells while values are rendered from data.',
-  },
-  {
-    index: '04',
-    title: 'Archive the operating rules',
-    body: 'The template becomes the handover artifact: a portable file that captures how the recurring Excel job works.',
-  },
-] as const;
+function useWalkthroughSteps() {
+  return [
+    {
+      index: '01',
+      title: translate({
+        id: 'homepage.walkthrough.step01.title',
+        message: 'Define the contract in Excel',
+        description: 'Walkthrough step 01 title',
+      }),
+      body: translate({
+        id: 'homepage.walkthrough.step01.body',
+        message:
+          'Use __config__, source_table, and XTL expressions to describe how raw workbooks become reports.',
+        description: 'Walkthrough step 01 body',
+      }),
+    },
+    {
+      index: '02',
+      title: translate({
+        id: 'homepage.walkthrough.step02.title',
+        message: 'Expose a simple upload flow',
+        description: 'Walkthrough step 02 title',
+      }),
+      body: translate({
+        id: 'homepage.walkthrough.step02.body',
+        message:
+          'Non-developers choose a raw Excel file and the approved template, then run the converter.',
+        description: 'Walkthrough step 02 body',
+      }),
+    },
+    {
+      index: '03',
+      title: translate({
+        id: 'homepage.walkthrough.step03.title',
+        message: 'Generate finished workbooks',
+        description: 'Walkthrough step 03 title',
+      }),
+      body: translate({
+        id: 'homepage.walkthrough.step03.body',
+        message:
+          'The output keeps sheet structure, number formats, styles, and merged cells while values are rendered from data.',
+        description: 'Walkthrough step 03 body',
+      }),
+    },
+    {
+      index: '04',
+      title: translate({
+        id: 'homepage.walkthrough.step04.title',
+        message: 'Archive the operating rules',
+        description: 'Walkthrough step 04 title',
+      }),
+      body: translate({
+        id: 'homepage.walkthrough.step04.body',
+        message:
+          'The template becomes the handover artifact: a portable file that captures how the recurring Excel job works.',
+        description: 'Walkthrough step 04 body',
+      }),
+    },
+  ] as const;
+}
 
 function Walkthrough() {
+  const steps = useWalkthroughSteps();
   return (
     <section id="walkthrough" className={styles.walkthrough}>
       <div className="container">
         <div className={styles.sectionIntro}>
-          <p className={styles.kicker}>Workflow model</p>
-          <h2 className={styles.sectionTitle}>Keep the engine in code, keep the workflow in the workbook.</h2>
+          <p className={styles.kicker}>
+            <Translate id="homepage.walkthrough.kicker" description="Walkthrough section kicker">
+              Workflow model
+            </Translate>
+          </p>
+          <h2 className={styles.sectionTitle}>
+            <Translate id="homepage.walkthrough.title" description="Walkthrough section H2">
+              Keep the engine in code, keep the workflow in the workbook.
+            </Translate>
+          </h2>
           <p>
-            Developers build the converter once. The recurring business rules,
-            source table mapping, layout, and output shape stay inside the
-            workbook template that teams can archive and hand over.
+            <Translate id="homepage.walkthrough.lead" description="Walkthrough section lead paragraph">
+              Developers build the converter once. The recurring business rules, source table mapping, layout, and output shape stay inside the workbook template that teams can archive and hand over.
+            </Translate>
           </p>
         </div>
         <div className={styles.walkthroughLayout}>
           <div className={styles.stepsGrid}>
-            {WALKTHROUGH_STEPS.map((s) => (
+            {steps.map((s) => (
               <article key={s.index} className={styles.stepCard}>
                 <span className={styles.stepIndex}>{s.index}</span>
                 <div>
@@ -158,19 +265,27 @@ function Handoff() {
       <div className="container">
         <div className={styles.narrativeGrid}>
           <div>
-            <p className={styles.kicker}>Why developers use it</p>
-            <h2 className={styles.sectionTitle}>Move recurring report logic out of one-off scripts.</h2>
+            <p className={styles.kicker}>
+              <Translate id="homepage.handoff.kicker" description="Handoff section kicker">
+                Why developers use it
+              </Translate>
+            </p>
+            <h2 className={styles.sectionTitle}>
+              <Translate id="homepage.handoff.title" description="Handoff section H2">
+                Move recurring report logic out of one-off scripts.
+              </Translate>
+            </h2>
           </div>
           <div className={styles.prose}>
             <p>
-              Python scripts, VBA macros, and service-specific workflows can
-              automate Excel, but the business rules often end up scattered
-              across code, accounts, and tribal knowledge.
+              <Translate id="homepage.handoff.body.p1" description="Handoff body paragraph 1">
+                Python scripts, VBA macros, and service-specific workflows can automate Excel, but the business rules often end up scattered across code, accounts, and tribal knowledge.
+              </Translate>
             </p>
             <p>
-              xl3 separates the reusable engine from the workbook-specific
-              contract. Developers maintain the TypeScript integration, while
-              each recurring Excel job can travel as a template workbook.
+              <Translate id="homepage.handoff.body.p2" description="Handoff body paragraph 2">
+                xl3 separates the reusable engine from the workbook-specific contract. Developers maintain the TypeScript integration, while each recurring Excel job can travel as a template workbook.
+              </Translate>
             </p>
           </div>
         </div>
@@ -179,40 +294,78 @@ function Handoff() {
   );
 }
 
-const RELIABILITY_CARDS = [
-  {
-    title: 'Template as handover',
-    body: 'Report rules live in a workbook file that can be reviewed, versioned, archived, and passed to the next operator.',
-    tag: 'template.xlsx',
-  },
-  {
-    title: 'Operator-friendly run',
-    body: 'The runtime can be exposed as a browser page: upload raw data, select the template, download the workbook.',
-    tag: 'raw.xlsx → result.xlsx',
-  },
-  {
-    title: 'Developer-owned engine',
-    body: 'Keep deployment, validation, and integration in code while template-specific workflow rules stay in Excel.',
-    tag: 'convert(template, raw)',
-  },
-] as const;
+function useReliabilityCards() {
+  return [
+    {
+      title: translate({
+        id: 'homepage.reliability.card01.title',
+        message: 'Template as handover',
+        description: 'Reliability card 01 title',
+      }),
+      body: translate({
+        id: 'homepage.reliability.card01.body',
+        message:
+          'Report rules live in a workbook file that can be reviewed, versioned, archived, and passed to the next operator.',
+        description: 'Reliability card 01 body',
+      }),
+      tag: 'template.xlsx',
+    },
+    {
+      title: translate({
+        id: 'homepage.reliability.card02.title',
+        message: 'Operator-friendly run',
+        description: 'Reliability card 02 title',
+      }),
+      body: translate({
+        id: 'homepage.reliability.card02.body',
+        message:
+          'The runtime can be exposed as a browser page: upload raw data, select the template, download the workbook.',
+        description: 'Reliability card 02 body',
+      }),
+      tag: 'raw.xlsx → result.xlsx',
+    },
+    {
+      title: translate({
+        id: 'homepage.reliability.card03.title',
+        message: 'Developer-owned engine',
+        description: 'Reliability card 03 title',
+      }),
+      body: translate({
+        id: 'homepage.reliability.card03.body',
+        message:
+          'Keep deployment, validation, and integration in code while template-specific workflow rules stay in Excel.',
+        description: 'Reliability card 03 body',
+      }),
+      tag: 'convert(template, raw)',
+    },
+  ] as const;
+}
 
 function Reliability() {
+  const cards = useReliabilityCards();
   return (
     <section id="conformance" className={styles.reliability}>
       <div className="container">
         <div className={styles.sectionIntro}>
-          <p className={styles.kicker}>Operational fit</p>
-          <h2 className={styles.sectionTitle}>Built for handoff, not just automation.</h2>
+          <p className={styles.kicker}>
+            <Translate id="homepage.reliability.kicker" description="Reliability section kicker">
+              Operational fit
+            </Translate>
+          </p>
+          <h2 className={styles.sectionTitle}>
+            <Translate id="homepage.reliability.title" description="Reliability section H2">
+              Built for handoff, not just automation.
+            </Translate>
+          </h2>
           <p>
-            The people running the workflow should not need to read code. They
-            need a stable converter, an approved template, and a predictable
-            result workbook.
+            <Translate id="homepage.reliability.lead" description="Reliability section lead paragraph">
+              The people running the workflow should not need to read code. They need a stable converter, an approved template, and a predictable result workbook.
+            </Translate>
           </p>
         </div>
         <div className={styles.stageGrid}>
-          {RELIABILITY_CARDS.map((c) => (
-            <article key={c.title} className={styles.stageCard}>
+          {cards.map((c) => (
+            <article key={c.tag} className={styles.stageCard}>
               <h3>{c.title}</h3>
               <p>{c.body}</p>
               <code>{c.tag}</code>
@@ -220,74 +373,174 @@ function Reliability() {
           ))}
         </div>
         <p className={styles.conformanceFact}>
-          XTL 0.1 ships with <strong>32 ADRs</strong>, <strong>119 conformance fixtures</strong>,
-          all green at Stage 2. The TypeScript reference implementation is published
-          at <a href="https://www.npmjs.com/package/@jinyoung4478/xl3">@jinyoung4478/xl3</a>{' '}
-          — the <Link to="/porters-guide">Porter's Guide</Link> documents the
-          contract so a second-language port can match it.
+          <Translate
+            id="homepage.reliability.fact"
+            description="Reliability section conformance stats sentence; {adrCount} and {fixtureCount} are pre-bolded counts, {npmLink} and {portersGuideLink} are inline links"
+            values={{
+              adrCount: <strong>66 ADRs</strong>,
+              fixtureCount: <strong>139 conformance fixtures</strong>,
+              npmLink: (
+                <a href="https://www.npmjs.com/package/@jinyoung4478/xl3">@jinyoung4478/xl3</a>
+              ),
+              portersGuideLink: (
+                <Link to="/porters-guide">
+                  <Translate
+                    id="homepage.reliability.fact.portersGuideLabel"
+                    description="Link label inside the conformance fact sentence"
+                  >
+                    Porter's Guide
+                  </Translate>
+                </Link>
+              ),
+            }}
+          >
+            {
+              'XTL 0.1 ships with {adrCount}, {fixtureCount}, all green at Stage 2. The TypeScript reference implementation is published at {npmLink} — the {portersGuideLink} documents the contract so a second-language port can match it.'
+            }
+          </Translate>
         </p>
       </div>
     </section>
   );
 }
 
-const COMPARISONS: Array<{ tool: string; bestAt: string; tradeoff: string }> = [
-  {
-    tool: 'xl3',
-    bestAt: 'File-based Excel transformation. Workflow rules stay in template.xlsx.',
-    tradeoff: 'Alpha. XTL surface is intentionally small and still evolving.',
-  },
-  {
-    tool: 'Python / VBA scripts',
-    bestAt: 'Fast one-off automation close to existing spreadsheets.',
-    tradeoff: "Rules live in code or one maintainer's memory; handoff and review are harder.",
-  },
-  {
-    tool: 'Power Query / Office Scripts',
-    bestAt: 'Microsoft 365 workflows, data shaping inside the Excel ecosystem.',
-    tradeoff: 'Workflows become tenant/account-specific rather than portable workbook artifacts.',
-  },
-  {
-    tool: 'Spreadsheet SDKs (SheetJS, ExcelJS, Aspose)',
-    bestAt: 'Low-level or full-featured programmatic workbook generation.',
-    tradeoff: 'Developers usually encode report rules directly in application code.',
-  },
-  {
-    tool: 'Template engines (JXLS, xltpl)',
-    bestAt: 'Server-side report generation from spreadsheet-like templates.',
-    tradeoff: 'Often language/runtime-specific; operator-facing flows are not the focus.',
-  },
-  {
-    tool: 'Doc-gen SaaS (Plumsail, Conga)',
-    bestAt: 'Managed document workflows, integrations, approvals.',
-    tradeoff: 'Rules live in a vendor service, not a portable self-hostable template.',
-  },
-  {
-    tool: 'LLM-based spreadsheet generation',
-    bestAt: 'Ad hoc exploration and drafting.',
-    tradeoff: 'Not a deterministic transformation contract for recurring operational work.',
-  },
-];
+function useComparisons() {
+  return [
+    {
+      tool: 'xl3',
+      bestAt: translate({
+        id: 'homepage.comparison.xl3.bestAt',
+        message: 'File-based Excel transformation. Workflow rules stay in template.xlsx.',
+        description: 'Comparison row xl3 — best at',
+      }),
+      tradeoff: translate({
+        id: 'homepage.comparison.xl3.tradeoff',
+        message: 'Alpha. XTL surface is intentionally small and still evolving.',
+        description: 'Comparison row xl3 — tradeoff',
+      }),
+    },
+    {
+      tool: 'Python / VBA scripts',
+      bestAt: translate({
+        id: 'homepage.comparison.scripts.bestAt',
+        message: 'Fast one-off automation close to existing spreadsheets.',
+        description: 'Comparison row Python/VBA — best at',
+      }),
+      tradeoff: translate({
+        id: 'homepage.comparison.scripts.tradeoff',
+        message: "Rules live in code or one maintainer's memory; handoff and review are harder.",
+        description: 'Comparison row Python/VBA — tradeoff',
+      }),
+    },
+    {
+      tool: 'Power Query / Office Scripts',
+      bestAt: translate({
+        id: 'homepage.comparison.powerQuery.bestAt',
+        message: 'Microsoft 365 workflows, data shaping inside the Excel ecosystem.',
+        description: 'Comparison row Power Query — best at',
+      }),
+      tradeoff: translate({
+        id: 'homepage.comparison.powerQuery.tradeoff',
+        message:
+          'Workflows become tenant/account-specific rather than portable workbook artifacts.',
+        description: 'Comparison row Power Query — tradeoff',
+      }),
+    },
+    {
+      tool: 'Spreadsheet SDKs (SheetJS, ExcelJS, Aspose)',
+      bestAt: translate({
+        id: 'homepage.comparison.sdk.bestAt',
+        message: 'Low-level or full-featured programmatic workbook generation.',
+        description: 'Comparison row spreadsheet SDKs — best at',
+      }),
+      tradeoff: translate({
+        id: 'homepage.comparison.sdk.tradeoff',
+        message: 'Developers usually encode report rules directly in application code.',
+        description: 'Comparison row spreadsheet SDKs — tradeoff',
+      }),
+    },
+    {
+      tool: 'Template engines (JXLS, xltpl)',
+      bestAt: translate({
+        id: 'homepage.comparison.templateEngines.bestAt',
+        message: 'Server-side report generation from spreadsheet-like templates.',
+        description: 'Comparison row template engines — best at',
+      }),
+      tradeoff: translate({
+        id: 'homepage.comparison.templateEngines.tradeoff',
+        message: 'Often language/runtime-specific; operator-facing flows are not the focus.',
+        description: 'Comparison row template engines — tradeoff',
+      }),
+    },
+    {
+      tool: 'Doc-gen SaaS (Plumsail, Conga)',
+      bestAt: translate({
+        id: 'homepage.comparison.docgen.bestAt',
+        message: 'Managed document workflows, integrations, approvals.',
+        description: 'Comparison row doc-gen SaaS — best at',
+      }),
+      tradeoff: translate({
+        id: 'homepage.comparison.docgen.tradeoff',
+        message: 'Rules live in a vendor service, not a portable self-hostable template.',
+        description: 'Comparison row doc-gen SaaS — tradeoff',
+      }),
+    },
+    {
+      tool: 'LLM-based spreadsheet generation',
+      bestAt: translate({
+        id: 'homepage.comparison.llm.bestAt',
+        message: 'Ad hoc exploration and drafting.',
+        description: 'Comparison row LLM — best at',
+      }),
+      tradeoff: translate({
+        id: 'homepage.comparison.llm.tradeoff',
+        message: 'Not a deterministic transformation contract for recurring operational work.',
+        description: 'Comparison row LLM — tradeoff',
+      }),
+    },
+  ] as const;
+}
 
 function Comparison() {
+  const rows = useComparisons();
   return (
     <section id="compare" className={styles.comparison}>
       <div className="container">
         <div className={styles.sectionIntro}>
-          <p className={styles.kicker}>How it compares</p>
-          <h2 className={styles.sectionTitle}>The same problem, different shapes.</h2>
+          <p className={styles.kicker}>
+            <Translate id="homepage.comparison.kicker" description="Comparison section kicker">
+              How it compares
+            </Translate>
+          </p>
+          <h2 className={styles.sectionTitle}>
+            <Translate id="homepage.comparison.title" description="Comparison section H2">
+              The same problem, different shapes.
+            </Translate>
+          </h2>
         </div>
         <div className={styles.comparisonTable}>
           <table>
             <thead>
               <tr>
-                <th>Approach</th>
-                <th>Best at</th>
-                <th>Tradeoff</th>
+                <th>
+                  <Translate id="homepage.comparison.col.approach" description="Comparison table column header — tool/approach name">
+                    Approach
+                  </Translate>
+                </th>
+                <th>
+                  <Translate id="homepage.comparison.col.bestAt" description="Comparison table column header — best at">
+                    Best at
+                  </Translate>
+                </th>
+                <th>
+                  <Translate id="homepage.comparison.col.tradeoff" description="Comparison table column header — tradeoff">
+                    Tradeoff
+                  </Translate>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {COMPARISONS.map((c) => (
+              {rows.map((c) => (
                 <tr key={c.tool}>
                   <td><strong>{c.tool}</strong></td>
                   <td>{c.bestAt}</td>
@@ -307,12 +560,20 @@ function DeveloperApi() {
     <section id="api" className={styles.api}>
       <div className="container">
         <div className={styles.sectionIntro}>
-          <p className={styles.kicker}>Developer API</p>
-          <h2 className={styles.sectionTitle}>Wire the same workflow into your product.</h2>
+          <p className={styles.kicker}>
+            <Translate id="homepage.api.kicker" description="Developer API section kicker">
+              Developer API
+            </Translate>
+          </p>
+          <h2 className={styles.sectionTitle}>
+            <Translate id="homepage.api.title" description="Developer API section H2">
+              Wire the same workflow into your product.
+            </Translate>
+          </h2>
           <p>
-            Use the package when the demo flow needs to become an internal
-            portal, a CLI, or a service endpoint. The operator experience can
-            stay file-based while your app owns deployment and validation.
+            <Translate id="homepage.api.lead" description="Developer API section lead paragraph">
+              Use the package when the demo flow needs to become an internal portal, a CLI, or a service endpoint. The operator experience can stay file-based while your app owns deployment and validation.
+            </Translate>
           </p>
         </div>
         <div className={styles.codePair}>
@@ -362,11 +623,23 @@ function DeveloperApi() {
           />
         </div>
         <p className={styles.apiCta}>
-          <Link to="/guides/getting-started">Cookbook 01 — Getting started in 5 minutes</Link>
+          <Link to="/guides/getting-started">
+            <Translate id="homepage.api.cta.cookbook" description="Bottom CTA link — cookbook 01">
+              Cookbook 01 — Getting started in 5 minutes
+            </Translate>
+          </Link>
           {' · '}
-          <Link to="/spec/">Read the spec</Link>
+          <Link to="/spec/">
+            <Translate id="homepage.api.cta.spec" description="Bottom CTA link — spec">
+              Read the spec
+            </Translate>
+          </Link>
           {' · '}
-          <Link to="/porters-guide">Porter's Guide</Link>
+          <Link to="/porters-guide">
+            <Translate id="homepage.api.cta.porters" description="Bottom CTA link — Porter's Guide">
+              Porter's Guide
+            </Translate>
+          </Link>
         </p>
       </div>
     </section>
@@ -376,8 +649,17 @@ function DeveloperApi() {
 export default function Home() {
   return (
     <Layout
-      title="xl3 — Excel transformation logic, inside the Excel file"
-      description="xl3 puts Excel transformation logic inside the Excel file, not in code. Non-developers can read and edit the rules directly, in the same Excel syntax they already know."
+      title={translate({
+        id: 'homepage.layout.title',
+        message: 'xl3 — Excel transformation logic, inside the Excel file',
+        description: 'HTML <title> for the landing page',
+      })}
+      description={translate({
+        id: 'homepage.layout.description',
+        message:
+          'xl3 puts Excel transformation logic inside the Excel file, not in code. Non-developers can read and edit the rules directly, in the same Excel syntax they already know.',
+        description: 'HTML <meta description> for the landing page',
+      })}
     >
       <Hero />
       <main>
