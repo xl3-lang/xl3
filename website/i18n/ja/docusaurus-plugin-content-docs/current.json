@@ -128,7 +128,7 @@
     "description": "The label for the doc item 'Porter's Guide' in sidebar 'docsSidebar', linking to the doc PORTERS_GUIDE"
   },
   "sidebar.docsSidebar.doc.Conformance overview": {
-    "message": "適合性概要(英語)",
+    "message": "適合性概要",
     "description": "The label for the doc item 'Conformance overview' in sidebar 'docsSidebar', linking to the doc conformance/index"
   },
   "sidebar.docsSidebar.doc.Dashboard": {
@@ -136,15 +136,15 @@
     "description": "The label for the doc item 'Dashboard' in sidebar 'docsSidebar', linking to the doc conformance/DASHBOARD"
   },
   "sidebar.docsSidebar.doc.Coverage matrix": {
-    "message": "カバレッジマトリクス(英語)",
+    "message": "カバレッジマトリクス",
     "description": "The label for the doc item 'Coverage matrix' in sidebar 'docsSidebar', linking to the doc conformance/coverage"
   },
   "sidebar.docsSidebar.doc.Runner protocol": {
-    "message": "ランナープロトコル(英語)",
+    "message": "ランナープロトコル",
     "description": "The label for the doc item 'Runner protocol' in sidebar 'docsSidebar', linking to the doc conformance/runner-protocol"
   },
   "sidebar.docsSidebar.doc.Authoring fixtures": {
-    "message": "フィクスチャ作成(英語)",
+    "message": "フィクスチャ作成",
     "description": "The label for the doc item 'Authoring fixtures' in sidebar 'docsSidebar', linking to the doc conformance/AUTHORING"
   },
   "sidebar.docsSidebar.doc.Roadmap to 1.0": {

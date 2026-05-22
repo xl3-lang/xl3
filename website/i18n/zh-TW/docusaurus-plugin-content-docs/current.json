@@ -128,7 +128,7 @@
     "description": "The label for the doc item 'Porter's Guide' in sidebar 'docsSidebar', linking to the doc PORTERS_GUIDE"
   },
   "sidebar.docsSidebar.doc.Conformance overview": {
-    "message": "符合性概覽（英文）",
+    "message": "符合性概覽",
     "description": "The label for the doc item 'Conformance overview' in sidebar 'docsSidebar', linking to the doc conformance/index"
   },
   "sidebar.docsSidebar.doc.Dashboard": {
@@ -136,15 +136,15 @@
     "description": "The label for the doc item 'Dashboard' in sidebar 'docsSidebar', linking to the doc conformance/DASHBOARD"
   },
   "sidebar.docsSidebar.doc.Coverage matrix": {
-    "message": "覆蓋率矩陣（英文）",
+    "message": "涵蓋矩陣",
     "description": "The label for the doc item 'Coverage matrix' in sidebar 'docsSidebar', linking to the doc conformance/coverage"
   },
   "sidebar.docsSidebar.doc.Runner protocol": {
-    "message": "Runner 協定（英文）",
+    "message": "執行器協定",
     "description": "The label for the doc item 'Runner protocol' in sidebar 'docsSidebar', linking to the doc conformance/runner-protocol"
   },
   "sidebar.docsSidebar.doc.Authoring fixtures": {
-    "message": "編寫 fixture（英文）",
+    "message": "編寫 fixture",
     "description": "The label for the doc item 'Authoring fixtures' in sidebar 'docsSidebar', linking to the doc conformance/AUTHORING"
   },
   "sidebar.docsSidebar.doc.Roadmap to 1.0": {

@@ -128,7 +128,7 @@
     "description": "The label for the doc item 'Porter's Guide' in sidebar 'docsSidebar', linking to the doc PORTERS_GUIDE"
   },
   "sidebar.docsSidebar.doc.Conformance overview": {
-    "message": "Resumen de conformancia (en inglés)",
+    "message": "Resumen de conformancia",
     "description": "The label for the doc item 'Conformance overview' in sidebar 'docsSidebar', linking to the doc conformance/index"
   },
   "sidebar.docsSidebar.doc.Dashboard": {
@@ -136,15 +136,15 @@
     "description": "The label for the doc item 'Dashboard' in sidebar 'docsSidebar', linking to the doc conformance/DASHBOARD"
   },
   "sidebar.docsSidebar.doc.Coverage matrix": {
-    "message": "Matriz de cobertura (en inglés)",
+    "message": "Matriz de cobertura",
     "description": "The label for the doc item 'Coverage matrix' in sidebar 'docsSidebar', linking to the doc conformance/coverage"
   },
   "sidebar.docsSidebar.doc.Runner protocol": {
-    "message": "Protocolo del runner (en inglés)",
+    "message": "Protocolo del ejecutor",
     "description": "The label for the doc item 'Runner protocol' in sidebar 'docsSidebar', linking to the doc conformance/runner-protocol"
   },
   "sidebar.docsSidebar.doc.Authoring fixtures": {
-    "message": "Autoría de fixtures (en inglés)",
+    "message": "Autoría de fixtures",
     "description": "The label for the doc item 'Authoring fixtures' in sidebar 'docsSidebar', linking to the doc conformance/AUTHORING"
   },
   "sidebar.docsSidebar.doc.Roadmap to 1.0": {
