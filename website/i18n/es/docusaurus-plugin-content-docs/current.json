@@ -104,7 +104,7 @@
     "description": "The label for category 'Conformance' in sidebar 'docsSidebar'"
   },
   "sidebar.docsSidebar.doc.Spec overview": {
-    "message": "Resumen de la especificación (en inglés)",
+    "message": "Resumen de la especificación",
     "description": "The label for the doc item 'Spec overview' in sidebar 'docsSidebar', linking to the doc spec/index"
   },
   "sidebar.docsSidebar.doc.Language": {
@@ -116,11 +116,11 @@
     "description": "The label for the doc item 'Evaluation' in sidebar 'docsSidebar', linking to the doc spec/evaluation"
   },
   "sidebar.docsSidebar.doc.Stability": {
-    "message": "Estabilidad (en inglés)",
+    "message": "Estabilidad",
     "description": "The label for the doc item 'Stability' in sidebar 'docsSidebar', linking to the doc spec/STABILITY"
   },
   "sidebar.docsSidebar.doc.Glossary": {
-    "message": "Glosario (en inglés)",
+    "message": "Glosario",
     "description": "The label for the doc item 'Glossary' in sidebar 'docsSidebar', linking to the doc spec/glossary"
   },
   "sidebar.docsSidebar.doc.Porter's Guide": {

@@ -104,7 +104,7 @@
     "description": "The label for category 'Conformance' in sidebar 'docsSidebar'"
   },
   "sidebar.docsSidebar.doc.Spec overview": {
-    "message": "規格概覽（英文）",
+    "message": "規格概覽",
     "description": "The label for the doc item 'Spec overview' in sidebar 'docsSidebar', linking to the doc spec/index"
   },
   "sidebar.docsSidebar.doc.Language": {
@@ -116,11 +116,11 @@
     "description": "The label for the doc item 'Evaluation' in sidebar 'docsSidebar', linking to the doc spec/evaluation"
   },
   "sidebar.docsSidebar.doc.Stability": {
-    "message": "穩定性（英文）",
+    "message": "穩定性",
     "description": "The label for the doc item 'Stability' in sidebar 'docsSidebar', linking to the doc spec/STABILITY"
   },
   "sidebar.docsSidebar.doc.Glossary": {
-    "message": "詞彙表（英文）",
+    "message": "詞彙表",
     "description": "The label for the doc item 'Glossary' in sidebar 'docsSidebar', linking to the doc spec/glossary"
   },
   "sidebar.docsSidebar.doc.Porter's Guide": {
