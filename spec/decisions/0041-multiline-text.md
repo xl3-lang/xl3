@@ -134,6 +134,70 @@ Adopt **A**. The following rules are normative.
   reason newlines in source values survive: nobody asked the
   engine to mutate them.
 
+## Amendment 2026-05-22 — header cells
+
+The original ADR scope said "source-data cells" and was silent on
+source-table **header** cells (the row identified by
+`source_table = N` or the first row of a range form).
+
+Audit found that header cells with embedded newlines do exist in
+production source workbooks (e.g., a header cell authored via Alt+
+Enter to wrap long captions like `"단위:\n원"`). The reference impl
+reads the full text including the LF and uses it as the column
+name. Templates referencing that column with `{{ [단위:\n원] }}`
+work today because `column_name` per `grammar.ebnf` excludes only
+`]`, CR, LF — wait, **LF is excluded**, so the bracket form would
+reject the column-name lookup.
+
+The ambiguity: the header cell's underlying value is a multi-line
+string, but `column_name` syntax cannot reference an LF-containing
+name. Two normalization positions:
+
+### Normative rules (amendment)
+
+1. **Source-table header cells normalize newlines on read.** CRLF /
+   CR / LF in a header cell's text-extracted value are normalized
+   to a **single space** (U+0020) at read time. The resulting
+   column name uses the spaces; templates reference the column
+   with the space-collapsed form.
+
+   Example: header cell `"단위:\n원"` becomes column name
+   `"단위: 원"`. Reference: `{{ [단위: 원] }}`.
+
+2. **Multiple consecutive newlines collapse to a single space.**
+   `"a\n\nb"` → `"a b"`. This matches the broader header-trim rule
+   (column names are trimmed; runs of internal whitespace are not
+   collapsed for *data* cells, but headers are namespace, not
+   content, so the stricter rule applies).
+
+3. **Trim still applies after newline normalization.** A header
+   that is entirely whitespace + newlines after normalization is
+   empty per ADR-0007 and raises `xl3/source/missing-header` (no
+   change from existing behavior).
+
+### Conformance fixture (added)
+
+- `185-source-header-multiline-newline-normalized` — header cell
+  `"단위:\n원"` produces column name `"단위: 원"`, referenced as
+  `{{ [단위: 원] }}` successfully.
+
+### Data-row vs header-row asymmetry (intentional)
+
+Header cells normalize LF → space (this amendment); data cells
+preserve LF verbatim (the original ADR). The asymmetry is
+intentional:
+
+- Column names are part of the template's *syntax* — they appear
+  inside `[...]` references where LF is forbidden by `grammar.
+  ebnf`. Normalization makes the syntax reachable.
+- Data values are part of the rendered *output* — preserving LF
+  matches Excel's Alt+Enter authoring intent.
+
+Authors who want a header that visually shows two lines should use
+the template's `wrapText: true` alignment in the template's *output*
+cell (where the header is displayed), independent of the source-
+data column name.
+
 ## References
 
 - ADR-0017 — Source value model (the document this ADR amends)

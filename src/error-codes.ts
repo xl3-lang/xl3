@@ -45,14 +45,22 @@ export type XtlErrorCode =
   | 'xl3/subtotal/bad-aggregate'
   // Lists
   | 'xl3/lists/missing-reference'
+  // Lists (ADR-0057)
+  | 'xl3/lists/invalid-use'
   // Parser (ADR-0021)
   | 'xl3/parser/empty-block'
+  // Parser (ADR-0051)
+  | 'xl3/parser/unbalanced-literal'
   // Evaluation (ADR-0023, ADR-0024, ADR-0019 amendment, ADR-0039)
   | 'xl3/eval/operand-coercion'
   | 'xl3/eval/arity-mismatch'
   | 'xl3/eval/unsupported-syntax'
   | 'xl3/eval/type-mismatch'
   | 'xl3/eval/no-match'
+  // Evaluation (ADR-0059)
+  | 'xl3/eval/bad-aggregate-arg'
+  // Expression (ADR-0054)
+  | 'xl3/expression/unknown-name'
   // Cell evaluation
   | 'xl3/cell/numfmt-coercion'
   | 'xl3/cell/row-outside-repeat'

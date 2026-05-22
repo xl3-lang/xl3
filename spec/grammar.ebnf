@@ -49,7 +49,9 @@ directive
     | top_directive
     | repeat_directive
     | source_directive
-    | join_directive ;
+    | join_directive
+    | group_directive
+    | subtotal_directive ;
 
 filter_directive
     = "@filter" , bracket_field , filter_op , value_arg ;
@@ -67,10 +69,10 @@ sort_direction
     = "asc" | "desc" ;     (* case-insensitive *)
 
 top_directive
-    = "@top" , integer ;
+    = "@top" , positive_integer ;
 
 repeat_directive
-    = "@repeat" , "right" , [ integer ] ;
+    = "@repeat" , "right" , [ positive_integer ] ;
 
 source_directive
     = "@source" , source_name ;
@@ -81,6 +83,35 @@ join_directive
 (* The two source_bracket_field operands of `on` must reference
  * the joined source and the active block's source, in either
  * order. Validated post-parse. ADR-0014. *)
+
+group_directive
+    (* `@group [Key1], [Key2], ..., [KeyN]` — partition the row set
+     * into N-level nested groups. ADR-0038. A data block MAY contain
+     * at most one @group; incompatible with `@repeat right`. *)
+    = "@group" , bracket_field , { "," , bracket_field } ;
+
+subtotal_directive
+    (* `@subtotal <aggregate>` — emit a group-boundary aggregate row.
+     * ADR-0038, ADR-0058. The aggregate body is restricted to one
+     * of SUM, COUNT, AVERAGE, MIN, MAX with a single column-ref
+     * argument (or COUNT() zero-arg). The `subtotal_directive`
+     * production appears inside a `{{ ... }}` block in a data-block
+     * row; multiple @subtotal expressions on one row share the row's
+     * nesting-level binding. *)
+    = "@subtotal" , aggregate_call ;
+
+aggregate_call
+    = aggregate_name , "(" , [ aggregate_arg ] , ")" ;
+
+aggregate_name
+    = "SUM" | "COUNT" | "AVERAGE" | "MIN" | "MAX" ;
+    (* Case-insensitive. *)
+
+aggregate_arg
+    = bracket_field | source_bracket_field ;
+    (* Per ADR-0059, literal / expression / function-call arguments
+     * are rejected with xl3/eval/bad-aggregate-arg (non-@subtotal)
+     * or xl3/subtotal/bad-aggregate (@subtotal). *)
 
 (* ---------------------------------------------------------------- *)
 (* Expressions                                                       *)
@@ -212,6 +243,14 @@ boolean_literal
 integer
     = digit_seq ;
 
+positive_integer
+    (* A digit sequence whose parsed value is >= 1. Leading zeros
+     * are NOT permitted (`05` is a parse error). ADR-0055. *)
+    = non_zero_digit , { digit } ;
+
+non_zero_digit
+    = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
 (* ---------------------------------------------------------------- *)
 (* Identifiers and characters                                        *)
 (* ---------------------------------------------------------------- *)
@@ -235,6 +274,30 @@ digit
 (* ---------------------------------------------------------------- *)
 
 (*
+ * LEXICAL DISAMBIGUATION (per ADR-0061):
+ *
+ *   When a letter-led identifier appears in an expression position,
+ *   the parser MUST disambiguate by the token immediately following:
+ *
+ *     Identifier "(" ...   -> function_call (case-insensitive lookup)
+ *     Identifier "[" ...   -> source_bracket_field (case-sensitive
+ *                             match against declared sources)
+ *     Identifier (other)   -> bare identifier; resolves to a
+ *                             boolean_literal (TRUE / FALSE), else
+ *                             raises xl3/expression/unknown-name
+ *                             per ADR-0054.
+ *
+ *   This rule makes source names like `IF` or `Date` legal — the
+ *   `[` / `(` lookahead picks the right interpretation.
+ *
+ * DELIMITER BOUNDARY (per ADR-0051):
+ *
+ *   `{{ ... }}` block recognition is a single left-to-right pass
+ *   that is NOT string-literal-aware. The first `}}` after `{{`
+ *   closes the block, even when it appears inside `"..."`.
+ *   Authors who need a literal `}}` inside a value hold it in
+ *   `__config__[key]` and reference it via `{{ __config__[key] }}`.
+ *
  * AMBIGUITY (deferred to a future ADR if it becomes a real problem):
  *
  *   `Source[Account]` could lex as either a `source_bracket_field`

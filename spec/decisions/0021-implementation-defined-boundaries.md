@@ -197,6 +197,50 @@ templates) nor reserved (`__config__` etc.). The reference impl
 copies them through to output unchanged. Ports MAY copy, strip, or
 warn. Authors SHOULD assume "passes through" for portability.
 
+### Group order when `@sort` keys do not match `@group` keys
+(added 2026-05-22)
+
+**Position:** implementation-defined.
+
+ADR-0038 § "Composition with other directives" pinned the
+`@group` ↔ `@sort` interaction as "undefined" when the sorts would
+reorder groups across each other. That wording was loose; this
+entry reclassifies the case as **implementation-defined** so the
+boundary appears in this catalog (the canonical home for porter-
+visible gray areas) and ports are explicit about their choice.
+
+Concrete cases:
+
+- `@sort [Region]` + `@group [Region], [Customer]` — group order is
+  the encounter order of `[Region]` values **after** the sort.
+  Reference impl produces stable, deterministic output.
+- `@sort [Amount] desc` + `@group [Region]` — `[Region]` group
+  order is the encounter order of `[Region]` values walking the
+  amount-sorted row stream. Two implementations MAY pick different
+  group orders if they implement encounter-order tracking
+  differently, but each impl MUST be deterministic across runs.
+- `@sort [Region]` + `@sort [Customer]` + `@group [Region]` — when
+  the sort key sequence is a prefix of the group key sequence,
+  group order is the natural sort order.
+
+**Implementation-defined choice**: each port picks its own group-
+order strategy, MUST document it, and MUST keep it stable across
+runs of the same template+data.
+
+The reference impl's choice is encounter-order-of-first-occurrence
+over the post-sort row stream. This is NOT normatively binding on
+other ports — it is the published reference behavior. The
+conformance corpus has NO fixture asserting the specific group
+order for non-matching sort keys (fixture 152 covers only the
+*matching* case where `@sort` keys equal `@group` keys; in that
+case group order is the sort order and every port produces the
+same output).
+
+Authors who want strict, portable group ordering MUST `@sort` by
+the same keys as `@group` in the same order. The recommendation
+in ADR-0038 is unchanged; this entry only normalizes the catalog
+wording so "undefined" does not appear as a non-stance.
+
 ## Consequences
 
 - Porters get a single page with every gray-area answer, instead of

@@ -36,6 +36,15 @@ A template block whose inner content is empty (`{{ }}` or
 whitespace-only) is a parse error per ADR-0021
 (`xl3/parser/empty-block`).
 
+A template block is opened by `{{` and closed by the **first**
+subsequent `}}` in cell-text order. The delimiter scanner is NOT
+string-literal-aware: a `}}` inside a `"..."` literal CLOSES the
+block (ADR-0051). Authors who need a literal `}}` inside a value
+hold it in `__config__[key]` and reference it via
+`{{ __config__[key] }}`. An expression body whose `"` count is odd
+(unbalanced literal, almost always caused by an embedded delimiter)
+raises `xl3/parser/unbalanced-literal`.
+
 ## Source Columns
 
 Source columns are referenced with bracket syntax:
@@ -49,6 +58,22 @@ Source columns are referenced with bracket syntax:
 The text inside `[` and `]` is the exact source column name after trimming surrounding whitespace. Column names MAY contain spaces, letters, numbers, and punctuation except `]` and line breaks.
 
 Bare names such as `{{ Customer }}` are not source column references in cells. Bare names are reserved for sheet and file group keys.
+
+Per ADR-0054, a bare identifier inside a template block resolves in
+this order, with `xl3/expression/unknown-name` raised on
+unresolved lookup:
+
+| Context | Resolution order |
+|---|---|
+| `output_file_pattern` | file group key → `__inputs__[name]` → `__config__[name]` |
+| Sheet-name pattern | sheet group key → `__inputs__[name]` → `__config__[name]` |
+| Data cell | enclosing file group key → enclosing sheet group key → `__inputs__[name]` → `__config__[name]` (boolean literal `TRUE`/`FALSE` still resolves as a literal before this chain) |
+
+Bare identifiers in data cells do NOT resolve to source columns;
+authors MUST use the explicit `[Column]` form for column
+references. The shorthand resolution chain in data cells exists so
+that `{{ Region }}` inside a sheet whose `output_file_pattern` is
+`{{ [Region] }}.xlsx` reads the active group's value as expected.
 
 ## Literals
 
@@ -112,6 +137,29 @@ without producing `NaN`. Commas are treated as thousands separators
 leading `+`. The Unicode minus `U+2212` is not a sign character
 (per ADR-0009 amendment).
 
+Per ADR-0064, the string→number coercion (distinct from literal
+parsing) accepts these shapes:
+
+| Shape | Accepted? | Example |
+|---|---|---|
+| Decimal integer | yes | `"42"`, `"-42"` |
+| Decimal fraction | yes | `"3.14"`, `"-3.14"` |
+| Thousands separator | yes | `"1,234"`, `"-1,234.56"` |
+| Scientific notation | yes | `"1e5"`, `"-1.5e-3"`, `"1.5E10"` |
+| Hex prefix `0x`/`0X` | no — error `xl3/eval/operand-coercion` | `"0x10"` |
+| Binary prefix `0b`/`0B` | no | `"0b101"` |
+| Octal prefix `0o`/`0O` | no | `"0o17"` |
+| Leading `+` | no | `"+5"` |
+| Unicode minus `U+2212` prefix | no | `"−5"` |
+| Produces `±Infinity` | no | `"Infinity"`, IEEE 754 overflow |
+| Trailing non-numeric chars | no | `"5px"`, `"5 abc"` |
+| Multi-line string | no | a string containing internal LF |
+
+The asymmetry between literal parsing (strict) and string coercion
+(permissive) is by design: literals are authored, while coerced
+strings come from data (CSV exports, financial systems) where
+scientific or hex notation occurs naturally.
+
 ```text
 {{ [price] * [quantity] }}
 {{ [total] / 10 }}
@@ -138,6 +186,16 @@ substituted at the position. If the error value flows into a further
 arithmetic operator within the same cell expression (e.g., `(1/0) + 5`),
 it fails to coerce to a finite number and raises
 `xl3/eval/operand-coercion` per the table above.
+
+The six **source-side** Excel error sentinels — `#N/A`, `#VALUE!`,
+`#REF!`, `#NAME?`, `#NUM!`, `#NULL!` — read from source as the
+empty value per ADR-0017. Per ADR-0053, they contribute `""` to
+mixed-text and `&`-concatenation positions and raise
+`xl3/cell/numfmt-coercion` in number/date-format single-expression
+cells. `#DIV/0!` is the only sentinel the engine itself produces
+during XTL evaluation; it follows the rules above. Authors who
+want a visible "missing" marker for source-side sentinels wrap the
+column reference with `IFEMPTY([col], "missing")`.
 
 ### String concatenation — `&`
 
@@ -329,6 +387,17 @@ the [Comparison Algorithm](#comparison-algorithm). If no row matches:
 XTL 0.1 supports exact match only — no wildcards, approximate match,
 or reverse search.
 
+Per ADR-0060, the `lookup_value` (first arg) and the optional
+`fallback` (fourth arg) are full XTL expressions. They MAY be
+literals, bare brackets, source-prefixed brackets, function calls,
+or composite expressions. A `Source[Column]` reference in either
+position is subject to the active-source rule (ADR-0012): it
+resolves to the current row only when `Source` is the active
+source of the surrounding block; otherwise raises
+`xl3/source/row-cross-block`. The array-argument constraints
+(same-source, no bare brackets) apply only to `lookup_array` and
+`return_array`.
+
 ### Aggregates
 
 Aggregates operate on the current rendered row set.
@@ -344,6 +413,14 @@ Aggregates operate on the current rendered row set.
 
 `COUNT()` counts rows. `COUNT([field])` counts rows whose `[field]`
 value is non-empty per [Empty Values](./evaluation.md#empty-values).
+
+Per ADR-0059, the single argument to `SUM`, `AVERAGE` (and its
+`AVG` alias), `MIN`, `MAX`, and the 1-arg form of `COUNT` MUST be a
+column reference of the form `[Column]` or `Source[Column]`. Any
+other shape (literal, expression, function call) raises
+`xl3/eval/bad-aggregate-arg`. Authors who need a per-row computed
+aggregate either add a helper column upstream or compute the
+per-row value in a separate cell.
 
 ### Numeric Functions
 
@@ -468,7 +545,10 @@ b`).
 @top 10
 ```
 
-Keeps the first N rows after filters and sorts.
+Keeps the first N rows after filters and sorts. Per ADR-0055, N
+MUST be a positive integer (≥ 1). `@top 0`, `@top -5`, and
+`@top 05` (leading zero) are parse errors raising
+`xl3/directive/invalid-syntax`.
 
 ### Repeat Right
 
@@ -477,7 +557,7 @@ Keeps the first N rows after filters and sorts.
 @repeat right 3
 ```
 
-Repeats the detected data block horizontally. The optional number is the column span per repeated record; when omitted, the column span is `1`.
+Repeats the detected data block horizontally. The optional number is the column span per repeated record; when omitted, the column span is `1`. Per ADR-0055, the column span MUST be a positive integer (≥ 1); `@repeat right 0` and `@repeat right -3` raise `xl3/directive/invalid-syntax`.
 
 ### Source
 
@@ -490,6 +570,11 @@ Scopes the surrounding data block to the named source declared in
 `[Column]` resolves to the active source's row, and aggregates over
 `Source[Column]` work as before. Without `@source`, the active source
 is the default `source_sheet` configured in `__config__`.
+
+The explicit form `@source default` is legal and equivalent to
+omitting the directive (ADR-0065). Source-name arguments are
+case-sensitive: `@source DEFAULT` raises `xl3/source/undeclared`
+because no `__sources__` row declares that name.
 
 Referencing an undeclared source is an error. Referencing a column
 that is not declared in the source's headers is an error
@@ -553,6 +638,14 @@ same `[Column]` / `Source[Column]` form as elsewhere; the spec
 scoping rule from ADR-0038 § "Aggregate scoping" applies — the
 aggregate operates over the current group's row set, not the full
 block.
+
+Per ADR-0058, a `@subtotal` row MAY contain any number of
+`{{ @subtotal <aggregate> }}` expressions in different cells. All
+of them share the row's single nesting-level binding (the level
+inferred from row order) and evaluate against the same group row
+set at each emission. Mixing aggregate kinds (`SUM` + `COUNT` +
+`AVERAGE`) and column references on a single subtotal row is
+permitted.
 
 A `@subtotal` row MAY also carry literal-text cells, static
 formulas, and other `{{ ... }}` expressions that do NOT reference

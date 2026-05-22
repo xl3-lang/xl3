@@ -57,6 +57,14 @@ For example, a row `title = Q2 Sales` is referenced as
 `{{ __config__[title] }}`. Authors MUST NOT reuse system key names
 for author-defined values.
 
+Per ADR-0056, the `__config__[key]` read form resolves to the cell
+value regardless of whether `key` is a system slot or an
+author-defined slot. `{{ __config__[name] }}`, `{{ __config__[
+output_file_pattern] }}`, etc. are legal reads. The write-side
+restriction (authors cannot DECLARE a row with a system key name)
+is unchanged. Reading an unknown key raises
+`xl3/expression/unknown-name`.
+
 Templates that need *per-run* values use the `__inputs__` sheet
 instead (see [Inputs](#inputs)).
 
@@ -171,9 +179,26 @@ supply every required input; omitting one is an error.
 Resolved input values are referenced from cells via
 `{{ __inputs__[name] }}`. For example, an input declared with
 `name = month` is referenced as `{{ __inputs__[month] }}`.
+`__inputs__[name]` resolves to the resolved + coerced value; there
+is no spec form for reading an input's `label`, `default`, or
+`type` from inside a template (hosts use the `readTemplateInputs()`
+API).
 
 Input names MUST NOT collide with author-defined values declared as
 non-system rows in `__config__`; this is an error at parse time.
+
+Per ADR-0062, an input is **required** when the `default` cell —
+*after* ADR-0050 evaluation — produces an empty value per ADR-0007.
+The shapes "blank cell," `default = ""`, `default = "   "`, and
+`default = {{ "" }}` all collapse to "required."
+
+Per ADR-0063, the `options` cell is split on `|` after evaluation;
+each element is trimmed of Unicode whitespace and empty elements
+are dropped. `options = "Seoul | Busan"` yields
+`["Seoul", "Busan"]`; `options = "a||b"` yields `["a", "b"]`;
+`options = "||"` raises `xl3/inputs/missing-options`. Duplicate
+options are preserved. Host-supplied `select` values match
+case-sensitively against the resulting array.
 
 Inputs are coerced from host-supplied values:
 
@@ -278,6 +303,15 @@ Column name rules:
    contains only slave cells of a merge (no master in the window), this is
    an error (`xl3/source/missing-header`); widen the range to include the
    merge master.
+9. Newlines inside header-cell text (CRLF, CR, or LF — including
+   those authored via Alt+Enter) are normalized to a **single space**
+   (U+0020) at read time per the ADR-0041 amendment. Multiple
+   consecutive newlines collapse to one space. The space-collapsed
+   form is the column name; templates reference it via the same
+   space form (`{{ [단위: 원] }}`). Trim and empty-after-trim
+   detection (rule 5) apply *after* newline normalization. Header
+   normalization is asymmetric with data rows, where LF is
+   preserved verbatim per ADR-0041's original scope.
 
 Merged cells in **data rows** (rows below the header row) follow a
 separate rule per ADR-0035: a merge slave's value is the merge master's
@@ -354,10 +388,14 @@ Lists are referenced from filter directives:
 ```
 
 `__lists__[name]` is a list array. It is valid only inside `@filter
-... in` and `@filter ... !in`; using it elsewhere is an error.
+... in` and `@filter ... !in`; using it elsewhere raises
+`xl3/lists/invalid-use` per ADR-0057. This covers list references
+in cell expressions, as operands of `=`/`!=`/etc., as function
+arguments, and as `@sort`/`@top` arguments.
 
 Referencing a list name not declared in `__lists__` (or referencing
-`__lists__[name]` when no `__lists__` sheet exists) is an error.
+`__lists__[name]` when no `__lists__` sheet exists) raises
+`xl3/lists/missing-reference`.
 
 ## Render Phases
 
@@ -468,6 +506,18 @@ A cell whose complete content is one template expression is a single-expression 
 {{ [OrderDate] }}
 ```
 
+Per ADR-0052, "complete content" is evaluated against the cell's
+text after **trimming leading and trailing Unicode whitespace**.
+A cell of `  {{ [OrderDate] }}  ` (surrounding whitespace only) is
+a single-expression cell. The trimmed whitespace is not part of the
+rendered value.
+
+Adjacent template blocks with no separator — `{{ [A] }}{{ [B] }}`
+— are NOT a single-expression cell. They are mixed-text cells per
+the rule below; their results are joined as canonical strings.
+Authors who want type-preserving single-expression behavior use the
+explicit `&` form: `{{ [A] & [B] }}`.
+
 Single-expression cells preserve the evaluated value type where possible.
 
 If the template cell has a number/date/text format, the implementation MUST coerce string source values to match that format:
@@ -488,7 +538,10 @@ A cell containing literal text around one or more expressions is a mixed text ce
 Order date: {{ [OrderDate] }}
 ```
 
-Mixed text cells render as strings. Template number/date formats do not coerce mixed text cells.
+A cell containing adjacent template blocks with no separator
+(`{{ [A] }}{{ [B] }}`) is also a mixed-text cell per ADR-0052.
+
+Mixed text cells render as strings. Template number/date formats do not coerce mixed text cells. Empty values per [Empty Values](#empty-values) (including the six source-side Excel error sentinels per ADR-0053) contribute `""` at their position; the engine-produced `#DIV/0!` substitutes the literal string `"#DIV/0!"` at its position (ADR-0025).
 
 ### TEXT Function
 
@@ -590,7 +643,19 @@ The following conditions are errors:
   sub-expression) (`xl3/eval/unsupported-syntax`, per ADR-0028).
 - Invalid directive syntax — duplicate `@source` or `@join` in the
   same data block, or an empty directive body
-  (`xl3/directive/invalid-syntax`, per ADR-0029).
+  (`xl3/directive/invalid-syntax`, per ADR-0029); `@top` or
+  `@repeat right` whose integer is not ≥ 1 (per ADR-0055).
+- Template block with an unbalanced string literal — usually a
+  `}}` embedded inside `"..."` (`xl3/parser/unbalanced-literal`,
+  per ADR-0051).
+- Bare identifier in a data cell that does not resolve to a
+  boolean literal (`xl3/expression/unknown-name`, per ADR-0054).
+- `__lists__[name]` reference used outside `@filter ... in` /
+  `@filter ... !in` positions (`xl3/lists/invalid-use`, per
+  ADR-0057).
+- Aggregate function (`SUM`, `AVERAGE`, `MIN`, `MAX`, 1-arg
+  `COUNT`) whose argument is not a `[Column]` or `Source[Column]`
+  reference (`xl3/eval/bad-aggregate-arg`, per ADR-0059).
 
 Per ADR-0015, every spec-defined error carries a stable `error.code`
 of the form `xl3/<category>/<id>`. Hosts use the code for

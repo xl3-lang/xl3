@@ -183,14 +183,18 @@ function parseSort(body: string): Directive | null {
 }
 
 function parseTop(body: string): Directive | null {
+  // ADR-0055: positive_integer grammar — no leading zeros, no
+  // negative, no zero. parseInt alone accepts "05", "0", etc.
+  if (!/^[1-9][0-9]*$/.test(body.trim())) return null;
   const n = parseInt(body, 10);
   if (isNaN(n) || n <= 0) return null;
   return { kind: 'top', count: n };
 }
 
 function parseRepeat(body: string): Directive | null {
-  // "right" or "right N"
-  const match = body.match(/^right(?:\s+(\d+))?$/i);
+  // "right" or "right N" — N MUST be a positive_integer per ADR-0055
+  // (no leading zeros).
+  const match = body.match(/^right(?:\s+([1-9][0-9]*))?$/i);
   if (!match) return null;
   const colSpan = match[1] ? parseInt(match[1], 10) : 1;
   if (colSpan <= 0) return null;
