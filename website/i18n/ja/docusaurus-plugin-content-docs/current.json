@@ -1,0 +1,170 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.guidesSidebar.doc.Overview": {
+    "message": "概要",
+    "description": "The label for the doc item 'Overview' in sidebar 'guidesSidebar', linking to the doc guides/index"
+  },
+  "sidebar.guidesSidebar.doc.01 · Getting started": {
+    "message": "01 · はじめに",
+    "description": "The label for the doc item '01 · Getting started' in sidebar 'guidesSidebar', linking to the doc guides/getting-started"
+  },
+  "sidebar.guidesSidebar.doc.02 · Conditional cells": {
+    "message": "02 · 条件付きセル",
+    "description": "The label for the doc item '02 · Conditional cells' in sidebar 'guidesSidebar', linking to the doc guides/conditional-cells"
+  },
+  "sidebar.guidesSidebar.doc.03 · Aggregates": {
+    "message": "03 · 合計と集計",
+    "description": "The label for the doc item '03 · Aggregates' in sidebar 'guidesSidebar', linking to the doc guides/aggregates"
+  },
+  "sidebar.guidesSidebar.doc.04 · File per group": {
+    "message": "04 · グループごとにファイルを分ける",
+    "description": "The label for the doc item '04 · File per group' in sidebar 'guidesSidebar', linking to the doc guides/file-per-group"
+  },
+  "sidebar.guidesSidebar.doc.05 · Sheet per group": {
+    "message": "05 · グループごとにシートを分ける",
+    "description": "The label for the doc item '05 · Sheet per group' in sidebar 'guidesSidebar', linking to the doc guides/sheet-per-group"
+  },
+  "sidebar.guidesSidebar.doc.06 · Runtime inputs": {
+    "message": "06 · 実行時入力値",
+    "description": "The label for the doc item '06 · Runtime inputs' in sidebar 'guidesSidebar', linking to the doc guides/runtime-inputs"
+  },
+  "sidebar.guidesSidebar.doc.07 · Multi-source + @join": {
+    "message": "07 · 複数ソースと @join",
+    "description": "The label for the doc item '07 · Multi-source + @join' in sidebar 'guidesSidebar', linking to the doc guides/multi-source-join"
+  },
+  "sidebar.guidesSidebar.doc.08 · XLOOKUP": {
+    "message": "08 · XLOOKUP 検索",
+    "description": "The label for the doc item '08 · XLOOKUP' in sidebar 'guidesSidebar', linking to the doc guides/xlookup"
+  },
+  "sidebar.guidesSidebar.doc.09 · Sort and Top-N": {
+    "message": "09 · 並べ替えと上位 N 件",
+    "description": "The label for the doc item '09 · Sort and Top-N' in sidebar 'guidesSidebar', linking to the doc guides/sort-and-top"
+  },
+  "sidebar.guidesSidebar.doc.10 · Styling and branding": {
+    "message": "10 · スタイルとブランディング",
+    "description": "The label for the doc item '10 · Styling and branding' in sidebar 'guidesSidebar', linking to the doc guides/styling-and-branding"
+  },
+  "sidebar.guidesSidebar.doc.11 · TEXT() formatting": {
+    "message": "11 · TEXT() 書式設定",
+    "description": "The label for the doc item '11 · TEXT() formatting' in sidebar 'guidesSidebar', linking to the doc guides/text-formatting"
+  },
+  "sidebar.guidesSidebar.doc.12 · Empty values in depth": {
+    "message": "12 · 空値を詳しく扱う",
+    "description": "The label for the doc item '12 · Empty values in depth' in sidebar 'guidesSidebar', linking to the doc guides/empty-values"
+  },
+  "sidebar.guidesSidebar.doc.13 · Error handling for hosts": {
+    "message": "13 · ホスト側エラーハンドリング",
+    "description": "The label for the doc item '13 · Error handling for hosts' in sidebar 'guidesSidebar', linking to the doc guides/error-handling"
+  },
+  "sidebar.guidesSidebar.doc.14 · __config__ as a value dictionary": {
+    "message": "14 · 値の辞書としての __config__",
+    "description": "The label for the doc item '14 · __config__ as a value dictionary' in sidebar 'guidesSidebar', linking to the doc guides/config-values"
+  },
+  "sidebar.guidesSidebar.doc.15 · Composing directives": {
+    "message": "15 · ディレクティブの組み合わせ",
+    "description": "The label for the doc item '15 · Composing directives' in sidebar 'guidesSidebar', linking to the doc guides/directive-composition"
+  },
+  "sidebar.guidesSidebar.doc.16 · XTL function vs Excel formula": {
+    "message": "16 · XTL 関数と Excel 数式の比較",
+    "description": "The label for the doc item '16 · XTL function vs Excel formula' in sidebar 'guidesSidebar', linking to the doc guides/xtl-vs-excel-formula"
+  },
+  "sidebar.guidesSidebar.doc.17 · Template-authoring display": {
+    "message": "17 · テンプレート作成時の表示",
+    "description": "The label for the doc item '17 · Template-authoring display' in sidebar 'guidesSidebar', linking to the doc guides/template-authoring-display"
+  },
+  "sidebar.guidesSidebar.doc.18 · Group and subtotal": {
+    "message": "18 · グループと小計",
+    "description": "The label for the doc item '18 · Group and subtotal' in sidebar 'guidesSidebar', linking to the doc guides/group-and-subtotal"
+  },
+  "sidebar.apiSidebar.category.Functions": {
+    "message": "関数(英語)",
+    "description": "The label for category 'Functions' in sidebar 'apiSidebar'"
+  },
+  "sidebar.apiSidebar.category.Interfaces": {
+    "message": "インターフェース(英語)",
+    "description": "The label for category 'Interfaces' in sidebar 'apiSidebar'"
+  },
+  "sidebar.apiSidebar.category.Types": {
+    "message": "型(英語)",
+    "description": "The label for category 'Types' in sidebar 'apiSidebar'"
+  },
+  "sidebar.apiSidebar.doc.API overview": {
+    "message": "API 概要(英語)",
+    "description": "The label for the doc item 'API overview' in sidebar 'apiSidebar', linking to the doc api/index"
+  },
+  "sidebar.docsSidebar.category.Spec": {
+    "message": "仕様(英語)",
+    "description": "The label for category 'Spec' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Conformance": {
+    "message": "適合性(英語)",
+    "description": "The label for category 'Conformance' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.doc.Spec overview": {
+    "message": "仕様概要(英語)",
+    "description": "The label for the doc item 'Spec overview' in sidebar 'docsSidebar', linking to the doc spec/index"
+  },
+  "sidebar.docsSidebar.doc.Language": {
+    "message": "言語(英語)",
+    "description": "The label for the doc item 'Language' in sidebar 'docsSidebar', linking to the doc spec/language"
+  },
+  "sidebar.docsSidebar.doc.Evaluation": {
+    "message": "評価モデル(英語)",
+    "description": "The label for the doc item 'Evaluation' in sidebar 'docsSidebar', linking to the doc spec/evaluation"
+  },
+  "sidebar.docsSidebar.doc.Stability": {
+    "message": "安定性(英語)",
+    "description": "The label for the doc item 'Stability' in sidebar 'docsSidebar', linking to the doc spec/STABILITY"
+  },
+  "sidebar.docsSidebar.doc.Glossary": {
+    "message": "用語集(英語)",
+    "description": "The label for the doc item 'Glossary' in sidebar 'docsSidebar', linking to the doc spec/glossary"
+  },
+  "sidebar.docsSidebar.doc.Porter's Guide": {
+    "message": "ポーティングガイド(英語)",
+    "description": "The label for the doc item 'Porter's Guide' in sidebar 'docsSidebar', linking to the doc PORTERS_GUIDE"
+  },
+  "sidebar.docsSidebar.doc.Conformance overview": {
+    "message": "適合性概要(英語)",
+    "description": "The label for the doc item 'Conformance overview' in sidebar 'docsSidebar', linking to the doc conformance/index"
+  },
+  "sidebar.docsSidebar.doc.Dashboard": {
+    "message": "ダッシュボード(英語)",
+    "description": "The label for the doc item 'Dashboard' in sidebar 'docsSidebar', linking to the doc conformance/DASHBOARD"
+  },
+  "sidebar.docsSidebar.doc.Coverage matrix": {
+    "message": "カバレッジマトリクス(英語)",
+    "description": "The label for the doc item 'Coverage matrix' in sidebar 'docsSidebar', linking to the doc conformance/coverage"
+  },
+  "sidebar.docsSidebar.doc.Runner protocol": {
+    "message": "ランナープロトコル(英語)",
+    "description": "The label for the doc item 'Runner protocol' in sidebar 'docsSidebar', linking to the doc conformance/runner-protocol"
+  },
+  "sidebar.docsSidebar.doc.Authoring fixtures": {
+    "message": "フィクスチャ作成(英語)",
+    "description": "The label for the doc item 'Authoring fixtures' in sidebar 'docsSidebar', linking to the doc conformance/AUTHORING"
+  },
+  "sidebar.docsSidebar.doc.Roadmap to 1.0": {
+    "message": "1.0 ロードマップ(英語)",
+    "description": "The label for the doc item 'Roadmap to 1.0' in sidebar 'docsSidebar', linking to the doc ROADMAP"
+  },
+  "sidebar.docsSidebar.doc.Governance": {
+    "message": "ガバナンス(英語)",
+    "description": "The label for the doc item 'Governance' in sidebar 'docsSidebar', linking to the doc GOVERNANCE"
+  },
+  "sidebar.docsSidebar.doc.Contributing": {
+    "message": "コントリビューション(英語)",
+    "description": "The label for the doc item 'Contributing' in sidebar 'docsSidebar', linking to the doc CONTRIBUTING"
+  },
+  "sidebar.docsSidebar.doc.Implementations": {
+    "message": "実装(英語)",
+    "description": "The label for the doc item 'Implementations' in sidebar 'docsSidebar', linking to the doc IMPLEMENTATIONS"
+  },
+  "sidebar.docsSidebar.doc.Releasing": {
+    "message": "リリース手順(英語)",
+    "description": "The label for the doc item 'Releasing' in sidebar 'docsSidebar', linking to the doc RELEASING"
+  }
+}
