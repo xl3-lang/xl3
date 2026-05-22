@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
+import Translate, { translate } from '@docusaurus/Translate';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import clsx from 'clsx';
 import styles from './try.module.css';
@@ -74,7 +75,11 @@ function Converter() {
   const [inputDecls, setInputDecls] = useState<Xl3Module extends never ? never : Awaited<ReturnType<Xl3Module['readTemplateInputs']>>>([]);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<{ message: string; tone: 'muted' | 'error' | 'success'; code?: string }>({
-    message: 'Sample files are pre-loaded. Press the button to convert as-is, or replace either file first.',
+    message: translate({
+      id: 'try.status.idle',
+      message: 'Sample files are pre-loaded. Press the button to convert as-is, or replace either file first.',
+      description: 'Status line shown before the user has run a conversion',
+    }),
     tone: 'muted',
   });
   const [busy, setBusy] = useState(false);
@@ -114,7 +119,14 @@ function Converter() {
   const onSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    setStatus({ message: 'Converting workbook…', tone: 'muted' });
+    setStatus({
+      message: translate({
+        id: 'try.status.running',
+        message: 'Converting workbook…',
+        description: 'Status line shown while the converter is running',
+      }),
+      tone: 'muted',
+    });
     setPreviewInfo(null);
     try {
       const templateBuf = await fileOrUrlBuffer(templateFile, SAMPLE_TEMPLATE_URL);
@@ -139,28 +151,72 @@ function Converter() {
         Object.keys(inputValues).length ? { inputs: inputValues } : undefined,
       );
       if (outputs.length === 0) {
-        setStatus({ message: 'Conversion succeeded but produced no output files.', tone: 'error' });
+        setStatus({
+          message: translate({
+            id: 'try.status.noOutputs',
+            message: 'Conversion succeeded but produced no output files.',
+            description: 'Status line when convert() returns an empty array',
+          }),
+          tone: 'error',
+        });
         return;
       }
       if (outputs.length === 1) {
         downloadBlob(outputBlob(outputs[0]), outputs[0].filename);
-        setStatus({ message: `Downloaded ${outputs[0].filename}.`, tone: 'success' });
+        setStatus({
+          message: translate(
+            {
+              id: 'try.status.downloadedOne',
+              message: 'Downloaded {filename}.',
+              description: 'Status line after a single output file is downloaded',
+            },
+            { filename: outputs[0].filename },
+          ),
+          tone: 'success',
+        });
       } else {
         const zip = await xl3.packageZip(outputs);
         downloadBlob(zip, 'xl3-outputs.zip');
-        setStatus({ message: `Downloaded ${outputs.length} files as xl3-outputs.zip.`, tone: 'success' });
+        setStatus({
+          message: translate(
+            {
+              id: 'try.status.downloadedMany',
+              message: 'Downloaded {count} files as xl3-outputs.zip.',
+              description: 'Status line after multiple output files are bundled into a zip and downloaded',
+            },
+            { count: String(outputs.length) },
+          ),
+          tone: 'success',
+        });
       }
     } catch (err) {
       const xl3 = await loadXl3().catch(() => undefined);
       if (xl3 && xl3.isXtlError(err)) {
         setStatus({
-          message: `Conversion failed: ${err.message}`,
+          message: translate(
+            {
+              id: 'try.status.failedXtl',
+              message: 'Conversion failed: {detail}',
+              description: 'Status line on a typed xl3/XTL failure',
+            },
+            { detail: err.message },
+          ),
           tone: 'error',
           code: err.code,
         });
       } else {
         const message = err instanceof Error ? err.message : String(err);
-        setStatus({ message: `Conversion failed: ${message}`, tone: 'error' });
+        setStatus({
+          message: translate(
+            {
+              id: 'try.status.failedGeneric',
+              message: 'Conversion failed: {detail}',
+              description: 'Status line on a generic (non-xl3) runtime failure',
+            },
+            { detail: message },
+          ),
+          tone: 'error',
+        });
       }
     } finally {
       setBusy(false);
@@ -172,23 +228,58 @@ function Converter() {
       <form
         className={styles.converterForm}
         onSubmit={onSubmit}
-        aria-label="Browser workbook converter"
+        aria-label={translate({
+          id: 'try.form.ariaLabel',
+          message: 'Browser workbook converter',
+          description: 'Aria-label for the converter form region',
+        })}
         aria-busy={busy}
       >
-        <p className={styles.kicker}>Browser converter</p>
-        <h2 className={styles.heading}>Upload raw data and a template, then download the finished workbook.</h2>
+        <p className={styles.kicker}>
+          <Translate id="try.form.kicker" description="Form section kicker">
+            Browser converter
+          </Translate>
+        </p>
+        <h2 className={styles.heading}>
+          <Translate id="try.form.heading" description="Form section H2">
+            Upload raw data and a template, then download the finished workbook.
+          </Translate>
+        </h2>
         <p className={styles.hint}>
-          To choose the raw workbook table, add <code>source_table</code> such
-          as <code>1</code> or <code>A1:D</code> to the template workbook's
-          hidden <code>__config__</code> sheet.
+          <Translate
+            id="try.form.hint"
+            description="Hint paragraph explaining source_table; {sourceTable}, {one}, {range}, {config} are inline code refs"
+            values={{
+              sourceTable: <code>source_table</code>,
+              one: <code>1</code>,
+              range: <code>A1:D</code>,
+              config: <code>__config__</code>,
+            }}
+          >
+            {
+              "To choose the raw workbook table, add {sourceTable} such as {one} or {range} to the template workbook's hidden {config} sheet."
+            }
+          </Translate>
         </p>
 
         <label className={styles.field}>
           <span className={styles.fieldRow}>
-            <span>Raw Excel file</span>
-            <a href={SAMPLE_RAW_URL} download>Download sample</a>
+            <span>
+              <Translate id="try.form.rawLabel" description="Raw Excel file picker label">
+                Raw Excel file
+              </Translate>
+            </span>
+            <a href={SAMPLE_RAW_URL} download>
+              <Translate id="try.form.downloadSample" description="Link label to download the sample file (used twice)">
+                Download sample
+              </Translate>
+            </a>
           </span>
-          <span className={styles.fieldHint}>Default sample is attached. Replace it only if you want.</span>
+          <span className={styles.fieldHint}>
+            <Translate id="try.form.rawHint" description="Hint under the raw file picker">
+              Default sample is attached. Replace it only if you want.
+            </Translate>
+          </span>
           <input
             type="file"
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -198,10 +289,26 @@ function Converter() {
 
         <label className={styles.field}>
           <span className={styles.fieldRow}>
-            <span>Template Excel file</span>
-            <a href={SAMPLE_TEMPLATE_URL} download>Download sample</a>
+            <span>
+              <Translate id="try.form.templateLabel" description="Template Excel file picker label">
+                Template Excel file
+              </Translate>
+            </span>
+            <a href={SAMPLE_TEMPLATE_URL} download>
+              <Translate id="try.form.downloadSample" description="Link label to download the sample file (used twice)">
+                Download sample
+              </Translate>
+            </a>
           </span>
-          <span className={styles.fieldHint}>Includes <code>__config__.source_table = 1</code>.</span>
+          <span className={styles.fieldHint}>
+            <Translate
+              id="try.form.templateHint"
+              description="Hint under the template file picker; {config} is an inline code ref"
+              values={{ config: <code>__config__.source_table = 1</code> }}
+            >
+              {'Includes {config}.'}
+            </Translate>
+          </span>
           <input
             type="file"
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -211,7 +318,11 @@ function Converter() {
 
         {inputDecls.length > 0 && (
           <fieldset className={styles.inputsBlock}>
-            <legend>Template inputs</legend>
+            <legend>
+              <Translate id="try.form.inputs.legend" description="Legend for the dynamic inputs block">
+                Template inputs
+              </Translate>
+            </legend>
             {inputDecls.map((d) => {
               const inputId = `xl3-input-${d.name}`;
               return (
@@ -237,7 +348,15 @@ function Converter() {
           className={clsx('button button--primary button--lg', styles.submit)}
           disabled={busy}
         >
-          {busy ? 'Converting…' : 'Run and download'}
+          {busy ? (
+            <Translate id="try.form.submit.busy" description="Submit button label while a conversion is running">
+              Converting…
+            </Translate>
+          ) : (
+            <Translate id="try.form.submit.idle" description="Submit button label when idle">
+              Run and download
+            </Translate>
+          )}
         </button>
         <p
           className={clsx(styles.status, styles[`status_${status.tone}`])}
@@ -257,38 +376,91 @@ function Converter() {
 
       <aside
         className={styles.previewPanel}
-        aria-label="Conversion preview"
+        aria-label={translate({
+          id: 'try.preview.ariaLabel',
+          message: 'Conversion preview',
+          description: 'Aria-label for the preview side panel',
+        })}
         aria-live="polite"
         aria-atomic="true"
       >
-        <h3>Preview</h3>
+        <h3>
+          <Translate id="try.preview.heading" description="Preview panel heading">
+            Preview
+          </Translate>
+        </h3>
         {!previewInfo && (
-          <p className={styles.previewEmpty}>Run the converter to see source counts, output filenames, and any warnings.</p>
+          <p className={styles.previewEmpty}>
+            <Translate id="try.preview.empty" description="Placeholder text when no conversion has run yet">
+              Run the converter to see source counts, output filenames, and any warnings.
+            </Translate>
+          </p>
         )}
         {previewInfo && (
           <>
             <section>
-              <h4>Sources detected</h4>
-              {previewInfo.sources.length === 0 && <p>None.</p>}
+              <h4>
+                <Translate id="try.preview.sources.heading" description="Preview subsection — sources">
+                  Sources detected
+                </Translate>
+              </h4>
+              {previewInfo.sources.length === 0 && (
+                <p>
+                  <Translate id="try.preview.none" description="Placeholder when a list is empty (used in multiple sections)">
+                    None.
+                  </Translate>
+                </p>
+              )}
               <ul>
                 {previewInfo.sources.map((s) => (
                   <li key={s.name}>
                     <strong>{s.name}</strong>{' '}
-                    <span className={styles.muted}>· {s.rowCount} rows · {s.headers.length} cols</span>
+                    <span className={styles.muted}>
+                      ·{' '}
+                      <Translate
+                        id="try.preview.sourceMeta"
+                        description="Source row count + column count meta; {rowCount} and {colCount} are integers"
+                        values={{ rowCount: s.rowCount, colCount: s.headers.length }}
+                      >
+                        {'{rowCount} rows · {colCount} cols'}
+                      </Translate>
+                    </span>
                   </li>
                 ))}
               </ul>
             </section>
             <section>
-              <h4>Output files</h4>
-              {previewInfo.files.length === 0 && <p>None.</p>}
+              <h4>
+                <Translate id="try.preview.outputs.heading" description="Preview subsection — output files">
+                  Output files
+                </Translate>
+              </h4>
+              {previewInfo.files.length === 0 && (
+                <p>
+                  <Translate id="try.preview.none" description="Placeholder when a list is empty (used in multiple sections)">
+                    None.
+                  </Translate>
+                </p>
+              )}
               <ul>
                 {previewInfo.files.map((f) => (
                   <li key={f.filename}>
                     <strong>{f.filename}</strong>
                     <ul>
                       {f.sheets.map((sh) => (
-                        <li key={sh.name}>{sh.name} <span className={styles.muted}>· {sh.rowCount} rows</span></li>
+                        <li key={sh.name}>
+                          {sh.name}{' '}
+                          <span className={styles.muted}>
+                            ·{' '}
+                            <Translate
+                              id="try.preview.sheetMeta"
+                              description="Per-sheet row count meta; {rowCount} is an integer"
+                              values={{ rowCount: sh.rowCount }}
+                            >
+                              {'{rowCount} rows'}
+                            </Translate>
+                          </span>
+                        </li>
                       ))}
                     </ul>
                   </li>
@@ -297,7 +469,11 @@ function Converter() {
             </section>
             {previewInfo.warnings.length > 0 && (
               <section>
-                <h4>Warnings</h4>
+                <h4>
+                  <Translate id="try.preview.warnings.heading" description="Preview subsection — warnings">
+                    Warnings
+                  </Translate>
+                </h4>
                 <ul>
                   {previewInfo.warnings.map((w, i) => (
                     <li key={i}>{w.message}</li>
@@ -315,30 +491,71 @@ function Converter() {
 export default function ConverterPage() {
   return (
     <Layout
-      title="xl3 converter — try Excel-to-Excel templates in the browser"
-      description="Upload raw + template Excel files. xl3 runs convert() in the browser and downloads the rendered workbook. The interactive demo for xl3.io."
+      title={translate({
+        id: 'try.layout.title',
+        message: 'xl3 converter — try Excel-to-Excel templates in the browser',
+        description: 'HTML <title> for the converter page',
+      })}
+      description={translate({
+        id: 'try.layout.description',
+        message:
+          'Upload raw + template Excel files. xl3 runs convert() in the browser and downloads the rendered workbook. The interactive demo for xl3.io.',
+        description: 'HTML <meta description> for the converter page',
+      })}
     >
       <main className={styles.pageMain}>
         <div className="container">
           <div className={styles.intro}>
-            <p className={styles.kicker}>Use it</p>
-            <h1 className={styles.title}>Try the operator flow, then wire it into your app.</h1>
+            <p className={styles.kicker}>
+              <Translate id="try.intro.kicker" description="Intro section kicker">
+                Use it
+              </Translate>
+            </p>
+            <h1 className={styles.title}>
+              <Translate id="try.intro.title" description="Intro section H1">
+                Try the operator flow, then wire it into your app.
+              </Translate>
+            </h1>
             <p className={styles.lead}>
-              Both files are pre-loaded with sample data. Press the button to
-              convert as-is, or replace either file. Conversion runs entirely
-              in your browser — nothing is uploaded.
+              <Translate id="try.intro.lead" description="Intro section lead paragraph">
+                Both files are pre-loaded with sample data. Press the button to convert as-is, or replace either file. Conversion runs entirely in your browser — nothing is uploaded.
+              </Translate>
             </p>
             <p className={styles.crosslinks}>
-              <Link to="/">Home</Link>
+              <Link to="/">
+                <Translate id="try.intro.link.home" description="Crosslink — Home">
+                  Home
+                </Translate>
+              </Link>
               {' · '}
-              <Link to="/guides/getting-started">Cookbook 01</Link>
+              <Link to="/guides/getting-started">
+                <Translate id="try.intro.link.cookbook" description="Crosslink — Cookbook 01">
+                  Cookbook 01
+                </Translate>
+              </Link>
               {' · '}
-              <Link to="/spec/">Spec</Link>
+              <Link to="/spec/">
+                <Translate id="try.intro.link.spec" description="Crosslink — Spec">
+                  Spec
+                </Translate>
+              </Link>
               {' · '}
-              <Link to="/porters-guide">Porter's Guide</Link>
+              <Link to="/porters-guide">
+                <Translate id="try.intro.link.porters" description="Crosslink — Porter's Guide">
+                  Porter's Guide
+                </Translate>
+              </Link>
             </p>
           </div>
-          <BrowserOnly fallback={<div className={styles.previewEmpty}>Loading converter…</div>}>
+          <BrowserOnly
+            fallback={
+              <div className={styles.previewEmpty}>
+                <Translate id="try.fallback.loading" description="BrowserOnly fallback while xl3 engine loads">
+                  Loading converter…
+                </Translate>
+              </div>
+            }
+          >
             {() => <Converter />}
           </BrowserOnly>
         </div>

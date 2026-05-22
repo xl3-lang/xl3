@@ -589,5 +589,157 @@
   "homepage.layout.description": {
     "message": "xl3 は Excel の変換ロジックをコードではなく Excel ファイルの中に置きます。開発者ではないメンバーも、すでに知っている Excel と同じ構文でルールを読み書きできます。",
     "description": "HTML <meta description> for the landing page"
+  },
+  "try.status.idle": {
+    "message": "サンプルファイルがあらかじめ読み込まれています。そのまま変換するにはボタンを押してください。必要に応じてどちらかのファイルを差し替えることもできます。",
+    "description": "Status line shown before the user has run a conversion"
+  },
+  "try.status.running": {
+    "message": "ワークブックを変換中…",
+    "description": "Status line shown while the converter is running"
+  },
+  "try.status.noOutputs": {
+    "message": "変換は成功しましたが、出力ファイルは生成されませんでした。",
+    "description": "Status line when convert() returns an empty array"
+  },
+  "try.status.downloadedOne": {
+    "message": "{filename} をダウンロードしました。",
+    "description": "Status line after a single output file is downloaded"
+  },
+  "try.status.downloadedMany": {
+    "message": "{count} 個のファイルを xl3-outputs.zip としてダウンロードしました。",
+    "description": "Status line after multiple output files are bundled into a zip and downloaded"
+  },
+  "try.status.failedXtl": {
+    "message": "変換に失敗しました: {detail}",
+    "description": "Status line on a typed xl3/XTL failure"
+  },
+  "try.status.failedGeneric": {
+    "message": "変換に失敗しました: {detail}",
+    "description": "Status line on a generic (non-xl3) runtime failure"
+  },
+  "try.form.ariaLabel": {
+    "message": "ブラウザワークブックコンバーター",
+    "description": "Aria-label for the converter form region"
+  },
+  "try.form.kicker": {
+    "message": "ブラウザコンバーター",
+    "description": "Form section kicker"
+  },
+  "try.form.heading": {
+    "message": "元データとテンプレートをアップロードして、完成したワークブックをダウンロードしましょう。",
+    "description": "Form section H2"
+  },
+  "try.form.hint": {
+    "message": "元データワークブックのテーブルを指定するには、テンプレートワークブックの非表示の {config} シートに {one} や {range} のような {sourceTable} を追加してください。",
+    "description": "Hint paragraph explaining source_table; {sourceTable}, {one}, {range}, {config} are inline code refs"
+  },
+  "try.form.rawLabel": {
+    "message": "元データの Excel ファイル",
+    "description": "Raw Excel file picker label"
+  },
+  "try.form.downloadSample": {
+    "message": "サンプルをダウンロード",
+    "description": "Link label to download the sample file (used twice)"
+  },
+  "try.form.rawHint": {
+    "message": "標準のサンプルが添付されています。必要なときだけ差し替えてください。",
+    "description": "Hint under the raw file picker"
+  },
+  "try.form.templateLabel": {
+    "message": "テンプレートの Excel ファイル",
+    "description": "Template Excel file picker label"
+  },
+  "try.form.templateHint": {
+    "message": "{config} を含みます。",
+    "description": "Hint under the template file picker; {config} is an inline code ref"
+  },
+  "try.form.inputs.legend": {
+    "message": "テンプレート入力",
+    "description": "Legend for the dynamic inputs block"
+  },
+  "try.form.submit.busy": {
+    "message": "変換中…",
+    "description": "Submit button label while a conversion is running"
+  },
+  "try.form.submit.idle": {
+    "message": "実行してダウンロード",
+    "description": "Submit button label when idle"
+  },
+  "try.preview.ariaLabel": {
+    "message": "変換プレビュー",
+    "description": "Aria-label for the preview side panel"
+  },
+  "try.preview.heading": {
+    "message": "プレビュー",
+    "description": "Preview panel heading"
+  },
+  "try.preview.empty": {
+    "message": "コンバーターを実行すると、ソースの件数、出力ファイル名、警告が表示されます。",
+    "description": "Placeholder text when no conversion has run yet"
+  },
+  "try.preview.sources.heading": {
+    "message": "検出されたソース",
+    "description": "Preview subsection — sources"
+  },
+  "try.preview.none": {
+    "message": "なし。",
+    "description": "Placeholder when a list is empty (used in multiple sections)"
+  },
+  "try.preview.sourceMeta": {
+    "message": "{rowCount} 行 · {colCount} 列",
+    "description": "Source row count + column count meta; {rowCount} and {colCount} are integers"
+  },
+  "try.preview.outputs.heading": {
+    "message": "出力ファイル",
+    "description": "Preview subsection — output files"
+  },
+  "try.preview.sheetMeta": {
+    "message": "{rowCount} 行",
+    "description": "Per-sheet row count meta; {rowCount} is an integer"
+  },
+  "try.preview.warnings.heading": {
+    "message": "警告",
+    "description": "Preview subsection — warnings"
+  },
+  "try.layout.title": {
+    "message": "xl3 コンバーター — Excel-to-Excel テンプレートをブラウザで試す",
+    "description": "HTML <title> for the converter page"
+  },
+  "try.layout.description": {
+    "message": "元データとテンプレートの Excel ファイルをアップロードすると、xl3 がブラウザ上で convert() を実行し、生成されたワークブックをダウンロードします。xl3.io のインタラクティブデモです。",
+    "description": "HTML <meta description> for the converter page"
+  },
+  "try.intro.kicker": {
+    "message": "使ってみる",
+    "description": "Intro section kicker"
+  },
+  "try.intro.title": {
+    "message": "オペレーターのフローを試して、そのままアプリに組み込む。",
+    "description": "Intro section H1"
+  },
+  "try.intro.lead": {
+    "message": "どちらのファイルにもサンプルデータがあらかじめ読み込まれています。そのまま変換するにはボタンを押してください。必要に応じてどちらかのファイルを差し替えることもできます。変換はすべてブラウザ内で実行され、何もアップロードされません。",
+    "description": "Intro section lead paragraph"
+  },
+  "try.intro.link.home": {
+    "message": "ホーム",
+    "description": "Crosslink — Home"
+  },
+  "try.intro.link.cookbook": {
+    "message": "Cookbook 01",
+    "description": "Crosslink — Cookbook 01"
+  },
+  "try.intro.link.spec": {
+    "message": "仕様",
+    "description": "Crosslink — Spec"
+  },
+  "try.intro.link.porters": {
+    "message": "Porter's Guide",
+    "description": "Crosslink — Porter's Guide"
+  },
+  "try.fallback.loading": {
+    "message": "コンバーターを読み込み中…",
+    "description": "BrowserOnly fallback while xl3 engine loads"
   }
 }

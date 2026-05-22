@@ -589,5 +589,157 @@
   "homepage.layout.description": {
     "message": "xl3 coloca la lógica de transformación de Excel dentro del archivo de Excel, no en el código. Las personas no técnicas pueden leer y editar las reglas directamente, con la misma sintaxis de Excel que ya conocen.",
     "description": "HTML <meta description> for the landing page"
+  },
+  "try.status.idle": {
+    "message": "Los archivos de muestra ya están cargados. Pulsa el botón para convertirlos tal cual o reemplaza primero cualquiera de ellos.",
+    "description": "Status line shown before the user has run a conversion"
+  },
+  "try.status.running": {
+    "message": "Convirtiendo el libro de Excel…",
+    "description": "Status line shown while the converter is running"
+  },
+  "try.status.noOutputs": {
+    "message": "La conversión se completó, pero no generó archivos de salida.",
+    "description": "Status line when convert() returns an empty array"
+  },
+  "try.status.downloadedOne": {
+    "message": "{filename} descargado.",
+    "description": "Status line after a single output file is downloaded"
+  },
+  "try.status.downloadedMany": {
+    "message": "{count} archivos descargados como xl3-outputs.zip.",
+    "description": "Status line after multiple output files are bundled into a zip and downloaded"
+  },
+  "try.status.failedXtl": {
+    "message": "Conversión fallida: {detail}",
+    "description": "Status line on a typed xl3/XTL failure"
+  },
+  "try.status.failedGeneric": {
+    "message": "Conversión fallida: {detail}",
+    "description": "Status line on a generic (non-xl3) runtime failure"
+  },
+  "try.form.ariaLabel": {
+    "message": "Conversor de libros de Excel en el navegador",
+    "description": "Aria-label for the converter form region"
+  },
+  "try.form.kicker": {
+    "message": "Conversor en el navegador",
+    "description": "Form section kicker"
+  },
+  "try.form.heading": {
+    "message": "Sube los datos en bruto y una plantilla, y descarga el libro terminado.",
+    "description": "Form section H2"
+  },
+  "try.form.hint": {
+    "message": "Para elegir la tabla del libro en bruto, añade {sourceTable} (por ejemplo {one} o {range}) en la hoja oculta {config} del libro de plantilla.",
+    "description": "Hint paragraph explaining source_table; {sourceTable}, {one}, {range}, {config} are inline code refs"
+  },
+  "try.form.rawLabel": {
+    "message": "Archivo de Excel en bruto",
+    "description": "Raw Excel file picker label"
+  },
+  "try.form.downloadSample": {
+    "message": "Descargar muestra",
+    "description": "Link label to download the sample file (used twice)"
+  },
+  "try.form.rawHint": {
+    "message": "Se incluye una muestra por defecto. Reemplázala solo si quieres.",
+    "description": "Hint under the raw file picker"
+  },
+  "try.form.templateLabel": {
+    "message": "Archivo de Excel de plantilla",
+    "description": "Template Excel file picker label"
+  },
+  "try.form.templateHint": {
+    "message": "Incluye {config}.",
+    "description": "Hint under the template file picker; {config} is an inline code ref"
+  },
+  "try.form.inputs.legend": {
+    "message": "Entradas de la plantilla",
+    "description": "Legend for the dynamic inputs block"
+  },
+  "try.form.submit.busy": {
+    "message": "Convirtiendo…",
+    "description": "Submit button label while a conversion is running"
+  },
+  "try.form.submit.idle": {
+    "message": "Ejecutar y descargar",
+    "description": "Submit button label when idle"
+  },
+  "try.preview.ariaLabel": {
+    "message": "Vista previa de la conversión",
+    "description": "Aria-label for the preview side panel"
+  },
+  "try.preview.heading": {
+    "message": "Vista previa",
+    "description": "Preview panel heading"
+  },
+  "try.preview.empty": {
+    "message": "Ejecuta el conversor para ver el recuento de fuentes, los nombres de los archivos de salida y los avisos.",
+    "description": "Placeholder text when no conversion has run yet"
+  },
+  "try.preview.sources.heading": {
+    "message": "Fuentes detectadas",
+    "description": "Preview subsection — sources"
+  },
+  "try.preview.none": {
+    "message": "Ninguno.",
+    "description": "Placeholder when a list is empty (used in multiple sections)"
+  },
+  "try.preview.sourceMeta": {
+    "message": "{rowCount} filas · {colCount} columnas",
+    "description": "Source row count + column count meta; {rowCount} and {colCount} are integers"
+  },
+  "try.preview.outputs.heading": {
+    "message": "Archivos de salida",
+    "description": "Preview subsection — output files"
+  },
+  "try.preview.sheetMeta": {
+    "message": "{rowCount} filas",
+    "description": "Per-sheet row count meta; {rowCount} is an integer"
+  },
+  "try.preview.warnings.heading": {
+    "message": "Avisos",
+    "description": "Preview subsection — warnings"
+  },
+  "try.layout.title": {
+    "message": "Conversor xl3 — prueba plantillas de Excel a Excel en el navegador",
+    "description": "HTML <title> for the converter page"
+  },
+  "try.layout.description": {
+    "message": "Sube archivos de Excel en bruto y de plantilla. xl3 ejecuta convert() en el navegador y descarga el libro renderizado. La demo interactiva de xl3.io.",
+    "description": "HTML <meta description> for the converter page"
+  },
+  "try.intro.kicker": {
+    "message": "Pruébalo",
+    "description": "Intro section kicker"
+  },
+  "try.intro.title": {
+    "message": "Prueba el flujo del operador y, luego, intégralo en tu aplicación.",
+    "description": "Intro section H1"
+  },
+  "try.intro.lead": {
+    "message": "Ambos archivos vienen precargados con datos de muestra. Pulsa el botón para convertirlos tal cual o reemplaza cualquiera de ellos. La conversión se ejecuta por completo en tu navegador: no se sube nada.",
+    "description": "Intro section lead paragraph"
+  },
+  "try.intro.link.home": {
+    "message": "Inicio",
+    "description": "Crosslink — Home"
+  },
+  "try.intro.link.cookbook": {
+    "message": "Cookbook 01",
+    "description": "Crosslink — Cookbook 01"
+  },
+  "try.intro.link.spec": {
+    "message": "Especificación",
+    "description": "Crosslink — Spec"
+  },
+  "try.intro.link.porters": {
+    "message": "Guía del portador",
+    "description": "Crosslink — Porter's Guide"
+  },
+  "try.fallback.loading": {
+    "message": "Cargando conversor…",
+    "description": "BrowserOnly fallback while xl3 engine loads"
   }
 }

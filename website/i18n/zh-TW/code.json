@@ -589,5 +589,157 @@
   "homepage.layout.description": {
     "message": "xl3 把 Excel 的轉換邏輯放進 Excel 檔案裡,而不是程式碼裡。非開發人員可以直接讀取與修改規則,使用的就是他們早已熟悉的 Excel 語法。",
     "description": "HTML <meta description> for the landing page"
+  },
+  "try.status.idle": {
+    "message": "範例檔案已預先載入。按下按鈕即可直接轉換,或先替換任一檔案。",
+    "description": "Status line shown before the user has run a conversion"
+  },
+  "try.status.running": {
+    "message": "正在轉換活頁簿…",
+    "description": "Status line shown while the converter is running"
+  },
+  "try.status.noOutputs": {
+    "message": "轉換成功,但未產生任何輸出檔案。",
+    "description": "Status line when convert() returns an empty array"
+  },
+  "try.status.downloadedOne": {
+    "message": "已下載 {filename}。",
+    "description": "Status line after a single output file is downloaded"
+  },
+  "try.status.downloadedMany": {
+    "message": "已將 {count} 個檔案打包為 xl3-outputs.zip 並下載。",
+    "description": "Status line after multiple output files are bundled into a zip and downloaded"
+  },
+  "try.status.failedXtl": {
+    "message": "轉換失敗:{detail}",
+    "description": "Status line on a typed xl3/XTL failure"
+  },
+  "try.status.failedGeneric": {
+    "message": "轉換失敗:{detail}",
+    "description": "Status line on a generic (non-xl3) runtime failure"
+  },
+  "try.form.ariaLabel": {
+    "message": "瀏覽器活頁簿轉換器",
+    "description": "Aria-label for the converter form region"
+  },
+  "try.form.kicker": {
+    "message": "瀏覽器轉換器",
+    "description": "Form section kicker"
+  },
+  "try.form.heading": {
+    "message": "上傳原始資料與範本,即可下載完成的活頁簿。",
+    "description": "Form section H2"
+  },
+  "try.form.hint": {
+    "message": "若要選擇原始活頁簿的資料表,請於範本活頁簿的隱藏 {config} 工作表中加入 {sourceTable},例如 {one} 或 {range}。",
+    "description": "Hint paragraph explaining source_table; {sourceTable}, {one}, {range}, {config} are inline code refs"
+  },
+  "try.form.rawLabel": {
+    "message": "原始 Excel 檔案",
+    "description": "Raw Excel file picker label"
+  },
+  "try.form.downloadSample": {
+    "message": "下載範例",
+    "description": "Link label to download the sample file (used twice)"
+  },
+  "try.form.rawHint": {
+    "message": "已附上預設範例。若有需要再自行替換即可。",
+    "description": "Hint under the raw file picker"
+  },
+  "try.form.templateLabel": {
+    "message": "範本 Excel 檔案",
+    "description": "Template Excel file picker label"
+  },
+  "try.form.templateHint": {
+    "message": "已包含 {config}。",
+    "description": "Hint under the template file picker; {config} is an inline code ref"
+  },
+  "try.form.inputs.legend": {
+    "message": "範本輸入值",
+    "description": "Legend for the dynamic inputs block"
+  },
+  "try.form.submit.busy": {
+    "message": "轉換中…",
+    "description": "Submit button label while a conversion is running"
+  },
+  "try.form.submit.idle": {
+    "message": "執行並下載",
+    "description": "Submit button label when idle"
+  },
+  "try.preview.ariaLabel": {
+    "message": "轉換預覽",
+    "description": "Aria-label for the preview side panel"
+  },
+  "try.preview.heading": {
+    "message": "預覽",
+    "description": "Preview panel heading"
+  },
+  "try.preview.empty": {
+    "message": "執行轉換器後,即可看到來源筆數、輸出檔名以及任何警告。",
+    "description": "Placeholder text when no conversion has run yet"
+  },
+  "try.preview.sources.heading": {
+    "message": "偵測到的來源",
+    "description": "Preview subsection — sources"
+  },
+  "try.preview.none": {
+    "message": "無。",
+    "description": "Placeholder when a list is empty (used in multiple sections)"
+  },
+  "try.preview.sourceMeta": {
+    "message": "{rowCount} 列 · {colCount} 欄",
+    "description": "Source row count + column count meta; {rowCount} and {colCount} are integers"
+  },
+  "try.preview.outputs.heading": {
+    "message": "輸出檔案",
+    "description": "Preview subsection — output files"
+  },
+  "try.preview.sheetMeta": {
+    "message": "{rowCount} 列",
+    "description": "Per-sheet row count meta; {rowCount} is an integer"
+  },
+  "try.preview.warnings.heading": {
+    "message": "警告",
+    "description": "Preview subsection — warnings"
+  },
+  "try.layout.title": {
+    "message": "xl3 轉換器 — 於瀏覽器試用 Excel 轉 Excel 範本",
+    "description": "HTML <title> for the converter page"
+  },
+  "try.layout.description": {
+    "message": "上傳原始與範本 Excel 檔案。xl3 會在瀏覽器中執行 convert(),並下載算繪後的活頁簿。這是 xl3.io 的互動式示範。",
+    "description": "HTML <meta description> for the converter page"
+  },
+  "try.intro.kicker": {
+    "message": "立即試用",
+    "description": "Intro section kicker"
+  },
+  "try.intro.title": {
+    "message": "先體驗營運流程,再嵌入到你的應用程式。",
+    "description": "Intro section H1"
+  },
+  "try.intro.lead": {
+    "message": "兩個檔案都已預先載入範例資料。按下按鈕即可直接轉換,或自行替換任一檔案。轉換完全在瀏覽器中進行——不會上傳任何資料。",
+    "description": "Intro section lead paragraph"
+  },
+  "try.intro.link.home": {
+    "message": "首頁",
+    "description": "Crosslink — Home"
+  },
+  "try.intro.link.cookbook": {
+    "message": "Cookbook 01",
+    "description": "Crosslink — Cookbook 01"
+  },
+  "try.intro.link.spec": {
+    "message": "規格",
+    "description": "Crosslink — Spec"
+  },
+  "try.intro.link.porters": {
+    "message": "移植指南",
+    "description": "Crosslink — Porter's Guide"
+  },
+  "try.fallback.loading": {
+    "message": "載入轉換器中…",
+    "description": "BrowserOnly fallback while xl3 engine loads"
   }
 }
