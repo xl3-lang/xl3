@@ -21,6 +21,15 @@ import { ExcelJsWorkbookDocument, sanitizeFilename, sanitizeSheetName, type Work
 
 const VAR_PATTERN = /\{\{.*?\}\}/;
 
+/** Convert Excel column letters (A, B, …, Z, AA, …) to 1-based column number. */
+function letterToCol(letters: string): number {
+  let n = 0;
+  for (const ch of letters) {
+    n = n * 26 + (ch.charCodeAt(0) - 64);
+  }
+  return n;
+}
+
 /** Extract string from any ExcelJS cell value (handles richText objects). */
 function cellString(value: ExcelJS.CellValue): string {
   if (value === null || value === undefined) return '';
@@ -465,14 +474,40 @@ export class Renderer {
     const outsideSnapshots: OutsideCellSnap[] = [];
 
     if (hasColScope && insertCount > 0) {
-      // Use `eachRow({ includeEmpty: false })` and gate by row number —
-      // `actualRowCount` is the COUNT of populated rows (not the last
-      // row number), so a sparse template (row 4, 5, 8, 12, ...) would
-      // be undercounted with a simple `r <= actualRowCount` loop.
+      // ADR-0066: snapshot outside-block cells so they can be restored
+      // to their original row positions after the splice shifts them.
+      //
+      // Merge-slave handling: if a cell is part of a merged region
+      // whose master sits inside the block's col-range, the merge
+      // (and the slave's identity) follows the master via
+      // `spliceRowsPreservingMerges`. Snapshotting and restoring such
+      // slaves would corrupt the merge by putting a stray value at
+      // the original row while the merge structure moved with the
+      // master. Skip merge-slaves whose master is inside the block.
+      const mergeMasterCol = new Map<string, number>(); // 'r,c' → master col
+      const merges = (sheet.model.merges ?? []) as string[];
+      for (const ref of merges) {
+        const m = String(ref).match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/);
+        if (!m) continue;
+        const masterCol = letterToCol(m[1]!);
+        const top = Number(m[2]);
+        const right = letterToCol(m[3]!);
+        const bottom = Number(m[4]);
+        for (let r = top; r <= bottom; r++) {
+          for (let c = masterCol; c <= right; c++) {
+            mergeMasterCol.set(`${r},${c}`, masterCol);
+          }
+        }
+      }
       sheet.eachRow({ includeEmpty: false }, (row, r) => {
         if (r < insertPoint) return;
         row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
           if (isInsideCol(colNumber)) return;
+          // Skip merge-slaves whose master is inside the block's
+          // col-range — they follow the master via the merge
+          // preservation pass.
+          const mc = mergeMasterCol.get(`${r},${colNumber}`);
+          if (mc !== undefined && mc >= colStart && mc <= colEnd) return;
           outsideSnapshots.push({
             row: r,
             col: colNumber,

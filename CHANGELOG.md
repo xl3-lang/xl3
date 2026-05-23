@@ -6,6 +6,17 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-05-24
+
+0.8.0 batch. Two-part data-block design overhaul: Phase 1 (ADR-0066)
+moves the block's row-wide assumption to column-scoped detection
+with outside-cell preservation; Phase 2 (ADRs 0067-0069) adds the
+`@block` directive, strict multi-block detection per sheet, and
+per-block directive scoping by proximity. Closes issues #46 (silent
+data loss from duplicate shared-formula owners on production
+templates) and #47 (formula reference staleness in shifted side
+cells) by construction. Conformance corpus: 139 → 155 fixtures.
+
 ### Added
 
 - **ADRs 0067 / 0068 / 0069 — Phase 2 multi-block per sheet.**
@@ -1135,7 +1146,8 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/jinyoung4478/xl3/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/jinyoung4478/xl3/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/jinyoung4478/xl3/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/jinyoung4478/xl3/compare/v0.5.0...v0.5.1

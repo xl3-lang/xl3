@@ -64,7 +64,7 @@ describe('issue #46 — shared-formula owners do not duplicate across expanded r
   it('preserves a single coherent shared range (or all-standalone formulas) when the data block expands to many rows', async () => {
     const tpl = await makeTemplate();
     const data = await makeData(50);
-    const outputs = await convert(tpl, data);
+    const outputs = await convert(tpl as unknown as ArrayBuffer, data as unknown as ArrayBuffer);
     expect(outputs).toHaveLength(1);
 
     const result = new ExcelJS.Workbook();
@@ -95,7 +95,7 @@ describe('issue #46 — shared-formula owners do not duplicate across expanded r
   it('resolves a sharedFormula slave to its owner formula when cloned', async () => {
     const tpl = await makeTemplate();
     const data = await makeData(5);
-    const outputs = await convert(tpl, data);
+    const outputs = await convert(tpl as unknown as ArrayBuffer, data as unknown as ArrayBuffer);
     const result = new ExcelJS.Workbook();
     await result.xlsx.load(new Uint8Array(outputs[0]!.data).buffer);
     const sheet = result.getWorksheet('Main')!;

@@ -3,7 +3,7 @@
 What needs to happen for **XTL 1.0** (spec) and **xl3 1.0** (reference
 implementation).
 
-The current version is **0.7.0** (npm) targeting **XTL 0.1 (draft)**.
+The current version is **0.8.0** (npm) targeting **XTL 0.1 (draft)**.
 Breaking changes are still possible during 0.x. The 1.0 cut is gated on
 the items below, not on a calendar date.
 
@@ -38,7 +38,7 @@ milestone. Per-version step plan below references these gates by ID.
 |----|------|-------|----------|----------------|----------|--------|
 | G1 | Conformance corpus ≥ 140 | maintainer | `conformance/fixtures/` | `ls conformance/fixtures/ \| wc -l` ≥ 140 | — | DONE (145 today; ADR-0066 added 141-145 in 0.7.x post-0.7.0; ADRs 0051-0065 reserved further numbers for 0.7.1) |
 | G2 | Stage 2 OOXML canonicalization spec'd | maintainer | ADR-0006 + canonicalizer in src/ | covered by fixtures 024-027, 093 + ADR-0006 amendment | — | DONE |
-| G3 | Error code catalog frozen | maintainer | `src/__tests__/error-codes.test.ts` snapshot | catalog snapshot unchanged for 30 days | — | 0.9-rc (clock reset 2026-05-22 by 0.7.0's 4 new codes) |
+| G3 | Error code catalog frozen | maintainer | `src/__tests__/error-codes.test.ts` snapshot | catalog snapshot unchanged for 30 days | — | 0.9-rc (clock reset 2026-05-24 by 0.8.0's 4 new codes: `xl3/expression/bracket-outside-block`, `xl3/block/overlap`, `xl3/block/empty-table`, `xl3/directive/orphan`) |
 | G4 | JXLS boundary published | maintainer | ADR-0048 | file exists, references PORTERS_GUIDE | — | DONE |
 | G5 | Deferred-impl ADRs landed | maintainer | ADR-0038 impl ✅ (2026-05-18) + ADR-0040 PE impl | ADR-0038 portion shipped (fixtures 132-135); ADR-0040 CF/DV range-extension still pending | — | 0.6 (partial) / 0.7.1 |
 | G6 | Public API surface frozen | maintainer | `src/__tests__/api-surface.test.ts` snapshot | snapshot unchanged for 30 days | — | 0.9-rc |
