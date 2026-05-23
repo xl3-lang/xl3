@@ -62,8 +62,37 @@ a pure impl refactor can ship as `xl3` patch with no spec change.
    (`npm install @jinyoung4478/xl3@rc`) get the candidate; default
    `npm install @jinyoung4478/xl3` keeps the prior stable.
 
-8. Open a GitHub release for the tag with the section from
-   CHANGELOG.
+8. Create the GitHub Release **immediately after `npm publish`**.
+   `npm publish` is the easy-to-forget half-step: the package goes
+   live but external installers have no release notes / changelog
+   anchor until this runs.
+
+   ```bash
+   # Extract the just-cut version block into a notes file.
+   awk '/^## \[1\.0\.0-rc\.1\]/{p=1; next} /^## \[/{p=0} p' CHANGELOG.md \
+     > /tmp/release-notes.md
+
+   gh release create v1.0.0-rc.1 \
+     --title "xl3 1.0.0-rc.1 — <one-line summary matching CHANGELOG intro>" \
+     --notes-file /tmp/release-notes.md \
+     --prerelease
+   ```
+
+   Drop `--prerelease` for non-rc cuts. The title should mirror the
+   form prior releases used (open `gh release list --limit 3` to see
+   the established phrasing).
+
+9. **Post-publish verification** — confirm all four artifacts moved
+   together. Any one missing means the release is half-published:
+
+   | Artifact | Check |
+   |---|---|
+   | npm `latest` (or `rc`) | `npm view @jinyoung4478/xl3 version` matches the cut |
+   | Remote git tag | `git ls-remote --tags origin \| grep v1.0.0-rc.1` returns a row |
+   | GitHub Release | `gh release view v1.0.0-rc.1` resolves; appears in `gh release list` |
+   | CHANGELOG | `[Unreleased]` is empty; the cut version has its own dated section |
+
+   If any row fails, fix that row before announcing the release.
 
 ## Final 1.0.0 cut
 
@@ -84,7 +113,24 @@ After a minimum 7-day rc soak with no critical issues:
 
 4. Update IMPLEMENTATIONS.md row for the TS reference impl to show
    `1.0.0`.
-5. Open a GitHub release with the migration notes from CHANGELOG.
+5. Create the GitHub Release **immediately after `npm publish`**
+   (same step that's been silently skipped in past cuts — see
+   v0.7.0 retrospective). Same shape as the rc step:
+
+   ```bash
+   awk '/^## \[1\.0\.0\]/{p=1; next} /^## \[/{p=0} p' CHANGELOG.md \
+     > /tmp/release-notes.md
+
+   gh release create v1.0.0 \
+     --title "xl3 1.0.0 — XTL 0.1 final" \
+     --notes-file /tmp/release-notes.md
+   ```
+
+   No `--prerelease` flag; this is the `Latest` release on GitHub.
+
+6. Run the same **Post-publish verification** table from the rc
+   sequence (npm version / remote tag / GitHub Release /
+   CHANGELOG). All four MUST be green before announcing.
 
 ## XTL spec version cut
 
@@ -108,6 +154,17 @@ spec moves from 0.1 → 1.0:
 
 The XTL 1.0 cut and the `xl3` 1.0.0 cut SHOULD happen in the same
 commit so external porters see a clear baseline.
+
+## Things that MUST happen
+
+- `npm publish` and `gh release create` ship as a **paired action**.
+  The git tag, the npm version, the GitHub Release, and the dated
+  CHANGELOG section all reference the same commit. If you find any
+  one of them missing for a published version, treat it as an
+  incomplete release and finish the others before moving on. (See
+  v0.7.0 retrospective — published to npm but no GitHub Release for
+  ~24 hours, leaving no notes anchor for installers.)
+- Every cut runs the post-publish verification table.
 
 ## Things that MUST NOT happen
 
