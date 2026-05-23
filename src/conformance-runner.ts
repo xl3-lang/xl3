@@ -951,6 +951,13 @@ function comparable(v: ExcelJS.CellValue): unknown {
     if ('formula' in v) {
       return `=${String((v as { formula: unknown }).formula ?? '')}`;
     }
+    // ADR-0066: an OOXML shared-formula slave (`{ sharedFormula: 'E2' }`)
+    // identifies its owner by address. We compare by a stable string so
+    // two structurally-equal slaves (which JavaScript would treat as
+    // distinct object refs) match in the runner's `!==` check.
+    if ('sharedFormula' in v) {
+      return `=shared:${String((v as { sharedFormula: unknown }).sharedFormula ?? '')}`;
+    }
     if ('result' in v) return (v as { result: unknown }).result ?? null;
     if (v instanceof Date) return v.toISOString();
   }

@@ -1,0 +1,5 @@
+description: ADR-0066 — outside-block formula cells preserved verbatim; row references in shifted-cell formulas are NOT stale because outside cells do not shift (#47 regression).
+spec_section: ADR-0066
+spec_version: "0.1"
+tags: [adr-0066, column-scoped-block, outside-formulas]
+verified_by: [manual-script]

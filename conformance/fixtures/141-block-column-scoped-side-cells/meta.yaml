@@ -1,0 +1,5 @@
+description: ADR-0066 — static outside-block cells stay at original row positions across expansion (not cloned, not shifted).
+spec_section: ADR-0066
+spec_version: "0.1"
+tags: [adr-0066, column-scoped-block, outside-cells]
+verified_by: [manual-script]

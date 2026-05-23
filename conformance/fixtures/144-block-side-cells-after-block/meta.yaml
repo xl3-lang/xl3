@@ -1,0 +1,5 @@
+description: ADR-0066 — inside-col cells below the data block (e.g., a footer in block columns) DO shift with expansion; outside-col cells below the data block stay at their original row positions.
+spec_section: ADR-0066
+spec_version: "0.1"
+tags: [adr-0066, column-scoped-block, footer, outside-cells]
+verified_by: [manual-script]

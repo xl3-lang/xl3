@@ -225,10 +225,21 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
       let hasDataVar = false;
       let hasSubtotalCell = false;
       const dataColNumbers: number[] = [];
+      // ADR-0066: track marker cells ({{...}} expressions) AND any
+      // non-empty cells in this row. The block's column range is the
+      // bounding box of markers extended outward through contiguous
+      // non-empty cells — so a native Excel formula or static value
+      // immediately adjacent to a `{{...}}` cell is INSIDE the block
+      // (per-row clone, ADR-0046), but a non-empty cell separated by
+      // a gap is OUTSIDE (preserved at original row).
+      const markerColNumbers: number[] = [];
+      const nonEmptyColNumbers = new Set<number>();
 
       row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+        nonEmptyColNumbers.add(colNumber);
         const cellValue = cellString(cell.value);
         const cellVars = extractVarExpressions(cellValue);
+        if (cellVars.length > 0) markerColNumbers.push(colNumber);
         for (const expr of cellVars) {
           const colLetter = columnToLetter(colNumber);
           allVars.push({
@@ -315,15 +326,22 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
         if (currentBlock.startRow === 0) currentBlock.startRow = rowNumber;
         currentBlock.endRow = rowNumber;
 
-        // Track template column range for horizontal blocks
-        if (currentBlock.direction === 'right' && dataColNumbers.length > 0) {
-          const minCol = Math.min(...dataColNumbers);
-          const maxCol = Math.max(...dataColNumbers);
-          if (currentBlock.templateColStart === 0 || minCol < currentBlock.templateColStart) {
-            currentBlock.templateColStart = minCol;
+        // ADR-0066: template column range = bounding box of `{{...}}`
+        // markers, extended outward through contiguous non-empty cells.
+        // Adjacent formulas / static cells / inline-code values are
+        // INSIDE the block (cloned per record, per ADR-0046). Cells
+        // separated by a gap (empty column) are OUTSIDE and preserved
+        // at their original row positions.
+        if (markerColNumbers.length > 0) {
+          let leftEdge = Math.min(...markerColNumbers);
+          let rightEdge = Math.max(...markerColNumbers);
+          while (leftEdge > 1 && nonEmptyColNumbers.has(leftEdge - 1)) leftEdge--;
+          while (nonEmptyColNumbers.has(rightEdge + 1)) rightEdge++;
+          if (currentBlock.templateColStart === 0 || leftEdge < currentBlock.templateColStart) {
+            currentBlock.templateColStart = leftEdge;
           }
-          if (maxCol > currentBlock.templateColEnd) {
-            currentBlock.templateColEnd = maxCol;
+          if (rightEdge > currentBlock.templateColEnd) {
+            currentBlock.templateColEnd = rightEdge;
           }
         }
 

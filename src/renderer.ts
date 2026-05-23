@@ -350,7 +350,7 @@ export class Renderer {
     if (groupDir && groupDir.kind === 'group') {
       this.renderGroupedDataRows(
         document, sheet, st, dataRows, activeSource,
-        groupDir.keys, subtotalOffsets,
+        groupDir.keys, subtotalOffsets, block,
       );
       return;
     }
@@ -361,6 +361,18 @@ export class Renderer {
       );
     }
     const templateRowCount = st.dataEndRow - st.dataStartRow + 1;
+
+    // ADR-0066: column-scoped data block. The block's col-range is
+    // [colStart..colEnd] (computed by the parser from `[col]` cell
+    // positions). Cells outside this range are *outside cells* and
+    // MUST stay at their original row positions across expansion —
+    // they are not cloned per record, and they do not shift with the
+    // splice's row insertion.
+    const colStart = block?.templateColStart ?? 0;
+    const colEnd = block?.templateColEnd ?? 0;
+    const hasColScope = colStart > 0 && colEnd > 0;
+    const isInsideCol = (c: number) =>
+      !hasColScope || (c >= colStart && c <= colEnd);
 
     // 1. Read all template rows in the block (including empty styled cells and heights)
     // ADR-0046: keep `rawValue` alongside the stringified `template` so non-{{
@@ -377,6 +389,9 @@ export class Renderer {
       const cells = new Map<number, { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }>();
 
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        // ADR-0066: only capture cells inside the block's col-range.
+        // Outside cells are preserved naturally (we don't touch them).
+        if (!isInsideCol(colNumber)) return;
         const val = cellString(cell.value);
         const style = cell.style;
         // Only track if it has a value or a non-empty style
@@ -391,16 +406,48 @@ export class Renderer {
       templateRows.push({ height: row.height, cells });
     }
 
-    // 2. Insert rows for data
+    // 2. Snapshot outside-block cells from rows AT OR BELOW the block's
+    // last template row — these would be shifted by the splice and must
+    // be restored at their original row positions afterwards (ADR-0066).
     const totalTargetRows = dataRows.length * templateRowCount;
-    if (totalTargetRows > templateRowCount) {
-      const insertCount = totalTargetRows - templateRowCount;
-      const insertPoint = st.dataStartRow + templateRowCount;
+    const insertCount = Math.max(0, totalTargetRows - templateRowCount);
+    const insertPoint = st.dataStartRow + templateRowCount;
 
+    type OutsideCellSnap = {
+      row: number;
+      col: number;
+      value: ExcelJS.CellValue;
+      style: Partial<ExcelJS.Style>;
+      height?: number;
+    };
+    const outsideSnapshots: OutsideCellSnap[] = [];
+
+    if (hasColScope && insertCount > 0) {
+      // sheet.actualRowCount captures the last row with any data — only
+      // those rows can carry outside content worth restoring.
+      const lastRow = sheet.actualRowCount;
+      for (let r = insertPoint; r <= lastRow; r++) {
+        const row = sheet.getRow(r);
+        row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+          if (isInsideCol(colNumber)) return;
+          outsideSnapshots.push({
+            row: r,
+            col: colNumber,
+            value: cell.value,
+            style: cell.style ? { ...cell.style } : {},
+            height: row.height,
+          });
+        });
+      }
+    }
+
+    // 3. Insert rows for data
+    if (insertCount > 0) {
       document.spliceRowsPreservingMerges(sheet, insertPoint, 0, ...Array(insertCount).fill([]));
     }
 
-    // 3. Render each data record
+    // 4. Render each data record (inside-col cells only; outside cols
+    // are intentionally untouched per ADR-0066)
     const reservedCtx = { ...this.reservedSheetCtx(), __activeSource__: activeSource };
     for (let i = 0; i < dataRows.length; i++) {
       const rowData = { ...reservedCtx, ...dataRows[i], __rownum: i + 1, Rows: dataRows };
@@ -439,6 +486,23 @@ export class Renderer {
         targetRow.commit();
       }
     }
+
+    // 5. ADR-0066: restore outside-block cells to their ORIGINAL row
+    // positions. The splice shifted them down by `insertCount`; clear
+    // the shifted cells and rewrite them at the snapshot's original row.
+    if (outsideSnapshots.length > 0) {
+      for (const snap of outsideSnapshots) {
+        // Clear the shifted position so the cell doesn't appear twice.
+        const shifted = sheet.getRow(snap.row + insertCount).getCell(snap.col);
+        shifted.value = null;
+        // Restore at the original position
+        const orig = sheet.getRow(snap.row).getCell(snap.col);
+        orig.value = snap.value;
+        if (snap.style && Object.keys(snap.style).length > 0) {
+          orig.style = { ...snap.style };
+        }
+      }
+    }
   }
 
   /**
@@ -456,6 +520,7 @@ export class Renderer {
     activeSource: string,
     groupKeys: string[],
     subtotalOffsets: number[],
+    block?: DataBlock,
   ) {
     const templateRowCount = st.dataEndRow - st.dataStartRow + 1;
 
@@ -465,6 +530,13 @@ export class Renderer {
         `@subtotal at row ${st.dataStartRow + subtotalOffsets[subtotalOffsets.length - 1]!} has no matching @group level`,
       );
     }
+
+    // ADR-0066: column-scoped capture, same rule as renderDataRows.
+    const colStart = block?.templateColStart ?? 0;
+    const colEnd = block?.templateColEnd ?? 0;
+    const hasColScope = colStart > 0 && colEnd > 0;
+    const isInsideCol = (c: number) =>
+      !hasColScope || (c >= colStart && c <= colEnd);
 
     // 1. Read template rows (same shape as renderDataRows so subtotal
     //    rows retain their formatting / merges / static text).
@@ -476,6 +548,7 @@ export class Renderer {
       const row = sheet.getRow(st.dataStartRow + i);
       const cells = new Map<number, { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }>();
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        if (!isInsideCol(colNumber)) return;
         const val = cellString(cell.value);
         const style = cell.style;
         if (val || (style && Object.keys(style).length > 0)) {
@@ -517,6 +590,37 @@ export class Renderer {
     if (totalOutputRows === 0) {
       document.spliceRowsPreservingMerges(sheet, st.dataStartRow, templateRowCount);
       return;
+    }
+
+    // ADR-0066: snapshot outside-block cells before splice (same as
+    // renderDataRows). Outside cells in rows ≥ first-shift-point will be
+    // shifted by the splice; we restore them to their original rows.
+    type OutsideCellSnap = {
+      row: number;
+      col: number;
+      value: ExcelJS.CellValue;
+      style: Partial<ExcelJS.Style>;
+    };
+    const outsideSnapshots: OutsideCellSnap[] = [];
+    const insertDelta = totalOutputRows - templateRowCount; // can be ±
+
+    if (hasColScope && insertDelta !== 0) {
+      const firstShiftRow = totalOutputRows > templateRowCount
+        ? st.dataStartRow + templateRowCount     // splice insert
+        : st.dataStartRow + totalOutputRows;     // splice delete
+      const lastRow = sheet.actualRowCount;
+      for (let r = firstShiftRow; r <= lastRow; r++) {
+        const row = sheet.getRow(r);
+        row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+          if (isInsideCol(colNumber)) return;
+          outsideSnapshots.push({
+            row: r,
+            col: colNumber,
+            value: cell.value,
+            style: cell.style ? { ...cell.style } : {},
+          });
+        });
+      }
     }
 
     // 5. Resize the block.
@@ -587,6 +691,19 @@ export class Renderer {
         };
         writeRow(st.dataStartRow + outputRowIdx, templateRows[tmplOffset]!, ctx);
         outputRowIdx++;
+      }
+    }
+
+    // ADR-0066: restore outside-block cells to ORIGINAL row positions.
+    if (outsideSnapshots.length > 0) {
+      for (const snap of outsideSnapshots) {
+        const shifted = sheet.getRow(snap.row + insertDelta).getCell(snap.col);
+        shifted.value = null;
+        const orig = sheet.getRow(snap.row).getCell(snap.col);
+        orig.value = snap.value;
+        if (snap.style && Object.keys(snap.style).length > 0) {
+          orig.style = { ...snap.style };
+        }
       }
     }
   }

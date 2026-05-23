@@ -6,6 +6,25 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Added
+
+- **ADR-0066 — column-scoped data block.** The data block's column
+  range is now the bounding box of `{{...}}` marker cells extended
+  outward through contiguous non-empty cells. Cells outside this
+  range are *outside cells* — preserved at their original row
+  positions, never cloned per record, never shifted by the splice
+  row insertion. Adjacent native Excel formulas or static values
+  inside the bracket-expression hull are still cloned per ADR-0046.
+- Conformance fixtures `141-block-column-scoped-side-cells`,
+  `142-block-column-scoped-side-formulas`,
+  `143-block-shared-formula-side-cells`,
+  `144-block-side-cells-after-block` exercise the new contract.
+  Corpus is now 143 fixtures (137 + 6 Stage-2-only skipped on
+  Stage-1 runs).
+- `conformance-runner` `comparable()` helper now handles
+  `{ sharedFormula: '<owner>' }` cells via a stable string form so
+  structurally-equal slaves match in cell-level diff.
+
 ### Fixed
 
 - **#46 — silent data loss from duplicate shared-formula owners.** When a
