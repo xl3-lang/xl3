@@ -61,6 +61,8 @@ export type XtlErrorCode =
   | 'xl3/eval/bad-aggregate-arg'
   // Expression (ADR-0054)
   | 'xl3/expression/unknown-name'
+  // Expression — block scoping (ADR-0066)
+  | 'xl3/expression/bracket-outside-block'
   // Cell evaluation
   | 'xl3/cell/numfmt-coercion'
   | 'xl3/cell/row-outside-repeat'

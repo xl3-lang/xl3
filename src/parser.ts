@@ -363,6 +363,24 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
       allDirectiveRows.push(...pendingDirectiveRows);
     }
 
+    // ADR-0066: Phase 1 supports a single down-block per sheet. If the
+    // parser detected multiple disconnected down-blocks (i.e., a gap
+    // row between two clusters of `[col]` data-row cells), only the
+    // first one renders — the others would be silently ignored. Raise
+    // `xl3/expression/bracket-outside-block` at parse time so the
+    // author gets a clear signal. Phase 2's `@block` directive will
+    // lift this restriction; until then, the workaround is to remove
+    // the stray `[col]` reference or merge the clusters into one
+    // contiguous block.
+    const downBlocks = blocks.filter((b) => b.direction === 'down');
+    if (downBlocks.length > 1) {
+      const second = downBlocks[1]!;
+      throw xtlError(
+        'xl3/expression/bracket-outside-block',
+        `[Column] references on sheet "${worksheet.name}" form ${downBlocks.length} disconnected clusters. Single-block-per-sheet only at 0.7.x (ADR-0066); second cluster starts at row ${second.startRow}.`,
+      );
+    }
+
     const st: SheetTemplate = {
       originalName: worksheet.name,
       groupKeys: sheetGroupKeys,

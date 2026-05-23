@@ -423,11 +423,12 @@ export class Renderer {
     const outsideSnapshots: OutsideCellSnap[] = [];
 
     if (hasColScope && insertCount > 0) {
-      // sheet.actualRowCount captures the last row with any data — only
-      // those rows can carry outside content worth restoring.
-      const lastRow = sheet.actualRowCount;
-      for (let r = insertPoint; r <= lastRow; r++) {
-        const row = sheet.getRow(r);
+      // Use `eachRow({ includeEmpty: false })` and gate by row number —
+      // `actualRowCount` is the COUNT of populated rows (not the last
+      // row number), so a sparse template (row 4, 5, 8, 12, ...) would
+      // be undercounted with a simple `r <= actualRowCount` loop.
+      sheet.eachRow({ includeEmpty: false }, (row, r) => {
+        if (r < insertPoint) return;
         row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
           if (isInsideCol(colNumber)) return;
           outsideSnapshots.push({
@@ -438,7 +439,7 @@ export class Renderer {
             height: row.height,
           });
         });
-      }
+      });
     }
 
     // 3. Insert rows for data
@@ -608,9 +609,10 @@ export class Renderer {
       const firstShiftRow = totalOutputRows > templateRowCount
         ? st.dataStartRow + templateRowCount     // splice insert
         : st.dataStartRow + totalOutputRows;     // splice delete
-      const lastRow = sheet.actualRowCount;
-      for (let r = firstShiftRow; r <= lastRow; r++) {
-        const row = sheet.getRow(r);
+      // See renderDataRows for why eachRow + row-number gate is used
+      // instead of `actualRowCount` (sparse-row coverage).
+      sheet.eachRow({ includeEmpty: false }, (row, r) => {
+        if (r < firstShiftRow) return;
         row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
           if (isInsideCol(colNumber)) return;
           outsideSnapshots.push({
@@ -620,7 +622,7 @@ export class Renderer {
             style: cell.style ? { ...cell.style } : {},
           });
         });
-      }
+      });
     }
 
     // 5. Resize the block.

@@ -45,6 +45,65 @@ hold it in `__config__[key]` and reference it via
 (unbalanced literal, almost always caused by an embedded delimiter)
 raises `xl3/parser/unbalanced-literal`.
 
+## Data Blocks
+
+A *data block* on a sheet is the rectangle the engine expands across
+when rendering source rows. It has two dimensions:
+
+- **Row range** `[r_start..r_end]` — the maximal run of consecutive
+  rows where each row contains at least one *data-row cell* (a cell
+  whose `{{ ... }}` body references at least one `[Column]` outside
+  an aggregate function). A non-data row (no `[Column]` references)
+  between two data-row rows closes the block.
+- **Column range** `[c_start..c_end]` — the bounding box of every
+  cell with any `{{ ... }}` expression in the block's row range,
+  **extended outward through contiguous non-empty cells**. A
+  native Excel formula (`{ formula: "..." }`) or a static value
+  immediately adjacent to a marker cell is INSIDE the block. A
+  non-empty cell separated by a fully empty column is OUTSIDE.
+
+Cells inside the rectangle are *block cells*. Cells outside the
+rectangle but on the same sheet are *outside cells* (ADR-0066).
+
+**Single block per sheet (0.x).** At XTL 0.x a sheet has at most one
+data block. If the parser detects two or more disconnected clusters
+of `[Column]` data-row cells, it raises
+`xl3/expression/bracket-outside-block` at parse time and identifies
+the second cluster's starting row. Multi-block support (with an
+explicit `@block` directive for boundary disambiguation) is
+deferred to a future ADR.
+
+**Block expansion semantics** (rendering side, normative in
+`evaluation.md`'s "Render Phases"):
+
+- Block cells are cloned into the expanded rows — one record per
+  `(r_end - r_start + 1)` template rows.
+- Outside cells with row `r < r_start` stay at their original
+  position (header / configuration rows above the block).
+- Outside cells with row `r >= r_start` stay at their original row
+  `r` even when the splice inserts rows for block expansion. They
+  do **NOT** shift downward. Their formula text is preserved
+  verbatim.
+- Cells in inside columns but rows `r > r_end` (i.e., the
+  footer-row case where the block has a "Total" label and footer
+  formula in the same columns as the data) DO shift down by
+  `(N - 1) × (r_end - r_start + 1)` to land below the expanded
+  data block.
+
+The asymmetry — inside-col cells below the block shift, outside-col
+cells in the same rows do not — is intentional. It supports the
+common "side summary table" pattern (a parallel block-independent
+report area to the right or left of the main data block) without
+requiring the author to declare separate sheets.
+
+When an author wants a label/formula pair where both shift together
+(e.g., A4='footer', B4=LOWER(A4)), they place both cells inside the
+block's column range. If the marker cells happen not to reach B
+(e.g., only A2 has a marker), B is outside and won't follow A's
+shift; the workaround is to add a marker at B2 (even a trivial
+literal expression like `{{ "" }}`) or — once available in a future
+release — use the explicit `@block A:B` form.
+
 ## Source Columns
 
 Source columns are referenced with bracket syntax:

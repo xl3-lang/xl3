@@ -414,6 +414,32 @@ Implementations MUST render in this conceptual order:
 
 The exact implementation strategy may differ, but observable output MUST match this order.
 
+### Block expansion — column-scoped splice (ADR-0066)
+
+Step 7 ("Expand repeat blocks") is normative on the **column scope**
+of the splice. Given a data block with row range `[r_start..r_end]`
+and column range `[c_start..c_end]` (see `language.md` "Data Blocks"
+for derivation), expanding the block to `N` records does the
+following:
+
+- **Inside cells** (column in `[c_start..c_end]`):
+  - For rows in `[r_start..r_end]`: clone per record into rows
+    `r_start..r_start + N * (r_end - r_start + 1) - 1`.
+  - For rows `r > r_end`: shift down by
+    `(N - 1) * (r_end - r_start + 1)` rows.
+- **Outside cells** (column outside `[c_start..c_end]`):
+  - Stay at their original `(r, c)` position regardless of
+    expansion factor `N`.
+  - Their cell value, formula text, and style MUST be preserved
+    verbatim.
+
+The row-shift effect of the splice is therefore **column-scoped**:
+the same OOXML row insertion only shifts inside-column cells, and
+the renderer restores outside-column cells to their original row
+positions in the same render phase. Implementations that perform a
+row-wide splice MUST follow it with an outside-cell restore pass to
+satisfy this contract.
+
 ## Ordering
 
 Output ordering is deterministic and source-driven:

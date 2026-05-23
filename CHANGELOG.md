@@ -18,12 +18,22 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 - Conformance fixtures `141-block-column-scoped-side-cells`,
   `142-block-column-scoped-side-formulas`,
   `143-block-shared-formula-side-cells`,
-  `144-block-side-cells-after-block` exercise the new contract.
-  Corpus is now 143 fixtures (137 + 6 Stage-2-only skipped on
-  Stage-1 runs).
+  `144-block-side-cells-after-block`,
+  `145-block-bracket-outside-error` exercise the new contract and
+  the parse-time multi-cluster error.
+- Corpus is now **145 fixtures** (139 → 145, +5 ADR-0066, +1 #46
+  regression — closes ROADMAP G1's `≥ 140 fixtures` floor).
 - `conformance-runner` `comparable()` helper now handles
   `{ sharedFormula: '<owner>' }` cells via a stable string form so
   structurally-equal slaves match in cell-level diff.
+- New error code `xl3/expression/bracket-outside-block` raised at
+  parse time when a sheet has two or more disconnected `[Column]`
+  clusters (single-block-per-sheet enforcement at 0.x; multi-block
+  via `@block` directive deferred to Phase 2).
+- Spec language.md "Data Blocks" section added with the normative
+  block definition; evaluation.md "Render Phases" extended with the
+  column-scoped splice + outside-cell restore contract.
+- ROADMAP G1 marked DONE (`≥ 140 conformance fixtures`).
 
 ### Fixed
 

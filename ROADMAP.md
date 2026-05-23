@@ -36,7 +36,7 @@ milestone. Per-version step plan below references these gates by ID.
 
 | ID | Gate | Owner | Artifact | Pass criterion | Fallback | Target |
 |----|------|-------|----------|----------------|----------|--------|
-| G1 | Conformance corpus ≥ 140 | maintainer | `conformance/fixtures/` | `ls conformance/fixtures/ \| wc -l` ≥ 140 | — | 0.7.1 (139 today; 0.7.0 ADRs reserved 141–187) |
+| G1 | Conformance corpus ≥ 140 | maintainer | `conformance/fixtures/` | `ls conformance/fixtures/ \| wc -l` ≥ 140 | — | DONE (145 today; ADR-0066 added 141-145 in 0.7.x post-0.7.0; ADRs 0051-0065 reserved further numbers for 0.7.1) |
 | G2 | Stage 2 OOXML canonicalization spec'd | maintainer | ADR-0006 + canonicalizer in src/ | covered by fixtures 024-027, 093 + ADR-0006 amendment | — | DONE |
 | G3 | Error code catalog frozen | maintainer | `src/__tests__/error-codes.test.ts` snapshot | catalog snapshot unchanged for 30 days | — | 0.9-rc (clock reset 2026-05-22 by 0.7.0's 4 new codes) |
 | G4 | JXLS boundary published | maintainer | ADR-0048 | file exists, references PORTERS_GUIDE | — | DONE |
