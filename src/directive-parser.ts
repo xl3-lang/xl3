@@ -1,7 +1,7 @@
 import type { Directive, FilterOp } from './types.js';
 import { xtlError } from './error-codes.js';
 
-const DIRECTIVE_RE = /^@(filter|sort|top|repeat|source|join|group)\b/i;
+const DIRECTIVE_RE = /^@(filter|sort|top|repeat|source|join|group|block)\b/i;
 const SOURCE_NAME_RE = /^[A-Za-z0-9_]+$/;
 // ADR-0038: @subtotal is a CELL expression marker, not a directive
 // row. It must travel through the directive-aware parser path (so

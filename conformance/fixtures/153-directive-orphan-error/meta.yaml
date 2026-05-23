@@ -1,0 +1,7 @@
+description: ADR-0069 — @filter directive placed outside any @block's column range raises xl3/directive/orphan at parse time.
+spec_section: ADR-0069
+spec_version: "0.1"
+tags: [adr-0069, directive-scoping, error, negative-path]
+verified_by: [manual-script]
+expected_error: "is not above any @block whose col-range overlaps"
+expected_error_code: 'xl3/directive/orphan'

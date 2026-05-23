@@ -192,8 +192,13 @@ export class Renderer {
     sg: SheetGroup,
     fileKey: GroupKey,
   ) {
-    // 0. Remove directive rows (iterate in reverse to keep indices stable)
-    const sortedDirectiveRows = [...st.directiveRows].sort((a, b) => b - a);
+    // 0. Remove directive rows (iterate in reverse to keep indices
+    // stable). ADR-0067: with multi-directive rows now possible (e.g.,
+    // two `@block` directives side-by-side at row 1), the same row
+    // number may appear multiple times in `st.directiveRows`. Dedupe
+    // before splicing so each row is removed exactly once.
+    const uniqueDirectiveRows = Array.from(new Set(st.directiveRows));
+    const sortedDirectiveRows = [...uniqueDirectiveRows].sort((a, b) => b - a);
     for (const rowNum of sortedDirectiveRows) {
       document.spliceRowsPreservingMerges(sheet, rowNum, 1);
     }
@@ -201,14 +206,19 @@ export class Renderer {
     // Adjust row positions after directive row removal
     const adjustRow = (row: number) => {
       if (row === 0) return 0;
-      const removed = st.directiveRows.filter((r) => r < row).length;
+      const removed = uniqueDirectiveRows.filter((r) => r < row).length;
       return row - removed;
     };
 
-    // Check for horizontal blocks
+    // ADR-0067/0068: multi-block path. Route to the per-block renderer
+    // when either (a) any block is `@repeat right` horizontal, or
+    // (b) the sheet has 2+ blocks (Phase 2 explicit multi-block mode).
+    // The legacy single-down-block fast path applies only when there's
+    // exactly one block and it's vertical.
     const hasRightBlocks = st.blocks.some((b) => b.direction === 'right');
+    const multiBlock = st.blocks.length > 1;
 
-    if (hasRightBlocks) {
+    if (hasRightBlocks || multiBlock) {
       // Block-based rendering
       const adjustedBlocks = st.blocks.map((b) => ({
         ...b,
@@ -217,8 +227,25 @@ export class Renderer {
         directiveRows: [],
       }));
 
-      // Apply directives per block and render
-      let rowShift = 0; // accumulated row shift from 'down' blocks inserting rows
+      // Apply directives per block and render.
+      // ADR-0066 (column-scoped splice) + ADR-0068 (multi-block):
+      // when blocks have disjoint column ranges, expanding block A
+      // doesn't shift block B (outside-cell preservation kicks in).
+      // We accumulate row-shift only across blocks whose col-range
+      // OVERLAPS a previously expanded block — disjoint blocks
+      // render at their original adjusted positions.
+      type ColRange = { start: number; end: number };
+      const expansionShifts: { range: ColRange; delta: number }[] = [];
+      const shiftForBlock = (b: typeof adjustedBlocks[number]) => {
+        let acc = 0;
+        for (const s of expansionShifts) {
+          // Overlap: rangeA.end >= rangeB.start AND rangeB.end >= rangeA.start
+          if (b.templateColEnd >= s.range.start && s.range.end >= b.templateColStart) {
+            acc += s.delta;
+          }
+        }
+        return acc;
+      };
 
       for (const block of adjustedBlocks) {
         const blockDirectives = block.directives.filter(
@@ -235,14 +262,19 @@ export class Renderer {
         const filteredRows = this.applyJoin(directiveFiltered, block);
         const staticCtx = this.buildStaticContext(fileKey, { ...sg, rows: filteredRows }, block.source);
 
+        const blockShift = shiftForBlock(block);
+
         if (block.direction === 'right') {
-          this.renderDataCols(sheet, block, filteredRows, staticCtx, rowShift);
+          this.renderDataCols(sheet, block, filteredRows, staticCtx, blockShift);
         } else {
-          const shiftedBlock = { ...block, startRow: block.startRow + rowShift, endRow: block.endRow + rowShift };
+          const shiftedBlock = { ...block, startRow: block.startRow + blockShift, endRow: block.endRow + blockShift };
           if (filteredRows.length === 0) {
             if (shiftedBlock.startRow > 0) {
               document.spliceRowsPreservingMerges(sheet, shiftedBlock.startRow, 1);
-              rowShift -= 1;
+              expansionShifts.push({
+                range: { start: block.templateColStart, end: block.templateColEnd },
+                delta: -1,
+              });
             }
           } else {
             const asSt: SheetTemplate = {
@@ -254,16 +286,15 @@ export class Renderer {
             const before = sheet.actualRowCount;
             this.renderDataRows(document, sheet, asSt, filteredRows, block.source, block);
             const after = sheet.actualRowCount;
-            // For grouped blocks the output row count is data + subtotal
-            // emissions, not data × templateRowCount. Derive rowShift
-            // from the actual row delta the renderer produced.
             const templateRowCount = shiftedBlock.endRow - shiftedBlock.startRow + 1;
             const groupDir = block.directives.find((d) => d.kind === 'group');
-            if (groupDir) {
-              rowShift += (after - before) - templateRowCount;
-            } else {
-              rowShift += filteredRows.length - templateRowCount;
-            }
+            const delta = groupDir
+              ? (after - before) - templateRowCount
+              : filteredRows.length - templateRowCount;
+            expansionShifts.push({
+              range: { start: block.templateColStart, end: block.templateColEnd },
+              delta,
+            });
           }
         }
       }

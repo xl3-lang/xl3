@@ -1,0 +1,7 @@
+description: ADR-0067 — @block A2:D7 declared but contains no marker cells. Raises xl3/block/empty-table.
+spec_section: ADR-0067
+spec_version: "0.1"
+tags: [adr-0067, block-directive, error, negative-path]
+verified_by: [manual-script]
+expected_error: "no [Column] marker cells"
+expected_error_code: 'xl3/block/empty-table'

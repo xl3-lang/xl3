@@ -64,12 +64,6 @@ const INFORMATIONAL_ADRS = new Set([
   '0063', // __inputs__ options pipe-split rules
   '0064', // string→number coercion scope
   '0065', // @source default explicit form
-  // 0.8.0 Phase 2 — @block directive + multi-block detection.
-  // Fixtures 146-155 reserved (see ADR Consequences); land before
-  // the 0.8.0 tag.
-  '0067', // @block directive
-  '0068', // multi-block detection (strict mode)
-  '0069', // per-block directive scoping (proximity)
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.

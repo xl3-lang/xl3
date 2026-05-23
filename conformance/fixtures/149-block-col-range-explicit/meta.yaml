@@ -1,0 +1,5 @@
+description: ADR-0067 — @block A:C col-range explicit form; row-range auto-detected from marker rows below.
+spec_section: ADR-0067
+spec_version: "0.1"
+tags: [adr-0067, block-directive, col-range]
+verified_by: [manual-script]

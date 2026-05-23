@@ -1,0 +1,5 @@
+description: ADR-0067/0068 — two @block A:B and @block D:E side-by-side on the same sheet, both bound to the default source, both expand independently.
+spec_section: ADR-0067
+spec_version: "0.1"
+tags: [adr-0067, adr-0068, multi-block, explicit-blocks]
+verified_by: [manual-script]

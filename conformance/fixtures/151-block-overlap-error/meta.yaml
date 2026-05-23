@@ -1,0 +1,7 @@
+description: ADR-0068 — two @block declarations whose column ranges overlap raise xl3/block/overlap at parse time.
+spec_section: ADR-0068
+spec_version: "0.1"
+tags: [adr-0068, multi-block, error, negative-path]
+verified_by: [manual-script]
+expected_error: "overlap"
+expected_error_code: 'xl3/block/overlap'

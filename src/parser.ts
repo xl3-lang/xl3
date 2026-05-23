@@ -123,27 +123,24 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
     let legacyDataEndRow = 0;
 
     worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-      // 1. Check for directive rows
-      let parsedDirective: Directive | null = null;
-      let isDirectiveRow = false;
+      // 1. Check for directive rows. ADR-0067: a single row may carry
+      // multiple directive cells (e.g., two `@block` declarations
+      // side-by-side, or `@block` + `@source` + `@filter` together);
+      // collect ALL of them, not just the first.
+      const rowDirectives: Directive[] = [];
       row.eachCell({ includeEmpty: false }, (cell) => {
-        if (isDirectiveRow) return;
         const cellValue = cellString(cell.value);
         const cellVars = extractVarExpressions(cellValue);
         for (const expr of cellVars) {
           if (isDirectiveExpression(expr)) {
             const d = parseDirective(expr);
             if (d) {
-              parsedDirective = d;
-              isDirectiveRow = true;
-              return;
+              rowDirectives.push(d);
+              continue;
             }
             // ADR-0027: a recognized directive prefix (`@source`,
             // `@filter`, `@sort`, `@top`, `@repeat`, `@join`) that
             // fails to fully parse is an error, not a silent no-op.
-            // Catches missing args (`@filter`), malformed bodies
-            // (`@sort foo` with no bracket), and reserved-name
-            // collisions (`@source __config__`).
             throw xtlError(
               'xl3/directive/invalid-syntax',
               `Invalid directive: ${expr.trim()}`,
@@ -151,11 +148,23 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
           }
         }
       });
+      const isDirectiveRow = rowDirectives.length > 0;
+      // Legacy single-directive shape consumed by the down/right
+      // dispatch below — preserves existing behavior for the
+      // first-directive-on-the-row when there are several.
+      const parsedDirective: Directive | null = rowDirectives[0] ?? null;
 
       if (isDirectiveRow && parsedDirective) {
+        for (const d of rowDirectives) {
+          allDirectives.push(d);
+          allDirectiveRows.push(rowNumber);
+        }
         const directive = parsedDirective as Directive;
-        allDirectives.push(directive);
-        allDirectiveRows.push(rowNumber);
+        // NOTE: implicit-mode legacy attachment processes only the
+        // first directive on the row. Phase 2 (explicit mode) is the
+        // path that handles multi-directive rows fully — it reads
+        // from `allDirectives` and re-attaches by proximity to
+        // `@block` rectangles after the main loop completes.
 
         if (directive.kind === 'repeat') {
           // Close previous block
@@ -357,11 +366,11 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
     // Close final block
     if (currentBlock) { blocks.push(currentBlock); currentBlock = null; }
 
-    // Attach any remaining pending directives to legacy fields
-    if (pendingDirectives.length > 0 && blocks.length === 0) {
-      allDirectives.push(...pendingDirectives);
-      allDirectiveRows.push(...pendingDirectiveRows);
-    }
+    // (ADR-0067: removed the legacy "push pendingDirectives back into
+    // allDirectives" step — every directive parsed in the row loop is
+    // already pushed to `allDirectives` exactly once at line ~159. The
+    // legacy push duplicated `@block` entries on explicit-mode sheets
+    // where no implicit block opened.)
 
     // ADR-0067/0068/0069: explicit multi-block mode via `@block`
     // directives. Determine sheet mode by scanning for any
@@ -383,13 +392,13 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
         let rowEnd = dir.rowEnd > 0 ? dir.rowEnd : 0;
 
         // For bare / col-range forms: auto-detect row range from
-        // marker cells below the directive's row.
+        // marker cells below the directive's row. `rowStart` is the
+        // FIRST marker row found, not the row immediately below the
+        // directive — the directive may sit one or more static rows
+        // above the data row (header etc.).
         if (rowStart === 0) {
-          rowStart = row + 1;
-          // Find consecutive marker rows in the col-range (or any range
-          // if colStart/colEnd are 0 — bare form).
-          let r = rowStart;
-          while (r <= worksheet.actualRowCount + 100) {
+          let r = row + 1;
+          while (r <= row + 1000) {
             const rowObj = worksheet.getRow(r);
             let hasMarker = false;
             rowObj.eachCell({ includeEmpty: false }, (cell, c) => {
@@ -400,13 +409,14 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
               }
             });
             if (hasMarker) {
+              if (rowStart === 0) rowStart = r;
               rowEnd = r;
               r++;
-            } else if (rowEnd === 0) {
-              // No marker yet — advance, since there might be a gap
-              // between the directive and the first data row.
+            } else if (rowStart === 0) {
+              // No marker yet — advance, since the data row may be a
+              // few rows below the directive (header rows in between).
               r++;
-              if (r > rowStart + 50) break; // bound the search
+              if (r > row + 100) break; // bound the search to ~100 rows
             } else {
               break;
             }
@@ -443,6 +453,32 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
           }
           colStart = minC;
           colEnd = maxC;
+        }
+
+        // Full-rect form: verify the declared rectangle contains at
+        // least one marker cell (the bare/col-range path already
+        // checks this implicitly via the row-detection loop).
+        if (dir.rowStart > 0 && dir.rowEnd > 0) {
+          let hasMarker = false;
+          for (let r = rowStart; r <= rowEnd && !hasMarker; r++) {
+            worksheet.getRow(r).eachCell({ includeEmpty: false }, (cell, c) => {
+              if (hasMarker) return;
+              if (c < colStart || c > colEnd) return;
+              const vars = extractVarExpressions(cellString(cell.value));
+              for (const e of vars) {
+                if (isDataExpression(e) && !isAggregateExpression(e)) {
+                  hasMarker = true;
+                  return;
+                }
+              }
+            });
+          }
+          if (!hasMarker) {
+            throw xtlError(
+              'xl3/block/empty-table',
+              `@block at row ${row} declares rectangle (rows ${rowStart}-${rowEnd}, cols ${colStart}-${colEnd}) on sheet "${worksheet.name}" but contains no [Column] marker cells`,
+            );
+          }
         }
 
         return {
@@ -487,7 +523,11 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
           if (orphanFound) return;
           const vars = extractVarExpressions(cellString(cell.value));
           for (const e of vars) {
-            if (isDataExpression(e) && !isAggregateExpression(e) && !isInsideAnyBlock(r, c)) {
+            // Skip directive expressions (e.g., `@filter [Status]=...`)
+            // — their inner `[Column]` refs are scoped to the directive,
+            // not orphan markers.
+            if (isDirectiveExpression(e) || isAggregateExpression(e)) continue;
+            if (isDataExpression(e) && !isInsideAnyBlock(r, c)) {
               orphanFound = { addr: cell.address, row: r, col: c } as OrphanInfo;
               return;
             }
