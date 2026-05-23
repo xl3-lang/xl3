@@ -7,11 +7,27 @@
 
 xl3 is technically capable but in its formative phase as a project: a single
 maintainer, no production reference cases yet, governance just documented.
-The audit pass closed every silent-fallthrough surface (66 ADRs, 139
-fixtures, all green), so the language surface is stable enough for early
+The audit pass closed every silent-fallthrough surface, and the 0.8.0
+data-block pass brings the corpus to 70 ADRs and 154 fixtures, all green,
+so the language surface is stable enough for early
 adopters. **Early adopter feedback is the most useful contribution right
 now** — see [ROADMAP.md](./ROADMAP.md) for what's blocking 1.0 and
 [GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made.
+
+**0.7.0 → 0.8.0 highlights** (May 2026): the data-block geometry is now
+**column-scoped** (ADR-0066). The bracket-marker hull plus adjacent
+non-empty cells defines the block's column range, so side summary
+tables and other outside cells keep their original row positions across
+expansion. This closes #46 (duplicate shared-formula owners causing
+silent data loss) and #47 (stale formula references in shifted side
+cells). 0.8.0 also adds the explicit **`@block`** directive (ADR-0067)
+in three forms — bare `{{ @block }}`, column range `{{ @block A:D }}`,
+and full rectangle `{{ @block A2:D7 }}`. Sheets that opt into `@block`
+use strict multi-block detection (ADR-0068): every `[Column]` marker
+must sit inside a block, and block rectangles cannot overlap. Other
+directives attach by proximity to the closest overlapping block
+(ADR-0069). Templates without `@block` and without outside-column
+content render the same as 0.7.x; `@block` is opt-in.
 
 **0.6.0 → 0.7.0 highlights** (May 2026): a 15-ADR pass (ADR-0051..0065)
 closed every remaining syntactic-conflict surface — places where a
@@ -193,7 +209,7 @@ For projects that don't use a bundler, a self-contained IIFE bundle
 exposes `window.xl3`:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.7.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.8.0/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

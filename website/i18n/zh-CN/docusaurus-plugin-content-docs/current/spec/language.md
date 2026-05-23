@@ -33,6 +33,28 @@
 
 模板块由 `{{` 开启，并由单元格文本顺序中**第一个**后续的 `}}` 关闭。分隔符扫描器不感知字符串字面量：位于 `"..."` 字面量内部的 `}}` 仍会关闭模板块（ADR-0051）。如果作者需要在值中出现字面意义的 `}}`，则把它放入 `__config__[key]`，再通过 `{{ __config__[key] }}` 引用。当表达式正文的 `"` 个数为奇数（字面量不闭合，几乎总是由内嵌的分隔符造成）时，抛出 `xl3/parser/unbalanced-literal`。
 
+## 数据块（Data Blocks）
+
+工作表上的*数据块*是引擎在渲染源行时展开的矩形。它有两个维度：
+
+- **行范围** `[r_start..r_end]` —— 连续行的最大区间，其中每一行都包含至少一个*数据行单元格*（其 `{{ ... }}` 正文在聚合函数之外引用至少一个 `[Column]` 的单元格）。两个数据行之间出现非数据行（没有 `[Column]` 引用）会关闭该块。
+- **列范围** `[c_start..c_end]` —— 该块行范围内所有带任意 `{{ ... }}` 表达式的单元格的 bounding box，并**向外扩展穿过相邻的非空单元格**。紧邻 marker 单元格的原生 Excel 公式（`{ formula: "..." }`）或静态值在块内。被完全空列隔开的非空单元格在块外。
+
+矩形内的单元格是 *block cells*。同一工作表上位于矩形外的单元格是 *outside cells*（ADR-0066）。
+
+**每张工作表一个块（0.x）。** 在 XTL 0.x 中，一张工作表最多有一个数据块。如果解析器发现两个或更多断开的 `[Column]` 数据行单元格 cluster，则在解析时抛出 `xl3/expression/bracket-outside-block`，并标识第二个 cluster 的起始行。multi-block 支持（通过显式 `@block` directive 消除边界歧义）延后至未来 ADR。
+
+**块展开语义**（渲染侧；规范见 `evaluation.md` 的 "Render Phases"）：
+
+- block cells 会被克隆到展开后的行中 —— 每 `(r_end - r_start + 1)` 个模板行对应一条记录。
+- 行号 `r < r_start` 的 outside cells 保持在原位置（块上方的 header / configuration 行）。
+- 行号 `r >= r_start` 的 outside cells 即使 splice 为块展开插入行，也保持在原始行 `r`。它们**不会**下移（**NOT**）。其公式文本按字面保留。
+- 位于内部列且行号 `r > r_end` 的单元格（即 footer-row 场景：与数据相同的列中存在 "Total" 标签和 footer 公式）会下移 `(N - 1) × (r_end - r_start + 1)` 行，落在展开后的数据块下方。
+
+这种不对称 —— 块下方的内部列单元格会移动，而同一行上的外部列单元格不会移动 —— 是有意设计的。它支持常见的“侧边汇总表”模式（位于主数据块右侧或左侧、独立于主块的并行报表区域），而不要求作者声明单独工作表。
+
+如果作者希望一个标签/公式对一起移动（例如 A4='footer'，B4=LOWER(A4)），则把两个单元格都放在块的列范围内。如果 marker 单元格刚好没有覆盖到 B（例如只有 A2 有 marker），则 B 在块外，不会跟随 A 移动；解决方法是在 B2 添加一个 marker（即便是 `{{ "" }}` 这样的 trivial literal expression 也可以），或者在未来版本可用时使用显式 `@block A:B` 形式。
+
 ## 源列（Source Columns）
 
 源列通过方括号语法引用：
@@ -353,9 +375,34 @@ XTL 0.1 定义如下最小 `TEXT()` 格式子集：
 {{ @repeat right 3 }}
 {{ @source Renewals }}
 {{ @join Customers on Customers[Account] = Renewals[Account] }}
+{{ @block A:D }}
 ```
 
 指令名与排序方向大小写不敏感。
+
+### `@block` —— 显式数据块声明
+
+依 ADR-0067，`@block` 允许作者显式声明数据块的 geometry。可识别三种形式：
+
+```text
+@block                  — bare；列范围从 {{...}} marker 自动检测
+@block <col-range>      — 显式列范围，例如 A:D
+@block <full-rect>      — 显式行 × 列矩形，例如 A2:D7
+```
+
+`@block` directive 单元格所在行**严格位于**该块第一行之上。无参数时，块的列范围是该 directive 下方 `{{ ... }}` marker 单元格的 bounding box（依 ADR-0066 列范围检测）。带 `A:D` 这样的 col-range 参数时，列范围为显式，行范围自动检测。带 `A2:D7` 这样的完整矩形时，行范围与列范围均为显式；该矩形必须（**MUST**）包含至少一个 marker cell，否则抛出 `xl3/block/empty-table`。
+
+同一工作表上的两个 `@block` 矩形不得（**MUST NOT**）重叠（任意行 × 列交集都会抛出 `xl3/block/overlap`）。
+
+**块检测模式**（ADR-0068，strict）：一张工作表要么有 *zero* 个 `@block` directive（implicit mode —— 应用 ADR-0066 的 single-block cluster detection；多个 disconnected cluster 抛出 `xl3/expression/bracket-outside-block`），要么有一个或多个 `@block` directive（explicit mode —— 所有 `[Column]` marker cells 必须（**MUST**）位于某个 `@block` 矩形内；orphan marker 抛出同一错误码）。
+
+**多重数据块工作表中的 directive 作用域**（ADR-0069）：所有其他 directive —— `@filter`、`@sort`、`@top`、`@source`、`@join`、`@group`、`@repeat` —— 通过 **proximity** 绑定到某个特定 block：
+
+> 令 directive `D` 位于 `(r_D, c_D)`。它绑定到数据块 `B`，条件是 (1) `r_D < B.startRow`，(2) `B.colStart ≤ c_D ≤ B.colEnd`，且 (3) 在满足 (1) 与 (2) 的 block 中，`B.startRow - r_D` 最小。如果没有 block 满足 (1) 与 (2)，该 directive 抛出 `xl3/directive/orphan`。
+
+该规则在单块工作表上会正确退化：候选只有一个，因此 closest-block-below 检查是平凡的。
+
+块内的 `ROW()` 返回该块的迭代索引（每条记录 1 起始）；不属于任何块的 `ROW()` 单元格会抛出 `xl3/expression/row-outside-block`。
 
 ### Filter
 

@@ -8,13 +8,33 @@
 xl3 es técnicamente capaz pero se encuentra en su fase formativa como
 proyecto: un único mantenedor, ningún caso de referencia en producción
 todavía, gobernanza recién documentada. La pasada de auditoría cerró
-todas las superficies de paso silencioso (66 ADR, 139 fixtures, todas en
-verde), por lo que la superficie del lenguaje es lo bastante estable
-para los primeros adoptantes. **El feedback de los primeros adoptantes
+todas las superficies de paso silencioso, y la pasada de bloques de
+datos de 0.8.0 deja el corpus en 70 ADR y 154 fixtures, todo en verde,
+por lo que la superficie del lenguaje es lo bastante estable para los
+primeros adoptantes. **El feedback de los primeros adoptantes
 es ahora mismo la contribución más útil** — consulta
 [ROADMAP.md](./ROADMAP.md) para ver qué bloquea la 1.0 y
 [GOVERNANCE.md](./GOVERNANCE.md) para entender cómo se toman las
 decisiones.
+
+**Novedades de 0.7.0 → 0.8.0** (mayo de 2026): la geometría de los
+bloques de datos pasa a ser un **bloque de datos con alcance por
+columna** (ADR-0066). La envolvente de los marcadores con corchetes
+más las celdas no vacías adyacentes define el rango de columnas del
+bloque, de modo que una tabla de resumen lateral y otras celdas
+externas conservan su fila original durante la expansión. Esto cierra
+#46 (pérdida silenciosa de datos por propietarios duplicados de
+fórmulas compartidas) y #47 (referencias de fórmula obsoletas en
+celdas laterales desplazadas). 0.8.0 también añade la directiva
+explícita **`@block`** (ADR-0067) en tres formas: bare
+`{{ @block }}`, rango de columnas `{{ @block A:D }}` y rectángulo
+completo `{{ @block A2:D7 }}`. Las hojas que optan por `@block` usan
+detección estricta de multi-bloque (ADR-0068): todos los marcadores
+`[Column]` deben estar dentro de algún bloque y los rectángulos no
+pueden solaparse. Las demás directivas se enlazan por ámbito por
+proximidad de directivas al bloque solapado más cercano (ADR-0069).
+Las plantillas sin `@block` y sin contenido fuera de las columnas del
+bloque renderizan igual que en 0.7.x; `@block` es opt-in.
 
 **Novedades de 0.6.0 → 0.7.0** (mayo de 2026): una pasada de 15 ADR
 (ADR-0051..0065) cerró todas las superficies restantes de conflicto
@@ -214,7 +234,7 @@ Para proyectos que no usan empaquetador, un bundle IIFE autocontenido
 expone `window.xl3`:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.7.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.8.0/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

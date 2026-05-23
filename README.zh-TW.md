@@ -6,11 +6,25 @@
 **狀態:** alpha · XTL spec 0.1 (draft) · 1.0 之前可能出現 breaking change
 
 xl3 在技術層面已逐漸成熟,但作為專案仍處於形成期:單一維護者、目前尚無
-正式上線的參考案例、治理規範剛剛文件化。Audit pass 已關閉所有 silent-fallthrough
-路徑 (66 個 ADR、139 個 fixture,全部 green),語言表面已穩定到足以讓
-early adopter 嘗試。**現階段最有價值的貢獻,就是實際使用後的回饋** —
+正式上線的參考案例、治理規範剛剛文件化。Audit pass 已關閉所有
+silent-fallthrough 路徑,加上 0.8.0 的資料區塊更新後,語料庫來到 70 個
+ADR、154 個 fixture,全部 green。語言表面已穩定到足以讓 early adopter
+嘗試。**現階段最有價值的貢獻,就是實際使用後的回饋** —
 1.0 的 blocker 請見 [ROADMAP.md](./ROADMAP.md),決策方式請見
 [GOVERNANCE.md](./GOVERNANCE.md)。
+
+**0.7.0 → 0.8.0 重點變更**(2026 年 5 月):資料區塊幾何現在採用
+**欄範圍資料區塊**語意(ADR-0066)。方括號 marker 的 hull 加上相鄰的
+非空儲存格共同決定區塊欄範圍,因此側邊彙總表與其他 outside cells 在
+展開過程中會保留原本的列位置。這個設計直接關閉 #46(duplicated
+shared-formula owner 造成的靜默資料遺失)與 #47(被位移的側邊儲存格
+公式參照變舊)。0.8.0 也加入明確的 **`@block`** directive(ADR-0067):
+bare `{{ @block }}`、欄範圍 `{{ @block A:D }}`、完整矩形
+`{{ @block A2:D7 }}` 三種寫法。使用 `@block` 的工作表進入嚴格的
+多重資料區塊偵測:所有 `[Column]` marker 都必須落在某個 block 內,block
+矩形之間不得重疊(ADR-0068)。其他 directive 依 directive 鄰近作用域,
+綁定到欄範圍重疊且距離最近的資料區塊(ADR-0069)。未使用 `@block` 且沒有
+outside-column 內容的範本會與 0.7.x 一樣渲染;`@block` 是 opt-in。
 
 **0.6.0 → 0.7.0 重點變更**(2026 年 5 月):一次 15 個 ADR(ADR-0051..0065)
 的整合,關閉了所有殘餘的「同一份範本形狀可能被解讀成兩種,或靜默通過」
@@ -181,7 +195,7 @@ const outputs = await convert(templateBuffer, dataBuffer);
 `window.xl3` 上提供 API:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.7.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.8.0/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

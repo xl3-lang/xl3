@@ -7,10 +7,23 @@
 
 xl3 从技术层面已经趋于稳定,但作为项目仍处于成型期 —— 单一维护者、
 尚无生产环境参考案例、治理结构刚刚成文。审计通道已经合上了所有
-silent-fallthrough 入口(66 个 ADR、139 个 fixture,全部通过),语言
-表面对早期使用者来说已经足够稳定。**目前最有价值的贡献就是真实使用
-后的反馈** —— 1.0 的阻塞项参见 [ROADMAP.md](./ROADMAP.md),决策方式
+silent-fallthrough 入口,加上 0.8.0 的数据块更新后,语料库达到 70 个
+ADR、154 个 fixture,全部通过。语言表面对早期使用者来说已经足够稳定。
+**目前最有价值的贡献就是真实使用后的反馈** —— 1.0 的阻塞项参见 [ROADMAP.md](./ROADMAP.md),决策方式
 参见 [GOVERNANCE.md](./GOVERNANCE.md)。
+
+**0.7.0 → 0.8.0 主要变化**(2026 年 5 月):数据块几何现在采用
+**列范围数据块**语义(ADR-0066)。方括号 marker 的 hull 加上相邻的非空
+单元格共同确定数据块的列范围,因此侧边汇总表和其他 outside cells 在
+展开过程中会保持原始行位置。这个设计直接关闭了 #46(duplicated
+shared-formula owner 导致的静默数据丢失)以及 #47(被移动的侧边单元格
+公式引用变旧)。0.8.0 还加入了显式 **`@block`** directive(ADR-0067):
+bare `{{ @block }}`、列范围 `{{ @block A:D }}`、完整矩形
+`{{ @block A2:D7 }}` 三种写法。使用 `@block` 的工作表进入严格的
+多重数据块检测:所有 `[Column]` marker 都必须落在某个 block 内,block
+矩形之间不得重叠(ADR-0068)。其他 directive 按 directive 邻近作用域
+绑定到列范围重叠且距离最近的数据块(ADR-0069)。未使用 `@block` 且没有
+outside-column 内容的模板与 0.7.x 渲染一致;`@block` 是 opt-in。
 
 **0.6.0 → 0.7.0 主要变化**(2026 年 5 月):一组 15 个 ADR
 (ADR-0051..0065)关闭了所有残余的语法冲突面 —— 也就是同一种模板写
@@ -183,7 +196,7 @@ const outputs = await convert(templateBuffer, dataBuffer);
 `window.xl3` 上挂载所有 API:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.7.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.8.0/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

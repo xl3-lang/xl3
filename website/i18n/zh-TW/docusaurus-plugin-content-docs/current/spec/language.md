@@ -44,6 +44,28 @@
 若運算式本體的 `"` 計數為奇數（不平衡的字面值，幾乎都是因為內嵌
 了分隔符），會引發 `xl3/parser/unbalanced-literal`。
 
+## 資料區塊
+
+工作表上的 *資料區塊* 是引擎在渲染來源列時展開的矩形。它有兩個維度：
+
+- **列範圍** `[r_start..r_end]`——連續列的最大範圍，其中每一列都包含至少一個 *資料列儲存格*（其 `{{ ... }}` 本體在彙總函式之外參考至少一個 `[Column]` 的儲存格）。兩個資料列之間若有非資料列（沒有 `[Column]` 參考）即會關閉區塊。
+- **欄範圍** `[c_start..c_end]`——區塊列範圍內所有含任意 `{{ ... }}` 運算式儲存格的 bounding box，並**向外延伸穿過相鄰的非空儲存格**。緊鄰 marker 儲存格的原生 Excel 公式（`{ formula: "..." }`）或靜態值位於區塊內。被全空欄隔開的非空儲存格則位於區塊外。
+
+矩形內的儲存格是 *block cells*。同一工作表上位於矩形外的儲存格是 *outside cells*（ADR-0066）。
+
+**每張工作表單一區塊（0.x）。** 在 XTL 0.x 中，一張工作表最多有一個資料區塊。如果解析器偵測到兩個以上彼此斷開的 `[Column]` 資料列儲存格 cluster，會在解析階段引發 `xl3/expression/bracket-outside-block`，並指出第二個 cluster 的起始列。multi-block 支援（以明確 `@block` directive 消除邊界歧義）延後到未來 ADR。
+
+**區塊展開語意**（渲染端；規範位於 `evaluation.md` 的 "Render Phases"）：
+
+- block cells 會被複製到展開後的列——每 `(r_end - r_start + 1)` 個範本列對應一筆記錄。
+- 列 `r < r_start` 的 outside cells 會留在原始位置（區塊上方的 header / configuration 列）。
+- 列 `r >= r_start` 的 outside cells 即使 splice 為區塊展開插入列，仍保留在原始列 `r`。它們**不會**向下位移（**NOT**）。其公式文字會逐字保留。
+- 位於內部欄且列 `r > r_end` 的儲存格（也就是 footer-row 情境：與資料相同欄中有 "Total" 標籤與 footer 公式）會向下位移 `(N - 1) × (r_end - r_start + 1)` 列，落在展開後的資料區塊下方。
+
+這種不對稱——區塊下方的內部欄儲存格會位移，而同列的外部欄儲存格不位移——是刻意設計。它支援常見的「側邊彙總表」模式（在主要資料區塊右側或左側、獨立於區塊的平行報表區域），而不要求作者宣告另一張工作表。
+
+若作者希望標籤／公式成對一起位移（例如 A4='footer'、B4=LOWER(A4)），就把兩個儲存格都放在區塊的欄範圍內。如果 marker 儲存格剛好沒有到 B（例如只有 A2 有 marker），B 就在外部，不會跟著 A 位移；解法是在 B2 加上一個 marker（即使是 `{{ "" }}` 這樣的 trivial literal expression 也可以），或在未來版本可用時使用明確的 `@block A:B` 形式。
+
 ## 來源欄
 
 來源欄以方括號語法參考：
@@ -461,9 +483,34 @@ XTL 0.1 定義下列最小的 `TEXT()` 格式子集：
 {{ @repeat right 3 }}
 {{ @source Renewals }}
 {{ @join Customers on Customers[Account] = Renewals[Account] }}
+{{ @block A:D }}
 ```
 
 指令名稱與排序方向不分大小寫。
+
+### `@block`——明確資料區塊宣告
+
+依 ADR-0067，`@block` 讓作者能明確宣告資料區塊的 geometry。可辨識三種形式：
+
+```text
+@block                  — bare；欄範圍由 {{...}} marker 自動偵測
+@block <col-range>      — 明確欄範圍，例如 A:D
+@block <full-rect>      — 明確列 × 欄矩形，例如 A2:D7
+```
+
+`@block` directive 儲存格位於一個**嚴格高於**區塊第一列的列中。沒有引數時，區塊欄範圍是 directive 下方 `{{ ... }}` marker 儲存格的 bounding box（依 ADR-0066 欄範圍偵測）。使用 `A:D` 這種 col-range 引數時，欄範圍明確，列範圍自動偵測。使用 `A2:D7` 這種完整矩形時，列範圍與欄範圍都明確；該矩形**必須**（**MUST**）包含至少一個 marker cell，否則引發 `xl3/block/empty-table`。
+
+同一工作表上的兩個 `@block` 矩形**不得**（**MUST NOT**）重疊（任何列 × 欄交集都會引發 `xl3/block/overlap`）。
+
+**區塊偵測模式**（ADR-0068，strict）：一張工作表要嘛有 *zero* 個 `@block` directive（implicit mode——套用 ADR-0066 single-block cluster detection；多個 disconnected cluster 會引發 `xl3/expression/bracket-outside-block`），要嘛有一個或多個 `@block` directive（explicit mode——所有 `[Column]` marker cells **必須**（**MUST**）位於某個 `@block` 矩形內；orphan marker 引發相同錯誤碼）。
+
+**多重資料區塊工作表中的 directive 範圍**（ADR-0069）：所有其他 directive——`@filter`、`@sort`、`@top`、`@source`、`@join`、`@group`、`@repeat`——都透過 **proximity** 綁定到特定區塊：
+
+> 令 directive `D` 位於 `(r_D, c_D)`。它綁定到資料區塊 `B`，條件為 (1) `r_D < B.startRow`，(2) `B.colStart ≤ c_D ≤ B.colEnd`，且 (3) 在滿足 (1) 與 (2) 的區塊中，`B.startRow - r_D` 最小。若沒有區塊滿足 (1) 與 (2)，該 directive 引發 `xl3/directive/orphan`。
+
+此規則在單一區塊工作表上會正確退化：候選只有一個，因此 closest-block-below 檢查是平凡的。
+
+區塊內的 `ROW()` 回傳該區塊的 iteration index（每筆記錄 1 起始）；不屬於任何區塊的 `ROW()` 儲存格會引發 `xl3/expression/row-outside-block`。
 
 ### Filter
 

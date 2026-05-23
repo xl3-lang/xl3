@@ -7,11 +7,27 @@
 
 xl3는 기술적으로는 안정되어 가는 단계지만 프로젝트로서는 아직 형성기에
 있습니다 — 메인테이너 1명, production reference case 없음, 거버넌스
-방금 문서화. Audit 패스로 silent-fallthrough 동작은 모두 정리됐고
-(ADR 66개, fixture 139개, 전부 green), 언어 표면은 early
-adopter가 시도해볼 만큼 안정됐습니다. **지금 가장 가치 있는 기여는
+방금 문서화. Audit 패스로 silent-fallthrough 동작은 모두 정리됐고,
+0.8.0 데이터 블록 패스까지 포함해 ADR 70개, fixture 154개가 전부
+green 입니다. 언어 표면은 early adopter가 시도해볼 만큼 안정됐습니다.
+**지금 가장 가치 있는 기여는
 실제 사용 후 피드백**입니다 — 1.0 blocker는 [ROADMAP.md](./ROADMAP.md),
 의사결정 방식은 [GOVERNANCE.md](./GOVERNANCE.md) 참고.
+
+**0.7.0 → 0.8.0 주요 변경** (2026년 5월): 데이터 블록 판정이
+**컬럼 스코프 데이터 블록** 기준으로 바뀌었습니다 (ADR-0066).
+브라켓 marker hull 과 인접한 non-empty 셀이 블록의 컬럼 범위를 정하므로,
+사이드 영역 셀과 요약 테이블은 확장 중에도 원래 행 위치를 유지합니다.
+이 설계로 duplicated shared-formula owner 때문에 셀이 조용히 사라지던 #46,
+shift 된 사이드 영역 셀의 수식 참조가 stale 해지던 #47 을 닫았습니다.
+0.8.0 은 명시적 **`@block`** directive 도 추가합니다 (ADR-0067):
+bare `{{ @block }}`, 컬럼 범위 `{{ @block A:D }}`, 전체 사각형
+`{{ @block A2:D7 }}` 세 가지 형태입니다. `@block` 을 쓰는 시트는
+멀티 블록 strict detection 을 적용해 모든 `[Column]` marker 가 어떤 블록
+안에 있어야 하며, 블록끼리는 겹칠 수 없습니다 (ADR-0068). 다른 directive 는
+가장 가까운 겹치는 블록에 붙는 directive 의 proximity 스코핑을 따릅니다
+(ADR-0069). `@block` 이 없고 outside-column 내용이 없는 템플릿은 0.7.x 와
+동일하게 렌더링되며, `@block` 은 opt-in 입니다.
 
 **0.6.0 → 0.7.0 주요 변경** (2026년 5월): 15개의 ADR (ADR-0051..0065) 로
 "같은 템플릿 모양이 두 가지로 해석되거나 조용히 흘러가버리던" 문법 충돌
@@ -178,7 +194,7 @@ const outputs = await convert(templateBuffer, dataBuffer);
 `window.xl3` 로 사용할 수 있습니다.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.7.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.8.0/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

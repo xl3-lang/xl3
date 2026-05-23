@@ -377,8 +377,8 @@ function Reliability() {
             id="homepage.reliability.fact"
             description="Reliability section conformance stats sentence; {adrCount} and {fixtureCount} are pre-bolded counts, {npmLink} and {portersGuideLink} are inline links"
             values={{
-              adrCount: <strong>66 ADRs</strong>,
-              fixtureCount: <strong>139 conformance fixtures</strong>,
+              adrCount: <strong>70 ADRs</strong>,
+              fixtureCount: <strong>154 conformance fixtures</strong>,
               npmLink: (
                 <a href="https://www.npmjs.com/package/@jinyoung4478/xl3">@jinyoung4478/xl3</a>
               ),

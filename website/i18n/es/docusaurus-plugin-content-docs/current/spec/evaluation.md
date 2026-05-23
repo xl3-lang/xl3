@@ -271,6 +271,19 @@ Las implementaciones deben (**MUST**) renderizar en este orden conceptual:
 
 La estrategia de implementación exacta puede diferir, pero la salida observable debe (**MUST**) coincidir con este orden.
 
+### Expansión de bloque — splice con alcance por columna (ADR-0066)
+
+El paso 7 ("Expandir bloques de repetición") es normativo sobre el **alcance de columnas** del splice. Dado un bloque de datos con rango de filas `[r_start..r_end]` y rango de columnas `[c_start..c_end]` (consulta "Data Blocks" en `language.md` para su derivación), expandir el bloque a `N` registros hace lo siguiente:
+
+- **Celdas internas** (columna en `[c_start..c_end]`):
+  - Para filas en `[r_start..r_end]`: clona por registro en las filas `r_start..r_start + N * (r_end - r_start + 1) - 1`.
+  - Para filas `r > r_end`: desplaza hacia abajo `(N - 1) * (r_end - r_start + 1)` filas.
+- **Celdas externas** (columna fuera de `[c_start..c_end]`):
+  - Permanecen en su posición original `(r, c)` independientemente del factor de expansión `N`.
+  - Su valor de celda, texto de fórmula y estilo deben (**MUST**) preservarse verbatim.
+
+El efecto de desplazamiento de filas del splice es por tanto **con alcance por columna**: la misma inserción de filas OOXML solo desplaza las celdas en columnas internas, y el renderer restaura las celdas externas a sus posiciones de fila originales en la misma fase de renderizado. Las implementaciones que hagan un splice de fila completa deben (**MUST**) seguirlo con un pase de restauración de celdas externas para satisfacer este contrato.
+
 ## Ordenación
 
 La ordenación de la salida es determinista y guiada por la fuente:

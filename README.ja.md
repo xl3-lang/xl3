@@ -5,7 +5,9 @@
 
 **ステータス:** alpha · XTL spec 0.1 (draft) · 1.0 までは breaking change の可能性あり
 
-xl3 は技術的には安定しつつありますが、プロジェクトとしてはまだ形成期にあります — メンテナー 1 名、production reference case なし、ガバナンスはちょうど文書化されたところです。Audit パスによって silent-fallthrough の挙動はすべて整理され (ADR 66 件、fixture 139 件、すべて green)、言語表面は early adopter が試せる程度には安定しました。**現時点で最も価値のある貢献は実際に使ってみたフィードバック**です — 1.0 のブロッカーは [ROADMAP.md](./ROADMAP.md)、意思決定の進め方は [GOVERNANCE.md](./GOVERNANCE.md) を参照してください。
+xl3 は技術的には安定しつつありますが、プロジェクトとしてはまだ形成期にあります — メンテナー 1 名、production reference case なし、ガバナンスはちょうど文書化されたところです。Audit パスによって silent-fallthrough の挙動はすべて整理され、0.8.0 のデータブロックパスまで含めて ADR 70 件、fixture 154 件がすべて green です。言語表面は early adopter が試せる程度には安定しました。**現時点で最も価値のある貢献は実際に使ってみたフィードバック**です — 1.0 のブロッカーは [ROADMAP.md](./ROADMAP.md)、意思決定の進め方は [GOVERNANCE.md](./GOVERNANCE.md) を参照してください。
+
+**0.7.0 → 0.8.0 主な変更点** (2026 年 5 月): データブロックの形状判定が **列スコープ化されたデータブロック** になりました (ADR-0066)。ブラケット marker の hull と隣接する非空セルがブロックの列範囲を決めるため、サイドセル / サイド集計表は展開中も元の行位置に残ります。これにより、duplicated shared-formula owner による silent data loss (#46) と、シフトされたサイドセルの数式参照が古くなる問題 (#47) を構造的に閉じています。0.8.0 では明示的な **`@block`** directive も追加されました (ADR-0067)。bare `{{ @block }}`、列範囲 `{{ @block A:D }}`、完全矩形 `{{ @block A2:D7 }}` の 3 形です。`@block` を使うシートではマルチブロックを strict に検出し、すべての `[Column]` marker はいずれかのブロック内になければならず、ブロック矩形は重なれません (ADR-0068)。他の directive は、列範囲が重なる最も近いブロックへ attach される directiveのproximityスコープに従います (ADR-0069)。`@block` がなく、outside-column content もないテンプレートは 0.7.x と同じ結果を出し、`@block` は opt-in です。
 
 **0.6.0 → 0.7.0 主な変更点** (2026 年 5 月): 15 件の ADR (ADR-0051..0065) によって、「同じテンプレート形状が二通りに解釈される」「黙って流れてしまう」といった構文衝突の余地をすべて閉じました。ユーザーへの影響が最も大きい変更は **集計関数の引数形状** (ADR-0059) で、`SUM`、`AVERAGE`、`MIN`、`MAX`、1 引数の `COUNT` は、列参照 1 つ (`[Column]` または `Source[Column]`) のみを受け付けるようになり、`SUM([数量] * [単価])` のような行ごとの算術式はパース時点で `xl3/eval/bad-aggregate-arg` として拒否されます。回避策は、元データ側にヘルパー列を追加するか、フッターセルにネイティブの Excel 数式 `=SUMPRODUCT(...)` を入れることです (詳細は [Cookbook 03](./docs/guides/03-aggregates.md) と [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md) を参照)。0.7.0 で同時に固定された他の挙動: 文字列リテラルの区切り境界 (0051)、混在テキストにおけるエラー sentinel の伝播 (0053)、セルコンテキストでの bare-name 解決 (0054)、`@subtotal` 行の構成 (0058)、`XLOOKUP` value 引数のルール (0060)、`__inputs__` の default / options 分離ルール (0062, 0063)、文字列から数値への強制変換のスコープ (0064)。
 
@@ -129,7 +131,7 @@ const outputs = await convert(templateBuffer, dataBuffer);
 バンドラを使わないプロジェクト向けに、自己完結型の IIFE バンドルを提供しています。読み込むと `window.xl3` として利用できます。
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.7.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.8.0/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

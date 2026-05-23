@@ -398,6 +398,19 @@ __lists__:
 實際實作策略可能不同，但可觀察到的輸出**必須**（**MUST**）
 與此順序一致。
 
+### 區塊展開——欄範圍 splice（ADR-0066）
+
+步驟 7（「展開 repeat 區塊」）對 splice 的**欄範圍**具有規範性。給定一個資料區塊，其列範圍為 `[r_start..r_end]`、欄範圍為 `[c_start..c_end]`（推導方式見 `language.md` 的 "Data Blocks"），將此區塊展開為 `N` 筆記錄時，行為如下：
+
+- **Inside cells**（欄位在 `[c_start..c_end]` 內）：
+  - 對於 `[r_start..r_end]` 中的列：依每筆記錄複製到 `r_start..r_start + N * (r_end - r_start + 1) - 1`。
+  - 對於列 `r > r_end`：向下位移 `(N - 1) * (r_end - r_start + 1)` 列。
+- **Outside cells**（欄位在 `[c_start..c_end]` 外）：
+  - 無論展開係數 `N` 為何，都保留在原始 `(r, c)` 位置。
+  - 其儲存格值、公式文字與樣式**必須**（**MUST**）逐字保留。
+
+因此，splice 的列位移效果是**欄範圍**的：同一次 OOXML 列插入只會位移內部欄儲存格，渲染器會在同一渲染階段將外部欄儲存格恢復到其原始列位置。執行整列 splice 的實作**必須**（**MUST**）接著執行 outside-cell restore pass，才能滿足此契約。
+
 ## 排序
 
 輸出排序具有決定性，由來源驅動：

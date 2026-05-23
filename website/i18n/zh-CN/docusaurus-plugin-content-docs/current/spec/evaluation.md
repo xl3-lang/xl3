@@ -271,6 +271,19 @@ __lists__:
 
 具体实现策略可以不同，但可观察输出必须（**MUST**）与该顺序一致。
 
+### 块展开 —— 列范围 splice（ADR-0066）
+
+步骤 7（"展开 repeat 块"）在 splice 的**列范围**上具有规范性。给定一个行范围为 `[r_start..r_end]`、列范围为 `[c_start..c_end]` 的数据块（推导见 `language.md` 的 "Data Blocks"），将该块展开为 `N` 条记录时，行为如下：
+
+- **Inside cells**（列在 `[c_start..c_end]` 内）：
+  - 对于 `[r_start..r_end]` 中的行：按每条记录克隆到 `r_start..r_start + N * (r_end - r_start + 1) - 1`。
+  - 对于行 `r > r_end`：下移 `(N - 1) * (r_end - r_start + 1)` 行。
+- **Outside cells**（列在 `[c_start..c_end]` 外）：
+  - 无论展开因子 `N` 是多少，都保持在原始 `(r, c)` 位置。
+  - 它们的单元格值、公式文本与样式必须（**MUST**）按字面保留。
+
+因此，splice 的行位移效果是**列范围**的：同一次 OOXML 行插入只移动内部列单元格，渲染器在同一渲染阶段把外部列单元格恢复到其原始行位置。执行整行 splice 的实现必须（**MUST**）随后执行 outside-cell restore pass，以满足此契约。
+
 ## 顺序（Ordering）
 
 输出顺序是确定性的且由源驱动：

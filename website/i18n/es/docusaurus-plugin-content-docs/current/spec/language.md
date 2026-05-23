@@ -33,6 +33,28 @@ Un bloque de plantilla cuyo contenido interno está vacío (`{{ }}` o solo espac
 
 Un bloque de plantilla se abre con `{{` y se cierra con el **primer** `}}` siguiente en el orden del texto de la celda. El escáner de delimitadores NO es consciente de los literales de cadena: un `}}` dentro de un literal `"..."` CIERRA el bloque (ADR-0051). Los autores que necesiten un `}}` literal dentro de un valor lo guardan en `__config__[key]` y lo referencian mediante `{{ __config__[key] }}`. Un cuerpo de expresión cuyo número de `"` es impar (literal no balanceado, casi siempre causado por un delimitador embebido) lanza (**raises**) `xl3/parser/unbalanced-literal`.
 
+## Bloques de datos
+
+Un *bloque de datos* en una hoja es el rectángulo que el motor expande al renderizar filas de origen. Tiene dos dimensiones:
+
+- **Rango de filas** `[r_start..r_end]` — la secuencia máxima de filas consecutivas donde cada fila contiene al menos una *celda de fila de datos* (una celda cuyo cuerpo `{{ ... }}` referencia al menos una `[Column]` fuera de una función de agregación). Una fila que no es de datos (sin referencias `[Column]`) entre dos filas de datos cierra el bloque.
+- **Rango de columnas** `[c_start..c_end]` — la caja que contiene todas las celdas con cualquier expresión `{{ ... }}` dentro del rango de filas del bloque, **extendida hacia fuera a través de celdas no vacías contiguas**. Una fórmula nativa de Excel (`{ formula: "..." }`) o un valor estático inmediatamente adyacente a una celda marcadora queda DENTRO del bloque. Una celda no vacía separada por una columna completamente vacía queda FUERA.
+
+Las celdas dentro del rectángulo son *block cells*. Las celdas fuera del rectángulo pero en la misma hoja son *outside cells* (ADR-0066).
+
+**Un solo bloque por hoja (0.x).** En XTL 0.x una hoja tiene como mucho un bloque de datos. Si el parser detecta dos o más clusters desconectados de celdas de fila de datos `[Column]`, lanza `xl3/expression/bracket-outside-block` en tiempo de parsing e identifica la fila inicial del segundo cluster. El soporte multi-bloque (con una directiva `@block` explícita para desambiguar límites) queda diferido a un ADR futuro.
+
+**Semántica de expansión de bloque** (lado de renderizado, normativa en "Render Phases" de `evaluation.md`):
+
+- Las block cells se clonan en las filas expandidas — un registro por cada `(r_end - r_start + 1)` filas de plantilla.
+- Las outside cells con fila `r < r_start` permanecen en su posición original (filas de cabecera / configuración por encima del bloque).
+- Las outside cells con fila `r >= r_start` permanecen en su fila original `r` incluso cuando el splice inserta filas para expandir el bloque. **NO** se desplazan hacia abajo. Su texto de fórmula se preserva verbatim.
+- Las celdas en columnas internas pero filas `r > r_end` (es decir, el caso de fila de pie donde el bloque tiene una etiqueta "Total" y una fórmula de pie en las mismas columnas que los datos) sí se desplazan hacia abajo `(N - 1) × (r_end - r_start + 1)` filas para quedar debajo del bloque de datos expandido.
+
+La asimetría — las celdas bajo el bloque en columnas internas se desplazan, las celdas en columnas externas en las mismas filas no — es intencional. Soporta el patrón común de "tabla de resumen lateral" (un área de informe paralela e independiente del bloque a la derecha o izquierda del bloque principal) sin obligar a declarar hojas separadas.
+
+Cuando un autor quiere que un par etiqueta/fórmula se desplace unido (p. ej., A4='footer', B4=LOWER(A4)), coloca ambas celdas dentro del rango de columnas del bloque. Si las celdas marcadoras no alcanzan B por casualidad (p. ej., solo A2 tiene un marcador), B queda fuera y no seguirá el desplazamiento de A; la solución es añadir un marcador en B2 (incluso una expresión literal trivial como `{{ "" }}`) o — cuando esté disponible en una versión futura — usar la forma explícita `@block A:B`.
+
 ## Columnas de fuente
 
 Las columnas de fuente se referencian con la sintaxis de corchetes:
@@ -353,9 +375,34 @@ Las directivas se escriben como expresiones de plantilla, normalmente en filas i
 {{ @repeat right 3 }}
 {{ @source Renewals }}
 {{ @join Customers on Customers[Account] = Renewals[Account] }}
+{{ @block A:D }}
 ```
 
 Los nombres de las directivas y las direcciones de ordenamiento no distinguen mayúsculas/minúsculas.
+
+### `@block` — declaración explícita de bloque de datos
+
+Según ADR-0067, `@block` permite que un autor declare explícitamente la geometría de un bloque de datos. Se reconocen tres formas:
+
+```text
+@block                  — bare; rango de columnas autodetectado desde marcadores {{...}}
+@block <col-range>      — rango de columnas explícito, p. ej. A:D
+@block <full-rect>      — rectángulo explícito fila × columna, p. ej. A2:D7
+```
+
+Una celda de directiva `@block` se sitúa en una fila **estrictamente por encima** de la primera fila del bloque. Sin argumentos, el rango de columnas del bloque es la caja que contiene las celdas marcadoras `{{ ... }}` bajo la directiva (según la detección con alcance por columna de ADR-0066). Con un argumento de rango de columnas como `A:D`, el rango de columnas es explícito y el rango de filas se autodetecta. Con un rectángulo completo como `A2:D7`, ambos rangos son explícitos; el rectángulo debe (**MUST**) contener al menos una celda marcadora o lanza (**raises**) `xl3/block/empty-table`.
+
+Dos rectángulos `@block` en la misma hoja no deben (**MUST NOT**) solaparse (cualquier intersección fila × columna lanza (**raises**) `xl3/block/overlap`).
+
+**Modo de detección de bloque** (ADR-0068, estricto): una hoja tiene *zero* directivas `@block` (modo implícito — aplica la detección de cluster de bloque único de ADR-0066; varios clusters desconectados lanzan `xl3/expression/bracket-outside-block`) o una o más directivas `@block` (modo explícito — TODAS las celdas marcadoras `[Column]` deben (**MUST**) estar dentro de algún rectángulo `@block`; los marcadores huérfanos lanzan el mismo código de error).
+
+**Alcance de directivas en hojas multi-bloque** (ADR-0069): todas las demás directivas — `@filter`, `@sort`, `@top`, `@source`, `@join`, `@group`, `@repeat` — se vinculan a un bloque específico por **proximidad**:
+
+> Sea la directiva `D` situada en `(r_D, c_D)`. Se vincula al bloque de datos `B` tal que (1) `r_D < B.startRow`, (2) `B.colStart ≤ c_D ≤ B.colEnd`, y (3) `B.startRow - r_D` se minimiza entre los bloques que satisfacen (1) y (2). Si ningún bloque satisface (1) y (2), la directiva lanza (**raises**) `xl3/directive/orphan`.
+
+Esta regla degenera correctamente en hojas de bloque único: solo hay un candidato, así que la comprobación de bloque más cercano por debajo es trivial.
+
+`ROW()` dentro de un bloque devuelve el índice de iteración del bloque (1-based por registro); una celda `ROW()` que no pertenece a ningún bloque lanza (**raises**) `xl3/expression/row-outside-block`.
 
 ### Filter
 
