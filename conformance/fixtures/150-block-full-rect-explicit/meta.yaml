@@ -1,0 +1,5 @@
+description: ADR-0067 — @block A3:C3 full-rect form with explicit row and column boundaries. The header at row 2 is outside the block and stays at its original row per ADR-0066 outside-cell preservation.
+spec_section: ADR-0067
+spec_version: "0.1"
+tags: [adr-0067, block-directive, full-rect]
+verified_by: [manual-script]

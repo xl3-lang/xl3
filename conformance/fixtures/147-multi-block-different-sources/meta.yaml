@@ -1,0 +1,5 @@
+description: ADR-0068/0069 — two @block side-by-side, each bound to a different source via @source proximity scoping. Block 1 iterates Customers (2 rows), block 2 iterates Vendors (3 rows); both expand independently per ADR-0066 column-scoped splice.
+spec_section: ADR-0068
+spec_version: "0.1"
+tags: [adr-0068, adr-0069, multi-block, multi-source]
+verified_by: [manual-script]

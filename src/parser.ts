@@ -114,6 +114,12 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
     const blocks: DataBlock[] = [];
     const allDirectives: Directive[] = [];
     const allDirectiveRows: number[] = [];
+    // ADR-0069: track the column of each directive cell so multi-
+    // directive rows (e.g., `@source Customers` at B1, `@source
+    // Vendors` at E1) can disambiguate proximity-based block
+    // attachment. Without per-cell column tracking, the proximity
+    // pass would attach both directives to the same column.
+    const allDirectiveCols: number[] = [];
     let currentBlock: DataBlock | null = null;
     let pendingDirectives: Directive[] = [];
     let pendingDirectiveRows: number[] = [];
@@ -128,7 +134,8 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
       // side-by-side, or `@block` + `@source` + `@filter` together);
       // collect ALL of them, not just the first.
       const rowDirectives: Directive[] = [];
-      row.eachCell({ includeEmpty: false }, (cell) => {
+      const rowDirectiveCols: number[] = [];
+      row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
         const cellValue = cellString(cell.value);
         const cellVars = extractVarExpressions(cellValue);
         for (const expr of cellVars) {
@@ -136,6 +143,7 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
             const d = parseDirective(expr);
             if (d) {
               rowDirectives.push(d);
+              rowDirectiveCols.push(colNumber);
               continue;
             }
             // ADR-0027: a recognized directive prefix (`@source`,
@@ -155,9 +163,10 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
       const parsedDirective: Directive | null = rowDirectives[0] ?? null;
 
       if (isDirectiveRow && parsedDirective) {
-        for (const d of rowDirectives) {
-          allDirectives.push(d);
+        for (let k = 0; k < rowDirectives.length; k++) {
+          allDirectives.push(rowDirectives[k]!);
           allDirectiveRows.push(rowNumber);
+          allDirectiveCols.push(rowDirectiveCols[k]!);
         }
         const directive = parsedDirective as Directive;
         // NOTE: implicit-mode legacy attachment processes only the
@@ -543,44 +552,33 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
       }
 
       // Per-block directive scoping (ADR-0069) — proximity attach.
-      // For now, attach all non-block directives by closest-block-below
-      // + col-overlap. Directives that match no block are orphan.
+      // Each directive is matched to the closest @block whose
+      // col-range overlaps the directive's own column. Directives
+      // that have no matching block raise xl3/directive/orphan.
       const nonBlockDirectives = allDirectives
-        .map((d, idx) => ({ dir: d, row: allDirectiveRows[idx]! }))
+        .map((d, idx) => ({
+          dir: d,
+          row: allDirectiveRows[idx]!,
+          col: allDirectiveCols[idx]!,
+        }))
         .filter((entry) => entry.dir.kind !== 'block');
 
-      // Track the column of each directive — derive from where it was
-      // first emitted. Since the existing parser doesn't track directive
-      // columns, we approximate by matching directive expressions back
-      // to their cells. Lightweight: re-scan the directive's row.
-      for (const { dir, row: dirRow } of nonBlockDirectives) {
-        // Find candidate block: row above + col-overlap
-        // For directive col, do a quick re-scan to find a {{ @... }} cell on dirRow
-        let dirCol: number | null = null;
-        worksheet.getRow(dirRow).eachCell({ includeEmpty: false }, (cell, c) => {
-          if (dirCol !== null) return;
-          const v = cellString(cell.value);
-          if (v.includes(`@${dir.kind === 'repeat' ? 'repeat' : dir.kind}`)) {
-            dirCol = c;
-          }
-        });
-        if (dirCol === null) continue;
-        const dc = dirCol;
+      for (const { dir, row: dirRow, col: dirCol } of nonBlockDirectives) {
         const candidates = explicitBlocks.filter((b) =>
-          dirRow < b.startRow && dc >= b.templateColStart && dc <= b.templateColEnd,
+          dirRow < b.startRow && dirCol >= b.templateColStart && dirCol <= b.templateColEnd,
         );
         if (candidates.length === 0) {
           throw xtlError(
             'xl3/directive/orphan',
-            `Directive @${dir.kind} at row ${dirRow}, col ${dc} on sheet "${worksheet.name}" is not above any @block whose col-range overlaps col ${dc}`,
+            `Directive @${dir.kind} at row ${dirRow}, col ${dirCol} on sheet "${worksheet.name}" is not above any @block whose col-range overlaps col ${dirCol}`,
           );
         }
-        // Closest below
         candidates.sort((a, b) => (a.startRow - dirRow) - (b.startRow - dirRow));
         const target = candidates[0]!;
         target.directives.push(dir);
         target.directiveRows.push(dirRow);
         if (dir.kind === 'source') target.source = dir.name;
+        if (dir.kind === 'join') target.join = dir;
       }
 
       // Replace implicit-detected blocks with explicit ones.

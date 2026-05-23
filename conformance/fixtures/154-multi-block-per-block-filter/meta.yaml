@@ -1,0 +1,5 @@
+description: ADR-0069 — each @block gets its own @filter via proximity scoping. Block 1 (col A:B) gets the VIP filter; block 2 (col D:E) gets the Standard filter; the two blocks iterate the same source but produce filtered subsets independently.
+spec_section: ADR-0069
+spec_version: "0.1"
+tags: [adr-0069, multi-block, per-block-filter, directive-scoping]
+verified_by: [manual-script]

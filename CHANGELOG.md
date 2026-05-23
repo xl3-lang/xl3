@@ -8,6 +8,30 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- **ADRs 0067 / 0068 / 0069 — Phase 2 multi-block per sheet.**
+  - `@block` directive with three grammar forms (bare, col-range
+    `A:D`, full-rect `A2:D7`) for explicit data block declaration
+    (ADR-0067).
+  - Multi-block detection in strict mode (ADR-0068): a sheet with
+    any `@block` directive must place ALL `[Column]` cells inside
+    some `@block` rectangle; mixed implicit/explicit modes are
+    forbidden. Block rectangles must not overlap.
+  - Per-block directive scoping by proximity (ADR-0069):
+    `@filter`/`@sort`/`@top`/`@source`/`@join`/`@group`/`@repeat`
+    attach to the closest data block whose column range overlaps
+    the directive's column. Orphan directives raise
+    `xl3/directive/orphan`.
+- Conformance fixtures 146-155 covering multi-block, side-by-side
+  blocks with different sources, vertically stacked blocks,
+  per-block filter, per-block `ROW()` scoping, and the three new
+  error paths.
+- Three new error codes (G3 clock resets along with ADR-0066's
+  addition): `xl3/block/overlap`, `xl3/block/empty-table`,
+  `xl3/directive/orphan`.
+- spec/language.md "Directives" section extended with `@block`
+  grammar, mode-determination rules, and the proximity scoping
+  algorithm.
+
 - **ADR-0066 — column-scoped data block.** The data block's column
   range is now the bounding box of `{{...}}` marker cells extended
   outward through contiguous non-empty cells. Cells outside this

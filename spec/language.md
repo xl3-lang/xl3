@@ -541,9 +541,58 @@ Directives are written as template expressions, usually in rows immediately abov
 {{ @repeat right 3 }}
 {{ @source Renewals }}
 {{ @join Customers on Customers[Account] = Renewals[Account] }}
+{{ @block A:D }}
 ```
 
 Directive names and sort directions are case-insensitive.
+
+### `@block` — explicit data block declaration
+
+Per ADR-0067, `@block` lets an author declare the geometry of a
+data block explicitly. Three forms are recognized:
+
+```text
+@block                  — bare; col-range auto-detected from {{...}} markers
+@block <col-range>      — explicit column range, e.g., A:D
+@block <full-rect>      — explicit row × column rectangle, e.g., A2:D7
+```
+
+A `@block` directive cell sits in a cell whose row is **strictly
+above** the block's first row. Without arguments, the block's
+column range is the bounding box of `{{ ... }}` marker cells below
+the directive (per ADR-0066 column-scoped detection). With a col-
+range argument like `A:D`, the column range is explicit and the
+row range is auto-detected. With a full rectangle like `A2:D7`,
+both row and column ranges are explicit; the rectangle MUST contain
+at least one marker cell or `xl3/block/empty-table` raises.
+
+Two `@block` rectangles on the same sheet MUST NOT overlap (any
+row × column intersection raises `xl3/block/overlap`).
+
+**Block-detection mode** (ADR-0068, strict): a sheet either has
+*zero* `@block` directives (implicit mode — ADR-0066 single-block
+cluster detection applies, multiple disconnected clusters raise
+`xl3/expression/bracket-outside-block`), or one or more `@block`
+directives (explicit mode — ALL `[Column]` marker cells MUST sit
+inside some `@block` rectangle, orphan markers raise the same
+error code).
+
+**Directive scoping in multi-block sheets** (ADR-0069): all other
+directives — `@filter`, `@sort`, `@top`, `@source`, `@join`,
+`@group`, `@repeat` — attach to a specific block by **proximity**:
+
+> Let directive `D` sit at `(r_D, c_D)`. It attaches to the data
+> block `B` such that (1) `r_D < B.startRow`, (2) `B.colStart ≤
+> c_D ≤ B.colEnd`, and (3) `B.startRow - r_D` is minimized among
+> blocks satisfying (1) and (2). If no block satisfies (1) and (2)
+> the directive raises `xl3/directive/orphan`.
+
+This rule degenerates correctly on single-block sheets: there is
+only one candidate, so the closest-block-below check is trivial.
+
+`ROW()` inside a block returns the block's iteration index
+(1-based per record); a `ROW()` cell that does not belong to any
+block raises `xl3/expression/row-outside-block`.
 
 ### Filter
 

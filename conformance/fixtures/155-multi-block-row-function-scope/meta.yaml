@@ -1,0 +1,5 @@
+description: ADR-0066 + ADR-0069 — ROW() returns the iteration index of the block that contains the cell. In a sheet with two blocks both iterating the same 3-row source, each block's ROW() column independently produces 1,2,3 — proving the function is block-scoped by cell position.
+spec_section: ADR-0066
+spec_version: "0.1"
+tags: [adr-0066, adr-0069, row-function, multi-block]
+verified_by: [manual-script]

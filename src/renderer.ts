@@ -129,14 +129,23 @@ export class Renderer {
     const sheetsToDelete: string[] = [];
 
     for (const st of this.parsed.sheetTemplates) {
+      // ADR-0068: multi-block sheets can't be sheet-pruned by applying
+      // ALL directives at sheet level — each @block has its own
+      // per-block @filter via proximity scoping (ADR-0069), so the
+      // sheet-level pipeline is meaningless (would AND every block's
+      // filter together, producing 0 rows even when each block has
+      // matches). Multi-block sheets always render.
+      const isMultiBlockSheet = st.blocks.length > 1;
       if (st.groupKeys.length === 0) {
         const matchingGroups = findSheetGroups(fileGroup.sheetGroups, st);
         if (matchingGroups.length >= 1) {
-          // Skip sheet if filtered data count is 0
-          const filteredRows = applyDirectives(matchingGroups[0].rows, st.directives, this.listSheets);
-          if (filteredRows.length === 0) {
-            document.removeWorksheet(st.originalName);
-            continue;
+          // Skip sheet if filtered data count is 0 (single-block path only)
+          if (!isMultiBlockSheet) {
+            const filteredRows = applyDirectives(matchingGroups[0].rows, st.directives, this.listSheets);
+            if (filteredRows.length === 0) {
+              document.removeWorksheet(st.originalName);
+              continue;
+            }
           }
           const sheet = document.getWorksheet(st.originalName);
           if (sheet) {
@@ -148,9 +157,11 @@ export class Renderer {
         sheetsToDelete.push(st.originalName);
 
         for (const sg of matchingGroups) {
-          // Skip sheet if filtered data count is 0
-          const filteredRows = applyDirectives(sg.rows, st.directives, this.listSheets);
-          if (filteredRows.length === 0) continue;
+          // Skip sheet if filtered data count is 0 (single-block path only)
+          if (!isMultiBlockSheet) {
+            const filteredRows = applyDirectives(sg.rows, st.directives, this.listSheets);
+            if (filteredRows.length === 0) continue;
+          }
 
           const sheetName = this.renderString(
             st.originalName,

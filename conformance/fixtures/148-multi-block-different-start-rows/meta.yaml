@@ -1,0 +1,5 @@
+description: ADR-0068 — two @block vertically stacked on the same sheet (same column range, different start rows). Block 1's expansion shifts block 2 down because their column ranges overlap; this is the only case where multi-block row shifts cascade per ADR-0066.
+spec_section: ADR-0068
+spec_version: "0.1"
+tags: [adr-0068, multi-block, stacked-blocks]
+verified_by: [manual-script]
