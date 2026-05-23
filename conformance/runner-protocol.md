@@ -42,7 +42,11 @@ spec, such as `TODAY()`.
 ```yaml
 description: string         # one-line human description
 spec_section: string        # the spec section this fixture exercises
-spec_version: string        # minimum XTL version (e.g., "0.1")
+spec_version: string        # XTL spec version this fixture is authored against (e.g., "0.1");
+                            # the runner matches it against --spec-version exactly, after
+                            # MAJOR.MINOR.PATCH normalization ("0.1" == "0.1.0"). Range
+                            # matching (>=, ^) is deferred to post-1.0 — XTL is alpha and
+                            # may carry breaking changes between minors.
 tags: [string, ...]         # filter tags (e.g., [substitution, repeat, aggregate])
 ```
 

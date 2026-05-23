@@ -12,6 +12,7 @@ import JSZip from 'jszip';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { convert } from './index.js';
+import { versionsEqual } from './version.js';
 
 export type ComparisonStage = 1 | 2;
 
@@ -73,7 +74,12 @@ export interface RunOptions {
   fixtureDir: string;
   /** Restrict to fixtures whose `tags` include this string. */
   filter?: string;
-  /** Restrict to fixtures whose declared spec_version matches. */
+  /**
+   * Restrict to fixtures whose declared `spec_version` matches this
+   * value exactly (after MAJOR.MINOR.PATCH normalization, so "0.1"
+   * matches "0.1.0"). Range matching (>=, ^) is deferred to post-1.0;
+   * see `conformance/runner-protocol.md`.
+   */
   specVersion?: string;
   /** Compare static output fixtures using Stage 1 cell values or Stage 2 OOXML. */
   comparisonStage?: ComparisonStage;
@@ -149,7 +155,7 @@ async function runOne(
     };
   }
 
-  if (opts.specVersion && meta.spec_version !== opts.specVersion) {
+  if (opts.specVersion && !versionsEqual(meta.spec_version, opts.specVersion)) {
     return {
       fixture: name,
       status: 'skip',
