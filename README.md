@@ -14,20 +14,30 @@ adopters. **Early adopter feedback is the most useful contribution right
 now** — see [ROADMAP.md](./ROADMAP.md) for what's blocking 1.0 and
 [GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made.
 
-**0.7.0 → 0.8.0 highlights** (May 2026): the data-block geometry is now
-**column-scoped** (ADR-0066). The bracket-marker hull plus adjacent
-non-empty cells defines the block's column range, so side summary
-tables and other outside cells keep their original row positions across
-expansion. This closes #46 (duplicate shared-formula owners causing
-silent data loss) and #47 (stale formula references in shifted side
-cells). 0.8.0 also adds the explicit **`@block`** directive (ADR-0067)
-in three forms — bare `{{ @block }}`, column range `{{ @block A:D }}`,
-and full rectangle `{{ @block A2:D7 }}`. Sheets that opt into `@block`
-use strict multi-block detection (ADR-0068): every `[Column]` marker
-must sit inside a block, and block rectangles cannot overlap. Other
-directives attach by proximity to the closest overlapping block
-(ADR-0069). Templates without `@block` and without outside-column
-content render the same as 0.7.x; `@block` is opt-in.
+**0.7.0 → 0.8.0 highlights** (May 2026): data blocks are now
+**column-scoped** (ADR-0066). The block's column range is the
+bounding box of all `{{ ... }}` markers, extended through adjacent
+non-empty cells. Cells outside that range — side summary tables,
+header columns, notes off to the right — keep their original row
+positions when the block expands, so they're no longer pushed around
+by row growth. This closes two long-standing bugs: #46 (duplicate
+shared-formula owners causing silent data loss) and #47 (stale
+formula references in displaced side cells).
+
+0.8.0 also adds the explicit **`@block`** directive (ADR-0067), in
+three forms:
+
+- `{{ @block }}` — bare; column range inferred from the markers
+- `{{ @block A:D }}` — explicit column range
+- `{{ @block A2:D7 }}` — explicit row × column rectangle
+
+Sheets that opt into `@block` get strict multi-block detection
+(ADR-0068) — every `[Column]` marker must sit inside some block, and
+block rectangles cannot overlap. Other directives attach to the
+closest overlapping block by proximity (ADR-0069). **Backward
+compatibility:** templates without `@block` and without
+outside-column content render exactly the same as 0.7.x; `@block`
+is opt-in.
 
 **0.6.0 → 0.7.0 highlights** (May 2026): a 15-ADR pass (ADR-0051..0065)
 closed every remaining syntactic-conflict surface — places where a
