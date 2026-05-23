@@ -65,6 +65,9 @@ const EXPECTED_CODES: XtlErrorCode[] = [
   'xl3/eval/bad-aggregate-arg',
   'xl3/expression/unknown-name',
   'xl3/expression/bracket-outside-block',
+  'xl3/block/overlap',
+  'xl3/block/empty-table',
+  'xl3/directive/orphan',
 ];
 
 describe('error code catalog (ADR-0015)', () => {

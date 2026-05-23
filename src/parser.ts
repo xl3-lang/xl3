@@ -363,22 +363,200 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
       allDirectiveRows.push(...pendingDirectiveRows);
     }
 
-    // ADR-0066: Phase 1 supports a single down-block per sheet. If the
-    // parser detected multiple disconnected down-blocks (i.e., a gap
-    // row between two clusters of `[col]` data-row cells), only the
-    // first one renders — the others would be silently ignored. Raise
-    // `xl3/expression/bracket-outside-block` at parse time so the
-    // author gets a clear signal. Phase 2's `@block` directive will
-    // lift this restriction; until then, the workaround is to remove
-    // the stray `[col]` reference or merge the clusters into one
-    // contiguous block.
-    const downBlocks = blocks.filter((b) => b.direction === 'down');
-    if (downBlocks.length > 1) {
-      const second = downBlocks[1]!;
-      throw xtlError(
-        'xl3/expression/bracket-outside-block',
-        `[Column] references on sheet "${worksheet.name}" form ${downBlocks.length} disconnected clusters. Single-block-per-sheet only at 0.7.x (ADR-0066); second cluster starts at row ${second.startRow}.`,
-      );
+    // ADR-0067/0068/0069: explicit multi-block mode via `@block`
+    // directives. Determine sheet mode by scanning for any
+    // `BlockDirective` collected during this sheet's directive parse.
+    const blockDirectives = allDirectives
+      .map((d, idx) => ({ dir: d, row: allDirectiveRows[idx]! }))
+      .filter((entry) => entry.dir.kind === 'block')
+      .map((entry) => ({ dir: entry.dir as Extract<Directive, { kind: 'block' }>, row: entry.row }));
+    const explicitMode = blockDirectives.length > 0;
+
+    if (explicitMode) {
+      // ADR-0068: explicit mode — `@block` rectangles take over from
+      // implicit cluster detection. Build block list from directives.
+      const explicitBlocks: DataBlock[] = blockDirectives.map(({ dir, row }) => {
+        // Determine col-range
+        let colStart = dir.colStart;
+        let colEnd = dir.colEnd;
+        let rowStart = dir.rowStart > 0 ? dir.rowStart : 0;
+        let rowEnd = dir.rowEnd > 0 ? dir.rowEnd : 0;
+
+        // For bare / col-range forms: auto-detect row range from
+        // marker cells below the directive's row.
+        if (rowStart === 0) {
+          rowStart = row + 1;
+          // Find consecutive marker rows in the col-range (or any range
+          // if colStart/colEnd are 0 — bare form).
+          let r = rowStart;
+          while (r <= worksheet.actualRowCount + 100) {
+            const rowObj = worksheet.getRow(r);
+            let hasMarker = false;
+            rowObj.eachCell({ includeEmpty: false }, (cell, c) => {
+              if (colStart > 0 && (c < colStart || c > colEnd)) return;
+              const vars = extractVarExpressions(cellString(cell.value));
+              for (const e of vars) {
+                if (isDataExpression(e) && !isAggregateExpression(e)) hasMarker = true;
+              }
+            });
+            if (hasMarker) {
+              rowEnd = r;
+              r++;
+            } else if (rowEnd === 0) {
+              // No marker yet — advance, since there might be a gap
+              // between the directive and the first data row.
+              r++;
+              if (r > rowStart + 50) break; // bound the search
+            } else {
+              break;
+            }
+          }
+        }
+
+        if (rowEnd === 0) {
+          throw xtlError(
+            'xl3/block/empty-table',
+            `@block at row ${row} on sheet "${worksheet.name}" has no marker cells inside its declared rectangle`,
+          );
+        }
+
+        // For bare form: auto-detect col-range from markers within row range
+        if (colStart === 0) {
+          let minC = Infinity;
+          let maxC = -Infinity;
+          for (let r = rowStart; r <= rowEnd; r++) {
+            worksheet.getRow(r).eachCell({ includeEmpty: false }, (cell, c) => {
+              const vars = extractVarExpressions(cellString(cell.value));
+              for (const e of vars) {
+                if (isDataExpression(e) && !isAggregateExpression(e)) {
+                  if (c < minC) minC = c;
+                  if (c > maxC) maxC = c;
+                }
+              }
+            });
+          }
+          if (minC === Infinity) {
+            throw xtlError(
+              'xl3/block/empty-table',
+              `@block at row ${row} on sheet "${worksheet.name}" has no marker cells`,
+            );
+          }
+          colStart = minC;
+          colEnd = maxC;
+        }
+
+        return {
+          direction: 'down' as const,
+          startRow: rowStart,
+          endRow: rowEnd,
+          templateColStart: colStart,
+          templateColEnd: colEnd,
+          directives: [],
+          directiveRows: [],
+          source: 'default',
+        };
+      });
+
+      // Overlap check (ADR-0068)
+      for (let i = 0; i < explicitBlocks.length; i++) {
+        for (let j = i + 1; j < explicitBlocks.length; j++) {
+          const a = explicitBlocks[i]!;
+          const b = explicitBlocks[j]!;
+          const rowOverlap = !(a.endRow < b.startRow || b.endRow < a.startRow);
+          const colOverlap = !(a.templateColEnd < b.templateColStart || b.templateColEnd < a.templateColStart);
+          if (rowOverlap && colOverlap) {
+            throw xtlError(
+              'xl3/block/overlap',
+              `@block #${i + 1} (${a.startRow}-${a.endRow}, cols ${a.templateColStart}-${a.templateColEnd}) and #${j + 1} (${b.startRow}-${b.endRow}, cols ${b.templateColStart}-${b.templateColEnd}) overlap on sheet "${worksheet.name}"`,
+            );
+          }
+        }
+      }
+
+      // Orphan-marker check: every [col] cell must be inside some block.
+      const isInsideAnyBlock = (r: number, c: number) =>
+        explicitBlocks.some((b) =>
+          r >= b.startRow && r <= b.endRow &&
+          c >= b.templateColStart && c <= b.templateColEnd,
+        );
+      type OrphanInfo = { addr: string; row: number; col: number };
+      let orphanFound: OrphanInfo | null = null;
+      worksheet.eachRow({ includeEmpty: false }, (row, r) => {
+        if (orphanFound) return;
+        row.eachCell({ includeEmpty: false }, (cell, c) => {
+          if (orphanFound) return;
+          const vars = extractVarExpressions(cellString(cell.value));
+          for (const e of vars) {
+            if (isDataExpression(e) && !isAggregateExpression(e) && !isInsideAnyBlock(r, c)) {
+              orphanFound = { addr: cell.address, row: r, col: c } as OrphanInfo;
+              return;
+            }
+          }
+        });
+      });
+      if (orphanFound) {
+        const orphan = orphanFound as OrphanInfo;
+        throw xtlError(
+          'xl3/expression/bracket-outside-block',
+          `[Column] reference at ${orphan.addr} on sheet "${worksheet.name}" is not inside any @block rectangle (ADR-0068 explicit mode)`,
+        );
+      }
+
+      // Per-block directive scoping (ADR-0069) — proximity attach.
+      // For now, attach all non-block directives by closest-block-below
+      // + col-overlap. Directives that match no block are orphan.
+      const nonBlockDirectives = allDirectives
+        .map((d, idx) => ({ dir: d, row: allDirectiveRows[idx]! }))
+        .filter((entry) => entry.dir.kind !== 'block');
+
+      // Track the column of each directive — derive from where it was
+      // first emitted. Since the existing parser doesn't track directive
+      // columns, we approximate by matching directive expressions back
+      // to their cells. Lightweight: re-scan the directive's row.
+      for (const { dir, row: dirRow } of nonBlockDirectives) {
+        // Find candidate block: row above + col-overlap
+        // For directive col, do a quick re-scan to find a {{ @... }} cell on dirRow
+        let dirCol: number | null = null;
+        worksheet.getRow(dirRow).eachCell({ includeEmpty: false }, (cell, c) => {
+          if (dirCol !== null) return;
+          const v = cellString(cell.value);
+          if (v.includes(`@${dir.kind === 'repeat' ? 'repeat' : dir.kind}`)) {
+            dirCol = c;
+          }
+        });
+        if (dirCol === null) continue;
+        const dc = dirCol;
+        const candidates = explicitBlocks.filter((b) =>
+          dirRow < b.startRow && dc >= b.templateColStart && dc <= b.templateColEnd,
+        );
+        if (candidates.length === 0) {
+          throw xtlError(
+            'xl3/directive/orphan',
+            `Directive @${dir.kind} at row ${dirRow}, col ${dc} on sheet "${worksheet.name}" is not above any @block whose col-range overlaps col ${dc}`,
+          );
+        }
+        // Closest below
+        candidates.sort((a, b) => (a.startRow - dirRow) - (b.startRow - dirRow));
+        const target = candidates[0]!;
+        target.directives.push(dir);
+        target.directiveRows.push(dirRow);
+        if (dir.kind === 'source') target.source = dir.name;
+      }
+
+      // Replace implicit-detected blocks with explicit ones.
+      blocks.length = 0;
+      blocks.push(...explicitBlocks);
+    } else {
+      // ADR-0066 Phase 1 implicit mode unchanged: if multiple
+      // disconnected down-clusters were detected, raise.
+      const downBlocks = blocks.filter((b) => b.direction === 'down');
+      if (downBlocks.length > 1) {
+        const second = downBlocks[1]!;
+        throw xtlError(
+          'xl3/expression/bracket-outside-block',
+          `[Column] references on sheet "${worksheet.name}" form ${downBlocks.length} disconnected clusters. Use @block directives to declare each (ADR-0067), or merge into one contiguous block. Second cluster starts at row ${second.startRow}.`,
+        );
+      }
     }
 
     const st: SheetTemplate = {

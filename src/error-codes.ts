@@ -63,6 +63,11 @@ export type XtlErrorCode =
   | 'xl3/expression/unknown-name'
   // Expression — block scoping (ADR-0066)
   | 'xl3/expression/bracket-outside-block'
+  // Block geometry (ADR-0067, ADR-0068)
+  | 'xl3/block/overlap'
+  | 'xl3/block/empty-table'
+  // Directive scoping (ADR-0069)
+  | 'xl3/directive/orphan'
   // Cell evaluation
   | 'xl3/cell/numfmt-coercion'
   | 'xl3/cell/row-outside-repeat'

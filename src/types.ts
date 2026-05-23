@@ -130,6 +130,24 @@ export interface GroupDirective {
   keys: string[]; // column references, outermost first
 }
 
+// ADR-0067: explicit data-block declaration. Three grammar forms:
+//   bare       — `@block` (col-range from {{...}} markers below)
+//   col-range  — `@block A:D` (start row auto, col-range explicit)
+//   full-rect  — `@block A2:D7` (start/end row + col-range explicit)
+//
+// `colStart` / `colEnd` are 1-based column numbers (1 = A); `rowStart`
+// / `rowEnd` are 1-based row numbers and 0 means "auto-detect from
+// marker cells below the directive". For the col-range form,
+// rowStart/rowEnd are both 0; for full-rect form, both are set.
+/** @experimental */
+export interface BlockDirective {
+  kind: 'block';
+  colStart: number; // 0 = auto-detect from markers
+  colEnd: number;   // 0 = auto-detect from markers
+  rowStart: number; // 0 = auto-detect (first marker row below)
+  rowEnd: number;   // 0 = auto-detect (gap row or next @block)
+}
+
 /** @experimental */
 export type Directive =
   | FilterDirective
@@ -138,7 +156,8 @@ export type Directive =
   | RepeatDirective
   | SourceDirective
   | JoinDirective
-  | GroupDirective;
+  | GroupDirective
+  | BlockDirective;
 
 // --- Template types ---
 

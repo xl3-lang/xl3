@@ -71,8 +71,58 @@ export function parseDirective(expr: string): Directive | null {
   if (lower.startsWith('@source ')) return parseSource(trimmed.slice(8).trim());
   if (lower.startsWith('@join ')) return parseJoin(trimmed.slice(6).trim());
   if (lower === '@group' || lower.startsWith('@group ')) return parseGroup(trimmed.slice(6).trim());
+  if (lower === '@block' || lower.startsWith('@block ')) return parseBlock(trimmed.slice(6).trim());
 
   return null;
+}
+
+// ADR-0067: parse one of three forms — bare / col-range / full-rect.
+function parseBlock(body: string): Directive {
+  const trimmed = body.trim();
+  if (trimmed === '') {
+    // Bare form — col-range and row-range both auto-detect.
+    return { kind: 'block', colStart: 0, colEnd: 0, rowStart: 0, rowEnd: 0 };
+  }
+  // col-range  e.g. "A:D"
+  const colRangeMatch = trimmed.match(/^([A-Z]+):([A-Z]+)$/);
+  if (colRangeMatch) {
+    const cs = colLettersToNumber(colRangeMatch[1]!);
+    const ce = colLettersToNumber(colRangeMatch[2]!);
+    if (cs > ce) {
+      throw xtlError('xl3/directive/invalid-syntax', `@block col-range "${trimmed}" — start column ${colRangeMatch[1]} must be ≤ end column ${colRangeMatch[2]}`);
+    }
+    return { kind: 'block', colStart: cs, colEnd: ce, rowStart: 0, rowEnd: 0 };
+  }
+  // full-rect  e.g. "A2:D7"
+  const fullRectMatch = trimmed.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/);
+  if (fullRectMatch) {
+    const cs = colLettersToNumber(fullRectMatch[1]!);
+    const rs = Number(fullRectMatch[2]);
+    const ce = colLettersToNumber(fullRectMatch[3]!);
+    const re = Number(fullRectMatch[4]);
+    if (cs > ce) {
+      throw xtlError('xl3/directive/invalid-syntax', `@block range "${trimmed}" — start column must be ≤ end column`);
+    }
+    if (rs > re) {
+      throw xtlError('xl3/directive/invalid-syntax', `@block range "${trimmed}" — start row ${rs} must be ≤ end row ${re}`);
+    }
+    if (rs < 1) {
+      throw xtlError('xl3/directive/invalid-syntax', `@block range "${trimmed}" — row numbers must be ≥ 1`);
+    }
+    return { kind: 'block', colStart: cs, colEnd: ce, rowStart: rs, rowEnd: re };
+  }
+  throw xtlError(
+    'xl3/directive/invalid-syntax',
+    `@block argument "${trimmed}" — expected bare form, col-range (A:D), or full rectangle (A2:D7) per ADR-0067`,
+  );
+}
+
+function colLettersToNumber(letters: string): number {
+  let n = 0;
+  for (const ch of letters) {
+    n = n * 26 + (ch.charCodeAt(0) - 64);
+  }
+  return n;
 }
 
 function parseGroup(body: string): Directive {
