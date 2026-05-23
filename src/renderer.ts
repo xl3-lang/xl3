@@ -32,6 +32,57 @@ function cellString(value: ExcelJS.CellValue): string {
   return String(value);
 }
 
+/**
+ * Normalize ExcelJS shared-formula cell values to standalone form before
+ * cloning across `@repeat` expansion.
+ *
+ * OOXML shared formulas have ONE owner cell that declares
+ * `<f t="shared" ref="A1:B5" si="0">...</f>` and other cells in the range
+ * carry only `<f t="shared" si="0"/>` slaves. ExcelJS exposes these as
+ * `{ formula, ref, shareType: 'shared' }` (owner) and
+ * `{ sharedFormula: '<ownerAddr>' }` (slave).
+ *
+ * If `renderDataRows` clones a shared-formula OWNER cell to N expanded
+ * rows verbatim, the output ends up with N "owners" all claiming the same
+ * `ref` — Excel sees this as corrupt OOXML and either drops the cells or
+ * surfaces a repair dialog (issue #46 — silent data loss in real templates).
+ *
+ * Normalization:
+ *   - owner `{ formula, ref, shareType: 'shared' }`  →  `{ formula }`
+ *   - slave `{ sharedFormula: 'Q4' }`               →  `{ formula: <Q4's formula text> }`
+ *   - everything else passes through unchanged.
+ *
+ * The dropped `ref`/`shareType`/slave-pointer metadata is benign: Excel
+ * accepts standalone `<f>` cells just fine. Authors who want one shared-
+ * formula spanning the whole expanded range should put the formula in a
+ * footer cell below the data block, not inside it.
+ */
+function unshareFormula(
+  value: ExcelJS.CellValue,
+  sheet: ExcelJS.Worksheet,
+): ExcelJS.CellValue {
+  if (value === null || value === undefined || typeof value !== 'object') return value;
+  const v = value as unknown as Record<string, unknown>;
+  if (v.shareType === 'shared' && typeof v.formula === 'string') {
+    return { formula: v.formula } as ExcelJS.CellValue;
+  }
+  if (typeof v.sharedFormula === 'string') {
+    // Resolve to the owner's formula text.
+    try {
+      const ownerCell = sheet.getCell(v.sharedFormula);
+      const ownerValue = ownerCell.value as unknown as Record<string, unknown> | null | undefined;
+      if (ownerValue && typeof ownerValue === 'object' && typeof ownerValue.formula === 'string') {
+        return { formula: ownerValue.formula } as ExcelJS.CellValue;
+      }
+    } catch {
+      // Fall through — owner lookup failed (corrupt template). Drop the
+      // shared pointer; cell becomes empty rather than corrupting output.
+    }
+    return null;
+  }
+  return value;
+}
+
 export class Renderer {
   private parsed: ParsedTemplate;
   private columns: Set<string>;
@@ -330,7 +381,11 @@ export class Renderer {
         const style = cell.style;
         // Only track if it has a value or a non-empty style
         if (val || (style && Object.keys(style).length > 0)) {
-          cells.set(colNumber, { template: val, rawValue: cell.value, style: style || {} });
+          // Issue #46: normalize shared formulas before cloning so each
+          // expanded row gets a standalone `{formula}` instead of N
+          // duplicate "owners" of the same OOXML shared range.
+          const rawValue = unshareFormula(cell.value, sheet);
+          cells.set(colNumber, { template: val, rawValue, style: style || {} });
         }
       });
       templateRows.push({ height: row.height, cells });
@@ -424,7 +479,11 @@ export class Renderer {
         const val = cellString(cell.value);
         const style = cell.style;
         if (val || (style && Object.keys(style).length > 0)) {
-          cells.set(colNumber, { template: val, rawValue: cell.value, style: style || {} });
+          // Issue #46: see unshareFormula docstring above. Same normalization
+          // applies to the grouped path so subtotal rows don't duplicate
+          // shared-formula owners either.
+          const rawValue = unshareFormula(cell.value, sheet);
+          cells.set(colNumber, { template: val, rawValue, style: style || {} });
         }
       });
       templateRows.push({ height: row.height, cells });

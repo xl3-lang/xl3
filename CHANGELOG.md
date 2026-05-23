@@ -6,6 +6,23 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- **#46 — silent data loss from duplicate shared-formula owners.** When a
+  template row carried an OOXML shared-formula owner cell (`{ formula,
+  ref, shareType: 'shared' }`) inside or alongside the data block,
+  `renderDataRows` cloned the row verbatim into the N expanded rows —
+  producing N independent "owners" all claiming the same `ref` range.
+  Excel saw the result as corrupt OOXML and either dropped cells or
+  surfaced a repair dialog, surfacing to users as "side cells
+  disappeared" / "report came out broken". The renderer now normalizes
+  shared formulas to standalone `{ formula }` at capture time (owners
+  drop `ref`/`shareType`; slaves resolve to the owner's formula text)
+  so each expanded row carries an independent formula and ExcelJS
+  re-derives the shared range during writeBuffer.
+- The fix applies to both the legacy `renderDataRows` path and the
+  `@group`/`@subtotal` `renderGroupedDataRows` path.
+
 ## [0.7.0] - 2026-05-22
 
 0.7.0 batch. Spec-side audit closing 17 syntactic-conflict gaps
