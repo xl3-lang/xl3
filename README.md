@@ -1,124 +1,53 @@
 # xl3
 
-> Excel conversion, inside Excel, in Excel syntax.
-> Keep recurring Excel transformation rules inside workbook templates.
+> **The deterministic runtime for AI-generated Excel reports.**
+> An LLM writes the template, xl3 renders the workbook — same template,
+> same data, same bytes, every time.
 
 **Status:** alpha · XTL spec 0.1 (draft) · breaking changes possible until 1.0
 
-xl3 is technically capable but in its formative phase as a project: a single
-maintainer, no production reference cases yet, governance just documented.
-The audit pass closed every silent-fallthrough surface, and the 0.8.0
-data-block pass brings the corpus to 70 ADRs and 154 fixtures, all green,
-so the language surface is stable enough for early
-adopters. **Early adopter feedback is the most useful contribution right
-now** — see [ROADMAP.md](./ROADMAP.md) for what's blocking 1.0 and
-[GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made.
+xl3 is a small TypeScript engine that turns a pair of `.xlsx` files —
+a **template** (the workflow contract) and **raw data** — into a
+finished, formatted workbook. The template is itself an `.xlsx`, authored
+in Excel with familiar formulas plus a tiny embedded expression
+language (XTL) for the things that must be known *before* the workbook
+is written: filters, groups, aggregates, filename patterns.
 
-**0.7.0 → 0.8.0 highlights** (May 2026): data blocks are now
-**column-scoped** (ADR-0066). The block's column range is the
-bounding box of all `{{ ... }}` markers, extended through adjacent
-non-empty cells. Cells outside that range — side summary tables,
-header columns, notes off to the right — keep their original row
-positions when the block expands, so they're no longer pushed around
-by row growth. This closes two long-standing bugs: #46 (duplicate
-shared-formula owners causing silent data loss) and #47 (stale
-formula references in displaced side cells).
+It's a good fit when the template is generated, edited, or reviewed by
+an LLM (Claude, GPT, Gemini, Cursor, Codex, …) and you need the
+**execution** layer to stay deterministic, inspectable, and verifiable —
+not "AI guessing at the output cells."
 
-0.8.0 also adds the explicit **`@block`** directive (ADR-0067), in
-three forms:
-
-- `{{ @block }}` — bare; column range inferred from the markers
-- `{{ @block A:D }}` — explicit column range
-- `{{ @block A2:D7 }}` — explicit row × column rectangle
-
-Sheets that opt into `@block` get strict multi-block detection
-(ADR-0068) — every `[Column]` marker must sit inside some block, and
-block rectangles cannot overlap. Other directives attach to the
-closest overlapping block by proximity (ADR-0069). **Backward
-compatibility:** templates without `@block` and without
-outside-column content render exactly the same as 0.7.x; `@block`
-is opt-in.
-
-**0.6.0 → 0.7.0 highlights** (May 2026): a 15-ADR pass (ADR-0051..0065)
-closed every remaining syntactic-conflict surface — places where a
-template shape could be parsed two ways or silently fall through. The
-most user-visible change is **aggregate argument shape** (ADR-0059):
-`SUM`, `AVERAGE`, `MIN`, `MAX`, and 1-arg `COUNT` now require a single
-column reference (`[Column]` or `Source[Column]`) and reject per-row
-arithmetic like `SUM([Qty] * [Price])` at parse time with
-`xl3/eval/bad-aggregate-arg` — use a helper column upstream or a
-native `=SUMPRODUCT(...)` in the footer cell (see
-[Cookbook 03](./docs/guides/03-aggregates.md) and
-[Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md)). Other 0.7.0
-pinned-behavior ADRs cover string-literal delimiter boundaries (0051),
-mixed-text error propagation (0053), bare-name resolution (0054),
-`@subtotal` row composition (0058), `XLOOKUP` value-arg rules (0060),
-`__inputs__` default / options split rules (0062, 0063), and
-string-to-number coercion scope (0064).
-
-**0.5.x → 0.6.0** (earlier in May 2026): native support for **merged-cell
-headers** in source workbooks (ADR-0033) — common in Korean vendor
-templates (거래명세서, 정산서, 발주서). Merged data rows broadcast the
-master value to slaves (ADR-0035). A normative feature-preservation
-matrix covers images, conditional formatting, named ranges, freeze
-pane, sheet protection, data validation, and cell comments (ADR-0036).
-0.6.0 adds **`@group` / `@subtotal`** for interleaved per-customer /
-per-month subtotal rows in a single data block (ADR-0038) — the
-canonical pattern in Korean B2B invoices. `__inputs__` cells (default,
-label, description, options) are now XTL templates evaluated against a
-constrained context, so host UIs no longer show `{{ TODAY() }}`
-verbatim (ADR-0050).
-
-**Scope (ADR-0043).** XTL's function surface is intentionally smaller
-than Excel's. The rule: a function lives in XTL only when its value
-must be known **before** the workbook is written — for `@filter`,
-`@sort`, `@group`, `@subtotal`, source aggregates, filename / sheet
-patterns, or `__inputs__` defaulting. Anything Excel can compute at
-workbook-open
-time (visual formatting, per-cell math, type tests) goes in a cell
-formula and xl3 preserves it verbatim. See
-[Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md) for the
-side-by-side guide.
-
-**English** · [한국어](./README.ko.md) · [日本語](./README.ja.md) · [简体中文](./README.zh-CN.md) · [繁體中文](./README.zh-TW.md) · [Español](./README.es.md) · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
-
-> **Authoring an xl3 template with an LLM (Claude, GPT, Gemini, Codex, Cursor, …)?** Read [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md) first — it covers the one mistake LLMs reliably make (leftover styled rows polluting every output) and how to avoid it.
+**English** · [한국어](./README.ko.md) · [日本語](./README.ja.md) · [简体中文](./README.zh-CN.md) · [繁體中文](./README.zh-TW.md) · [Español](./README.es.md) · [Website](https://xl3.io) · [Spec](./spec) · [LLM authoring guide](./docs/llm-template-authoring.md) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
 ---
 
-## What is xl3?
-
-xl3 puts Excel transformation logic **inside the Excel file**, not in code.
-Non-developers can read and edit the rules directly, because they are written
-with the same `IF`, `SUM`, and column references they already use day to day.
-Developers ship the engine; the workbook ships the workflow.
-
-The frame is simple:
-
-- Who: operators and analysts who should not need to read code
-- What: recurring Excel transformation rules
-- How: template workbooks, `source_table`, and familiar Excel formulas
+## The split: model writes, runtime renders
 
 ```text
-raw.xlsx        (input data)
-       +
-template.xlsx   (workflow contract)
-       ↓
-result.xlsx     (finished workbook)
+  ┌──────────────────────────┐         ┌──────────────────────────┐
+  │   LLM (Claude / GPT /    │         │         xl3              │
+  │   Gemini / Cursor / …)   │         │  (deterministic runtime) │
+  │                          │         │                          │
+  │   natural language       │         │   template.xlsx          │
+  │   + sample report   ───► │  emits  │   + raw.xlsx             │
+  │                          │         │   → result.xlsx          │
+  │   "monthly settlement    │         │                          │
+  │    by region, with       │         │   same inputs            │
+  │    per-region subtotals" │         │   → same bytes, always   │
+  └──────────────────────────┘         └──────────────────────────┘
+       creative, stochastic                 boring, reproducible
 ```
 
-Developers own the engine in code. Operators use a file-based flow:
-upload raw Excel, choose the approved template, and download the finished
-workbook.
+LLMs are good at *drafting* a report shape from a prompt and a sample.
+They are bad at producing the same `.xlsx` twice, preserving cell styles,
+or honoring "this column must always be SUM-aggregated." xl3 fills that
+gap: the model emits an `.xlsx` template once; every subsequent render
+is a pure function of `(template, data, inputs)`.
 
-Templates are authored **in Excel itself**. Put configuration in `__config__`,
-add expressions such as `{{ [Account] }}` or
-`{{ IF([Renewal] > 10000, "Priority", "Standard") }}` to cells, save the file,
-and run xl3. No macros, no hidden scripts, no vendor cloud.
-
-The template is the handover artifact. It can be reviewed, versioned, archived,
-and passed to the next operator without asking them to read the automation
-code.
+This split is what [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md),
+the 154-fixture conformance corpus, and the intentionally small XTL
+surface are designed for.
 
 ## Quick example
 
@@ -151,47 +80,109 @@ xl3 renders:
 | Acme Logistics | Seoul | 18400 | Mina | Priority |
 | Beta Works | Busan | 7200 | Joon | Standard |
 
-The output is still an `.xlsx` workbook. Template formatting, number formats,
-and merged cells are part of the expected result, not incidental details.
+…with the template's number formats, fills, borders, merged headers, and
+footer rows preserved verbatim. The output is an `.xlsx` you can open in
+Excel, Numbers, or Google Sheets without conversion.
 
 See [`spec/`](./spec) for the language draft and [`conformance/`](./conformance) for the implementation-neutral fixture corpus and runner protocol.
 
-## Why xl3 exists
+## Why the runtime needs to be boring
 
-Many reporting workflows already live in spreadsheets: renewal reports,
-settlement sheets, invoice exports, internal operation templates. They are often
-automated with one-off Python scripts, VBA macros, or service-specific workflow
-steps. That works until the rules are scattered across code, accounts, and
-tribal knowledge.
+The pitch in one paragraph: **anything an LLM emits as Excel is one bad
+token away from a broken report.** Cell formulas drift, a merge moves
+by one row, a currency symbol becomes a literal `$` instead of a number
+format. xl3's job is to make the *execution* of that template predictable
+so the model only has to be right *once*.
 
-xl3 separates the reusable engine from the workbook-specific contract. Keep
-deployment, validation, and integration in code; keep the recurring business
-workflow in the workbook.
+Concretely:
 
-## What xl3 emphasizes
+- **A small, auditable XTL surface (ADR-0043).** A function lives in
+  XTL only when its value must be known *before* the workbook is
+  written. Everything else is a normal Excel cell formula and Excel
+  evaluates it at open time. The smaller the language, the smaller
+  the surface an LLM has to learn — and the smaller the surface to
+  verify. See [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md)
+  for the side-by-side guide.
+- **Conformance corpus.** 154 fixtures, all green, across 70 ADRs.
+  This is the test bed an LLM's template can be checked against
+  *before* it ever touches user data.
+- **One implementation, one spec.** The [`spec/`](./spec) directory
+  defines XTL independently of this TypeScript reference. Ports to
+  other runtimes are welcome; the corpus is the contract.
+- **No macros, no vendor cloud.** A template is an ordinary `.xlsx`.
+  You can diff it, review it in a pull request, and hand it to a
+  human reviewer who has never heard of xl3.
 
-- **A file-based workflow.** Raw `.xlsx` in, approved template in, finished
-  workbook out.
-- **Rules travel with the workbook.** `__config__`, expressions, layout, and
-  output shape are archived in `template.xlsx`.
-- **Developer-owned engine.** Use the TypeScript API in a browser page, internal
-  portal, CLI, or service endpoint.
-- **Excel stays Excel.** Styles, number formats, sheet structure, and merged
-  cells remain part of the result.
-- **No macros or vendor cloud.** Template behavior is explicit workbook
-  content.
+The same properties make xl3 useful even **without an LLM in the loop** —
+operators and analysts can read and edit templates directly, because
+expressions are written with the same `IF`, `SUM`, and column references
+they already use day to day. The AI angle is the wedge; the
+human-readability is the long tail.
+
+## What's new
+
+**0.7.0 → 0.8.0** (May 2026): data blocks are now **column-scoped**
+(ADR-0066). Side summary tables, header columns, and notes off to the
+right keep their original row positions when the block expands. Closes
+two long-standing bugs (#46 duplicate shared-formula owners, #47 stale
+formula references in displaced side cells). Adds the explicit
+**`@block`** directive (ADR-0067) in three forms — bare, column-range,
+and rectangular — plus strict multi-block detection (ADR-0068) on
+sheets that opt in. **Backward compatibility:** templates without
+`@block` and without outside-column content render exactly the same as
+0.7.x; `@block` is opt-in.
+
+**0.6.0 → 0.7.0**: a 15-ADR pass (ADR-0051..0065) closed every remaining
+syntactic-conflict surface — places where a template shape could be
+parsed two ways or silently fall through. The most user-visible change
+is **aggregate argument shape** (ADR-0059): `SUM`, `AVERAGE`, `MIN`,
+`MAX`, and 1-arg `COUNT` now require a single column reference and
+reject per-row arithmetic at parse time. Use a helper column upstream
+or a native `=SUMPRODUCT(...)` in the footer cell (see
+[Cookbook 03](./docs/guides/03-aggregates.md)).
+
+**0.5.x → 0.6.0**: native merged-cell headers (ADR-0033) — common in
+Korean vendor templates (거래명세서, 정산서, 발주서); merged data rows
+broadcast to slaves (ADR-0035); a normative feature-preservation matrix
+covering images, conditional formatting, named ranges, freeze pane,
+sheet protection, data validation, and cell comments (ADR-0036); and
+**`@group` / `@subtotal`** for interleaved per-customer / per-month
+subtotal rows in a single data block (ADR-0038).
+
+[Full changelog →](./CHANGELOG.md)
 
 ## How it compares
 
-| Approach | Best at | Tradeoff |
+| Approach | Best at | Tradeoff for AI-driven Excel |
 |---|---|---|
-| **xl3** | Building file-based Excel transformation engines where operators upload raw `.xlsx` files and download finished workbooks. Workflow rules stay in `template.xlsx`. | Alpha. The XTL surface is intentionally small and still evolving. |
-| Python/VBA scripts | Fast one-off automation close to existing spreadsheets. | Business rules tend to live in code or one maintainer's memory, which makes handoff and review harder. |
-| Power Query / Office Scripts / Power Automate | Microsoft 365 workflows, data shaping, and action automation inside the Excel ecosystem. | Strong platform fit, but workflows can become tenant/account/environment-specific rather than portable workbook artifacts. |
-| Spreadsheet SDKs such as SheetJS, ExcelJS, Aspose.Cells | Low-level or full-featured programmatic workbook generation. | Developers usually encode report-specific rules directly in application code. |
-| Template/report engines such as JXLS or xltpl | Server-side report generation from spreadsheet-like templates. | Useful, but often language/runtime-specific; operator-facing browser flows and workbook-level handoff are not the main product shape. |
-| Document-generation SaaS such as Plumsail, Formstack, Conga | Managed document workflows, integrations, approvals, and delivery. | Rules live in a vendor service, not primarily in a portable workbook template you can self-host. |
-| LLM-based spreadsheet generation | Ad hoc exploration and drafting. | Not a deterministic transformation contract for recurring operational work. |
+| **xl3** | The execution half of an LLM-authored Excel pipeline. The model writes the template once; xl3 renders deterministically every run. | Alpha; one maintainer; the XTL surface is intentionally small and still evolving until 1.0. |
+| Direct LLM → xlsx (function-call to a spreadsheet SDK) | Quick exploratory drafting, one-off charts. | Each render is non-deterministic; styles, number formats, and totals drift between runs even with temperature 0. |
+| SheetJS / ExcelJS / openpyxl | Low-level workbook generation. | The model has to learn the entire SDK surface and re-emit it every render; the "template" is application code, not a portable file. |
+| Power Query / Office Scripts / Power Automate | Microsoft 365 workflows, data shaping, and action automation inside the Excel ecosystem. | Tenant-bound; the workflow rules don't travel with the workbook. |
+| JXLS / xltpl / jsreport xlsx recipe | Server-side report generation from spreadsheet-like templates. | Useful, but predate the LLM-as-author model; their template DSLs are larger and not designed to be model-emittable. |
+| Document-generation SaaS (Plumsail, Conga, Formstack) | Managed document workflows, integrations, approvals, and delivery. | Rules live in a vendor service, not a portable workbook you can hand an LLM to edit. |
+
+## Status, honestly
+
+- **Alpha.** XTL is at spec 0.1 (draft). Behavior is stabilizing fast
+  but the language surface can still change before 1.0.
+- **One maintainer.** No production reference cases yet. If you ship
+  xl3 in something that matters, the most valuable contribution right
+  now is *telling me about it* — open an issue or a discussion thread,
+  even a thumbs-up that "this worked for us." That feedback is the
+  difference between a 1.0 that fits real workflows and one that fits
+  my imagination of them.
+- **70 ADRs, 154 conformance fixtures, all green.** The language surface
+  is stable enough for early adopters.
+- **MIT, TypeScript, Node ≥ 20.12, runs in browsers.**
+
+See [ROADMAP.md](./ROADMAP.md) for what's blocking 1.0 and
+[GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made.
+
+> **Authoring an xl3 template with an LLM?** Read
+> [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md)
+> first — it covers the one mistake LLMs reliably make (leftover styled
+> rows polluting every output) and how to avoid it.
 
 ## Install
 

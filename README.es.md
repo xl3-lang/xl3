@@ -1,142 +1,56 @@
 # xl3
 
-> Conversión de Excel, dentro de Excel, con sintaxis de Excel.
-> Mantén las reglas recurrentes de transformación de Excel dentro de las plantillas del libro.
+> **El runtime determinista para informes de Excel generados por IA.**
+> Un LLM escribe la plantilla, xl3 renderiza el libro — misma plantilla,
+> mismos datos, mismos bytes, siempre.
 
 **Estado:** alpha · XTL spec 0.1 (draft) · son posibles cambios incompatibles hasta 1.0
 
-xl3 es técnicamente capaz pero se encuentra en su fase formativa como
-proyecto: un único mantenedor, ningún caso de referencia en producción
-todavía, gobernanza recién documentada. La pasada de auditoría cerró
-todas las superficies de paso silencioso, y la pasada de bloques de
-datos de 0.8.0 deja el corpus en 70 ADR y 154 fixtures, todo en verde,
-por lo que la superficie del lenguaje es lo bastante estable para los
-primeros adoptantes. **El feedback de los primeros adoptantes
-es ahora mismo la contribución más útil** — consulta
-[ROADMAP.md](./ROADMAP.md) para ver qué bloquea la 1.0 y
-[GOVERNANCE.md](./GOVERNANCE.md) para entender cómo se toman las
-decisiones.
+xl3 es un pequeño motor en TypeScript que convierte un par de archivos
+`.xlsx` — una **plantilla** (el contrato del flujo) y **datos en
+bruto** — en un libro terminado y formateado. La plantilla es en sí
+misma un `.xlsx`, redactado en Excel con fórmulas conocidas más un
+pequeño lenguaje de expresiones embebido (XTL) para aquello que debe
+conocerse *antes* de escribir el libro: filtros, grupos, agregaciones,
+patrones de nombre de archivo.
 
-**Novedades de 0.7.0 → 0.8.0** (mayo de 2026): los bloques de datos
-ahora tienen **alcance por columna** (ADR-0066). El rango de columnas
-del bloque es la envolvente de todos los marcadores `{{ ... }}`,
-extendida a través de las celdas no vacías adyacentes. Las celdas
-fuera de ese rango — tablas de resumen laterales, columnas de
-cabecera, notas a la derecha — conservan su fila original cuando el
-bloque se expande, así que dejan de ser empujadas por el crecimiento
-de filas. Esto cierra dos errores arrastrados: #46 (pérdida
-silenciosa de datos por propietarios duplicados de fórmulas
-compartidas) y #47 (referencias de fórmula obsoletas en celdas
-laterales desplazadas).
+Encaja bien cuando la plantilla la genera, edita o revisa un LLM
+(Claude, GPT, Gemini, Cursor, Codex, …) y necesitas que la capa de
+**ejecución** se mantenga determinista, inspeccionable y verificable —
+no "una IA adivinando las celdas de salida".
 
-0.8.0 también añade la directiva explícita **`@block`** (ADR-0067),
-en tres formas:
-
-- `{{ @block }}` — sin argumentos; el rango de columnas se infiere
-  de los marcadores
-- `{{ @block A:D }}` — rango de columnas explícito
-- `{{ @block A2:D7 }}` — rectángulo fila × columna explícito
-
-Las hojas que optan por `@block` activan la detección estricta de
-multi-bloque (ADR-0068): todos los marcadores `[Column]` deben estar
-dentro de algún bloque y los rectángulos no pueden solaparse. Las
-demás directivas se enlazan por proximidad al bloque solapado más
-cercano (ADR-0069). **Compatibilidad hacia atrás:** las plantillas
-sin `@block` y sin contenido fuera de las columnas del bloque se
-renderizan exactamente igual que en 0.7.x; `@block` es opcional
-(opt-in).
-
-**Novedades de 0.6.0 → 0.7.0** (mayo de 2026): una pasada de 15 ADR
-(ADR-0051..0065) cerró todas las superficies restantes de conflicto
-sintáctico — lugares donde una misma forma de plantilla podía
-interpretarse de dos maneras o pasar silenciosamente. El cambio más
-visible para los usuarios es **la forma de los argumentos de agregación**
-(ADR-0059): `SUM`, `AVERAGE`, `MIN`, `MAX` y el `COUNT` de un solo
-argumento requieren ahora una única referencia de columna (`[Column]` o
-`Source[Column]`) y rechazan en tiempo de parsing la aritmética por
-fila como `SUM([Qty] * [Price])` con
-`xl3/eval/bad-aggregate-arg` — usa una columna auxiliar aguas arriba o
-una fórmula nativa `=SUMPRODUCT(...)` en la celda de pie de tabla
-(consulta [Cookbook 03](./docs/guides/03-aggregates.md) y
-[Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md)). Los demás ADR
-de comportamiento fijado en 0.7.0 cubren los límites del delimitador de
-literales de cadena (0051), la propagación de errores en texto mixto
-(0053), la resolución de nombres simples (0054), la composición de
-filas `@subtotal` (0058), las reglas del argumento value de `XLOOKUP`
-(0060), las reglas de separación entre default y options en
-`__inputs__` (0062, 0063) y el alcance de la coerción de cadena a
-número (0064).
-
-**0.5.x → 0.6.0** (principios de mayo de 2026): soporte nativo para
-**cabeceras con celdas combinadas** en los libros de origen (ADR-0033)
-— un patrón habitual en las plantillas de proveedores en Corea
-(거래명세서, 정산서, 발주서; equivalentes a albaranes, liquidaciones y
-órdenes de compra). Las filas de datos combinadas propagan el valor
-maestro a las esclavas (ADR-0035). Una matriz normativa de preservación
-de características cubre imágenes, formato condicional, rangos con
-nombre, inmovilización de paneles, protección de hoja, validación de
-datos y comentarios de celda (ADR-0036). 0.6.0 añade **`@group` /
-`@subtotal`** para intercalar filas de subtotal por cliente o por mes
-dentro de un único bloque de datos (ADR-0038) — el patrón canónico en
-facturación B2B en Corea, igualmente aplicable a albaranes y
-liquidaciones en cualquier mercado. Las celdas de `__inputs__` (default,
-label, description, options) son ahora plantillas XTL evaluadas contra
-un contexto restringido, por lo que las UIs anfitrionas ya no muestran
-`{{ TODAY() }}` de forma literal (ADR-0050).
-
-**Alcance (ADR-0043).** La superficie de funciones de XTL es
-intencionadamente más pequeña que la de Excel. La regla: una función
-vive en XTL solo cuando su valor debe conocerse **antes** de que el
-libro se escriba — para `@filter`, `@sort`, `@group`, `@subtotal`,
-agregaciones de origen, patrones de nombre de archivo o de hoja, o
-valores por defecto de `__inputs__`. Todo lo que Excel pueda calcular
-al abrir el libro (formato visual, operaciones aritméticas por celda,
-comprobaciones de tipo) va en una fórmula de celda y xl3 la preserva
-verbatim. Consulta
-[Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md) para la guía
-comparada.
-
-[English](./README.md) · [한국어](./README.ko.md) · [日本語](./README.ja.md) · [简体中文](./README.zh-CN.md) · [繁體中文](./README.zh-TW.md) · **Español** · [Website](https://xl3.io) · [Spec](./spec) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
-
-> **¿Estás creando una plantilla xl3 con un LLM (Claude, GPT, Gemini, Codex, Cursor, …)?** Lee primero [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md) — cubre el único error que los LLM cometen de forma fiable (filas con estilo residual que acaban contaminando cada salida) y cómo evitarlo. El documento se mantiene en inglés, ya que es material de referencia que consulta directamente el LLM.
+[English](./README.md) · [한국어](./README.ko.md) · [日本語](./README.ja.md) · [简体中文](./README.zh-CN.md) · [繁體中文](./README.zh-TW.md) · **Español** · [Website](https://xl3.io) · [Spec](./spec) · [LLM authoring guide](./docs/llm-template-authoring.md) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
 ---
 
-## ¿Qué es xl3?
-
-xl3 coloca la lógica de transformación de Excel **dentro del propio
-archivo de Excel**, no en código. Quienes no programan pueden leer y
-editar las reglas directamente, porque están escritas con los mismos
-`IF`, `SUM` y referencias a columnas que ya usan a diario. El equipo de
-desarrollo entrega el motor; el libro entrega el flujo de trabajo.
-
-El planteamiento es sencillo:
-
-- Quién: equipos operativos y analistas que no deberían tener que leer código
-- Qué: reglas recurrentes de transformación de Excel
-- Cómo: libros de plantilla, `source_table` y fórmulas de Excel ya conocidas
+## La división: el modelo escribe, el runtime renderiza
 
 ```text
-raw.xlsx        (datos de entrada)
-       +
-template.xlsx   (contrato del flujo)
-       ↓
-result.xlsx     (libro terminado)
+  ┌──────────────────────────┐         ┌──────────────────────────┐
+  │   LLM (Claude / GPT /    │         │         xl3              │
+  │   Gemini / Cursor / …)   │         │  (runtime determinista)  │
+  │                          │         │                          │
+  │   lenguaje natural       │         │   template.xlsx          │
+  │   + informe de muestra ► │  emite  │   + raw.xlsx             │
+  │                          │         │   → result.xlsx          │
+  │   "liquidación mensual   │         │                          │
+  │    por región, con       │         │   mismas entradas        │
+  │    subtotales por región"│         │   → mismos bytes, siempre│
+  └──────────────────────────┘         └──────────────────────────┘
+       creativo, estocástico              aburrido, reproducible
 ```
 
-El equipo de desarrollo gestiona el motor en código. Los equipos
-operativos usan un flujo basado en archivos: suben el Excel en bruto,
-eligen la plantilla aprobada y descargan el libro terminado.
+Los LLM son buenos *redactando* la forma de un informe a partir de un
+prompt y una muestra. Son malos produciendo el mismo `.xlsx` dos veces,
+preservando estilos de celda o respetando "esta columna debe agregarse
+siempre con SUM". xl3 cubre ese hueco: el modelo emite una plantilla
+`.xlsx` una sola vez; cada renderización posterior es una función pura
+de `(plantilla, datos, entradas)`.
 
-Las plantillas se redactan **dentro del propio Excel**. Pon la
-configuración en `__config__`, añade expresiones como `{{ [Cliente] }}` o
-`{{ IF([Renovacion] > 10000, "Prioritario", "Estandar") }}` a las
-celdas, guarda el archivo y ejecuta xl3. Sin macros, sin scripts
-ocultos, sin nube de un proveedor.
-
-La plantilla es el artefacto de traspaso. Puede revisarse, versionarse,
-archivarse y pasarse a la siguiente persona sin pedirle que lea el
-código de automatización.
+Esta división es para lo que están diseñados
+[`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md), el
+corpus de conformidad de 154 fixtures, y la superficie de XTL,
+intencionadamente pequeña.
 
 ## Ejemplo rápido
 
@@ -170,53 +84,126 @@ xl3 produce:
 | Logística Acme | Madrid | 18400 | Marta | Prioritario |
 | Beta Talleres | Barcelona | 7200 | Javier | Estandar |
 
-La salida sigue siendo un libro `.xlsx`. El formato de la plantilla,
-los formatos de número y las celdas combinadas forman parte del
-resultado esperado, no son detalles incidentales.
+…con los formatos de número, rellenos, bordes, cabeceras combinadas y
+filas de pie de la plantilla preservados verbatim. La salida es un
+`.xlsx` que puedes abrir en Excel, Numbers o Google Sheets sin
+conversión.
 
 Consulta [`spec/`](./spec) para el borrador del lenguaje y
-[`conformance/`](./conformance) para el corpus de fixtures
-independiente de la implementación y el protocolo del runner.
+[`conformance/`](./conformance) para el corpus de fixtures neutral a
+la implementación y el protocolo del runner.
 
-## Por qué existe xl3
+## Por qué el runtime debe ser aburrido
 
-Muchos flujos de generación de informes ya viven en hojas de cálculo:
-informes de renovación, hojas de liquidación, exportaciones de
-facturas, plantillas operativas internas. A menudo se automatizan con
-scripts de Python puntuales, macros VBA o pasos específicos de algún
-producto de flujos de trabajo. Eso funciona hasta que las reglas
-quedan repartidas entre código, cuentas y conocimiento tribal.
+El argumento en un párrafo: **cualquier cosa que un LLM emita como
+Excel está a un token erróneo de convertirse en un informe roto.** Las
+fórmulas de celda se desvían, una combinación se mueve una fila, un
+símbolo de moneda acaba como un `$` literal en vez de un formato de
+número. El trabajo de xl3 es hacer que la *ejecución* de esa plantilla
+sea predecible para que el modelo solo tenga que acertar *una vez*.
 
-xl3 separa el motor reutilizable del contrato específico del libro.
-Mantén el despliegue, la validación y la integración en código; mantén
-el flujo de negocio recurrente en el libro.
+Concretamente:
 
-## Qué prioriza xl3
+- **Una superficie XTL pequeña y auditable (ADR-0043).** Una función
+  vive en XTL solo cuando su valor debe conocerse *antes* de que el
+  libro se escriba. Todo lo demás es una fórmula de celda normal de
+  Excel y Excel la evalúa al abrir el archivo. Cuanto más pequeño es
+  el lenguaje, más pequeña es la superficie que un LLM tiene que
+  aprender — y más pequeña es la superficie que hay que verificar.
+  Consulta [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md)
+  para la guía comparada.
+- **Corpus de conformidad.** 154 fixtures, todos en verde, en 70 ADR.
+  Es el banco de pruebas contra el que se puede comprobar la plantilla
+  de un LLM *antes* de que toque siquiera datos reales.
+- **Una implementación, una spec.** El directorio [`spec/`](./spec)
+  define XTL de forma independiente de esta referencia en TypeScript.
+  Las portabilizaciones a otros runtimes son bienvenidas; el corpus es
+  el contrato.
+- **Sin macros, sin nube de proveedor.** Una plantilla es un `.xlsx`
+  corriente. Puedes diferenciarla, revisarla en una pull request y
+  pasarla a una persona revisora que nunca haya oído hablar de xl3.
 
-- **Un flujo basado en archivos.** `.xlsx` en bruto a la entrada,
-  plantilla aprobada a la entrada, libro terminado a la salida.
-- **Las reglas viajan con el libro.** `__config__`, expresiones,
-  maquetación y forma de salida quedan archivadas en
-  `template.xlsx`.
-- **Motor gestionado por el equipo de desarrollo.** Usa la API de
-  TypeScript desde una página web, un portal interno, una CLI o un
-  endpoint de servicio.
-- **Excel sigue siendo Excel.** Estilos, formatos de número, estructura
-  de hojas y celdas combinadas se mantienen en el resultado.
-- **Sin macros ni nube de proveedor.** El comportamiento de la
-  plantilla es contenido explícito del libro.
+Las mismas propiedades hacen que xl3 sea útil incluso **sin un LLM en
+el flujo** — equipos operativos y analistas pueden leer y editar las
+plantillas directamente, porque las expresiones están escritas con los
+mismos `IF`, `SUM` y referencias a columnas que ya usan a diario. El
+enfoque IA es la cuña; la legibilidad humana es la cola larga.
+
+## Novedades
+
+**0.7.0 → 0.8.0** (mayo de 2026): los bloques de datos ahora tienen
+**alcance por columna** (ADR-0066). Las tablas de resumen laterales,
+las columnas de cabecera y las notas a la derecha conservan su fila
+original cuando el bloque se expande. Cierra dos errores arrastrados
+(#46 propietarios duplicados de fórmulas compartidas, #47 referencias
+de fórmula obsoletas en celdas laterales desplazadas). Añade la
+directiva explícita **`@block`** (ADR-0067) en tres formas — sin
+argumentos, con rango de columnas y rectangular — más la detección
+estricta multi-bloque (ADR-0068) en las hojas que optan por ella.
+**Compatibilidad hacia atrás:** las plantillas sin `@block` y sin
+contenido fuera de las columnas se renderizan exactamente igual que en
+0.7.x; `@block` es opcional (opt-in).
+
+**0.6.0 → 0.7.0**: una pasada de 15 ADR (ADR-0051..0065) cerró todas
+las superficies restantes de conflicto sintáctico — lugares donde una
+misma forma de plantilla podía interpretarse de dos maneras o pasar
+silenciosamente. El cambio más visible para los usuarios es **la forma
+de los argumentos de agregación** (ADR-0059): `SUM`, `AVERAGE`, `MIN`,
+`MAX` y el `COUNT` de un solo argumento requieren ahora una única
+referencia de columna y rechazan en tiempo de parsing la aritmética
+por fila. Usa una columna auxiliar aguas arriba o una
+`=SUMPRODUCT(...)` nativa en la celda de pie de tabla (consulta
+[Cookbook 03](./docs/guides/03-aggregates.md)).
+
+**0.5.x → 0.6.0**: soporte nativo para cabeceras con celdas
+combinadas (ADR-0033) — habitual en plantillas de proveedores en
+Corea (거래명세서, 정산서, 발주서); las filas de datos combinadas
+propagan el valor a las esclavas (ADR-0035); una matriz normativa de
+preservación de características que cubre imágenes, formato
+condicional, rangos con nombre, inmovilización de paneles, protección
+de hoja, validación de datos y comentarios de celda (ADR-0036); y
+**`@group` / `@subtotal`** para intercalar filas de subtotal por
+cliente o por mes dentro de un único bloque de datos (ADR-0038).
+
+[Changelog completo →](./CHANGELOG.md)
 
 ## Cómo se compara
 
-| Enfoque | Mejor en | Contrapartida |
+| Enfoque | Mejor en | Contrapartida para Excel impulsado por IA |
 |---|---|---|
-| **xl3** | Construir motores de transformación de Excel basados en archivos donde el equipo operativo sube `.xlsx` en bruto y descarga libros terminados. Las reglas del flujo quedan en `template.xlsx`. | Alpha. La superficie de XTL es intencionadamente pequeña y todavía está evolucionando. |
-| Scripts en Python o VBA | Automatización puntual y rápida cerca de las hojas de cálculo ya existentes. | Las reglas de negocio tienden a vivir en el código o en la cabeza de un único mantenedor, lo que dificulta el traspaso y la revisión. |
-| Power Query / Office Scripts / Power Automate | Flujos en Microsoft 365, modelado de datos y automatización de acciones dentro del ecosistema de Excel. | Buen encaje con la plataforma, pero los flujos pueden acabar siendo específicos de un tenant, cuenta o entorno, en lugar de artefactos portables a nivel de libro. |
-| SDKs de hoja de cálculo como SheetJS, ExcelJS o Aspose.Cells | Generación programática de libros, de bajo nivel o con funcionalidad completa. | Quien desarrolla suele acabar codificando las reglas específicas del informe directamente en el código de la aplicación. |
-| Motores de plantilla o informes como JXLS o xltpl | Generación de informes en servidor a partir de plantillas tipo hoja de cálculo. | Útiles, pero a menudo atados a un lenguaje o runtime concreto; los flujos en navegador orientados al equipo operativo y el traspaso a nivel de libro no son la forma principal del producto. |
-| SaaS de generación de documentos como Plumsail, Formstack o Conga | Flujos documentales gestionados, integraciones, aprobaciones y entrega. | Las reglas viven en el servicio del proveedor, no principalmente en una plantilla de libro portable que puedas autoalojar. |
-| Generación de hojas con LLM | Exploración ad hoc y elaboración de borradores. | No es un contrato determinista de transformación para trabajo operativo recurrente. |
+| **xl3** | La mitad de ejecución de un pipeline de Excel redactado por un LLM. El modelo escribe la plantilla una vez; xl3 renderiza de forma determinista en cada ejecución. | Alpha; un único mantenedor; la superficie de XTL es intencionadamente pequeña y sigue evolucionando hasta 1.0. |
+| LLM directo → xlsx (function-call a un SDK de hoja de cálculo) | Borradores exploratorios rápidos, gráficos puntuales. | Cada renderización es no determinista; estilos, formatos de número y totales se desvían entre ejecuciones incluso con temperatura 0. |
+| SheetJS / ExcelJS / openpyxl | Generación de libros a bajo nivel. | El modelo tiene que aprender toda la superficie del SDK y re-emitirla en cada renderización; la "plantilla" es código de aplicación, no un archivo portable. |
+| Power Query / Office Scripts / Power Automate | Flujos en Microsoft 365, modelado de datos y automatización de acciones dentro del ecosistema de Excel. | Atados al tenant; las reglas del flujo no viajan con el libro. |
+| JXLS / xltpl / receta xlsx de jsreport | Generación de informes en servidor a partir de plantillas tipo hoja de cálculo. | Útiles, pero anteriores al modelo del LLM como autor; sus DSL de plantilla son más amplios y no están diseñados para ser emitidos por un modelo. |
+| SaaS de generación de documentos (Plumsail, Conga, Formstack) | Flujos documentales gestionados, integraciones, aprobaciones y entrega. | Las reglas viven en el servicio del proveedor, no en un libro portable que puedas entregar a un LLM para editar. |
+
+## Estado, sin maquillaje
+
+- **Alpha.** XTL está en spec 0.1 (draft). El comportamiento se está
+  estabilizando rápido pero la superficie del lenguaje todavía puede
+  cambiar antes de 1.0.
+- **Un único mantenedor.** Ningún caso de referencia en producción
+  todavía. Si llevas xl3 a algo que importe, la contribución más
+  valiosa ahora mismo es *contármelo* — abre un issue o un hilo de
+  discusión, incluso un "pulgar arriba" diciendo "esto nos funcionó".
+  Ese feedback es la diferencia entre una 1.0 que encaje con flujos
+  reales y otra que encaje con mi imaginación de ellos.
+- **70 ADR, 154 fixtures de conformidad, todo en verde.** La
+  superficie del lenguaje es lo bastante estable para los primeros
+  adoptantes.
+- **MIT, TypeScript, Node ≥ 20.12, funciona en navegadores.**
+
+Consulta [ROADMAP.md](./ROADMAP.md) para ver qué bloquea la 1.0 y
+[GOVERNANCE.md](./GOVERNANCE.md) para entender cómo se toman las
+decisiones.
+
+> **¿Estás redactando una plantilla xl3 con un LLM?** Lee primero
+> [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md)
+> — cubre el único error que los LLM cometen de forma fiable (filas
+> con estilo residual que acaban contaminando cada salida) y cómo
+> evitarlo. El documento se mantiene intencionadamente en inglés, ya
+> que es material de referencia que consulta directamente el LLM.
 
 ## Instalación
 

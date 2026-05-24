@@ -6,7 +6,7 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
-## [0.8.0] - 2026-05-24
+## [0.8.0] - 2026-05-23
 
 0.8.0 batch. Two-part data-block design overhaul: Phase 1 (ADR-0066)
 moves the block's row-wide assumption to column-scoped detection
