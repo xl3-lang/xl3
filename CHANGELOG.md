@@ -6,6 +6,13 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+> **G3 1.0-gate window active.** The error-code catalog (see
+> `src/__tests__/error-codes.test.ts`) must remain unchanged for 30
+> days before G3 ticks. Clock reset 2026-05-23 by 0.8.0's 4 new
+> codes; earliest tick 2026-06-22. Only critical-bug-fix code
+> additions allowed during the 0.8.x window — any other addition or
+> rename resets the clock and pushes 0.9-rc.
+
 ## [0.8.0] - 2026-05-23
 
 0.8.0 batch. Two-part data-block design overhaul: Phase 1 (ADR-0066)

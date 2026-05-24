@@ -10,6 +10,12 @@ import { xtlError, isXtlError, type XtlErrorCode } from '../error-codes.js';
 // different semantics fails CI. New codes are append-only; adding
 // one to this list at the same time as defining it in
 // error-codes.ts is the expected workflow.
+//
+// G3 1.0 GATE — catalog must remain unchanged for 30 days before
+// G3 ticks. Clock reset 2026-05-23 by 0.8.0's 4 new codes; earliest
+// tick 2026-06-22. During 0.8.x, only critical-bug-fix codes may be
+// added — any addition or rename pushes the 0.9-rc target. See
+// ROADMAP.md "0.8.x — Sociological gates (in flight)".
 const EXPECTED_CODES: XtlErrorCode[] = [
   'xl3/cell/formula-no-cache',
   'xl3/eval/arity-mismatch',

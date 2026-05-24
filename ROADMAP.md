@@ -36,9 +36,9 @@ milestone. Per-version step plan below references these gates by ID.
 
 | ID | Gate | Owner | Artifact | Pass criterion | Fallback | Target |
 |----|------|-------|----------|----------------|----------|--------|
-| G1 | Conformance corpus ≥ 140 | maintainer | `conformance/fixtures/` | `ls conformance/fixtures/ \| wc -l` ≥ 140 | — | DONE (145 today; ADR-0066 added 141-145 in 0.7.x post-0.7.0; ADRs 0051-0065 reserved further numbers for 0.7.1) |
+| G1 | Conformance corpus ≥ 140 | maintainer | `conformance/fixtures/` | `ls conformance/fixtures/ \| wc -l` ≥ 140 | — | DONE (154 fixtures as of 0.8.0; ADR-0066 added 141-145 mid-0.7.x; ADRs 0067-0069 added 146-155 in 0.8.0; ADRs 0051-0065 reserved further numbers for 0.7.1) |
 | G2 | Stage 2 OOXML canonicalization spec'd | maintainer | ADR-0006 + canonicalizer in src/ | covered by fixtures 024-027, 093 + ADR-0006 amendment | — | DONE |
-| G3 | Error code catalog frozen | maintainer | `src/__tests__/error-codes.test.ts` snapshot | catalog snapshot unchanged for 30 days | — | 0.9-rc (clock reset 2026-05-24 by 0.8.0's 4 new codes: `xl3/expression/bracket-outside-block`, `xl3/block/overlap`, `xl3/block/empty-table`, `xl3/directive/orphan`) |
+| G3 | Error code catalog frozen | maintainer | `src/__tests__/error-codes.test.ts` snapshot | catalog snapshot unchanged for 30 days | — | 0.9-rc (clock reset 2026-05-23 by 0.8.0's 4 new codes: `xl3/expression/bracket-outside-block`, `xl3/block/overlap`, `xl3/block/empty-table`, `xl3/directive/orphan` — earliest tick: 2026-06-22 if no further changes) |
 | G4 | JXLS boundary published | maintainer | ADR-0048 | file exists, references PORTERS_GUIDE | — | DONE |
 | G5 | Deferred-impl ADRs landed | maintainer | ADR-0038 impl ✅ (2026-05-18) + ADR-0040 PE impl | ADR-0038 portion shipped (fixtures 132-135); ADR-0040 CF/DV range-extension still pending | — | 0.6 (partial) / 0.7.1 |
 | G6 | Public API surface frozen | maintainer | `src/__tests__/api-surface.test.ts` snapshot | snapshot unchanged for 30 days | — | 0.9-rc |
@@ -50,7 +50,7 @@ milestone. Per-version step plan below references these gates by ID.
 | G12 | Undecided behavior pinned (pivot/sparkline/ListObject/page break) | maintainer | conformance fixtures + ADR per item | each: fixture pinning current behavior OR ADR explicitly deferring to 1.x | defer to 1.1 with ADR | 0.7.1 / 0.8 |
 | G13 | Second-language impl validation | external (xl3-py) | `conformance/reports/*.json` | xl3-py passes ≥ 80% Stage 1 OR ≥ 80% Stage 2, OR documented 50% skeleton in another language (Rust/Go/Java) within 12 months of all other gates closing | accept single-impl 1.0 via public ADR amending GOVERNANCE | 0.7.x–0.8.x |
 | G14 | External-contributor ADR | external | `spec/decisions/NNNN-*.md` | ≥ 1 ADR with non-maintainer as Author (≥ 60% of Context/Decision sections by line count) | 18-month time-box, then: ≥ 2 external-authored cookbook recipes OR ≥ 5 external-authored conformance fixtures | 0.8 |
-| G15 | Production reference case | external (with maintainer help) | `IMPLEMENTATIONS.md` "Production users" row | ≥ 1 named user, satisfied by EITHER (a) external company with permission to list, OR (b) the maintainer's own employer running xl3 in scheduled production with a public case study | — | 0.8 |
+| G15 | Production reference case | external (with maintainer help) | `IMPLEMENTATIONS.md` "Production users" row | ≥ 1 named user, satisfied by EITHER (a) external company with permission to list, OR (b) the maintainer's own employer running xl3 in scheduled production with a public case study | — | 0.8.x — **in progress** via maintainer's-employer production deployment (template setup complete 2026-05-24; live usage starts week of 2026-05-26); G15 ticks when the case study is published |
 | G16 | Maintainer set widening | maintainer | `GOVERNANCE.md` | ≥ 2 people with accept/reject rights for ADRs and impl PRs | explicit accept of single-maintainer 1.0 governance shape via amendment to GOVERNANCE | 0.8 |
 | G17 | Korean cookbook i18n complete | maintainer | `website/i18n/ko/.../guides/` | all cookbook recipes have Korean translation | — | DONE (0.6) |
 | G18 | Production use case in README | maintainer | `README.md` | replaces "alpha" status with concrete production reference (tied to G15) | — | 1.0 (with G15) |
@@ -164,14 +164,57 @@ Progress toward: **G12** (undecided behavior pinning), **G13**
 Relabel: `alpha` → `beta` after G8 publishes and xl3-py reaches
 ≥ 50% Stage 1.
 
-### 0.8.0 — Sociological gates
+### 0.8.0 — Data-block design overhaul (shipped 2026-05-23)
 
-Gates closed: **G14** (external ADR), **G15** (production case),
-**G16** (maintainer widening or explicit single-maintainer
-acceptance), **G19** (migration guide), **G20** completion.
+Theme: unplanned in the original gate table. A late-0.7.x audit of
+data-block expansion surfaced two structural bugs (#46 duplicate
+shared-formula owners, #47 stale references in displaced side
+cells) that needed a column-scoped rewrite before further
+feature work. The original "0.8.0 = sociological gates" plan
+moved to **0.8.x patches**.
 
-This milestone is the long one. The plan is to ship 0.8.x patches
-during the recruitment period rather than wait silently.
+Shipped artifacts:
+
+- **ADR-0066** — data block is now column-scoped: bounding box of
+  `{{...}}` markers extended through contiguous non-empty cells.
+  Cells outside that range keep their row positions when the block
+  expands. Closes #46 / #47 by construction.
+- **ADR-0067** — explicit `@block` directive in three forms (bare,
+  `A:D` column range, `A2:D7` rectangle).
+- **ADR-0068** — strict multi-block detection on opt-in sheets:
+  every `[Column]` marker must sit inside some block; block
+  rectangles cannot overlap.
+- **ADR-0069** — per-block directive scoping by proximity:
+  `@filter`/`@sort`/`@top`/`@source`/`@join`/`@group`/`@repeat`
+  attach to the closest data block whose column range overlaps the
+  directive's column.
+- 4 new error codes: `xl3/expression/bracket-outside-block`,
+  `xl3/block/overlap`, `xl3/block/empty-table`,
+  `xl3/directive/orphan`.
+- Conformance fixtures 146-155 (multi-block, side-by-side blocks
+  with different sources, vertically stacked blocks, per-block
+  filter, per-block `ROW()` scoping, the three new error paths).
+
+Gate impact:
+
+- **G1** — corpus 139 → 154 fixtures. Floor cleared again.
+- **G3** — 30-day error-code-catalog clock **reset 2026-05-23** by
+  the 4 new codes. Earliest tick: 2026-06-22, contingent on no
+  further code additions/renames during 0.8.x patches.
+
+### 0.8.x — Sociological gates (in flight)
+
+Gates closed: **G14** (external ADR), **G15** (production case;
+in progress via maintainer's-employer deployment), **G16**
+(maintainer widening or explicit single-maintainer acceptance),
+**G19** (migration guide), **G20** completion.
+
+The plan is to ship 0.8.x patches during the recruitment period
+rather than wait silently. **G3 quarter discipline:** while
+sociological gates run, error code additions and renames are
+deferred — any addition resets the G3 clock and pushes the 0.9-rc
+target. Only critical-bug-fix codes (per the definition in this
+file) may be added during the 0.8.x window.
 
 ### 0.9.0-rc.x — Pre-1.0 freeze
 
