@@ -327,16 +327,16 @@
     "description": "The title of the tag list page"
   },
   "homepage.hero.kicker": {
-    "message": "Excel-to-Excel・ロジックはワークブックの中に",
+    "message": "AI が書くテンプレート・決定論的ランタイム",
     "description": "Hero section eyebrow / kicker line"
   },
   "homepage.hero.title": {
-    "message": "Excel の変換ロジックを、Excel ファイルの中に。",
+    "message": "AI が生成する Excel レポートのための、決定論的ランタイム。",
     "description": "Hero section H1"
   },
   "homepage.hero.lead": {
-    "message": "xl3 は変換ルールをコードではなく {template} の中に置きます。開発者ではないメンバーもファイルを開いてルールを直接編集でき、しかも普段使い慣れた {if}、{sum}、列参照と同じ書き方で記述できます。",
-    "description": "Hero section lead paragraph; {template}, {if}, {sum} are inline code refs"
+    "message": "LLM(Claude、GPT、Gemini、Cursor、Codex、…)が {template} を一度だけ書きます。xl3 は ({template} + {raw}) を純粋関数として {result} に変換します ── 同じ入力なら、毎回同じバイト列を返します。",
+    "description": "Hero section lead paragraph; {template}, {raw}, {result} are inline code refs"
   },
   "homepage.hero.cta.try": {
     "message": "コンバーターを試す",
@@ -483,19 +483,27 @@
     "description": "Link label inside the conformance fact sentence"
   },
   "homepage.comparison.xl3.bestAt": {
-    "message": "ファイルベースの Excel 変換。ワークフロールールは template.xlsx の中にとどまります。",
+    "message": "LLM が著者となる Excel パイプラインの「実行」側。モデルが一度テンプレートを書き、xl3 が毎回決定論的にレンダリングします。",
     "description": "Comparison row xl3 — best at"
   },
   "homepage.comparison.xl3.tradeoff": {
-    "message": "アルファ版。XTL の機能セットは意図的に小さく、まだ進化中です。",
+    "message": "アルファ版。メンテナーは 1 名。XTL の機能セットは意図的に小さく、1.0 までは進化が続きます。",
     "description": "Comparison row xl3 — tradeoff"
+  },
+  "homepage.comparison.llmDirect.bestAt": {
+    "message": "ざっくりとした探索的なドラフト作成や、使い切りのチャート生成。",
+    "description": "Comparison row direct LLM xlsx — best at"
+  },
+  "homepage.comparison.llmDirect.tradeoff": {
+    "message": "レンダリングごとに非決定論的になります。temperature を 0 にしても、スタイル・数値書式・合計が実行のたびにブレます。",
+    "description": "Comparison row direct LLM xlsx — tradeoff"
   },
   "homepage.comparison.scripts.bestAt": {
     "message": "既存スプレッドシートに寄り添った、素早い使い捨て自動化。",
     "description": "Comparison row Python/VBA — best at"
   },
   "homepage.comparison.scripts.tradeoff": {
-    "message": "ルールがコードや担当者の頭の中に閉じこもり、引き継ぎやレビューが難しくなります。",
+    "message": "ルールはコードや担当者 1 人の頭の中にあり、モデルが出力できる成果物にはなりません。",
     "description": "Comparison row Python/VBA — tradeoff"
   },
   "homepage.comparison.powerQuery.bestAt": {
@@ -503,15 +511,15 @@
     "description": "Comparison row Power Query — best at"
   },
   "homepage.comparison.powerQuery.tradeoff": {
-    "message": "ワークフローがテナントやアカウントに紐づき、持ち運べるワークブック成果物にはなりません。",
+    "message": "テナントに縛られ、ワークフローのルールがワークブックと一緒に持ち運べません。",
     "description": "Comparison row Power Query — tradeoff"
   },
   "homepage.comparison.sdk.bestAt": {
-    "message": "低レベル、あるいはフル機能のプログラムによるワークブック生成。",
+    "message": "低レベルなワークブック生成。",
     "description": "Comparison row spreadsheet SDKs — best at"
   },
   "homepage.comparison.sdk.tradeoff": {
-    "message": "レポートのルールはたいていアプリケーションコードに直書きされます。",
+    "message": "モデルが SDK の API 表面すべてを覚え、レンダリングのたびに再生成する必要があります。「テンプレート」はアプリケーションコードであり、持ち運べるファイルではありません。",
     "description": "Comparison row spreadsheet SDKs — tradeoff"
   },
   "homepage.comparison.templateEngines.bestAt": {
@@ -519,24 +527,16 @@
     "description": "Comparison row template engines — best at"
   },
   "homepage.comparison.templateEngines.tradeoff": {
-    "message": "言語・ランタイム依存になりがちで、運用担当向けの体験は重視されません。",
+    "message": "LLM が著者となるモデルが登場する以前の設計で、テンプレート DSL も大きく、モデルが出力する前提では作られていません。",
     "description": "Comparison row template engines — tradeoff"
   },
   "homepage.comparison.docgen.bestAt": {
-    "message": "マネージド型のドキュメントワークフロー、各種連携、承認フロー。",
+    "message": "マネージド型のドキュメントワークフロー、連携、承認、配信。",
     "description": "Comparison row doc-gen SaaS — best at"
   },
   "homepage.comparison.docgen.tradeoff": {
-    "message": "ルールがベンダーのサービス側にあり、持ち運べるセルフホスト可能なテンプレートにはなりません。",
+    "message": "ルールはベンダーのサービスの中にあり、LLM に渡して編集してもらえる持ち運び可能なワークブックにはなりません。",
     "description": "Comparison row doc-gen SaaS — tradeoff"
-  },
-  "homepage.comparison.llm.bestAt": {
-    "message": "アドホックな探索やドラフト作成。",
-    "description": "Comparison row LLM — best at"
-  },
-  "homepage.comparison.llm.tradeoff": {
-    "message": "繰り返しの運用業務に必要な、決定論的な変換契約にはなりません。",
-    "description": "Comparison row LLM — tradeoff"
   },
   "homepage.comparison.kicker": {
     "message": "他の選択肢との比較",
@@ -583,11 +583,11 @@
     "description": "Bottom CTA link — Porter's Guide"
   },
   "homepage.layout.title": {
-    "message": "xl3 — Excel の変換ロジックを、Excel ファイルの中に",
+    "message": "xl3 — AI が生成する Excel レポートのための決定論的ランタイム",
     "description": "HTML <title> for the landing page"
   },
   "homepage.layout.description": {
-    "message": "xl3 は Excel の変換ロジックをコードではなく Excel ファイルの中に置きます。開発者ではないメンバーも、すでに知っている Excel と同じ構文でルールを読み書きできます。",
+    "message": "xl3 は AI が生成する Excel レポートのための決定論的ランタイムです。LLM が一度だけテンプレートを書けば、xl3 が (template, data) を純粋関数としてワークブックにレンダリングし、同じ入力なら毎回同じバイト列を返します。",
     "description": "HTML <meta description> for the landing page"
   },
   "try.status.idle": {

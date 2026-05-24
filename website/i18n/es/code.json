@@ -327,16 +327,16 @@
     "description": "The title of the tag list page"
   },
   "homepage.hero.kicker": {
-    "message": "Excel a Excel · la lógica vive dentro del libro",
+    "message": "Plantillas escritas por IA · runtime determinista",
     "description": "Hero section eyebrow / kicker line"
   },
   "homepage.hero.title": {
-    "message": "Lógica de transformación de Excel, dentro del archivo de Excel.",
+    "message": "El runtime determinista para informes de Excel generados por IA.",
     "description": "Hero section H1"
   },
   "homepage.hero.lead": {
-    "message": "xl3 coloca las reglas de transformación dentro de {template}, no en el código. Las personas no técnicas pueden abrirlo y editar las reglas directamente: están escritas con las mismas funciones {if}, {sum} y referencias de columna que ya usan a diario.",
-    "description": "Hero section lead paragraph; {template}, {if}, {sum} are inline code refs"
+    "message": "Un LLM (Claude, GPT, Gemini, Cursor, Codex, …) escribe {template} una sola vez; xl3 convierte ({template} + {raw}) en {result} como una función pura: con las mismas entradas, los mismos bytes, siempre.",
+    "description": "Hero section lead paragraph; {template}, {raw}, {result} are inline code refs"
   },
   "homepage.hero.cta.try": {
     "message": "Probar el conversor",
@@ -483,19 +483,27 @@
     "description": "Link label inside the conformance fact sentence"
   },
   "homepage.comparison.xl3.bestAt": {
-    "message": "Transformación de Excel basada en archivos. Las reglas del flujo de trabajo viven en template.xlsx.",
+    "message": "La mitad de ejecución de un pipeline de Excel escrito por un LLM. El modelo escribe la plantilla una sola vez; xl3 la renderiza de forma determinista en cada ejecución.",
     "description": "Comparison row xl3 — best at"
   },
   "homepage.comparison.xl3.tradeoff": {
-    "message": "Alfa. La superficie de XTL es deliberadamente pequeña y aún está evolucionando.",
+    "message": "Alfa; un único mantenedor; la superficie de XTL es deliberadamente pequeña y seguirá evolucionando hasta la 1.0.",
     "description": "Comparison row xl3 — tradeoff"
+  },
+  "homepage.comparison.llmDirect.bestAt": {
+    "message": "Borradores exploratorios rápidos y gráficos puntuales.",
+    "description": "Comparison row direct LLM xlsx — best at"
+  },
+  "homepage.comparison.llmDirect.tradeoff": {
+    "message": "Cada render es no determinista; los estilos, los formatos de número y los totales se desplazan entre ejecuciones, incluso con temperature 0.",
+    "description": "Comparison row direct LLM xlsx — tradeoff"
   },
   "homepage.comparison.scripts.bestAt": {
     "message": "Automatización puntual y rápida, cercana a las hojas de cálculo existentes.",
     "description": "Comparison row Python/VBA — best at"
   },
   "homepage.comparison.scripts.tradeoff": {
-    "message": "Las reglas viven en el código o en la memoria de quien lo mantiene; el traspaso y la revisión son más complicados.",
+    "message": "Las reglas viven en el código o en la memoria de quien lo mantiene; no son un artefacto que un modelo pueda emitir.",
     "description": "Comparison row Python/VBA — tradeoff"
   },
   "homepage.comparison.powerQuery.bestAt": {
@@ -503,15 +511,15 @@
     "description": "Comparison row Power Query — best at"
   },
   "homepage.comparison.powerQuery.tradeoff": {
-    "message": "Los flujos quedan atados a un tenant o cuenta, en lugar de ser artefactos de libro portátiles.",
+    "message": "Atados a un tenant; las reglas del flujo no viajan con el libro.",
     "description": "Comparison row Power Query — tradeoff"
   },
   "homepage.comparison.sdk.bestAt": {
-    "message": "Generación programática de libros de bajo nivel o con funcionalidades completas.",
+    "message": "Generación de libros a bajo nivel.",
     "description": "Comparison row spreadsheet SDKs — best at"
   },
   "homepage.comparison.sdk.tradeoff": {
-    "message": "Los desarrolladores suelen codificar las reglas de los informes directamente en el código de la aplicación.",
+    "message": "El modelo tiene que aprender toda la superficie del SDK y volver a emitirla en cada render; la \"plantilla\" es código de aplicación, no un archivo portátil.",
     "description": "Comparison row spreadsheet SDKs — tradeoff"
   },
   "homepage.comparison.templateEngines.bestAt": {
@@ -519,24 +527,16 @@
     "description": "Comparison row template engines — best at"
   },
   "homepage.comparison.templateEngines.tradeoff": {
-    "message": "Suelen estar atados a un lenguaje o runtime; los flujos orientados al operador no son el foco.",
+    "message": "Son anteriores al modelo de LLM-como-autor; sus DSL de plantilla son más amplias y no están pensadas para que las emita un modelo.",
     "description": "Comparison row template engines — tradeoff"
   },
   "homepage.comparison.docgen.bestAt": {
-    "message": "Flujos de documentos gestionados, integraciones y aprobaciones.",
+    "message": "Flujos de documentos gestionados, integraciones, aprobaciones y entrega.",
     "description": "Comparison row doc-gen SaaS — best at"
   },
   "homepage.comparison.docgen.tradeoff": {
-    "message": "Las reglas viven en un servicio del proveedor, no en una plantilla portátil y autoalojable.",
+    "message": "Las reglas viven en un servicio del proveedor, no en un libro portátil que puedas darle a un LLM para que lo edite.",
     "description": "Comparison row doc-gen SaaS — tradeoff"
-  },
-  "homepage.comparison.llm.bestAt": {
-    "message": "Exploración y borradores ad hoc.",
-    "description": "Comparison row LLM — best at"
-  },
-  "homepage.comparison.llm.tradeoff": {
-    "message": "No es un contrato de transformación determinista para el trabajo operativo recurrente.",
-    "description": "Comparison row LLM — tradeoff"
   },
   "homepage.comparison.kicker": {
     "message": "Cómo se compara",
@@ -583,11 +583,11 @@
     "description": "Bottom CTA link — Porter's Guide"
   },
   "homepage.layout.title": {
-    "message": "xl3 — Lógica de transformación de Excel, dentro del archivo de Excel",
+    "message": "xl3 — Runtime determinista para informes de Excel generados por IA",
     "description": "HTML <title> for the landing page"
   },
   "homepage.layout.description": {
-    "message": "xl3 coloca la lógica de transformación de Excel dentro del archivo de Excel, no en el código. Las personas no técnicas pueden leer y editar las reglas directamente, con la misma sintaxis de Excel que ya conocen.",
+    "message": "xl3 es un runtime determinista para informes de Excel generados por IA. Un LLM escribe la plantilla una sola vez; xl3 renderiza el libro a partir de (template, data) como una función pura: con las mismas entradas, los mismos bytes, siempre.",
     "description": "HTML <meta description> for the landing page"
   },
   "try.status.idle": {

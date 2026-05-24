@@ -327,16 +327,16 @@
     "description": "The title of the tag list page"
   },
   "homepage.hero.kicker": {
-    "message": "Excel 轉 Excel · 轉換邏輯留在活頁簿裡",
+    "message": "AI 撰寫範本 · 確定性 Runtime",
     "description": "Hero section eyebrow / kicker line"
   },
   "homepage.hero.title": {
-    "message": "把 Excel 的轉換邏輯,留在 Excel 檔案裡。",
+    "message": "為 AI 生成的 Excel 報表打造的確定性 Runtime。",
     "description": "Hero section H1"
   },
   "homepage.hero.lead": {
-    "message": "xl3 把轉換規則寫進 {template},而不是寫進程式碼。非開發人員可以直接打開檔案修改規則——使用的是他們每天都在用的 {if}、{sum} 與欄位參照。",
-    "description": "Hero section lead paragraph; {template}, {if}, {sum} are inline code refs"
+    "message": "由 LLM(Claude、GPT、Gemini、Cursor、Codex……)一次寫好 {template};xl3 把 ({template} + {raw}) 當成純函式轉換為 {result}——相同輸入,每次都產出相同的位元組。",
+    "description": "Hero section lead paragraph; {template}, {raw}, {result} are inline code refs"
   },
   "homepage.hero.cta.try": {
     "message": "試用轉換器",
@@ -483,19 +483,27 @@
     "description": "Link label inside the conformance fact sentence"
   },
   "homepage.comparison.xl3.bestAt": {
-    "message": "以檔案為核心的 Excel 轉換。工作流程規則留在 template.xlsx 裡。",
+    "message": "由 LLM 主筆的 Excel 流程中,負責執行的那一半。模型只需寫一次範本,xl3 每次執行都以確定性方式渲染。",
     "description": "Comparison row xl3 — best at"
   },
   "homepage.comparison.xl3.tradeoff": {
-    "message": "Alpha 階段。XTL 的語法面刻意精簡,且仍在演進。",
+    "message": "Alpha 階段;僅有一位維護者;XTL 的語法面刻意精簡,直到 1.0 之前仍在演進。",
     "description": "Comparison row xl3 — tradeoff"
+  },
+  "homepage.comparison.llmDirect.bestAt": {
+    "message": "快速的探索性草稿、一次性圖表。",
+    "description": "Comparison row direct LLM xlsx — best at"
+  },
+  "homepage.comparison.llmDirect.tradeoff": {
+    "message": "每次渲染都是非確定性的;即使 temperature 設為 0,樣式、數值格式與小計都會在不同次執行間飄移。",
+    "description": "Comparison row direct LLM xlsx — tradeoff"
   },
   "homepage.comparison.scripts.bestAt": {
     "message": "貼近既有試算表、快速完成的一次性自動化。",
     "description": "Comparison row Python/VBA — best at"
   },
   "homepage.comparison.scripts.tradeoff": {
-    "message": "規則藏在程式碼或某位維護者的腦袋裡;交接與審閱都更困難。",
+    "message": "規則藏在程式碼或某位維護者的記憶中;並非模型可以輸出的成品。",
     "description": "Comparison row Python/VBA — tradeoff"
   },
   "homepage.comparison.powerQuery.bestAt": {
@@ -503,15 +511,15 @@
     "description": "Comparison row Power Query — best at"
   },
   "homepage.comparison.powerQuery.tradeoff": {
-    "message": "工作流程綁定租戶或帳號,而非可攜的活頁簿產出物。",
+    "message": "綁定租戶;工作流程規則無法隨活頁簿一起攜帶。",
     "description": "Comparison row Power Query — tradeoff"
   },
   "homepage.comparison.sdk.bestAt": {
-    "message": "底層或功能完整的程式化活頁簿產生。",
+    "message": "底層的活頁簿產生。",
     "description": "Comparison row spreadsheet SDKs — best at"
   },
   "homepage.comparison.sdk.tradeoff": {
-    "message": "開發者通常會把報表規則直接寫死在應用程式碼裡。",
+    "message": "模型必須學會整個 SDK 的 API 表面,並在每次渲染時重新輸出程式碼;這裡的「範本」是應用程式碼,而非可攜的檔案。",
     "description": "Comparison row spreadsheet SDKs — tradeoff"
   },
   "homepage.comparison.templateEngines.bestAt": {
@@ -519,24 +527,16 @@
     "description": "Comparison row template engines — best at"
   },
   "homepage.comparison.templateEngines.tradeoff": {
-    "message": "經常綁定特定語言或 Runtime;面向營運人員的流程並非設計重點。",
+    "message": "誕生於 LLM 主筆模式之前;其範本 DSL 較大,並非為模型輸出而設計。",
     "description": "Comparison row template engines — tradeoff"
   },
   "homepage.comparison.docgen.bestAt": {
-    "message": "託管式文件工作流程、整合與簽核。",
+    "message": "託管式文件工作流程、整合、簽核與交付。",
     "description": "Comparison row doc-gen SaaS — best at"
   },
   "homepage.comparison.docgen.tradeoff": {
-    "message": "規則被綁在供應商服務裡,不是可攜、可自架的範本。",
+    "message": "規則被綁在供應商服務裡,而不是一份可以交給 LLM 編輯的、可攜的活頁簿。",
     "description": "Comparison row doc-gen SaaS — tradeoff"
-  },
-  "homepage.comparison.llm.bestAt": {
-    "message": "臨時探索與草稿撰寫。",
-    "description": "Comparison row LLM — best at"
-  },
-  "homepage.comparison.llm.tradeoff": {
-    "message": "對於例行營運工作,缺乏確定性的轉換合約。",
-    "description": "Comparison row LLM — tradeoff"
   },
   "homepage.comparison.kicker": {
     "message": "與其他做法相比",
@@ -583,11 +583,11 @@
     "description": "Bottom CTA link — Porter's Guide"
   },
   "homepage.layout.title": {
-    "message": "xl3 — 把 Excel 的轉換邏輯,留在 Excel 檔案裡",
+    "message": "xl3 — 為 AI 生成的 Excel 報表打造的確定性 Runtime",
     "description": "HTML <title> for the landing page"
   },
   "homepage.layout.description": {
-    "message": "xl3 把 Excel 的轉換邏輯放進 Excel 檔案裡,而不是程式碼裡。非開發人員可以直接讀取與修改規則,使用的就是他們早已熟悉的 Excel 語法。",
+    "message": "xl3 是為 AI 生成的 Excel 報表所打造的確定性 Runtime。LLM 只需寫一次範本,xl3 就把 (template, data) 當成純函式渲染成活頁簿——相同輸入,每次都產出相同的位元組。",
     "description": "HTML <meta description> for the landing page"
   },
   "try.status.idle": {

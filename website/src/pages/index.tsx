@@ -35,26 +35,26 @@ function Hero() {
         <div className={styles.heroCopy}>
           <p className={styles.kicker}>
             <Translate id="homepage.hero.kicker" description="Hero section eyebrow / kicker line">
-              Excel-to-Excel · logic stays in the workbook
+              AI-authored templates · deterministic runtime
             </Translate>
           </p>
           <h1 className={styles.heroTitle}>
             <Translate id="homepage.hero.title" description="Hero section H1">
-              Excel transformation logic, inside the Excel file.
+              The deterministic runtime for AI-generated Excel reports.
             </Translate>
           </h1>
           <p className={styles.heroLead}>
             <Translate
               id="homepage.hero.lead"
-              description="Hero section lead paragraph; {template}, {if}, {sum} are inline code refs"
+              description="Hero section lead paragraph; {template}, {raw}, {result} are inline code refs"
               values={{
                 template: <code>template.xlsx</code>,
-                if: <code>IF</code>,
-                sum: <code>SUM</code>,
+                raw: <code>raw.xlsx</code>,
+                result: <code>result.xlsx</code>,
               }}
             >
               {
-                'xl3 puts the transformation rules inside {template}, not in code. Non-developers can open it and edit the rules directly — they are written with the same {if}, {sum}, and column references they already use day to day.'
+                'An LLM (Claude, GPT, Gemini, Cursor, Codex, …) writes the {template} once; xl3 turns ({template} + {raw}) into {result} as a pure function — same inputs, same bytes, every time.'
               }
             </Translate>
           </p>
@@ -410,13 +410,79 @@ function useComparisons() {
       tool: 'xl3',
       bestAt: translate({
         id: 'homepage.comparison.xl3.bestAt',
-        message: 'File-based Excel transformation. Workflow rules stay in template.xlsx.',
+        message: 'The execution half of an LLM-authored Excel pipeline. Model writes the template once; xl3 renders deterministically every run.',
         description: 'Comparison row xl3 — best at',
       }),
       tradeoff: translate({
         id: 'homepage.comparison.xl3.tradeoff',
-        message: 'Alpha. XTL surface is intentionally small and still evolving.',
+        message: 'Alpha; one maintainer; XTL surface is intentionally small and still evolving until 1.0.',
         description: 'Comparison row xl3 — tradeoff',
+      }),
+    },
+    {
+      tool: 'Direct LLM → xlsx (spreadsheet SDK function call)',
+      bestAt: translate({
+        id: 'homepage.comparison.llmDirect.bestAt',
+        message: 'Quick exploratory drafting, one-off charts.',
+        description: 'Comparison row direct LLM xlsx — best at',
+      }),
+      tradeoff: translate({
+        id: 'homepage.comparison.llmDirect.tradeoff',
+        message: 'Each render is non-deterministic; styles, number formats, and totals drift between runs even with temperature 0.',
+        description: 'Comparison row direct LLM xlsx — tradeoff',
+      }),
+    },
+    {
+      tool: 'Spreadsheet SDKs (SheetJS, ExcelJS, openpyxl)',
+      bestAt: translate({
+        id: 'homepage.comparison.sdk.bestAt',
+        message: 'Low-level workbook generation.',
+        description: 'Comparison row spreadsheet SDKs — best at',
+      }),
+      tradeoff: translate({
+        id: 'homepage.comparison.sdk.tradeoff',
+        message: 'The model must learn the entire SDK surface and re-emit it each render; the "template" is application code, not a portable file.',
+        description: 'Comparison row spreadsheet SDKs — tradeoff',
+      }),
+    },
+    {
+      tool: 'Power Query / Office Scripts',
+      bestAt: translate({
+        id: 'homepage.comparison.powerQuery.bestAt',
+        message: 'Microsoft 365 workflows and data shaping inside the Excel ecosystem.',
+        description: 'Comparison row Power Query — best at',
+      }),
+      tradeoff: translate({
+        id: 'homepage.comparison.powerQuery.tradeoff',
+        message:
+          'Tenant-bound; the workflow rules do not travel with the workbook.',
+        description: 'Comparison row Power Query — tradeoff',
+      }),
+    },
+    {
+      tool: 'Template engines (JXLS, xltpl, jsreport xlsx)',
+      bestAt: translate({
+        id: 'homepage.comparison.templateEngines.bestAt',
+        message: 'Server-side report generation from spreadsheet-like templates.',
+        description: 'Comparison row template engines — best at',
+      }),
+      tradeoff: translate({
+        id: 'homepage.comparison.templateEngines.tradeoff',
+        message: 'Predate the LLM-as-author model; their template DSLs are larger and not designed to be model-emittable.',
+        description: 'Comparison row template engines — tradeoff',
+      }),
+    },
+    {
+      tool: 'Doc-gen SaaS (Plumsail, Conga, Formstack)',
+      bestAt: translate({
+        id: 'homepage.comparison.docgen.bestAt',
+        message: 'Managed document workflows, integrations, approvals, and delivery.',
+        description: 'Comparison row doc-gen SaaS — best at',
+      }),
+      tradeoff: translate({
+        id: 'homepage.comparison.docgen.tradeoff',
+        message: 'Rules live in a vendor service, not a portable workbook you can hand an LLM to edit.',
+        description: 'Comparison row doc-gen SaaS — tradeoff',
       }),
     },
     {
@@ -428,74 +494,8 @@ function useComparisons() {
       }),
       tradeoff: translate({
         id: 'homepage.comparison.scripts.tradeoff',
-        message: "Rules live in code or one maintainer's memory; handoff and review are harder.",
+        message: "Rules live in code or one maintainer's memory; not a model-emittable artifact.",
         description: 'Comparison row Python/VBA — tradeoff',
-      }),
-    },
-    {
-      tool: 'Power Query / Office Scripts',
-      bestAt: translate({
-        id: 'homepage.comparison.powerQuery.bestAt',
-        message: 'Microsoft 365 workflows, data shaping inside the Excel ecosystem.',
-        description: 'Comparison row Power Query — best at',
-      }),
-      tradeoff: translate({
-        id: 'homepage.comparison.powerQuery.tradeoff',
-        message:
-          'Workflows become tenant/account-specific rather than portable workbook artifacts.',
-        description: 'Comparison row Power Query — tradeoff',
-      }),
-    },
-    {
-      tool: 'Spreadsheet SDKs (SheetJS, ExcelJS, Aspose)',
-      bestAt: translate({
-        id: 'homepage.comparison.sdk.bestAt',
-        message: 'Low-level or full-featured programmatic workbook generation.',
-        description: 'Comparison row spreadsheet SDKs — best at',
-      }),
-      tradeoff: translate({
-        id: 'homepage.comparison.sdk.tradeoff',
-        message: 'Developers usually encode report rules directly in application code.',
-        description: 'Comparison row spreadsheet SDKs — tradeoff',
-      }),
-    },
-    {
-      tool: 'Template engines (JXLS, xltpl)',
-      bestAt: translate({
-        id: 'homepage.comparison.templateEngines.bestAt',
-        message: 'Server-side report generation from spreadsheet-like templates.',
-        description: 'Comparison row template engines — best at',
-      }),
-      tradeoff: translate({
-        id: 'homepage.comparison.templateEngines.tradeoff',
-        message: 'Often language/runtime-specific; operator-facing flows are not the focus.',
-        description: 'Comparison row template engines — tradeoff',
-      }),
-    },
-    {
-      tool: 'Doc-gen SaaS (Plumsail, Conga)',
-      bestAt: translate({
-        id: 'homepage.comparison.docgen.bestAt',
-        message: 'Managed document workflows, integrations, approvals.',
-        description: 'Comparison row doc-gen SaaS — best at',
-      }),
-      tradeoff: translate({
-        id: 'homepage.comparison.docgen.tradeoff',
-        message: 'Rules live in a vendor service, not a portable self-hostable template.',
-        description: 'Comparison row doc-gen SaaS — tradeoff',
-      }),
-    },
-    {
-      tool: 'LLM-based spreadsheet generation',
-      bestAt: translate({
-        id: 'homepage.comparison.llm.bestAt',
-        message: 'Ad hoc exploration and drafting.',
-        description: 'Comparison row LLM — best at',
-      }),
-      tradeoff: translate({
-        id: 'homepage.comparison.llm.tradeoff',
-        message: 'Not a deterministic transformation contract for recurring operational work.',
-        description: 'Comparison row LLM — tradeoff',
       }),
     },
   ] as const;
@@ -651,13 +651,13 @@ export default function Home() {
     <Layout
       title={translate({
         id: 'homepage.layout.title',
-        message: 'xl3 — Excel transformation logic, inside the Excel file',
+        message: 'xl3 — Deterministic runtime for AI-generated Excel reports',
         description: 'HTML <title> for the landing page',
       })}
       description={translate({
         id: 'homepage.layout.description',
         message:
-          'xl3 puts Excel transformation logic inside the Excel file, not in code. Non-developers can read and edit the rules directly, in the same Excel syntax they already know.',
+          'xl3 is a deterministic runtime for AI-generated Excel reports. An LLM writes the template once; xl3 renders the workbook from (template, data) as a pure function — same inputs, same bytes, every time.',
         description: 'HTML <meta description> for the landing page',
       })}
     >

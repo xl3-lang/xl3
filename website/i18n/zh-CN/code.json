@@ -327,16 +327,16 @@
     "description": "The title of the tag list page"
   },
   "homepage.hero.kicker": {
-    "message": "Excel 到 Excel · 逻辑留在工作簿里",
+    "message": "AI 撰写模板 · 确定性运行时",
     "description": "Hero section eyebrow / kicker line"
   },
   "homepage.hero.title": {
-    "message": "把 Excel 变换逻辑，留在 Excel 文件里。",
+    "message": "面向 AI 生成 Excel 报表的确定性运行时。",
     "description": "Hero section H1"
   },
   "homepage.hero.lead": {
-    "message": "xl3 把转换规则放进 {template}，而不是代码里。非开发人员可以直接打开并编辑规则——它们就是用大家每天都在用的 {if}、{sum} 和列引用写出来的。",
-    "description": "Hero section lead paragraph; {template}, {if}, {sum} are inline code refs"
+    "message": "由 LLM（Claude、GPT、Gemini、Cursor、Codex……）一次性写出 {template}；xl3 把 ({template} + {raw}) 当作纯函数转换为 {result}——相同输入，每次都得到完全相同的字节。",
+    "description": "Hero section lead paragraph; {template}, {raw}, {result} are inline code refs"
   },
   "homepage.hero.cta.try": {
     "message": "试用转换器",
@@ -483,19 +483,27 @@
     "description": "Link label inside the conformance fact sentence"
   },
   "homepage.comparison.xl3.bestAt": {
-    "message": "基于文件的 Excel 转换。工作流规则留在 template.xlsx 中。",
+    "message": "LLM 主笔的 Excel 流水线中的“执行”那一半。模型只需写一次模板，xl3 在每次运行时都以确定性方式渲染。",
     "description": "Comparison row xl3 — best at"
   },
   "homepage.comparison.xl3.tradeoff": {
-    "message": "尚处 Alpha 阶段。XTL 表面有意保持精简，仍在演进。",
+    "message": "Alpha 阶段；仅有一位维护者；XTL 表面有意保持精简，在 1.0 之前仍在演进。",
     "description": "Comparison row xl3 — tradeoff"
+  },
+  "homepage.comparison.llmDirect.bestAt": {
+    "message": "快速的探索性起草、一次性图表。",
+    "description": "Comparison row direct LLM xlsx — best at"
+  },
+  "homepage.comparison.llmDirect.tradeoff": {
+    "message": "每次渲染都是非确定性的；即使 temperature 设为 0，样式、数字格式和合计也会在多次运行之间漂移。",
+    "description": "Comparison row direct LLM xlsx — tradeoff"
   },
   "homepage.comparison.scripts.bestAt": {
     "message": "贴近现有电子表格的快速一次性自动化。",
     "description": "Comparison row Python/VBA — best at"
   },
   "homepage.comparison.scripts.tradeoff": {
-    "message": "规则藏在代码或某个维护者的记忆里，移交与评审都更困难。",
+    "message": "规则藏在代码或某个维护者的记忆里；不是模型可以输出的产物。",
     "description": "Comparison row Python/VBA — tradeoff"
   },
   "homepage.comparison.powerQuery.bestAt": {
@@ -503,15 +511,15 @@
     "description": "Comparison row Power Query — best at"
   },
   "homepage.comparison.powerQuery.tradeoff": {
-    "message": "工作流绑定到租户或账号，而不是可携带的工作簿产物。",
+    "message": "绑定到租户；工作流规则无法随工作簿一起携带。",
     "description": "Comparison row Power Query — tradeoff"
   },
   "homepage.comparison.sdk.bestAt": {
-    "message": "底层或功能完备的程序化工作簿生成。",
+    "message": "底层工作簿生成。",
     "description": "Comparison row spreadsheet SDKs — best at"
   },
   "homepage.comparison.sdk.tradeoff": {
-    "message": "开发者通常把报表规则直接写进应用代码。",
+    "message": "模型必须掌握整个 SDK 表面，并在每次渲染时重新生成代码；这里的“模板”是应用代码，而非可携带的文件。",
     "description": "Comparison row spreadsheet SDKs — tradeoff"
   },
   "homepage.comparison.templateEngines.bestAt": {
@@ -519,24 +527,16 @@
     "description": "Comparison row template engines — best at"
   },
   "homepage.comparison.templateEngines.tradeoff": {
-    "message": "往往与特定语言或运行时绑定，且不以业务人员的使用流程为重点。",
+    "message": "诞生于 LLM 主笔模式之前；其模板 DSL 较为庞大，并非为模型输出而设计。",
     "description": "Comparison row template engines — tradeoff"
   },
   "homepage.comparison.docgen.bestAt": {
-    "message": "托管式文档工作流、集成与审批。",
+    "message": "托管式文档工作流、集成、审批与交付。",
     "description": "Comparison row doc-gen SaaS — best at"
   },
   "homepage.comparison.docgen.tradeoff": {
-    "message": "规则放在厂商服务里，而不是一份可自托管、可携带的模板。",
+    "message": "规则放在厂商服务里，而不是一份可以交给 LLM 去编辑的、可携带的工作簿。",
     "description": "Comparison row doc-gen SaaS — tradeoff"
-  },
-  "homepage.comparison.llm.bestAt": {
-    "message": "临时探索与初稿生成。",
-    "description": "Comparison row LLM — best at"
-  },
-  "homepage.comparison.llm.tradeoff": {
-    "message": "不适合作为例行运营工作的确定性转换契约。",
-    "description": "Comparison row LLM — tradeoff"
   },
   "homepage.comparison.kicker": {
     "message": "横向对比",
@@ -583,11 +583,11 @@
     "description": "Bottom CTA link — Porter's Guide"
   },
   "homepage.layout.title": {
-    "message": "xl3——把 Excel 变换逻辑留在 Excel 文件里",
+    "message": "xl3 — 面向 AI 生成 Excel 报表的确定性运行时",
     "description": "HTML <title> for the landing page"
   },
   "homepage.layout.description": {
-    "message": "xl3 把 Excel 转换逻辑放进 Excel 文件，而不是代码里。非开发人员可以用他们熟悉的 Excel 语法直接阅读和编辑规则。",
+    "message": "xl3 是面向 AI 生成 Excel 报表的确定性运行时。LLM 只需写一次模板，xl3 就把 (template, data) 当作纯函数渲染为工作簿——相同输入，每次都得到完全相同的字节。",
     "description": "HTML <meta description> for the landing page"
   },
   "try.status.idle": {
