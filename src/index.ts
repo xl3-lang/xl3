@@ -58,6 +58,7 @@ import {
   wasmPreview,
   wasmReadTemplateInputs,
 } from './wasm-bridge.js';
+import { extractManifest } from './manifest.js';
 
 interface PreparedConversion {
   parsed: ParsedTemplate;
@@ -249,7 +250,20 @@ export async function convert(
     const engine = await tryLoadWasmEngine();
     if (engine) {
       try {
-        return wasmConvert(engine, templateBuffer, sourceBuffer, options?.inputs);
+        // Phase 2 Task 2.2 — extract the style manifest *here* (the
+        // JS shell already owns exceljs) and hand it to the wasm
+        // renderer. parseTemplate is cheap; for the convert hot path
+        // we accept paying it twice (once here, once inside the JS
+        // fallback) rather than reorganising the call sites.
+        const parsed = await parseTemplate(templateBuffer);
+        const manifest = extractManifest(parsed.workbook);
+        return wasmConvert(
+          engine,
+          templateBuffer,
+          sourceBuffer,
+          options?.inputs,
+          manifest,
+        );
       } catch (e) {
         if (engineMode === 'wasm') throw e;
         // 'auto' — silently fall through to the JS path. The wasm

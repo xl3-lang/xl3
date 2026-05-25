@@ -19,6 +19,7 @@
  */
 
 import type { InputSpec, OutputFile, PreviewResult, XtlWarning } from './types.js';
+import type { StyleManifest } from './manifest.js';
 
 /** xl3-wasm's JS surface, as emitted by wasm-bindgen + the bytes API
  *  we land in `xl3-rs/crates/xl3-wasm/src/lib.rs`. */
@@ -28,6 +29,7 @@ interface WasmExports {
     template: Uint8Array,
     data: Uint8Array,
     inputs: Record<string, unknown>,
+    manifest?: StyleManifest,
   ): WasmOutputFile[];
   readTemplateInputs(template: Uint8Array): WasmInputSpec[];
   preview(template: Uint8Array, data: Uint8Array): WasmPreviewResult;
@@ -103,10 +105,11 @@ export function wasmConvert(
   templateBuffer: ArrayBuffer,
   sourceBuffer: ArrayBuffer,
   inputs: Record<string, unknown> | undefined,
+  manifest: StyleManifest | undefined,
 ): OutputFile[] {
   const template = new Uint8Array(templateBuffer);
   const source = new Uint8Array(sourceBuffer);
-  const raw = engine.convert(template, source, inputs ?? {});
+  const raw = engine.convert(template, source, inputs ?? {}, manifest);
   return raw.map((f) => ({
     filename: f.filename,
     // Copy out of the wasm linear-memory slice so the buffer survives
