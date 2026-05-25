@@ -15,6 +15,7 @@ interface RunCli {
   specVersion?: string;
   comparisonStage: ComparisonStage;
   report: 'json' | 'text';
+  engine: 'auto' | 'wasm' | 'js';
 }
 
 interface CanonicalizeCli {
@@ -31,6 +32,7 @@ function parseArgs(argv: string[]): Cli {
     fixtureDir: 'conformance/fixtures',
     comparisonStage: 1,
     report: 'text',
+    engine: 'auto',
   };
   for (const arg of argv.slice(2)) {
     const eq = arg.indexOf('=');
@@ -50,6 +52,12 @@ function parseArgs(argv: string[]): Cli {
       case '--report':
         if (value !== 'json' && value !== 'text') die(`--report must be json or text`);
         cli.report = value;
+        break;
+      case '--engine':
+        if (value !== 'auto' && value !== 'wasm' && value !== 'js') {
+          die(`--engine must be auto, wasm, or js`);
+        }
+        cli.engine = value;
         break;
       default: die(`unknown flag: ${key}`);
     }
@@ -74,7 +82,7 @@ function parseCanonicalizeArgs(args: string[]): CanonicalizeCli {
 
 function die(msg: string): never {
   console.error(`xl3-conformance: ${msg}`);
-  console.error('usage: xl3-conformance [--fixture-dir=<path>] [--filter=<tag>] [--spec-version=<x.y>] [--comparison-stage=1|2] [--report=json|text]');
+  console.error('usage: xl3-conformance [--fixture-dir=<path>] [--filter=<tag>] [--spec-version=<x.y>] [--comparison-stage=1|2] [--report=json|text] [--engine=auto|wasm|js]');
   console.error('       xl3-conformance canonicalize <input.xlsx> [--part=<canonical-part-name>]');
   process.exit(2);
 }
@@ -99,6 +107,7 @@ const report = await runConformance({
   filter: cli.filter,
   specVersion: cli.specVersion,
   comparisonStage: cli.comparisonStage,
+  engine: cli.engine,
 });
 
 if (cli.report === 'json') {

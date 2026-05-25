@@ -83,6 +83,16 @@ export interface RunOptions {
   specVersion?: string;
   /** Compare static output fixtures using Stage 1 cell values or Stage 2 OOXML. */
   comparisonStage?: ComparisonStage;
+  /**
+   * Which render engine to drive `convert()` with. Mirrors
+   * `ConvertOptions.engine`:
+   * - `'auto'` (default) — try wasm, fall back to JS
+   * - `'wasm'` — require xl3-wasm; surfaces engine-availability
+   *   failures as fixture errors. Used by Phase 3 Task 3.2 to
+   *   prove the accelerated path is bit-equivalent on stage-1.
+   * - `'js'` — force the original ExcelJS path.
+   */
+  engine?: 'auto' | 'wasm' | 'js';
 }
 
 export async function runConformance(opts: RunOptions): Promise<ConformanceReport> {
@@ -181,10 +191,11 @@ async function runOne(
         meta.expected_error,
         meta.expected_error_code,
         meta.inputs,
+        opts.engine,
       );
     }
     if (meta.expected_dynamic) {
-      return await runDynamicFixture(name, start, tmpl, data, meta, runnerStart);
+      return await runDynamicFixture(name, start, tmpl, data, meta, runnerStart, opts.engine);
     }
     if (meta.comparison_stage > opts.comparisonStage) {
       return {
@@ -207,6 +218,7 @@ async function runOne(
 
     const out = await convert(toArrayBuffer(tmpl), toArrayBuffer(data), {
       inputs: inputsAsRecord(meta.inputs),
+      engine: opts.engine,
     });
     // Conformance corpus matches against the warning's English
     // `message` for portability; see XtlWarning shape in types.ts.
@@ -275,6 +287,7 @@ async function runDynamicFixture(
   data: Buffer,
   meta: FixtureMeta,
   runnerStart: Date,
+  engine: 'auto' | 'wasm' | 'js' | undefined,
 ): Promise<FixtureResult> {
   if (meta.expected_dynamic !== 'utc_today') {
     return {
@@ -297,6 +310,7 @@ async function runDynamicFixture(
   try {
     const out = await convert(toArrayBuffer(tmpl), toArrayBuffer(data), {
       inputs: inputsAsRecord(meta.inputs),
+      engine,
     });
     if (out.length !== 1) {
       return {
@@ -350,10 +364,12 @@ async function runExpectedErrorFixture(
   expectedError: string,
   expectedCode: string | undefined,
   inputs: FixtureInputAssignment[],
+  engine: 'auto' | 'wasm' | 'js' | undefined,
 ): Promise<FixtureResult> {
   try {
     await convert(toArrayBuffer(tmpl), toArrayBuffer(data), {
       inputs: inputsAsRecord(inputs),
+      engine,
     });
     return {
       fixture: name,
