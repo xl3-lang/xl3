@@ -27,6 +27,21 @@ export interface InputSpec {
 export interface ConvertOptions {
   /** Host-provided values for inputs declared in the template's `_inputs` sheet. */
   inputs?: Record<string, unknown>;
+  /**
+   * Which render engine to use.
+   * - `'auto'` (default) — try `xl3-wasm` if it's installed and
+   *   instantiable; otherwise fall back to the ExcelJS path. Falls
+   *   through to ExcelJS on any wasm-side error too.
+   * - `'wasm'` — require `xl3-wasm`; throw if it's not available or
+   *   the call errors. Useful in tests that need to assert the wasm
+   *   path is the one being exercised.
+   * - `'js'` — force the original ExcelJS path. Useful as a kill
+   *   switch when a wasm regression is suspected.
+   *
+   * @stable Frozen at 1.0 — `auto` is the default and SHOULD remain
+   *   so for forward compatibility.
+   */
+  engine?: 'auto' | 'wasm' | 'js';
 }
 
 // ADR-0012: an external data source declaration parsed from

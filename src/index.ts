@@ -52,6 +52,12 @@ export { toTemplateModel } from './template-model.js';
 export { xtlError, isXtlError } from './error-codes.js';
 export type { XtlError, XtlErrorCode } from './error-codes.js';
 import { xtlError } from './error-codes.js';
+import {
+  tryLoadWasmEngine,
+  wasmConvert,
+  wasmPreview,
+  wasmReadTemplateInputs,
+} from './wasm-bridge.js';
 
 interface PreparedConversion {
   parsed: ParsedTemplate;
@@ -234,6 +240,28 @@ export async function convert(
   sourceBuffer: ArrayBuffer,
   options?: ConvertOptions,
 ): Promise<OutputFile[]> {
+  // Phase 2 Task 2.4 — wasm acceleration path. Engine selection:
+  //   'auto' (default): try wasm, fall back to JS on any error
+  //   'wasm': require wasm
+  //   'js': force JS path
+  const engineMode = options?.engine ?? 'auto';
+  if (engineMode !== 'js') {
+    const engine = await tryLoadWasmEngine();
+    if (engine) {
+      try {
+        return wasmConvert(engine, templateBuffer, sourceBuffer, options?.inputs);
+      } catch (e) {
+        if (engineMode === 'wasm') throw e;
+        // 'auto' — silently fall through to the JS path. The wasm
+        // engine throws on features outside its support matrix
+        // (manifest preservation, exotic OOXML constructs).
+      }
+    } else if (engineMode === 'wasm') {
+      throw new Error(
+        'engine: "wasm" requested but the optional `xl3-wasm` dependency could not be loaded',
+      );
+    }
+  }
   const prepared = await prepareConversion(templateBuffer, sourceBuffer, options);
   return renderPreparedConversion(prepared);
 }
@@ -261,6 +289,21 @@ export async function preview(
   sourceBuffer: ArrayBuffer,
   options?: ConvertOptions,
 ): Promise<PreviewResult> {
+  // preview() only deviates from the JS path when the caller pins
+  // engine: 'wasm'. The JS path produces the canonical warnings the
+  // type contract promises (`xl3w/parser/missing-column` etc.) which
+  // the wasm bridge cannot reconstruct from its abbreviated surface.
+  if (options?.engine === 'wasm') {
+    const engine = await tryLoadWasmEngine();
+    if (!engine) {
+      throw new Error(
+        'engine: "wasm" requested but the optional `xl3-wasm` dependency could not be loaded',
+      );
+    }
+    const partial = wasmPreview(engine, templateBuffer, sourceBuffer);
+    const inputs = wasmReadTemplateInputs(engine, templateBuffer);
+    return { ...partial, inputs, warnings: [] };
+  }
   const prepared = await prepareConversion(templateBuffer, sourceBuffer, options);
   return buildPreviewFromPrepared(prepared);
 }
@@ -282,7 +325,24 @@ export async function preview(
  */
 export async function readTemplateInputs(
   templateBuffer: ArrayBuffer,
+  options?: { engine?: 'auto' | 'wasm' | 'js' },
 ): Promise<InputSpec[]> {
+  const engineMode = options?.engine ?? 'auto';
+  if (engineMode !== 'js') {
+    const engine = await tryLoadWasmEngine();
+    if (engine) {
+      try {
+        return wasmReadTemplateInputs(engine, templateBuffer);
+      } catch (e) {
+        if (engineMode === 'wasm') throw e;
+        // auto: fall through
+      }
+    } else if (engineMode === 'wasm') {
+      throw new Error(
+        'engine: "wasm" requested but the optional `xl3-wasm` dependency could not be loaded',
+      );
+    }
+  }
   const parsed = await parseTemplate(templateBuffer);
   return parsed.inputs;
 }
