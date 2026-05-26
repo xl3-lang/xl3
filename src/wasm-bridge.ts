@@ -75,10 +75,29 @@ export async function tryLoadWasmEngine(): Promise<WasmExports | null> {
       const specifier = 'xl3-wasm';
       const mod = (await import(/* @vite-ignore */ specifier)) as WasmExports;
       if (typeof mod.default === 'function') {
-        // wasm-pack web target needs an init() call before any export
-        // becomes usable. In Node, the default import auto-resolves
-        // from the package directory; in browsers, it auto-fetches.
-        await mod.default();
+        // wasm-pack web target's init() auto-fetches the .wasm in
+        // browsers but cannot fetch file:// URLs in Node. Detect Node
+        // and feed the wasm bytes from the filesystem; in browsers
+        // leave the arg-less init() path alone.
+        const isNode =
+          typeof process !== 'undefined' &&
+          !!(process as { versions?: { node?: string } }).versions?.node;
+        if (isNode) {
+          const [{ readFile }, { fileURLToPath }, { createRequire }] = await Promise.all([
+            import('node:fs/promises'),
+            import('node:url'),
+            import('node:module'),
+          ]);
+          const require = createRequire(import.meta.url);
+          const jsPath = require.resolve('xl3-wasm');
+          const wasmPath = jsPath.replace(/xl3_wasm\.js$/, 'xl3_wasm_bg.wasm');
+          const wasmBytes = await readFile(
+            wasmPath.startsWith('file://') ? fileURLToPath(wasmPath) : wasmPath,
+          );
+          await mod.default({ module_or_path: wasmBytes });
+        } else {
+          await mod.default();
+        }
       }
       cached = mod;
     } catch {
@@ -109,7 +128,7 @@ export function wasmConvert(
 ): OutputFile[] {
   const template = new Uint8Array(templateBuffer);
   const source = new Uint8Array(sourceBuffer);
-  const raw = engine.convert(template, source, inputs ?? {}, manifest);
+  const raw = invokeWithCode(() => engine.convert(template, source, inputs ?? {}, manifest));
   return raw.map((f) => ({
     filename: f.filename,
     // Copy out of the wasm linear-memory slice so the buffer survives
@@ -117,6 +136,29 @@ export function wasmConvert(
     data: f.data.slice().buffer,
     warnings: f.warnings.map(mapWasmWarning),
   }));
+}
+
+/**
+ * Invoke a wasm-bindgen call and re-throw any error with an attached
+ * `.code` matching xl3 (TS)'s `XtlError`. The Rust core formats its
+ * errors as `[xl3/<ns>/<name>] <message>`; we strip the prefix and
+ * lift the bracketed code onto the JS Error so conformance runners
+ * (ADR-0015) and host catch sites can branch on it without parsing
+ * the message themselves.
+ */
+function invokeWithCode<T>(fn: () => T): T {
+  try {
+    return fn();
+  } catch (e) {
+    if (e instanceof Error) {
+      const m = /^\[(xl3\/[a-z0-9/_-]+)\]\s*(.*)$/i.exec(e.message);
+      if (m) {
+        (e as Error & { code?: string }).code = m[1];
+        e.message = m[2];
+      }
+    }
+    throw e;
+  }
 }
 
 export function wasmReadTemplateInputs(
