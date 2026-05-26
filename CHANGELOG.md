@@ -8,10 +8,62 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 > **G3 1.0-gate window active.** The error-code catalog (see
 > `src/__tests__/error-codes.test.ts`) must remain unchanged for 30
-> days before G3 ticks. Clock reset 2026-05-23 by 0.8.0's 4 new
-> codes; earliest tick 2026-06-22. Only critical-bug-fix code
-> additions allowed during the 0.8.x window — any other addition or
-> rename resets the clock and pushes 0.9-rc.
+> days before G3 ticks. Clock reset 2026-05-26 by 0.9.0-rc.1's
+> acceleration surface additions; earliest tick 2026-06-25.
+
+## [0.9.0-rc.1] - 2026-05-26
+
+0.9.0 release candidate. Adds the `xl3-wasm` acceleration path as an
+opt-in dependency: when the WebAssembly package is installed, the
+engine swaps in `xl3-rs`'s Rust core for the heavy parts of `convert`
+/ `preview`, falling back to the existing ExcelJS path otherwise. The
+acceleration arrived in pieces (Phase 2 / 3 of `xl3-rs`'s `PLAN.md`);
+this is the first xl3 cut that exposes it on the npm surface.
+
+External users opting in to the acceleration:
+
+```bash
+npm install @jinyoung4478/xl3@rc xl3-wasm
+```
+
+The conformance corpus, error-code catalog, and template DSL are
+unchanged from 0.8.0 — the 30-day G3 clock had been ticking since
+2026-05-23 and resets here to 2026-06-25 because the new
+`engine` option counts as an addition.
+
+### Added
+
+- **`engine: 'auto' | 'wasm' | 'js'` option** on `convert` and
+  `preview` (default `'auto'`). `'auto'` tries the optional
+  `xl3-wasm` dependency and silently falls back to the JS engine if
+  it can't be loaded; `'wasm'` requires it and throws if missing;
+  `'js'` skips the detection entirely. The wasm dependency is
+  declared as an optional dynamic `import()` so consumers who don't
+  install it keep the existing zero-overhead JS path.
+- **`extractManifest(workbook)`** (`src/manifest.ts`) — produces the
+  JSON style manifest the wasm engine consumes. Captures fonts,
+  fills, alignment, per-cell numFmt, merge ranges, and column widths
+  from the ExcelJS workbook so xl3-rs can reapply them on the Rust
+  side without re-reading the template.
+- **Conformance runner `--engine=auto|wasm|js` flag** (
+  `xl3-conformance` CLI). Lets the runner exercise either path
+  against the same fixtures — used by xl3-rs to measure parity
+  (currently 119 / 148 fixtures pass under `--engine=wasm`).
+
+### Fixed
+
+- **wasm-bridge: Node-host init.** The web-target wasm-pack glue's
+  auto-init calls `fetch(file://…)`, which Node refuses. The bridge
+  now detects Node, reads the `.wasm` bytes via
+  `require.resolve('xl3-wasm')`, and feeds them into
+  `default({ module_or_path: bytes })`. Browser path unchanged.
+- **wasm-bridge: error-code propagation.** The Rust core formats
+  errors as `[xl3/<ns>/<name>] message` when an `XtlError` is
+  raised, but the wasm boundary previously only carried the
+  string — JS callers got a bare `Error` with no `.code`. The
+  bridge now strips the bracket prefix and stamps the code back
+  onto the thrown JS `Error` so the conformance runner and host
+  catch sites can branch on it (ADR-0015).
 
 ## [0.8.0] - 2026-05-23
 
