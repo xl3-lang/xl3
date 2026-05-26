@@ -24,6 +24,40 @@ npm run examples:build
 npm run examples:run
 ```
 
+## Running with the wasm engine (0.9.0-rc.1+)
+
+`convert()` accepts an `engine` option that routes the render through
+[`xl3-wasm`](https://www.npmjs.com/package/xl3-wasm) when installed.
+Install once:
+
+```bash
+npm install xl3-wasm
+```
+
+Then pick the path per call:
+
+```ts
+import { convert } from '@jinyoung4478/xl3';
+
+const tpl = await readFile('examples/01-basic-renewal-report/template.xlsx');
+const data = await readFile('examples/01-basic-renewal-report/data.xlsx');
+
+// Default 'auto' — tries wasm, falls back to JS if the dep is missing
+// or the template uses a construct the wasm engine doesn't handle yet.
+await convert(toAB(tpl), toAB(data));
+
+// Force the wasm path (throws if unsupported)
+await convert(toAB(tpl), toAB(data), { engine: 'wasm' });
+
+// Force the JS path
+await convert(toAB(tpl), toAB(data), { engine: 'js' });
+```
+
+The wasm engine currently passes 119 / 148 Stage 1 conformance fixtures;
+remaining gaps (HYPERLINK, shared formulas, ~20 validation sites) fall
+back to the JS engine automatically under `'auto'`. See
+[`IMPLEMENTATIONS.md`](../IMPLEMENTATIONS.md) for the Rust impl's row.
+
 ## Why these and not more?
 
 Examples cover composed shapes, not unit behavior. The conformance corpus

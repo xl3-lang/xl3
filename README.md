@@ -121,6 +121,31 @@ human-readability is the long tail.
 
 ## What's new
 
+**0.8.0 → 0.9.0-rc.1** (May 2026): opt-in **Rust + WebAssembly
+acceleration**. Install [`xl3-wasm`](https://www.npmjs.com/package/xl3-wasm)
+alongside `@jinyoung4478/xl3@rc` and `convert` / `preview` route their
+heavy work — XLSX parsing, XTL evaluation, output serialization, deflate —
+through [`xl3-core`](https://crates.io/crates/xl3-core) (calamine +
+rust_xlsxwriter). The JS path stays the canonical reference; the wasm
+path falls back to it automatically on any unsupported template
+construct or missing dependency.
+
+```bash
+npm install @jinyoung4478/xl3@rc xl3-wasm
+```
+
+```ts
+await convert(templateBuffer, dataBuffer, { engine: 'wasm' });
+// or 'auto' (default) / 'js'
+```
+
+Measured speedups (Node 22, Apple Silicon, May 2026): 36k-row multi-axis
+report **2.5 s → ~0.3 s**, 70 MB / 6 M cells round-trip **67 s → ~5.8 s**
+warm. Conformance under `--engine=wasm`: **119 / 148** Stage 1 fixtures
+pass — see [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) for the Rust
+impl's row. `latest` stays on 0.8.0 until the 7-day rc soak completes
+(earliest 2026-06-02).
+
 **0.7.0 → 0.8.0** (May 2026): data blocks are now **column-scoped**
 (ADR-0066). Side summary tables, header columns, and notes off to the
 right keep their original row positions when the block expands. Closes
@@ -190,6 +215,12 @@ See [ROADMAP.md](./ROADMAP.md) for what's blocking 1.0 and
 npm install @jinyoung4478/xl3
 ```
 
+Optional acceleration (rc):
+
+```bash
+npm install @jinyoung4478/xl3@rc xl3-wasm
+```
+
 ## Usage
 
 ```ts
@@ -203,6 +234,23 @@ const outputs = await convert(templateBuffer, dataBuffer);
 ```
 
 Runs in browsers and Node (≥20.12).
+
+### Acceleration (opt-in)
+
+`convert` and `preview` accept an `engine` option that selects the
+rendering backend:
+
+```ts
+await convert(templateBuffer, dataBuffer, { engine: 'auto' });
+//   'auto' (default): try xl3-wasm if installed, fall back to JS silently
+//   'wasm'          : require xl3-wasm; throw if missing or unsupported feature
+//   'js'            : force the ExcelJS path
+```
+
+Install [`xl3-wasm`](https://www.npmjs.com/package/xl3-wasm) alongside
+xl3 to activate the auto path; the JS engine remains the canonical
+reference, and the wasm engine falls back to it for any template it
+can't yet handle. Available in 0.9.0-rc.1 onwards.
 
 ### Browser via `<script>` (no bundler)
 

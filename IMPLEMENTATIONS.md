@@ -4,7 +4,8 @@ Implementations of the [XTL spec](./spec/). xl3 is the reference implementation.
 
 | Language | Repo | Package | Spec version | Conformance | Notes |
 |---|---|---|---|---|---|
-| TypeScript | [`jinyoung4478/xl3`](https://github.com/jinyoung4478/xl3) | [`@jinyoung4478/xl3`](https://www.npmjs.com/package/@jinyoung4478/xl3) | XTL 0.1 (draft) | reference; **139/139** fixtures pass (133 Stage 1 + 6 Stage 2 only) | Browser + Node ≥ 20.12; runner via `npx xl3-conformance`; 3-TZ matrix in CI |
+| TypeScript | [`jinyoung4478/xl3`](https://github.com/jinyoung4478/xl3) | [`@jinyoung4478/xl3`](https://www.npmjs.com/package/@jinyoung4478/xl3) | XTL 0.1 (draft) | reference; **154/154** fixtures pass (148 Stage 1 + 6 Stage 2 only) | Browser + Node ≥ 20.12; runner via `npx xl3-conformance`; 3-TZ matrix in CI |
+| Rust (WASM) | [`jinyoung4478/xl3-rs`](https://github.com/jinyoung4478/xl3-rs) | [`xl3-core`](https://crates.io/crates/xl3-core) + [`xl3-wasm`](https://www.npmjs.com/package/xl3-wasm) | XTL 0.1 (draft) | **partial 119/148** Stage 1 | Pure-Rust acceleration core (calamine + rust_xlsxwriter) wrapped for browser / Node hosts. Drives xl3 0.9.0-rc.1's opt-in `engine: 'wasm'` path. Outstanding gaps: HYPERLINK function, shared formulas, ~20 validation error sites |
 | Python | [`jinyoung4478/xl3-py`](https://github.com/jinyoung4478/xl3-py) | _(unpublished)_ | XTL 0.1 (draft) | **draft**, in development | Tracked alongside the reference impl; drop a `--report=json` artifact under [`conformance/reports/`](./conformance/reports/) and `npm run conformance:dashboard` will pick it up |
 
 ## Adding an implementation
