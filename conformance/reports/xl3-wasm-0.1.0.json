@@ -1,0 +1,820 @@
+{
+  "implementation": "xl3-wasm",
+  "version": "0.1.0",
+  "spec_version": "0.1",
+  "comparison_stage": 1,
+  "results": [
+    {
+      "fixture": "001-bracket-substitution",
+      "status": "pass",
+      "duration_ms": 47
+    },
+    {
+      "fixture": "002-if-function",
+      "status": "pass",
+      "duration_ms": 9
+    },
+    {
+      "fixture": "003-list-sheet-filter",
+      "status": "pass",
+      "duration_ms": 9
+    },
+    {
+      "fixture": "004-repeat-right-default",
+      "status": "pass",
+      "duration_ms": 7
+    },
+    {
+      "fixture": "005-round-half-away-from-zero",
+      "status": "pass",
+      "duration_ms": 8
+    },
+    {
+      "fixture": "006-filename-forbidden-chars",
+      "status": "pass",
+      "duration_ms": 7
+    },
+    {
+      "fixture": "007-filename-reserved-name",
+      "status": "fail",
+      "duration_ms": 3,
+      "diff": "expected warnings containing [\"Output filename \\\"CON.xlsx\\\" sanitized to \\\"CON_.xlsx\\\"\"], got none"
+    },
+    {
+      "fixture": "008-numfmt-numeric-string-coercion",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "009-numfmt-date-string-coercion",
+      "status": "pass",
+      "duration_ms": 7
+    },
+    {
+      "fixture": "010-numfmt-text-format-coercion",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "011-text-date-format",
+      "status": "pass",
+      "duration_ms": 7
+    },
+    {
+      "fixture": "012-text-number-format",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "013-rich-text-template-expression",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "014-source-formula-cached-result",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "015-source-sheet-prefix-first-match",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "016-text-number-negative-rounding",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "017-source-sheet-prefix-no-match-error",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "018-source-formula-missing-cached-result-error",
+      "status": "fail",
+      "duration_ms": 3,
+      "diff": "expected error containing \"Formula cell A2 has no cached result\", but conversion succeeded"
+    },
+    {
+      "fixture": "019-filename-empty-basename-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"Output filename \\\".xlsx\\\" sanitized to an empty string and is invalid.\", but conversion succeeded"
+    },
+    {
+      "fixture": "020-filename-length-overflow-error",
+      "status": "fail",
+      "duration_ms": 3,
+      "diff": "expected error containing \"exceeds the 255-byte limit\", but conversion succeeded"
+    },
+    {
+      "fixture": "021-numfmt-number-coercion-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"Value cannot be coerced to a number for cell format \\\"0.00\\\": not-a-number\", but conversion succeeded"
+    },
+    {
+      "fixture": "022-numfmt-date-coercion-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"Value cannot be coerced to a date for cell format \\\"yyyy-mm-dd\\\": not-a-date\", but conversion succeeded"
+    },
+    {
+      "fixture": "023-today-utc-dynamic",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected dynamic output 2026-05-28, got error unreachable"
+    },
+    {
+      "fixture": "024-stage2-merge-preservation",
+      "status": "skip",
+      "duration_ms": 1,
+      "skip_reason": "requires comparison_stage 2; runner is stage 1"
+    },
+    {
+      "fixture": "025-stage2-style-numfmt-preservation",
+      "status": "skip",
+      "duration_ms": 0,
+      "skip_reason": "requires comparison_stage 2; runner is stage 1"
+    },
+    {
+      "fixture": "026-stage2-splice-merge-style-preservation",
+      "status": "skip",
+      "duration_ms": 0,
+      "skip_reason": "requires comparison_stage 2; runner is stage 1"
+    },
+    {
+      "fixture": "027-stage2-cross-writer-canonicalization",
+      "status": "skip",
+      "duration_ms": 1,
+      "skip_reason": "requires comparison_stage 2; runner is stage 1"
+    },
+    {
+      "fixture": "028-source-table-row-shorthand",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "029-source-table-open-range",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "030-source-table-finite-range",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "031-source-table-zero-data-range",
+      "status": "fail",
+      "duration_ms": 3,
+      "diff": "unexpected output file: output.xlsx"
+    },
+    {
+      "fixture": "032-source-table-empty-column-name-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"source_table header cell C3 is empty\", but conversion succeeded"
+    },
+    {
+      "fixture": "033-source-table-duplicate-column-name-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"source_table has duplicate header \\\"Customer\\\"\", but conversion succeeded"
+    },
+    {
+      "fixture": "034-source-table-invalid-selector-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"source_table row numbers must be 1-based positive integers\", but conversion succeeded"
+    },
+    {
+      "fixture": "035-source-table-rich-text-header",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "036-source-table-formula-header",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "037-source-table-formula-header-missing-cache-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"Formula cell B3 has no cached result\", got \"source sheet \\\"Data\\\" has no header row\""
+    },
+    {
+      "fixture": "038-source-sheet-exact-match-beats-prefix",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "039-source-sheet-default-first-worksheet",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "040-list-sheet-hidden-states-removed",
+      "status": "pass",
+      "duration_ms": 8
+    },
+    {
+      "fixture": "041-row-function-inside-repeat-block",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "042-row-function-outside-repeat-block-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"ROW() called outside a repeat block\", but conversion succeeded"
+    },
+    {
+      "fixture": "043-ifempty-function",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "044-sort-and-top-order",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "045-list-sheet-not-in-filter",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "046-count-field-non-empty",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "047-aggregate-functions",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "048-if-and-comparison-boundaries",
+      "status": "pass",
+      "duration_ms": 7
+    },
+    {
+      "fixture": "049-filename-sanitization-warning",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "050-empty-ifempty-whitespace-only",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "051-empty-ifempty-zero-not-empty",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "052-empty-count-field-whitespace-zero-false",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "053-empty-row-skip-whitespace-only",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "054-empty-list-membership",
+      "status": "pass",
+      "duration_ms": 8
+    },
+    {
+      "fixture": "055-if-truthy-zero-and-empty",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "056-if-truthy-string-zero-not-special",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "057-if-truthy-boolean",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "058-if-comparison-result",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "059-compare-numeric-string-vs-number",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "060-compare-string-codepoint-order",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "061-concat-canonical-form",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "062-concat-empty-stringifies-to-empty",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "063-compare-empty-vs-value",
+      "status": "fail",
+      "duration_ms": 5,
+      "diff": "Report@2,2: actual=undefined, expected=\"\""
+    },
+    {
+      "fixture": "064-compare-unicode-minus-not-numeric",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "065-input-text-default-applied",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "066-input-text-host-supplied",
+      "status": "pass",
+      "duration_ms": 7
+    },
+    {
+      "fixture": "067-input-missing-required-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"Input \\\"region\\\" is required\", but conversion succeeded"
+    },
+    {
+      "fixture": "068-input-select-host-supplied",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "069-source-multi-declaration",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "070-source-aggregate-cross-source",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "071-source-directive-active",
+      "status": "pass",
+      "duration_ms": 7
+    },
+    {
+      "fixture": "072-source-undeclared-error",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "073-source-row-cross-error",
+      "status": "fail",
+      "duration_ms": 3,
+      "diff": "expected error containing \"Cannot reference Renewals[Amount] outside an active @source Renewals\", but conversion succeeded"
+    },
+    {
+      "fixture": "074-xlookup-basic",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "075-xlookup-fallback",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "076-xlookup-no-match-error",
+      "status": "fail",
+      "duration_ms": 4,
+      "diff": "expected error containing \"XLOOKUP found no row where\", but conversion succeeded"
+    },
+    {
+      "fixture": "077-xlookup-source-mismatch-error",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "078-xlookup-bare-bracket-error",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "079-join-basic-inner",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "080-join-no-match-dropped",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "081-join-undeclared-source-error",
+      "status": "pass",
+      "duration_ms": 1
+    },
+    {
+      "fixture": "082-join-bad-on-clause-error",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "083-sort-stable-equal-keys",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "084-sort-multi-stable-priority",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "085-file-group-first-seen-order",
+      "status": "pass",
+      "duration_ms": 11
+    },
+    {
+      "fixture": "086-sheet-group-first-seen-order",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "087-date-canonical-string-concat",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "088-date-comparison-equality",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "089-error-sentinel-empty",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "090-percentage-numeric-flow",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "091-source-unknown-column-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"Column \\\"Amout\\\" does not exist\", but conversion succeeded"
+    },
+    {
+      "fixture": "092-composed-multi-source-join-filter-sort",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "093-stage2-excel-authored-expected",
+      "status": "skip",
+      "duration_ms": 1,
+      "skip_reason": "requires comparison_stage 2; runner is stage 1"
+    },
+    {
+      "fixture": "094-reserved-sheet-name-error",
+      "status": "pass",
+      "duration_ms": 3
+    },
+    {
+      "fixture": "095-empty-fefff-not-whitespace",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "096-canonical-number-scientific-boundary",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "097-native-formula-static-cell-preserved",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "099-empty-template-block-error",
+      "status": "fail",
+      "duration_ms": 3,
+      "diff": "expected error containing \"Empty template block\", got \"expression ended unexpectedly\""
+    },
+    {
+      "fixture": "100-arithmetic-string-coerces-to-number",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "101-arithmetic-non-numeric-string-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error code \"xl3/eval/operand-coercion\", got \"(none)\""
+    },
+    {
+      "fixture": "102-function-arity-round-missing-arg",
+      "status": "pass",
+      "duration_ms": 1
+    },
+    {
+      "fixture": "103-function-arity-xlookup-too-few-args",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "104-multiple-filter-directives-and",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "105-template-block-whitespace-insignificant",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "106-division-by-zero-produces-error-cell",
+      "status": "fail",
+      "duration_ms": 4,
+      "diff": "Report@3,2: actual=undefined, expected=\"#DIV/0!\""
+    },
+    {
+      "fixture": "107-group-key-empty-blank-placeholder-file",
+      "status": "fail",
+      "duration_ms": 7,
+      "diff": "unexpected output file: .xlsx\nmissing output file: (blank).xlsx"
+    },
+    {
+      "fixture": "108-group-key-empty-blank-placeholder-sheet",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "109-source-column-reserved-name-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"reserved internal name\", but conversion succeeded"
+    },
+    {
+      "fixture": "110-directive-empty-filter-error",
+      "status": "pass",
+      "duration_ms": 1
+    },
+    {
+      "fixture": "111-directive-empty-source-error",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "112-literal-signed-number",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "113-unsupported-unary-on-column-ref-error",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"Unsupported expression\", but conversion succeeded"
+    },
+    {
+      "fixture": "114-duplicate-source-directive-error",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "115-self-join-error",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "116-function-name-case-insensitive",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "117-hidden-source-rows-included",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "118-unicode-normalization-not-applied",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "119-output-filename-collision-error",
+      "status": "fail",
+      "duration_ms": 3,
+      "diff": "expected error containing \"produced by multiple file groups\", but conversion succeeded"
+    },
+    {
+      "fixture": "120-workbook-properties-preserved",
+      "status": "skip",
+      "duration_ms": 0,
+      "skip_reason": "requires comparison_stage 2; runner is stage 1"
+    },
+    {
+      "fixture": "121-source-merged-header",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "122-source-data-row-merge-broadcast",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "123-feature-preservation",
+      "status": "pass",
+      "duration_ms": 7
+    },
+    {
+      "fixture": "124-source-2d-merge-header",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "125-hyperlink-function",
+      "status": "fail",
+      "duration_ms": 6,
+      "diff": "Report@2,2: actual=\"보기\", expected=\"HYPERLINK(\\\"https://erp.example.com/invoice/1\\\",\\\"보기\\\")\"\nReport@3,2: actual=\"보기\", expected=\"HYPERLINK(\\\"https://erp.example.com/invoice/2\\\",\\\"보기\\\")\""
+    },
+    {
+      "fixture": "126-date-arithmetic-functions",
+      "status": "fail",
+      "duration_ms": 4,
+      "diff": "Report@2,1: actual=46053, expected=\"2026-01-31T00:00:00.000Z\"\nReport@3,1: actual=46160, expected=\"2026-05-18T00:00:00.000Z\""
+    },
+    {
+      "fixture": "127-multiline-cell-text",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "128-function-batch-0044",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "129-cell-formula-preservation",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "130-isblank-function",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "131-inputs-with-xtl-default",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "132-group-single-level-subtotal",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "133-group-two-level-nested-subtotal",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "134-group-grand-total-via-outermost-subtotal",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "135-group-filter-composition",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "136-group-missing-key",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "137-subtotal-outside-group",
+      "status": "fail",
+      "duration_ms": 2,
+      "diff": "expected error containing \"@subtotal requires an active @group directive\", but conversion succeeded"
+    },
+    {
+      "fixture": "138-subtotal-bad-aggregate",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "139-inputs-forward-reference",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "140-inputs-runtime-only-fn",
+      "status": "pass",
+      "duration_ms": 1
+    },
+    {
+      "fixture": "141-block-column-scoped-side-cells",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "142-block-column-scoped-side-formulas",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "143-block-shared-formula-side-cells",
+      "status": "fail",
+      "duration_ms": 5,
+      "diff": "Report@3,5: actual=\"=SUMIF($A:$A,$D3,$B:$B)\", expected=\"=shared:E2\""
+    },
+    {
+      "fixture": "144-block-side-cells-after-block",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "145-block-bracket-outside-error",
+      "status": "pass",
+      "duration_ms": 1
+    },
+    {
+      "fixture": "146-multi-block-explicit-two-tables",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "147-multi-block-different-sources",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "148-multi-block-different-start-rows",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "149-block-col-range-explicit",
+      "status": "pass",
+      "duration_ms": 6
+    },
+    {
+      "fixture": "150-block-full-rect-explicit",
+      "status": "pass",
+      "duration_ms": 5
+    },
+    {
+      "fixture": "151-block-overlap-error",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "152-block-empty-table-error",
+      "status": "pass",
+      "duration_ms": 2
+    },
+    {
+      "fixture": "153-directive-orphan-error",
+      "status": "pass",
+      "duration_ms": 1
+    },
+    {
+      "fixture": "154-multi-block-per-block-filter",
+      "status": "pass",
+      "duration_ms": 4
+    },
+    {
+      "fixture": "155-multi-block-row-function-scope",
+      "status": "pass",
+      "duration_ms": 4
+    }
+  ],
+  "summary": {
+    "total": 154,
+    "passed": 119,
+    "failed": 29,
+    "errored": 0,
+    "skipped": 6
+  }
+}
