@@ -11,16 +11,6 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 > days before G3 ticks. Clock reset 2026-05-26 by 0.9.0-rc.1's
 > acceleration surface additions; earliest tick 2026-06-25.
 
-### Changed
-
-- **`--engine=wasm` conformance: 119 → 127 / 148.** No xl3 (TS)
-  changes required — the gain comes from `xl3-core` 0.1.0 landing
-  native formula preservation (ADR-0021 / ADR-0046, fixtures 097 /
-  129 / 142 / 144) and `XtlError`-coded arity + XLOOKUP failures
-  (ADR-0024, fixtures 077 / 078 / 102 / 103). The wasm-bridge
-  error-code propagation shipped in 0.9.0-rc.1 surfaces both
-  classes to the conformance runner.
-
 ## [0.9.0-rc.1] - 2026-05-26
 
 0.9.0 release candidate. Adds the `xl3-wasm` acceleration path as an
@@ -58,8 +48,7 @@ unchanged from 0.8.0 — the 30-day G3 clock had been ticking since
 - **Conformance runner `--engine=auto|wasm|js` flag** (
   `xl3-conformance` CLI). Lets the runner exercise either path
   against the same fixtures — used by xl3-rs to measure parity
-  (119 / 148 fixtures pass under `--engine=wasm` at rc.1 cut;
-  see Unreleased for the post-rc.1 progress).
+  (currently 119 / 148 fixtures pass under `--engine=wasm`).
 
 ### Fixed
 
