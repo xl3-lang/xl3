@@ -141,7 +141,7 @@ await convert(templateBuffer, dataBuffer, { engine: 'wasm' });
 
 Measured speedups (Node 22, Apple Silicon, May 2026): 36k-row multi-axis
 report **2.5 s → ~0.3 s**, 70 MB / 6 M cells round-trip **67 s → ~5.8 s**
-warm. Conformance under `--engine=wasm`: **119 / 148** Stage 1 fixtures
+warm. Conformance under `--engine=wasm`: **127 / 148** Stage 1 fixtures
 pass — see [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) for the Rust
 impl's row. `latest` stays on 0.8.0 until the 7-day rc soak completes
 (earliest 2026-06-02).
