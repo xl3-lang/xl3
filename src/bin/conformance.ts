@@ -32,7 +32,7 @@ function parseArgs(argv: string[]): Cli {
     fixtureDir: 'conformance/fixtures',
     comparisonStage: 1,
     report: 'text',
-    engine: 'auto',
+    engine: 'js',
   };
   for (const arg of argv.slice(2)) {
     const eq = arg.indexOf('=');

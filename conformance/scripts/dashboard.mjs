@@ -24,11 +24,18 @@ const RUNNER = join(REPO_ROOT, 'dist', 'bin', 'conformance.js');
 
 async function runReferenceImpl() {
   return new Promise((resolve, reject) => {
+    // Pin to the JS engine: the dashboard's "reference implementation"
+    // line MUST measure xl3-js itself, not whatever optional accelerator
+    // happens to be installed in node_modules. The runner default also
+    // picks 'js', but this stays explicit so a future default flip
+    // (or a sibling script copying these args) doesn't silently
+    // re-route the reference row through xl3-wasm.
     const child = spawn('node', [
       RUNNER,
       '--fixture-dir=conformance/fixtures',
       '--comparison-stage=2',
       '--report=json',
+      '--engine=js',
     ], { cwd: REPO_ROOT, stdio: ['ignore', 'pipe', 'inherit'] });
     let out = '';
     child.stdout.on('data', (d) => { out += d.toString(); });
