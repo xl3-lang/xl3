@@ -133,6 +133,32 @@ const config: Config = {
     ],
   ],
 
+  // JSON-LD structured data so search engines classify xl3 as software
+  // (name collisions abound: Novation XL3, XLCubed XL3, xl3.com) instead
+  // of inferring from page text alone.
+  headTags: [
+    {
+      tagName: 'script',
+      attributes: { type: 'application/ld+json' },
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'xl3',
+        description:
+          'Deterministic runtime for AI-generated Excel reports. An LLM writes the template once; xl3 renders the workbook from (template, data) as a pure function — same inputs, same bytes, every time.',
+        url: 'https://xl3.io',
+        applicationCategory: 'DeveloperApplication',
+        operatingSystem: 'Node.js, Browser',
+        license: 'https://opensource.org/licenses/MIT',
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        sameAs: [
+          'https://github.com/jinyoung4478/xl3',
+          'https://www.npmjs.com/package/@jinyoung4478/xl3',
+        ],
+      }),
+    },
+  ],
+
   themeConfig: {
     image: 'img/og.png',
     metadata: [
