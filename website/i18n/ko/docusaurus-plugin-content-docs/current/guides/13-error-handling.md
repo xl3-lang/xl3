@@ -41,7 +41,7 @@ try {
 
 ## 에러 코드 카탈로그
 
-안정적이고, append-only 입니다. 이름 변경은 ADR-0015 기준으로 breaking change 로 취급합니다. 현재 카탈로그는 다음과 같습니다:
+안정적이고 append-only 입니다. 이름 변경은 ADR-0015 기준으로 breaking change 로 취급합니다. 현재 카탈로그는 다음과 같습니다:
 
 - **`xl3/cell/*`** — 셀 단위 실패 (`formula-no-cache`, `numfmt-coercion`, `row-outside-repeat`)
 - **`xl3/eval/*`** — 표현식 평가 (`arity-mismatch`, `operand-coercion`, `unsupported-syntax`)

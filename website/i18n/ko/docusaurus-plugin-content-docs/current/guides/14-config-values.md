@@ -11,7 +11,7 @@ pagination_label: '14 · 값 사전으로 쓰는 __config__'
 
 ## 동작 방식
 
-ADR-0011 기준으로 `__config__` 는 예약된 설정 시트입니다. `key` 와 `value`, 두 컬럼으로 구성됩니다. 일부 키는 스펙에서 정의됩니다 (`name`, `description`, `source_sheet`, `source_table`, `output_file_pattern`, `match_pattern`). 그 외의 키는 작성자가 자유롭게 정의할 수 있고, 다음과 같이 접근합니다:
+ADR-0011 기준으로 `__config__` 는 예약된 설정 시트입니다. `key` 와 `value`, 두 컬럼으로 구성됩니다. 일부 키는 스펙에서 정의됩니다 (`name`, `description`, `source_sheet`, `source_table`, `output_file_pattern`, `match_pattern`). 그 외의 키는 작성자가 자유롭게 정의할 수 있고 다음과 같이 접근합니다:
 
 ```text
 {{ __config__[key_name] }}
