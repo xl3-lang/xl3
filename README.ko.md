@@ -86,7 +86,7 @@ xl3는 다음 결과를 렌더링합니다:
 언어 초안은 [`spec/`](./spec) 에, 구현 중립적인 fixture corpus 와 runner
 protocol 은 [`conformance/`](./conformance) 에 있습니다.
 
-## 왜 런타임은 지루해야 하는가
+## 런타임은 지루할수록 좋다
 
 한 문장 요약: **LLM 이 만들어낸 Excel 은 토큰 하나만 잘못돼도 깨진
 리포트가 됩니다.** 셀 수식이 어긋나고, 병합이 한 행 밀리고, 통화 기호가
@@ -117,35 +117,6 @@ protocol 은 [`conformance/`](./conformance) 에 있습니다.
 참조 그대로의 문법입니다. AI 앵글이 진입점이고, 사람이 읽을 수 있다는
 점이 긴 꼬리입니다.
 
-## 최근 변경
-
-**0.7.0 → 0.8.0** (2026년 5월): 데이터 블록이 **컬럼 스코프
-(column-scoped)** 로 바뀌었습니다 (ADR-0066). 사이드 요약표, 헤더 컬럼,
-오른쪽의 메모는 블록이 확장돼도 원래 행 위치에 그대로 남습니다. 오래된
-두 버그 (#46 shared-formula owner 중복, #47 변위된 사이드 셀의 stale
-수식 참조) 를 구조적으로 닫았습니다. 명시적 **`@block`** 디렉티브
-(ADR-0067) 도 추가 — bare / 컬럼 범위 / 직사각형 세 형태. `@block` 을
-쓰는 시트에는 엄격(strict) 멀티 블록 판정이 적용됩니다 (ADR-0068).
-**하위 호환:** `@block` 도 없고 블록 바깥 컬럼에 내용도 없는 템플릿은
-0.7.x 와 완전히 동일하게 렌더됩니다 — `@block` 은 opt-in 입니다.
-
-**0.6.0 → 0.7.0**: 15-ADR 패스 (ADR-0051..0065) 로 "같은 템플릿 모양이
-두 가지로 해석되거나 조용히 흘러가버리던" 잔여 문법 충돌 지점을 모두
-닫았습니다. 가장 큰 사용자 영향은 **집계 인자 형태 제한** (ADR-0059) —
-`SUM`, `AVERAGE`, `MIN`, `MAX`, 1-arg `COUNT` 인자는 단일 컬럼 참조만
-허용하며, 행별 산술식은 파싱 시점에 거부됩니다. 원본에 헬퍼 컬럼을
-추가하거나, 푸터 셀에 네이티브 엑셀 `=SUMPRODUCT(...)` 를 쓰면 됩니다
-([Cookbook 03](./docs/guides/03-aggregates.md) 참고).
-
-**0.5.x → 0.6.0**: 병합 헤더 셀 네이티브 지원 (ADR-0033) — 한국식 vendor
-양식 (거래명세서, 정산서, 발주서) 에서 흔한 패턴; 병합 데이터 행의
-마스터 값 broadcast (ADR-0035); 이미지·조건부서식·이름 정의·틀고정·시트
-보호·데이터 유효성·셀 주석을 다루는 정규 보존 매트릭스 (ADR-0036);
-고객별/월별 소계 행을 한 데이터 블록 안에 끼워 넣는 **`@group` /
-`@subtotal`** 디렉티브 (ADR-0038).
-
-[전체 변경 로그 →](./CHANGELOG.md)
-
 ## 비교
 
 | 접근 | 잘하는 영역 | AI 기반 Excel 관점의 트레이드오프 |
@@ -156,28 +127,6 @@ protocol 은 [`conformance/`](./conformance) 에 있습니다.
 | Power Query / Office Scripts / Power Automate | Microsoft 365 안에서의 데이터 가공·워크플로 자동화. | 테넌트에 묶임 — 업무 규칙이 워크북과 함께 이동하지 않습니다. |
 | JXLS / xltpl / jsreport xlsx recipe | 스프레드시트형 템플릿 기반의 서버 사이드 리포트 생성. | 유용하지만 LLM-as-author 모델 이전 시대 설계 — 템플릿 DSL 이 크고 모델이 emit 하기 어렵습니다. |
 | Plumsail / Conga / Formstack 같은 문서 생성 SaaS | 관리형 문서 워크플로·결재·배송. | 규칙이 vendor 서비스 안에 머물고, LLM 에게 직접 편집을 맡길 수 있는 휴대 가능한 워크북이 아닙니다. |
-
-## 솔직한 상태 안내
-
-- **Alpha.** XTL 은 spec 0.1 (draft). 동작은 빠르게 안정되고 있지만,
-  1.0 전까지 언어 표면이 바뀔 수 있습니다.
-- **메인테이너 1명.** Production reference case 는 아직 없습니다.
-  의미 있는 곳에 xl3 를 쓰셨다면, *그 사실을 알려주시는 것* 이 지금
-  가장 가치 있는 기여입니다 — 이슈, discussion thread, "우리한테 잘
-  동작했어요" 한 줄도 좋습니다. 이 피드백이 *진짜 워크플로에 맞는
-  1.0* 과 *제 상상 속 1.0* 의 차이를 결정합니다.
-- **ADR 70 개, conformance fixture 154 개, 모두 green.** 언어 표면은
-  early adopter 가 시도해볼 만큼 안정됐습니다.
-- **MIT, TypeScript, Node ≥ 20.12, 브라우저에서 동작.**
-
-1.0 의 blocker 는 [ROADMAP.md](./ROADMAP.md), 의사결정 방식은
-[GOVERNANCE.md](./GOVERNANCE.md) 참고.
-
-> **LLM 으로 xl3 템플릿을 만들고 있다면**
-> [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md)
-> 를 먼저 읽으세요. LLM 이 거의 매번 반복하는 한 가지 실수 (스타일이
-> 남아 출력마다 빈 행으로 따라붙는 문제) 와 그 회피 방법을 다룹니다.
-> 본문은 영문입니다 — LLM 이 직접 참조하는 문서이므로 영어로 유지.
 
 ## 설치
 

@@ -129,44 +129,6 @@ plantillas directamente, porque las expresiones están escritas con los
 mismos `IF`, `SUM` y referencias a columnas que ya usan a diario. El
 enfoque IA es la cuña; la legibilidad humana es la cola larga.
 
-## Novedades
-
-**0.7.0 → 0.8.0** (mayo de 2026): los bloques de datos ahora tienen
-**alcance por columna** (ADR-0066). Las tablas de resumen laterales,
-las columnas de cabecera y las notas a la derecha conservan su fila
-original cuando el bloque se expande. Cierra dos errores arrastrados
-(#46 propietarios duplicados de fórmulas compartidas, #47 referencias
-de fórmula obsoletas en celdas laterales desplazadas). Añade la
-directiva explícita **`@block`** (ADR-0067) en tres formas — sin
-argumentos, con rango de columnas y rectangular — más la detección
-estricta multi-bloque (ADR-0068) en las hojas que optan por ella.
-**Compatibilidad hacia atrás:** las plantillas sin `@block` y sin
-contenido fuera de las columnas se renderizan exactamente igual que en
-0.7.x; `@block` es opcional (opt-in).
-
-**0.6.0 → 0.7.0**: una pasada de 15 ADR (ADR-0051..0065) cerró todas
-las superficies restantes de conflicto sintáctico — lugares donde una
-misma forma de plantilla podía interpretarse de dos maneras o pasar
-silenciosamente. El cambio más visible para los usuarios es **la forma
-de los argumentos de agregación** (ADR-0059): `SUM`, `AVERAGE`, `MIN`,
-`MAX` y el `COUNT` de un solo argumento requieren ahora una única
-referencia de columna y rechazan en tiempo de parsing la aritmética
-por fila. Usa una columna auxiliar aguas arriba o una
-`=SUMPRODUCT(...)` nativa en la celda de pie de tabla (consulta
-[Cookbook 03](./docs/guides/03-aggregates.md)).
-
-**0.5.x → 0.6.0**: soporte nativo para cabeceras con celdas
-combinadas (ADR-0033) — habitual en plantillas de proveedores en
-Corea (거래명세서, 정산서, 발주서); las filas de datos combinadas
-propagan el valor a las esclavas (ADR-0035); una matriz normativa de
-preservación de características que cubre imágenes, formato
-condicional, rangos con nombre, inmovilización de paneles, protección
-de hoja, validación de datos y comentarios de celda (ADR-0036); y
-**`@group` / `@subtotal`** para intercalar filas de subtotal por
-cliente o por mes dentro de un único bloque de datos (ADR-0038).
-
-[Changelog completo →](./CHANGELOG.md)
-
 ## Cómo se compara
 
 | Enfoque | Mejor en | Contrapartida para Excel impulsado por IA |
@@ -177,33 +139,6 @@ cliente o por mes dentro de un único bloque de datos (ADR-0038).
 | Power Query / Office Scripts / Power Automate | Flujos en Microsoft 365, modelado de datos y automatización de acciones dentro del ecosistema de Excel. | Atados al tenant; las reglas del flujo no viajan con el libro. |
 | JXLS / xltpl / receta xlsx de jsreport | Generación de informes en servidor a partir de plantillas tipo hoja de cálculo. | Útiles, pero anteriores al modelo del LLM como autor; sus DSL de plantilla son más amplios y no están diseñados para ser emitidos por un modelo. |
 | SaaS de generación de documentos (Plumsail, Conga, Formstack) | Flujos documentales gestionados, integraciones, aprobaciones y entrega. | Las reglas viven en el servicio del proveedor, no en un libro portable que puedas entregar a un LLM para editar. |
-
-## Estado, sin maquillaje
-
-- **Alpha.** XTL está en spec 0.1 (draft). El comportamiento se está
-  estabilizando rápido pero la superficie del lenguaje todavía puede
-  cambiar antes de 1.0.
-- **Un único mantenedor.** Ningún caso de referencia en producción
-  todavía. Si llevas xl3 a algo que importe, la contribución más
-  valiosa ahora mismo es *contármelo* — abre un issue o un hilo de
-  discusión, incluso un "pulgar arriba" diciendo "esto nos funcionó".
-  Ese feedback es la diferencia entre una 1.0 que encaje con flujos
-  reales y otra que encaje con mi imaginación de ellos.
-- **70 ADR, 154 fixtures de conformidad, todo en verde.** La
-  superficie del lenguaje es lo bastante estable para los primeros
-  adoptantes.
-- **MIT, TypeScript, Node ≥ 20.12, funciona en navegadores.**
-
-Consulta [ROADMAP.md](./ROADMAP.md) para ver qué bloquea la 1.0 y
-[GOVERNANCE.md](./GOVERNANCE.md) para entender cómo se toman las
-decisiones.
-
-> **¿Estás redactando una plantilla xl3 con un LLM?** Lee primero
-> [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md)
-> — cubre el único error que los LLM cometen de forma fiable (filas
-> con estilo residual que acaban contaminando cada salida) y cómo
-> evitarlo. El documento se mantiene intencionadamente en inglés, ya
-> que es material de referencia que consulta directamente el LLM.
 
 ## Instalación
 

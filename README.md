@@ -119,63 +119,6 @@ expressions are written with the same `IF`, `SUM`, and column references
 they already use day to day. The AI angle is the wedge; the
 human-readability is the long tail.
 
-## What's new
-
-**0.8.0 → 0.9.0-rc.1** (May 2026): opt-in **Rust + WebAssembly
-acceleration**. Install [`xl3-wasm`](https://www.npmjs.com/package/xl3-wasm)
-alongside `@jinyoung4478/xl3@rc` and `convert` / `preview` route their
-heavy work — XLSX parsing, XTL evaluation, output serialization, deflate —
-through [`xl3-core`](https://crates.io/crates/xl3-core) (calamine +
-rust_xlsxwriter). The JS path stays the canonical reference; the wasm
-path falls back to it automatically on any unsupported template
-construct or missing dependency.
-
-```bash
-npm install @jinyoung4478/xl3@rc xl3-wasm
-```
-
-```ts
-await convert(templateBuffer, dataBuffer, { engine: 'wasm' });
-// or 'auto' (default) / 'js'
-```
-
-Measured speedups (Node 22, Apple Silicon, May 2026): 36k-row multi-axis
-report **2.5 s → ~0.3 s**, 70 MB / 6 M cells round-trip **67 s → ~5.8 s**
-warm. Conformance under `--engine=wasm`: **119 / 148** Stage 1 fixtures
-pass — see [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) for the Rust
-impl's row. `latest` stays on 0.8.0 until the 7-day rc soak completes
-(earliest 2026-06-02).
-
-**0.7.0 → 0.8.0** (May 2026): data blocks are now **column-scoped**
-(ADR-0066). Side summary tables, header columns, and notes off to the
-right keep their original row positions when the block expands. Closes
-two long-standing bugs (#46 duplicate shared-formula owners, #47 stale
-formula references in displaced side cells). Adds the explicit
-**`@block`** directive (ADR-0067) in three forms — bare, column-range,
-and rectangular — plus strict multi-block detection (ADR-0068) on
-sheets that opt in. **Backward compatibility:** templates without
-`@block` and without outside-column content render exactly the same as
-0.7.x; `@block` is opt-in.
-
-**0.6.0 → 0.7.0**: a 15-ADR pass (ADR-0051..0065) closed every remaining
-syntactic-conflict surface — places where a template shape could be
-parsed two ways or silently fall through. The most user-visible change
-is **aggregate argument shape** (ADR-0059): `SUM`, `AVERAGE`, `MIN`,
-`MAX`, and 1-arg `COUNT` now require a single column reference and
-reject per-row arithmetic at parse time. Use a helper column upstream
-or a native `=SUMPRODUCT(...)` in the footer cell (see
-[Cookbook 03](./docs/guides/03-aggregates.md)).
-
-**0.5.x → 0.6.0**: native merged-cell headers (ADR-0033) — common in
-Korean vendor templates (거래명세서, 정산서, 발주서); merged data rows
-broadcast to slaves (ADR-0035); a normative feature-preservation matrix
-covering images, conditional formatting, named ranges, freeze pane,
-sheet protection, data validation, and cell comments (ADR-0036); and
-**`@group` / `@subtotal`** for interleaved per-customer / per-month
-subtotal rows in a single data block (ADR-0038).
-
-[Full changelog →](./CHANGELOG.md)
-
 ## How it compares
 
 | Approach | Best at | Tradeoff for AI-driven Excel |
@@ -186,28 +129,6 @@ subtotal rows in a single data block (ADR-0038).
 | Power Query / Office Scripts / Power Automate | Microsoft 365 workflows, data shaping, and action automation inside the Excel ecosystem. | Tenant-bound; the workflow rules don't travel with the workbook. |
 | JXLS / xltpl / jsreport xlsx recipe | Server-side report generation from spreadsheet-like templates. | Useful, but predate the LLM-as-author model; their template DSLs are larger and not designed to be model-emittable. |
 | Document-generation SaaS (Plumsail, Conga, Formstack) | Managed document workflows, integrations, approvals, and delivery. | Rules live in a vendor service, not a portable workbook you can hand an LLM to edit. |
-
-## Status, honestly
-
-- **Alpha.** XTL is at spec 0.1 (draft). Behavior is stabilizing fast
-  but the language surface can still change before 1.0.
-- **One maintainer.** No production reference cases yet. If you ship
-  xl3 in something that matters, the most valuable contribution right
-  now is *telling me about it* — open an issue or a discussion thread,
-  even a thumbs-up that "this worked for us." That feedback is the
-  difference between a 1.0 that fits real workflows and one that fits
-  my imagination of them.
-- **70 ADRs, 154 conformance fixtures, all green.** The language surface
-  is stable enough for early adopters.
-- **MIT, TypeScript, Node ≥ 20.12, runs in browsers.**
-
-See [ROADMAP.md](./ROADMAP.md) for what's blocking 1.0 and
-[GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made.
-
-> **Authoring an xl3 template with an LLM?** Read
-> [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md)
-> first — it covers the one mistake LLMs reliably make (leftover styled
-> rows polluting every output) and how to avoid it.
 
 ## Install
 
