@@ -6,7 +6,7 @@
 而不想用 grep 翻找時，請查閱本表。
 
 fixture 欄只列出編號最小的 fixture；完整的 ADR ↔ fixture
-對照矩陣請見 [`coverage.md`](../conformance/coverage.md)。
+對照矩陣請見 [`coverage.md`](/zh-TW/conformance/coverage)。
 
 | 介面 | 規格章節 | 主管 ADR | 範例 fixture |
 |---|---|---|---|
@@ -68,7 +68,7 @@ fixture 欄只列出編號最小的 fixture；完整的 ADR ↔ fixture
 
 XTL 0.1 刻意把這些範圍留給實作決定。兩個移植版在這裡選擇不同，
 並 **不會** 讓任何一邊變得不符合規格。完整目錄請見
-[ADR-0021](./decisions/0021-implementation-defined-boundaries.md)。
+[ADR-0021](/zh-TW/spec/decisions/0021-implementation-defined-boundaries)。
 
 | 範圍 | XTL 0.1 的立場 |
 |---|---|

@@ -53,4 +53,4 @@ pagination_label: '01 · はじめに'
 - `{{ ... }}` は **テンプレートブロック**で、中括弧内の内容は XTL 式として評価されます。中括弧内の空白は意味を持ちません。
 - データブロックはテンプレートブロックを含まない最初の空でない行で止まります。フッター行(例: 「合計」セル)を追加しておけば、その上でデータブロックだけが展開され、フッターはその場に残ります。
 
-関連情報: [`spec/language.md`](../../spec/language.md) の「Template Blocks」と「Source Columns」。
+関連情報: [`spec/language.md`](/ja/spec/language) の「Template Blocks」と「Source Columns」。

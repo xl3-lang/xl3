@@ -66,4 +66,4 @@ pagination_label: '09 · 並べ替えと上位 N 件'
 
 - 安定ソートはキーが等しいとき入力順序を維持するということ ― `@sort` ディレクティブを複数使って同点を分ける補助キーとして活用するときに核心となります。
 - `@sort` の後に `@top` を使うのが正統な「上位 N」パターンです。`@top` だけ単独で使うと、ソースに書かれた順序のまま先頭 N 行を切り出します。
-- スペック参照: [`spec/language.md`](../../spec/language.md) の「Sort」/「Top」、ADR-0016。
+- スペック参照: [`spec/language.md`](/ja/spec/language) の「Sort」/「Top」、ADR-0016。

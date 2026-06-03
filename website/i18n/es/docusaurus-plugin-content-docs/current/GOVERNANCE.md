@@ -25,8 +25,8 @@ medida que se incorporan más contribuidores.
 |---|---|---|
 | **Mantenedor** | Aceptación/rechazo final de ADR y PR de implementación. Corta releases. | Actualmente, el autor del proyecto. |
 | **Editor de spec** | Redacta ADR, edita `spec/language.md` y `spec/evaluation.md`. | El mantenedor por ahora. |
-| **Autor de portado** | Implementa XTL en otro lenguaje; ejecuta la conformidad contra [`conformance/fixtures/`](./conformance/fixtures/). | Cualquiera. Se listan en [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md). |
-| **Contribuidor** | Abre issues, envía PR, propone fixtures o ADR. | Cualquiera. Ver [CONTRIBUTING.md](./CONTRIBUTING.md). |
+| **Autor de portado** | Implementa XTL en otro lenguaje; ejecuta la conformidad contra [`conformance/fixtures/`](./conformance/fixtures/). | Cualquiera. Se listan en [IMPLEMENTATIONS.md](/es/implementations). |
+| **Contribuidor** | Abre issues, envía PR, propone fixtures o ADR. | Cualquiera. Ver [CONTRIBUTING.md](/es/contributing). |
 
 El conjunto de mantenedores crece cuando contribuidores externos revisan
 y aterrizan cambios de forma sostenida. No existe un proceso formal de
@@ -79,7 +79,7 @@ Los fixtures son lo que hace que XTL sea _ejecutable_. Los nuevos
 fixtures amplían el corpus:
 
 1. Abre una issue o sigue la plantilla de **propuesta de fixture**.
-2. Escribe el fixture siguiendo [`conformance/AUTHORING.md`](./conformance/AUTHORING.md).
+2. Escribe el fixture siguiendo [`conformance/AUTHORING.md`](/es/conformance/authoring).
    La regla cardinal: **las salidas esperadas vienen de la
    especificación, no de ejecutar la implementación de referencia.**
 3. Envía un PR.
@@ -127,7 +127,7 @@ Las maneras más efectivas de influir en xl3:
 3. **Porta a un segundo lenguaje y ejecuta el corpus de conformidad.**
    Una segunda implementación independiente encuentra huecos en la
    especificación más rápido que cualquier revisión. Ver
-   [PORTERS_GUIDE.md](./PORTERS_GUIDE.md).
+   [PORTERS_GUIDE.md](/es/porters-guide).
 4. **Abre un borrador de ADR sobre un elemento diferido.** Los elementos
    diferidos en [`spec/decisions/`](./spec/decisions/) (aritmética de
    fechas, collation con locale, multi-join, etc.) son candidatos para

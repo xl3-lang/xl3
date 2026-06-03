@@ -65,4 +65,4 @@ xl3 construye un índice en el primer `XLOOKUP` sobre un par `(filas, columna)`,
 
 - La comparación es consciente del tipo: número-o-cadena-numérica cruza la frontera, así que `XLOOKUP("42", Clientes[id], ...)` encuentra una fila cuyo `id` es el número `42`.
 - Usa `@join` cuando cada fila primaria deba emparejarse con la fila unida; usa `XLOOKUP` cuando quieras una celda procedente de otra fuente.
-- Referencia de especificación: [`spec/language.md`](../../spec/language.md) "XLOOKUP"; ADR-0013.
+- Referencia de especificación: [`spec/language.md`](/es/spec/language) "XLOOKUP"; ADR-0013.

@@ -91,5 +91,5 @@ const preview = await xl3.preview(template, data, options);
 ## 规范参考
 
 - ADR-0015 ——结构化错误上报。
-- [`spec/evaluation.md`](../../spec/evaluation.md) "Errors"。
+- [`spec/evaluation.md`](/zh-CN/spec/evaluation) "Errors"。
 - [Cookbook 06](./06-runtime-inputs.md) ——与输入相关的错误。

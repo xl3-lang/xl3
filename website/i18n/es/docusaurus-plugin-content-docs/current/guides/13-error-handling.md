@@ -91,5 +91,5 @@ const preview = await xl3.preview(template, data, options);
 ## Referencias de especificación
 
 - ADR-0015 — Notificación estructurada de errores.
-- [`spec/evaluation.md`](../../spec/evaluation.md) "Errors".
+- [`spec/evaluation.md`](/es/spec/evaluation) "Errors".
 - [Receta 06](./06-runtime-inputs.md) para errores relacionados con entradas.

@@ -4,8 +4,8 @@ xl3 es la implementación de referencia en TypeScript de la [especificación XTL
 
 Durante la fase 0.x, el proyecto lo mantiene un único autor. Las contribuciones son bienvenidas, pero el listón para cambios en la especificación es alto — XTL aspira a ser un estándar estable e independiente del lenguaje.
 
-Ver [GOVERNANCE.md](./GOVERNANCE.md) para entender cómo se toman las
-decisiones y [ROADMAP.md](./ROADMAP.md) para ver qué bloquea el corte
+Ver [GOVERNANCE.md](/es/governance) para entender cómo se toman las
+decisiones y [ROADMAP.md](/es/roadmap) para ver qué bloquea el corte
 1.0.
 
 ## Inicio rápido
@@ -40,16 +40,16 @@ especificado:
 
 ### 3. Fixtures de conformidad (`conformance/fixtures/`)
 
-El corpus de conformidad es la definición ejecutable de XTL. Los fixtures que viven aquí sobreviven a cualquier implementación concreta. **Lee [`conformance/AUTHORING.md`](./conformance/AUTHORING.md) antes de escribir uno.**
+El corpus de conformidad es la definición ejecutable de XTL. Los fixtures que viven aquí sobreviven a cualquier implementación concreta. **Lee [`conformance/AUTHORING.md`](/es/conformance/authoring) antes de escribir uno.**
 
 La regla cardinal: **las salidas esperadas se redactan a partir de la especificación, no se generan desde la implementación JS.** Un fixture que solo registra lo que hace la implementación JS congela esa implementación como la especificación de facto — exactamente lo que XTL intenta evitar.
 
 ### 4. Portados a otros lenguajes
 
-Las implementaciones en otros lenguajes son bienvenidas y se llevan en [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md). Para listar un portado:
+Las implementaciones en otros lenguajes son bienvenidas y se llevan en [IMPLEMENTATIONS.md](/es/implementations). Para listar un portado:
 
 1. Implementa contra la especificación, no contra la implementación JS.
-2. Ejecuta tu implementación a través del corpus de conformidad siguiendo [`conformance/runner-protocol.md`](./conformance/runner-protocol.md).
+2. Ejecuta tu implementación a través del corpus de conformidad siguiendo [`conformance/runner-protocol.md`](/es/conformance/runner-protocol).
 3. Abre un PR añadiendo una fila a `IMPLEMENTATIONS.md`.
 
 ## Convenciones de código (implementación TypeScript)
@@ -95,7 +95,7 @@ Después de 1.0, los cambios incompatibles de especificación requieren XTL 2.0 
 
 Si quieres contribuir pero no tienes un escozor concreto, estas son las
 cosas con más palanca que puedes coger. Cada una mapea a un bloqueador
-de 1.0 en [ROADMAP.md](./ROADMAP.md).
+de 1.0 en [ROADMAP.md](/es/roadmap).
 
 1. **Propón un fixture de conformidad** para una regla de la
    especificación que aún no tenga uno. Usa la plantilla de issue
@@ -119,7 +119,7 @@ de 1.0 en [ROADMAP.md](./ROADMAP.md).
    [xl3-py](https://github.com/jinyoung4478/xl3-py) u otro portado?
    Deja un archivo `conformance/reports/<impl>-<version>.json`
    (formato documentado en
-   [`conformance/runner-protocol.md`](./conformance/runner-protocol.md))
+   [`conformance/runner-protocol.md`](/es/conformance/runner-protocol))
    y el dashboard te incluye automáticamente.
 
 ## Código de conducta

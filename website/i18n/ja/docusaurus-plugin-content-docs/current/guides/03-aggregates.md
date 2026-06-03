@@ -96,4 +96,4 @@ Overall:            | {{ SUM(Source[更新金額]) }}  # 全行
 - `COUNT` は空でない値だけを数えます。空値を含む全行数が必要なら、絶対に空にならない列に対して `COUNT(Source[any-required-col])` を使ってください。
 - 空でない値が 0 個の状態で `AVERAGE` はエラーではなく空値を返します。
 - 集計引数に合成式(リテラル、算術、関数呼び出し)を入れると ADR-0059 に従って `xl3/eval/bad-aggregate-arg` が発生します。
-- スペック参照: [`spec/language.md`](../../spec/language.md) の「Aggregates」、ソース意味論は ADR-0012、引数形状ルールは ADR-0059。
+- スペック参照: [`spec/language.md`](/ja/spec/language) の「Aggregates」、ソース意味論は ADR-0012、引数形状ルールは ADR-0059。

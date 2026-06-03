@@ -102,4 +102,4 @@ const inputs = await readTemplateInputs(templateBuffer);
 - `select` 의 옵션은 `__inputs__` 행 안에서 파이프(`|`)로 구분합니다(예: `서울|부산|대구`). 옵션에 없는 값이 들어오면 `xl3/inputs/select-option` 가 발생합니다. 파이프 분리는 셀 템플릿 평가 **후** 동작하므로 `options: {{ __config__[regions] }}` 같은 표현식도 `__config__[regions]` 가 `서울|부산|대구` 리터럴 문자열이면 정상 동작합니다.
 - date 입력값은 `YYYY-MM-DD` 또는 `YYYY-MM-DDTHH:mm:ss` 형식으로 파싱됩니다.
 - number 입력값은 JS 숫자 리터럴을 받습니다. 끝의 공백은 허용됩니다.
-- 스펙 참조: [`spec/evaluation.md`](../../spec/evaluation.md) 의 "Inputs"; ADR-0010, ADR-0011, ADR-0050.
+- 스펙 참조: [`spec/evaluation.md`](/ko/spec/evaluation) 의 "Inputs"; ADR-0010, ADR-0011, ADR-0050.

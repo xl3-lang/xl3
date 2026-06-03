@@ -64,4 +64,4 @@ xl3 會保留範本中的合併：
 ## 備註
 
 - 活頁簿屬性（佈景主題、定義名稱、列印區域）會原樣保留。範本設定一次，每份輸出都繼承。
-- 規格參考：ADR-0032「Niche limits and workbook pass-through behaviors」；[`spec/evaluation.md`](../../spec/evaluation.md) 的「Cell Evaluation」針對儲存格層級的樣式。
+- 規格參考：ADR-0032「Niche limits and workbook pass-through behaviors」；[`spec/evaluation.md`](/zh-TW/spec/evaluation) 的「Cell Evaluation」針對儲存格層級的樣式。

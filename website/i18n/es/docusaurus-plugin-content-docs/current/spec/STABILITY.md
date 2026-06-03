@@ -209,7 +209,7 @@ comparación superior a la que soporta su runner.
 
 La especificación distingue:
 
-- **Núcleo (Core)**: las características del lenguaje requeridas para conformidad. Se resumen en [`README.md`](./README.md) y se definen en [`language.md`](./language.md) y [`evaluation.md`](./evaluation.md). Los cambios incompatibles aquí son eventos de versión de la especificación.
+- **Núcleo (Core)**: las características del lenguaje requeridas para conformidad. Se resumen en [`README.md`](/es/spec) y se definen en [`language.md`](/es/spec/language) y [`evaluation.md`](/es/spec/evaluation). Los cambios incompatibles aquí son eventos de versión de la especificación.
 - **Extensiones**: añadidos específicos de la implementación o del dominio. Pueden variar entre implementaciones. Se documentan en los README de la implementación, no en la especificación.
 
 Las implementaciones pueden (**MAY**) añadir extensiones, pero no

@@ -96,4 +96,4 @@ pagination_label: '03 · 合计与聚合'
 - `COUNT` 只统计非空值。如果想统计包括空在内的所有行，请对永远非空的列使用 `COUNT(Source[某必填列])`。
 - 对 0 个非空值求 `AVERAGE` 返回空（empty），不报错。
 - 聚合参数里出现复合表达式（字面量、算术、函数调用）会按 ADR-0059 抛出 `xl3/eval/bad-aggregate-arg`。
-- 规范参考：[`spec/language.md`](../../spec/language.md) "Aggregates"；源语义参考 ADR-0012；参数形态规则参考 ADR-0059。
+- 规范参考：[`spec/language.md`](/zh-CN/spec/language) "Aggregates"；源语义参考 ADR-0012；参数形态规则参考 ADR-0059。

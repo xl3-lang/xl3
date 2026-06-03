@@ -53,4 +53,4 @@ Tienes un `.xlsx` con renovaciones de clientes. Quieres un informe de una sola h
 - `{{ ... }}` es un **bloque de plantilla** — todo lo que va dentro se evalúa como una expresión XTL. Los espacios dentro de las llaves no son significativos.
 - El bloque de datos se detiene en la primera fila no vacía que no contiene un bloque de plantilla. Si añades una fila de pie de página (por ejemplo, una celda "Total"), permanece en su sitio mientras el bloque de datos se expande por encima.
 
-Véase también: [`spec/language.md`](../../spec/language.md), apartados "Template Blocks" y "Source Columns".
+Véase también: [`spec/language.md`](/es/spec/language), apartados "Template Blocks" y "Source Columns".

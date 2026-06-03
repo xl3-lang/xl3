@@ -30,7 +30,7 @@ conformance/
 - 文字 run 之間的空白被保留
 - 產生器中繼資料被剝除（creator、modifiedBy、lastModified）
 
-關於比對階段與正規化規則，請見 [`runner-protocol.md`](./runner-protocol.md)。
+關於比對階段與正規化規則，請見 [`runner-protocol.md`](/zh-TW/conformance/runner-protocol)。
 
 對於錯誤 fixture：當實作回報的錯誤訊息包含該 fixture 的 `expected_error` 文字時，即視為通過。錯誤 fixture 不包含 `expected.xlsx`，也沒有 `expected/` 目錄。
 
@@ -161,8 +161,8 @@ XTL 0.1 啟動版語料庫目前包含下列 fixture：
 
 ## 狀態
 
-XTL 0.1 語料庫處於 **啟動狀態**。新增 fixture 時，**SHOULD** 只針對已在 [`spec/README.md`](../spec/README.md) 中明文敘述的行為，沿用 CommonMark 等標準專案的相同模式：散文定義規則，fixture 把規則變得可執行，實作則回報自己通過了哪些 fixture。
+XTL 0.1 語料庫處於 **啟動狀態**。新增 fixture 時，**SHOULD** 只針對已在 [`spec/README.md`](/zh-TW/spec) 中明文敘述的行為，沿用 CommonMark 等標準專案的相同模式：散文定義規則，fixture 把規則變得可執行，實作則回報自己通過了哪些 fixture。
 
-參考實作不會把自己的行為視為規範。當 fixture 與實作不一致時，依 [`spec/README.md`](../spec/README.md) 中的規格優先順序，更新實作或更新 fixture。
+參考實作不會把自己的行為視為規範。當 fixture 與實作不一致時，依 [`spec/README.md`](/zh-TW/spec) 中的規格優先順序，更新實作或更新 fixture。
 
-XTL 0.1 核心行為的 fixture 會避開實作自訂的擴充，例如 [`spec/language.md`](../spec/language.md) 最低表格之外的 `TEXT()` 格式。
+XTL 0.1 核心行為的 fixture 會避開實作自訂的擴充，例如 [`spec/language.md`](/zh-TW/spec/language) 最低表格之外的 `TEXT()` 格式。

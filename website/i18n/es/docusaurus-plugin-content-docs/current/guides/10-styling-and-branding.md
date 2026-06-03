@@ -64,4 +64,4 @@ Si el origen tiene de verdad dos columnas con el mismo nombre (no por una combin
 ## Notas
 
 - Las propiedades del libro (temas, nombres definidos, áreas de impresión) se conservan literalmente. Configúralas una vez en la plantilla; cada salida las hereda.
-- Referencia de especificación: ADR-0032 "Niche limits and workbook pass-through behaviors"; [`spec/evaluation.md`](../../spec/evaluation.md) "Cell Evaluation" para los estilos a nivel de celda.
+- Referencia de especificación: ADR-0032 "Niche limits and workbook pass-through behaviors"; [`spec/evaluation.md`](/es/spec/evaluation) "Cell Evaluation" para los estilos a nivel de celda.

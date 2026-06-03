@@ -4,7 +4,7 @@
 
 現在のバージョンは **0.7.0**(npm)で、**XTL 0.1(ドラフト)**を対象としています。0.x の期間中は依然として破壊的変更が発生し得ます。1.0 のリリースはカレンダー上の日付ではなく、以下に挙げる項目によってゲーティングされます。
 
-> **詳細なバージョン計画**は [`docs/internal/blueprint-to-1.0.md`](./docs/internal/blueprint-to-1.0.md) にまとめてあります — ギャップ分析、設計思想の境界(xl3 ≠ JXLS)、バージョンごとのステップ計画です。本書はエレベーターピッチであり、ブループリントは根拠そのものです。
+> **詳細なバージョン計画**は [`docs/internal/blueprint-to-1.0.md`](https://github.com/jinyoung4478/xl3/blob/main/docs/internal/blueprint-to-1.0.md) にまとめてあります — ギャップ分析、設計思想の境界(xl3 ≠ JXLS)、バージョンごとのステップ計画です。本書はエレベーターピッチであり、ブループリントは根拠そのものです。
 >
 > **1.0 ゲートの唯一の正典は下記のテーブルです。** 本書とブループリントが矛盾する場合はこのテーブルが優先され、ブループリントの方をそれに合わせて更新します。
 
@@ -133,17 +133,17 @@ G23 が始まると、G24 の四半期クロックがカウント開始します
 
 これらは意図的に先送りしています。それぞれ理由を説明する ADR があります。
 
-- **Y/M/D/EOMONTH/EDATE/DATEDIF を超える日付演算** — その他のファミリーは [ADR-0019 改訂](./spec/decisions/0019-deferred-date-arithmetic.md) により先送り。
-- **ロケール対応の文字列照合** — [ADR-0020](./spec/decisions/0020-deferred-locale-collation.md)。
-- **マルチ結合、左結合、複数行マッチ** — [ADR-0014](./spec/decisions/0014-source-joins.md) のスコープ外セクション。
-- **XLOOKUP のワイルドカード / 近似 / 逆方向検索** — [ADR-0013](./spec/decisions/0013-xlookup-cross-source-lookup.md) のスコープ外セクション。
-- **動的画像挿入** — [ADR-0037](./spec/decisions/0037-rejected-dynamic-image-insertion.md)。
-- **実行時のセル変更** — [ADR-0042](./spec/decisions/0042-rejected-runtime-cell-mutation.md)。
-- **ADR-0043 ゲートにより却下された関数群** — 数学関数の拡張、型テスト(`ISBLANK` は ADR-0047 で例外的に採用)、NOW / WEEKDAY 等、条件付き集計、TEXT() 書式トークンの拡張。[ADR-0045](./spec/decisions/0045-function-batch-rejected.md) を参照。
+- **Y/M/D/EOMONTH/EDATE/DATEDIF を超える日付演算** — その他のファミリーは [ADR-0019 改訂](/ja/spec/decisions/0019-deferred-date-arithmetic) により先送り。
+- **ロケール対応の文字列照合** — [ADR-0020](/ja/spec/decisions/0020-deferred-locale-collation)。
+- **マルチ結合、左結合、複数行マッチ** — [ADR-0014](/ja/spec/decisions/0014-source-joins) のスコープ外セクション。
+- **XLOOKUP のワイルドカード / 近似 / 逆方向検索** — [ADR-0013](/ja/spec/decisions/0013-xlookup-cross-source-lookup) のスコープ外セクション。
+- **動的画像挿入** — [ADR-0037](/ja/spec/decisions/0037-rejected-dynamic-image-insertion)。
+- **実行時のセル変更** — [ADR-0042](/ja/spec/decisions/0042-rejected-runtime-cell-mutation)。
+- **ADR-0043 ゲートにより却下された関数群** — 数学関数の拡張、型テスト(`ISBLANK` は ADR-0047 で例外的に採用)、NOW / WEEKDAY 等、条件付き集計、TEXT() 書式トークンの拡張。[ADR-0045](/ja/spec/decisions/0045-function-batch-rejected) を参照。
 - **ストリーミング出力 / SXSSF 相当機能。** 1.1+ に先送り。**1.0 では代わりに、メモリ/行数のハードリミットを文書化(G21)します。**
 - **テンプレートコンパイルキャッシュ API。** 1.1+ に先送り。
 - **PDF / HTML 出力。** スコープ外。xl3 は xlsx 入力 - xlsx 出力に特化します。
-- **`093` を超えるクロスライター Stage 2 フィクスチャ** — [ADR-0006](./spec/decisions/0006-stage-2-ooxml-conformance.md) 改訂。
+- **`093` を超えるクロスライター Stage 2 フィクスチャ** — [ADR-0006](/ja/spec/decisions/0006-stage-2-ooxml-conformance) 改訂。
 
 これらは需要に応じて **XTL 1.1、1.2、1.x** の候補として残ります。
 
@@ -151,9 +151,9 @@ G23 が始まると、G24 の四半期クロックがカウント開始します
 
 | 項目 | 貢献の仕方 |
 |---|---|
-| G13 第二実装 ≥ 80% | [xl3-py](https://github.com/jinyoung4478/xl3-py) に貢献するか、新たな移植(Rust、Java、Go)を始める。[PORTERS_GUIDE.md](./PORTERS_GUIDE.md) を参照。 |
-| G14 外部 ADR | 先送り項目(ピボットテーブル保持、改ページ、ADR-0045 で除外された関数)を一つ選び、`spec/decisions/` に ADR を起草する。[GOVERNANCE.md](./GOVERNANCE.md) の「How changes enter the project」を参照。いくつかの「スターター ADR スタブ」が GitHub の `good-first-ADR` イシューとして用意されています。 |
-| G15 本番事例 | xl3 を内部で利用し、うまくいったこと/いかなかったことを共有する。適切であれば [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) に行を追加する。メンテナ自身の雇用主(Snack24h)も、公開ケーススタディを出せば対象となります。 |
+| G13 第二実装 ≥ 80% | [xl3-py](https://github.com/jinyoung4478/xl3-py) に貢献するか、新たな移植(Rust、Java、Go)を始める。[PORTERS_GUIDE.md](/ja/porters-guide) を参照。 |
+| G14 外部 ADR | 先送り項目(ピボットテーブル保持、改ページ、ADR-0045 で除外された関数)を一つ選び、`spec/decisions/` に ADR を起草する。[GOVERNANCE.md](/ja/governance) の「How changes enter the project」を参照。いくつかの「スターター ADR スタブ」が GitHub の `good-first-ADR` イシューとして用意されています。 |
+| G15 本番事例 | xl3 を内部で利用し、うまくいったこと/いかなかったことを共有する。適切であれば [IMPLEMENTATIONS.md](/ja/implementations) に行を追加する。メンテナ自身の雇用主(Snack24h)も、公開ケーススタディを出せば対象となります。 |
 | G17 韓国語クックブック 16+17 i18n | 新しめの 2 レシピを翻訳する(他は完了済み)。 |
 | G8 ベンチマーク | 代表的なテンプレートで `npm run bench` を回し、結果を共有する。 |
 | G10 クロスブラウザ | Safari + Firefox をバンドルスモークテストに追加する。 |
@@ -161,6 +161,6 @@ G23 が始まると、G24 の四半期クロックがカウント開始します
 
 ## このロードマップの更新方法
 
-本書は公開エレベーターピッチであり、ゲートテーブルが唯一の正典です。より深い [`docs/internal/blueprint-to-1.0.md`](./docs/internal/blueprint-to-1.0.md) が、ギャップ分析、設計思想の境界、バージョンごとの根拠を扱います。ゲートがチェックされるごとに、両方のドキュメントを更新します。新たなギャップが浮かべば、両方に追記します。
+本書は公開エレベーターピッチであり、ゲートテーブルが唯一の正典です。より深い [`docs/internal/blueprint-to-1.0.md`](https://github.com/jinyoung4478/xl3/blob/main/docs/internal/blueprint-to-1.0.md) が、ギャップ分析、設計思想の境界、バージョンごとの根拠を扱います。ゲートがチェックされるごとに、両方のドキュメントを更新します。新たなギャップが浮かべば、両方に追記します。
 
 1.0 ゲートテーブルへの追加や削除は、他のすべてと同じく ADR / イシュープロセスを通して議論されます。

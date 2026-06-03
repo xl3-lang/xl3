@@ -73,4 +73,4 @@ Véase la [Receta 03](./03-aggregates.md).
 - Un solo `@source` y un solo `@join` por bloque de datos. Las duplicaciones lanzan `xl3/directive/invalid-syntax` según ADR-0029.
 - El multi-join (encadenar varios `@join`) está aplazado según ADR-0014.
 - Los nombres de función se comparan sin distinguir mayúsculas: `if`, `If`, `IF`.
-- Referencia de especificación: [`spec/evaluation.md`](../../spec/evaluation.md) "External Data Sources"; ADR-0012, ADR-0014.
+- Referencia de especificación: [`spec/evaluation.md`](/es/spec/evaluation) "External Data Sources"; ADR-0012, ADR-0014.

@@ -96,4 +96,4 @@ Esto funciona porque `{{ [Cantidad] * [Precio] }}` se evalúa por cada fila iter
 - `COUNT` cuenta valores no vacíos. Para contar todas las filas, incluidas las vacías, usa `COUNT(Source[any-required-col])` sobre una columna que nunca esté vacía.
 - `AVERAGE` sobre cero valores no vacíos devuelve vacío, no error.
 - Las expresiones compuestas dentro del agregado (literal, aritmética, llamada a función) lanzan `xl3/eval/bad-aggregate-arg` según ADR-0059.
-- Referencia de especificación: [`spec/language.md`](../../spec/language.md) "Aggregates"; ADR-0012 para la semántica de fuentes; ADR-0059 para la regla sobre la forma del argumento.
+- Referencia de especificación: [`spec/language.md`](/es/spec/language) "Aggregates"; ADR-0012 para la semántica de fuentes; ADR-0059 para la regla sobre la forma del argumento.

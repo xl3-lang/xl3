@@ -108,7 +108,7 @@ Un bloque de datos puede (**MAY**) añadir **una** directiva `@join` inmediatame
 {{ [Account] }} | {{ Customers[Name] }} | {{ [Amount] }}
 ```
 
-Para cada fila primaria, el motor encuentra la **primera** fila unida que coincide (según [Algoritmo de comparación](./language.md#comparison-algorithm)) y renderiza el par. "Primera" se define por el orden natural de filas de la fuente unida — de arriba a abajo sobre su rango `source_table`. Esto es normativo: cuando varias filas unidas tienen una clave de unión igual, dos implementaciones deben (**MUST**) elegir la misma fila emparejada.
+Para cada fila primaria, el motor encuentra la **primera** fila unida que coincide (según [Algoritmo de comparación](/es/spec/language#comparison-algorithm)) y renderiza el par. "Primera" se define por el orden natural de filas de la fuente unida — de arriba a abajo sobre su rango `source_table`. Esto es normativo: cuando varias filas unidas tienen una clave de unión igual, dos implementaciones deben (**MUST**) elegir la misma fila emparejada.
 
 Si no se encuentra coincidencia, la fila primaria se **descarta** (semántica de inner-join).
 
@@ -143,7 +143,7 @@ Según ADR-0063, la celda `options` se divide por `|` después de la evaluación
 
 Las entradas se coercionan a partir de los valores suministrados por el host:
 
-- `text` — deja pasar la cadena del host. Los valores no-cadena del host se convierten a cadena vía la forma de cadena canónica (ver [Comparación y coerción de cadenas](./language.md#comparison-and-string-coercion)).
+- `text` — deja pasar la cadena del host. Los valores no-cadena del host se convierten a cadena vía la forma de cadena canónica (ver [Comparación y coerción de cadenas](/es/spec/language#comparison-and-string-coercion)).
 - `number` — se analiza vía "recortar, luego `Number()` sin producir `NaN`". El fallo es un error.
 - `date` — se coerciona por las mismas reglas que las celdas de expresión única con formato de fecha. El fallo es un error.
 - `select` — el valor del host debe (**MUST**) ser igual a una de las `options` declaradas tras la normalización de forma canónica de cadena. El fallo es un error.
@@ -240,7 +240,7 @@ La hoja `__lists__`:
 
 - Puede (**MAY**) ser visible, oculta o muy oculta en la plantilla.
 - Debe (**MUST**) eliminarse de los libros de salida.
-- Cada celda se convierte a su forma canónica de cadena según [Comparación y coerción de cadenas](./language.md#comparison-and-string-coercion) y se recorta de espacios en blanco Unicode. Las celdas vacías tras el recorte (según [Valores vacíos](#valores-vacíos)) se omiten.
+- Cada celda se convierte a su forma canónica de cadena según [Comparación y coerción de cadenas](/es/spec/language#comparison-and-string-coercion) y se recorta de espacios en blanco Unicode. Las celdas vacías tras el recorte (según [Valores vacíos](#valores-vacíos)) se omiten.
 - El orden dentro de cada columna se preserva. Las entradas duplicadas no se eliminan.
 
 Las listas se referencian desde directivas de filtro:
@@ -292,7 +292,7 @@ La ordenación de la salida es determinista y guiada por la fuente:
 - Los **grupos de hoja dentro de un archivo** aparecen en orden de **primera aparición** sobre la lista de filas del grupo de archivo. La primera fila coincidente determina la posición de la hoja.
 - El orden de iteración de fuente única es la lectura de `source_table` de arriba a abajo. Con datos multi-fuente (ver [Fuentes externas de datos](#fuentes-externas-de-datos)) la regla se aplica a las filas de la fuente *primaria*; las fuentes nombradas contribuyen a agregados y joins pero no afectan al orden de salida.
 
-La estabilidad de ordenamiento se define en [`@sort`](./language.md#sort): las claves de ordenamiento iguales preservan el orden de origen.
+La estabilidad de ordenamiento se define en [`@sort`](/es/spec/language#sort): las claves de ordenamiento iguales preservan el orden de origen.
 
 ## Directivas
 
@@ -467,7 +467,7 @@ Los hosts que acepten plantillas no confiables (p. ej., un SaaS que acepta `.xls
 
 ### Límites de implementación — implementación de referencia (xl3-js)
 
-La implementación de referencia publica los siguientes límites soft (puerta G21 del ROADMAP). Estos son *límites de corrección*, no límites de seguridad — los hosts que acepten entrada no confiable deben (**MUST**) añadir su propia capa de aplicación según [`SECURITY.md`](../SECURITY.md). Los valores siguientes son borrador para 0.6.0 y se ajustarán a medida que aterrice el corpus de bench (G8).
+La implementación de referencia publica los siguientes límites soft (puerta G21 del ROADMAP). Estos son *límites de corrección*, no límites de seguridad — los hosts que acepten entrada no confiable deben (**MUST**) añadir su propia capa de aplicación según [`SECURITY.md`](https://github.com/jinyoung4478/xl3/blob/main/SECURITY.md). Los valores siguientes son borrador para 0.6.0 y se ajustarán a medida que aterrice el corpus de bench (G8).
 
 | Dimensión | Límite soft (borrador) | Comportamiento al alcanzar el límite |
 |---|---|---|

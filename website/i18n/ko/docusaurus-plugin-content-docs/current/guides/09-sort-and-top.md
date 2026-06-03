@@ -66,4 +66,4 @@ pagination_label: '09 · 정렬과 상위 N개'
 
 - 안정 정렬은 키가 같을 때 입력 순서를 유지한다는 뜻 — `@sort` 디렉티브를 여러 개 써서 동률을 가르는 보조 키로 활용할 때 핵심입니다.
 - `@sort` 뒤에 `@top` 을 쓰는 것이 정석적인 "상위 N" 패턴입니다. `@top` 만 단독으로 쓰면 원본 순서대로 첫 N 개 행을 반환합니다.
-- 스펙 참고: [`spec/language.md`](../../spec/language.md) "Sort" / "Top"; ADR-0016.
+- 스펙 참고: [`spec/language.md`](/ko/spec/language) "Sort" / "Top"; ADR-0016.

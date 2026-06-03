@@ -64,7 +64,7 @@ xl3 soporta la tabla básica de formatos de Excel. Los formatos fuera de la tabl
 
 ## Referencias de especificación
 
-- [`spec/language.md`](../../spec/language.md) "TEXT" + la tabla básica de formatos.
+- [`spec/language.md`](/es/spec/language) "TEXT" + la tabla básica de formatos.
 - ADR-0001 (`TODAY()` es UTC).
 - ADR-0017 (modelo de valor para fechas).
 - ADR-0021 (las cadenas de formato personalizadas son definidas por la implementación).

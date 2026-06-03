@@ -41,7 +41,7 @@ Operadores de comparación: `=`, `!=`, `>`, `<`, `>=`, `<=`. El tercer argumento
 {{ "Cat-" & IF([Renovacion] > 10000, "A", "B") & "-" & [Region] }}
 ```
 
-`&` es el operador de concatenación de cadenas. Los operandos se convierten a su forma canónica (véase [`spec/language.md`](../../spec/language.md), "Canonical String Form").
+`&` es el operador de concatenación de cadenas. Los operandos se convierten a su forma canónica (véase [`spec/language.md`](/es/spec/language), "Canonical String Form").
 
 ## Notas
 

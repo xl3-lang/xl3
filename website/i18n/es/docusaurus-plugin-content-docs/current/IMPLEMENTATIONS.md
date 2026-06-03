@@ -9,7 +9,7 @@ Implementaciones de la [especificación XTL](./spec/). xl3 es la implementación
 
 ## Añadir una implementación
 
-Lee primero [`PORTERS_GUIDE.md`](./PORTERS_GUIDE.md) — distingue los
+Lee primero [`PORTERS_GUIDE.md`](/es/porters-guide) — distingue los
 requisitos normativos de la especificación de los detalles incidentales
 de la implementación TS y propone un orden de desarrollo recomendado
 ligado al corpus de conformidad.
@@ -17,7 +17,7 @@ ligado al corpus de conformidad.
 Para listar un portado aquí:
 
 1. Implementa lo suficiente de XTL 0.1 para pasar los [fixtures de conformidad](./conformance/fixtures/) que tengas como objetivo.
-2. Ejecuta tu implementación contra [`conformance/`](./conformance/) siguiendo [`conformance/runner-protocol.md`](./conformance/runner-protocol.md).
+2. Ejecuta tu implementación contra [`conformance/`](./conformance/) siguiendo [`conformance/runner-protocol.md`](/es/conformance/runner-protocol).
 3. Abre un PR añadiendo una fila a la tabla de arriba con: lenguaje, URL del paquete, versión de la especificación objetivo, estado de conformidad (full / partial / N de M fixtures).
 
 Los portados en desarrollo activo son bienvenidos — enlaza tu repo en

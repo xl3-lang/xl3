@@ -90,6 +90,6 @@ Si la celda mezcla literales: `{{ [Importe] }} EUR`, el resultado es `" EUR"` (c
 
 ## Referencias de especificación
 
-- [`spec/evaluation.md`](../../spec/evaluation.md) "Empty Values".
+- [`spec/evaluation.md`](/es/spec/evaluation) "Empty Values".
 - ADR-0007 (definición de vacío), ADR-0008 (reglas de verdad), ADR-0026 (ciclo de vida).
 - [Receta 02](./02-conditional-cells.md) para lo básico de IF/IFEMPTY.

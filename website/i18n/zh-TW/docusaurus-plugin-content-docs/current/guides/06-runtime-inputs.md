@@ -87,4 +87,4 @@ const inputs = await readTemplateInputs(templateBuffer);
 - `select` 的選項在 `__inputs__` 列裡以 `|` 分隔（例如 `台北|高雄|台中`）。傳入不在選項中的值會丟 `xl3/inputs/select-option`。pipe 拆分發生在儲存格範本求值**之後**，所以 `options: {{ __config__[regions] }}` 是行得通的 — 只要 `__config__[regions]` 是字面字串 `台北|高雄|台中`。
 - 日期輸入會以 `YYYY-MM-DD` 或 `YYYY-MM-DDTHH:mm:ss` 解析。
 - 數字輸入接受 JS 數字字面值；允許結尾空白。
-- 規格參考：[`spec/evaluation.md`](../../spec/evaluation.md) 的「Inputs」；ADR-0010、ADR-0011、ADR-0050。
+- 規格參考：[`spec/evaluation.md`](/zh-TW/spec/evaluation) 的「Inputs」；ADR-0010、ADR-0011、ADR-0050。

@@ -41,7 +41,7 @@ pagination_label: '02 · 조건부 셀'
 {{ "등급-" & IF([갱신액] > 10000, "A", "B") & "-" & [지역] }}
 ```
 
-`&` 는 문자열 결합 연산자입니다. 피연산자는 표준 문자열 형태로 변환됩니다 ([`spec/language.md`](../../spec/language.md) "Canonical String Form" 참고).
+`&` 는 문자열 결합 연산자입니다. 피연산자는 표준 문자열 형태로 변환됩니다 ([`spec/language.md`](/ko/spec/language) "Canonical String Form" 참고).
 
 ## 참고
 

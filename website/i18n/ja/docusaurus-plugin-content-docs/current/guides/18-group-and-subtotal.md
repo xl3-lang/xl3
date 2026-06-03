@@ -111,8 +111,8 @@ XTL 0.6 はこのパターンを 1 つのデータブロック内で作ってく
 
 ## 参照
 
-- [ADR-0038 — `@group` と `@subtotal` directive](../../spec/decisions/0038-group-and-subtotal.md)
-- [`spec/language.md` § "Group + Subtotal"](../../spec/language.md)
+- [ADR-0038 — `@group` と `@subtotal` directive](/ja/spec/decisions/0038-group-and-subtotal)
+- [`spec/language.md` § "Group + Subtotal"](/ja/spec/language)
 - [Cookbook 03 — 集計関数](./03-aggregates.md) ― グループ化なしでブロックレベルで使う
   `SUM` / `COUNT` / `AVERAGE`
 - [Cookbook 15 — Directive 組み合わせ](./15-directive-composition.md) ― 全 directive

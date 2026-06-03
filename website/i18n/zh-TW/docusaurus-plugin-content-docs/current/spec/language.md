@@ -8,7 +8,7 @@
 
 `{{ ... }}` 範本區塊內容的形式文法位於
 [`grammar.ebnf`](./grammar.ebnf)——為移植者與工具鏈提供的非規範性
-輔助材料。術語定義位於 [`glossary.md`](./glossary.md)。
+輔助材料。術語定義位於 [`glossary.md`](/zh-TW/spec/glossary)。
 
 ## 範本區塊
 
@@ -145,7 +145,7 @@ XTL 0.1 支援：
 |---|---|
 | 數字（有限） | 自身 |
 | 布林 | 1（TRUE）／ 0（FALSE） |
-| 空值（依 [空值](./evaluation.md#empty-values)） | 0 |
+| 空值（依 [空值](/zh-TW/spec/evaluation#empty-values)） | 0 |
 | 可解析為有限數字的字串 | 解析後的數字 |
 | 無法解析為數字的字串 | 錯誤 `xl3/eval/operand-coercion` |
 | 日期 | 錯誤 |
@@ -247,7 +247,7 @@ Excel 錯誤儲存格；在文字格式儲存格、混合文字儲存格，或 `
 
 值的正規字串形式為：
 
-- 空值（依 [空值](./evaluation.md#empty-values)）為空字串 `""`。
+- 空值（依 [空值](/zh-TW/spec/evaluation#empty-values)）為空字串 `""`。
 - 布林：`TRUE` 或 `FALSE`（大寫）。
 - 有限數字：能唯一識別該值的最短十進位表示法，以 `.` 作為
   小數點，且在 `[1e-6, 1e21)` 範圍內的量級不使用科學記號。
@@ -347,7 +347,7 @@ Excel 錯誤儲存格；在文字格式儲存格、混合文字儲存格，或 `
 
 - 布林 `false`。
 - 數字 `0`。
-- 依 [空值](./evaluation.md#empty-values) 為空的值——缺失、`""`，
+- 依 [空值](/zh-TW/spec/evaluation#empty-values) 為空的值——缺失、`""`，
   或僅含空白的字串。
 
 字串 `"0"` 或 `"false"` **沒有**任何特殊處理。內容非空白
@@ -363,7 +363,7 @@ Excel 錯誤儲存格；在文字格式儲存格、混合文字儲存格，或 `
 {{ IFEMPTY([memo], "-") }}
 ```
 
-當第一個引數依 [空值](./evaluation.md#empty-values) 為空時回傳
+當第一個引數依 [空值](/zh-TW/spec/evaluation#empty-values) 為空時回傳
 第二個引數。否則回傳第一個引數。
 
 ### XLOOKUP
@@ -409,7 +409,7 @@ XTL 0.1 僅支援精確比對——不支援萬用字元、近似比對或反向
 ```
 
 `COUNT()` 計算列數。`COUNT([field])` 計算 `[field]` 值依
-[空值](./evaluation.md#empty-values) 為非空的列數。
+[空值](/zh-TW/spec/evaluation#empty-values) 為非空的列數。
 
 依 ADR-0059，`SUM`、`AVERAGE`（及其 `AVG` 別名）、`MIN`、
 `MAX`，以及 1 個引數形式的 `COUNT` 的單一引數**必須**（**MUST**）

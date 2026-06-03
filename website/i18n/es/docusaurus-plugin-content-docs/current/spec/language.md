@@ -6,7 +6,7 @@ Esta traducción al español es una ayuda de lectura. La fuente canónica de la 
 
 Este documento define la superficie del lenguaje de plantillas XTL 0.1. La notación que aparece aquí es normativa para los autores de plantillas y para las implementaciones.
 
-Una gramática formal para el contenido de los bloques de plantilla `{{ ... }}` vive en [`grammar.ebnf`](./grammar.ebnf) — material de apoyo no normativo para porteadores y herramientas. Las definiciones de términos viven en [`glossary.md`](./glossary.md).
+Una gramática formal para el contenido de los bloques de plantilla `{{ ... }}` vive en [`grammar.ebnf`](./grammar.ebnf) — material de apoyo no normativo para porteadores y herramientas. Las definiciones de términos viven en [`glossary.md`](/es/spec/glossary).
 
 ## Bloques de plantilla
 
@@ -118,7 +118,7 @@ Ambos operandos deben (**MUST**) coercionarse a un número finito. Reglas de coe
 |---|---|
 | Número (finito) | él mismo |
 | Booleano | 1 (TRUE) / 0 (FALSE) |
-| Vacío (según [Valores vacíos](./evaluation.md#valores-vacíos)) | 0 |
+| Vacío (según [Valores vacíos](/es/spec/evaluation#valores-vacíos)) | 0 |
 | Cadena que se analiza como número finito | número analizado |
 | Cadena que no se analiza como número | error `xl3/eval/operand-coercion` |
 | Fecha | error |
@@ -196,7 +196,7 @@ Los operadores de comparación (`=`, `!=`, `>`, `<`, `>=`, `<=`) y el operador d
 
 La forma canónica de cadena de un valor es:
 
-- Un valor vacío (según [Valores vacíos](./evaluation.md#valores-vacíos)) es la cadena vacía `""`.
+- Un valor vacío (según [Valores vacíos](/es/spec/evaluation#valores-vacíos)) es la cadena vacía `""`.
 - Un booleano: `TRUE` o `FALSE` (en mayúsculas).
 - Un número finito: la representación decimal más corta que identifica unívocamente al valor, usando `.` como separador decimal y sin notación científica para magnitudes en `[1e-6, 1e21)`. Los enteros omiten el punto decimal final. Coincide con ECMA-262 §6.1.6.1.13.
 - Una cadena: la propia cadena.
@@ -270,7 +270,7 @@ Un valor es **veraz** salvo que sea uno de:
 
 - El booleano `false`.
 - El número `0`.
-- Un valor vacío según [Valores vacíos](./evaluation.md#valores-vacíos) — ausente, `""`, o una cadena formada solo por espacios.
+- Un valor vacío según [Valores vacíos](/es/spec/evaluation#valores-vacíos) — ausente, `""`, o una cadena formada solo por espacios.
 
 No existe un trato especial para las cadenas `"0"` o `"false"`. Una cadena con contenido distinto de espacios siempre es veraz, incluido un valor de flag con tipo de cadena `"0"` o `"false"`. Las plantillas que necesiten interpretar un flag así deben (**MUST**) comparar explícitamente, por ejemplo `IF([flag] = "1", …)`.
 
@@ -282,7 +282,7 @@ Las expresiones de comparación evalúan a un booleano y son veraces cuando la c
 {{ IFEMPTY([memo], "-") }}
 ```
 
-Devuelve el segundo argumento cuando el primero está vacío según [Valores vacíos](./evaluation.md#valores-vacíos). En caso contrario devuelve el primer argumento.
+Devuelve el segundo argumento cuando el primero está vacío según [Valores vacíos](/es/spec/evaluation#valores-vacíos). En caso contrario devuelve el primer argumento.
 
 ### XLOOKUP
 
@@ -315,7 +315,7 @@ Las agregaciones operan sobre el conjunto de filas renderizadas actual.
 {{ MAX([date]) }}
 ```
 
-`COUNT()` cuenta filas. `COUNT([field])` cuenta filas cuyo valor `[field]` no está vacío según [Valores vacíos](./evaluation.md#valores-vacíos).
+`COUNT()` cuenta filas. `COUNT([field])` cuenta filas cuyo valor `[field]` no está vacío según [Valores vacíos](/es/spec/evaluation#valores-vacíos).
 
 Según ADR-0059, el único argumento de `SUM`, `AVERAGE` (y su alias `AVG`), `MIN`, `MAX`, y la forma de 1 arg de `COUNT` debe (**MUST**) ser una referencia a columna de la forma `[Column]` o `Source[Column]`. Cualquier otra forma (literal, expresión, llamada a función) lanza (**raises**) `xl3/eval/bad-aggregate-arg`. Los autores que necesiten una agregación calculada por fila o bien añaden una columna auxiliar aguas arriba o calculan el valor por fila en una celda separada.
 

@@ -7,7 +7,7 @@ quieras responder "¿dónde está el texto vinculante sobre X?" sin
 recurrir a grep.
 
 La columna de fixtures muestra el fixture (o fixtures) de menor número;
-consulta [`coverage.md`](../conformance/coverage.md) para la matriz
+consulta [`coverage.md`](/es/conformance/coverage) para la matriz
 completa ADR ↔ fixture.
 
 | Superficie | Sección de la especificación | ADR que la rigen | Fixtures de muestra |
@@ -71,7 +71,7 @@ completa ADR ↔ fixture.
 XTL 0.1 deja deliberadamente estas áreas a las implementaciones.
 Elegir de forma distinta entre dos ports NO hace que ninguno deje de
 ser conforme. Consulta
-[ADR-0021](./decisions/0021-implementation-defined-boundaries.md)
+[ADR-0021](/es/spec/decisions/0021-implementation-defined-boundaries)
 para el catálogo completo.
 
 | Área | Posición de XTL 0.1 |

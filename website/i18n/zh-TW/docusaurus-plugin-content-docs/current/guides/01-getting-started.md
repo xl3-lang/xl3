@@ -53,4 +53,4 @@ pagination_label: '01 · 快速上手'
 - `{{ ... }}` 是**範本區塊**，大括號內的內容會以 XTL 表達式求值。大括號內的空白沒有意義。
 - 資料區塊會在第一個不含範本區塊、且非空白的列停下來。加一個頁尾列（例如「合計」儲存格）後，它會留在原處，資料區塊只在它上方展開。
 
-延伸閱讀：[`spec/language.md`](../../spec/language.md) 的「Template Blocks」與「Source Columns」章節。
+延伸閱讀：[`spec/language.md`](/zh-TW/spec/language) 的「Template Blocks」與「Source Columns」章節。

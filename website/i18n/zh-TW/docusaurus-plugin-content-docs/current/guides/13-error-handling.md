@@ -91,5 +91,5 @@ const preview = await xl3.preview(template, data, options);
 ## 規格指引
 
 - ADR-0015 — Structured error reporting。
-- [`spec/evaluation.md`](../../spec/evaluation.md) 的「Errors」。
+- [`spec/evaluation.md`](/zh-TW/spec/evaluation) 的「Errors」。
 - [食譜 06](./06-runtime-inputs.md) 涵蓋輸入相關錯誤。

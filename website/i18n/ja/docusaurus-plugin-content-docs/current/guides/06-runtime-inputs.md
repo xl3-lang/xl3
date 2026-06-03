@@ -100,4 +100,4 @@ const inputs = await readTemplateInputs(templateBuffer);
 - `select` のオプションは `__inputs__` 行内でパイプ(`|`)で区切ります(例: `東京|大阪|名古屋`)。オプションにない値が渡されると `xl3/inputs/select-option` が発生します。パイプ分割はセルテンプレート評価の**後**に動作するので、`options: {{ __config__[regions] }}` のような式も `__config__[regions]` が `東京|大阪|名古屋` というリテラル文字列であれば正常動作します。
 - date 入力値は `YYYY-MM-DD` または `YYYY-MM-DDTHH:mm:ss` 形式でパースされます。
 - number 入力値は JS 数値リテラルを受け付けます。末尾の空白は許容されます。
-- スペック参照: [`spec/evaluation.md`](../../spec/evaluation.md) の「Inputs」、ADR-0010、ADR-0011、ADR-0050。
+- スペック参照: [`spec/evaluation.md`](/ja/spec/evaluation) の「Inputs」、ADR-0010、ADR-0011、ADR-0050。

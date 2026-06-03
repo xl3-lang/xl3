@@ -65,4 +65,4 @@ xl3 는 어떤 `(원본, 컬럼)` 쌍에 대해 XLOOKUP 이 처음 실행될 때
 
 - 비교는 타입을 인지합니다 — 숫자와 숫자형 문자열은 경계를 넘어 매치되므로, `XLOOKUP("42", 거래처[id], ...)` 는 `id` 가 숫자 `42` 인 행을 찾아냅니다.
 - 주 원본의 모든 행을 다른 원본의 행과 짝지어야 한다면 `@join` 을, 다른 원본에서 셀 하나만 끌어오면 된다면 `XLOOKUP` 을 쓰세요.
-- 스펙 참조: [`spec/language.md`](../../spec/language.md) 의 "XLOOKUP"; ADR-0013.
+- 스펙 참조: [`spec/language.md`](/ko/spec/language) 의 "XLOOKUP"; ADR-0013.

@@ -201,7 +201,7 @@ deberían actualizar primero este protocolo.
 
 Estos casos NO son normalizados por el canonicalizador actual. Se
 tratan como diferencias si llegan a aparecer. Consulta la enmienda de
-[ADR-0006](../spec/decisions/0006-stage-2-ooxml-conformance.md) para la justificación.
+[ADR-0006](/es/spec/decisions/0006-stage-2-ooxml-conformance) para la justificación.
 
 - **Equivalencia de atributos por defecto.** Un atributo booleano que un
   default de OOXML especifica, omitido vs. emitido como el valor por
@@ -275,4 +275,4 @@ Una implementación reporta su nivel de conformidad enlazando a una ejecución p
 xl3-py 0.2.0 — XTL 0.1 conformance: 38/42 (passes filter, repeat, aggregate; fails image-clone, _config-pattern-match, two date-edge cases)
 ```
 
-El [`IMPLEMENTATIONS.md`](../IMPLEMENTATIONS.md) del repo lista las implementaciones conocidas y sus niveles de conformidad.
+El [`IMPLEMENTATIONS.md`](/es/implementations) del repo lista las implementaciones conocidas y sus niveles de conformidad.

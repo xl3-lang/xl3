@@ -21,8 +21,8 @@ xl3 处于**形成期**。一位维护者同时是：
 |---|---|---|
 | **维护者** | 对 ADR 和实现 PR 拥有最终接受/拒绝权。发布版本。 | 当前为项目作者本人。 |
 | **规范编辑** | 起草 ADR，编辑 `spec/language.md` 与 `spec/evaluation.md`。 | 当前由维护者担任。 |
-| **移植作者** | 用其他语言实现 XTL；在 [`conformance/fixtures/`](./conformance/fixtures/) 上跑一致性测试。 | 任何人。在 [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) 中列出。 |
-| **贡献者** | 提议题、发 PR、提案测试用例或 ADR。 | 任何人。参见 [CONTRIBUTING.md](./CONTRIBUTING.md)。 |
+| **移植作者** | 用其他语言实现 XTL；在 [`conformance/fixtures/`](./conformance/fixtures/) 上跑一致性测试。 | 任何人。在 [IMPLEMENTATIONS.md](/zh-CN/implementations) 中列出。 |
+| **贡献者** | 提议题、发 PR、提案测试用例或 ADR。 | 任何人。参见 [CONTRIBUTING.md](/zh-CN/contributing)。 |
 
 当外部贡献者能够持续审阅并落地变更时，维护者集合就会扩大。没有正式的投票流程——维护者承诺会在合适的时机扩大维护者集合，并在那一刻进行文档记录。
 
@@ -57,7 +57,7 @@ xl3 处于**形成期**。一位维护者同时是：
 测试用例让 XTL 成为_可执行_的。新测试用例扩展整个语料库：
 
 1. 提议题或使用 **fixture 提案** 议题模板。
-2. 按照 [`conformance/AUTHORING.md`](./conformance/AUTHORING.md) 编写测试用例。
+2. 按照 [`conformance/AUTHORING.md`](/zh-CN/conformance/authoring) 编写测试用例。
    核心准则：**期望输出来自规范，不来自跑参考实现得到的结果。**
 3. 提交 PR。
 4. 维护者评审。比 ADR 的批准更快，因为测试用例的约束力更弱——它记录一个已存在的规范规则，而不是创造一个新规则。
@@ -89,7 +89,7 @@ xl3 处于**形成期**。一位维护者同时是：
 1. **在生产中使用它，并反馈缺什么。** 真实采用是优先级最强的信号。
 2. **提案一个 fixture。** 一个新测试用例迫使规范文字比单纯散文更清晰。即便是未被接受的 fixture 提案，通常也能触发规范改进。
 3. **移植到第二门语言并跑通一致性语料。** 一个独立的第二实现发现规范缺口的速度比任何评审都快。
-   参见 [PORTERS_GUIDE.md](./PORTERS_GUIDE.md)。
+   参见 [PORTERS_GUIDE.md](/zh-CN/porters-guide)。
 4. **在延期项上发起一份 ADR 草稿。** 在 [`spec/decisions/`](./spec/decisions/) 中延期的事项（日期运算、区域感知排序、多表 join 等）都是未来 ADR 的候选项——欢迎具体提案。
 
 ## 本文档如何演进

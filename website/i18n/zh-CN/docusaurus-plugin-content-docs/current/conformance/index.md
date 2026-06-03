@@ -30,7 +30,7 @@ conformance/
 - 文本运行中的空白保留
 - 剥离生成器元数据（creator、modifiedBy、lastModified）
 
-比较阶段与规范化规则参见 [`runner-protocol.md`](./runner-protocol.md)。
+比较阶段与规范化规则参见 [`runner-protocol.md`](/zh-CN/conformance/runner-protocol)。
 
 错误 fixture 通过的条件是：实现报告的错误信息包含 fixture 中 `expected_error` 指定的文本。错误 fixture 不包含 `expected.xlsx` 或 `expected/` 目录。
 
@@ -161,8 +161,8 @@ XTL 0.1 引导语料当前包含如下 fixture：
 
 ## 状态
 
-XTL 0.1 语料处于**引导状态**。仅应针对已在 [`spec/README.md`](../spec/README.md) 中表述的行为添加 fixture，遵循 CommonMark 等标准项目的同一模式：散文定义规则，fixture 让规则可执行，实现报告其通过了哪些 fixture。
+XTL 0.1 语料处于**引导状态**。仅应针对已在 [`spec/README.md`](/zh-CN/spec) 中表述的行为添加 fixture，遵循 CommonMark 等标准项目的同一模式：散文定义规则，fixture 让规则可执行，实现报告其通过了哪些 fixture。
 
-参考实现本身的行为不具有规范性。当 fixture 与实现不一致时，依据 [`spec/README.md`](../spec/README.md) 中的规范优先级，更新实现或更新 fixture。
+参考实现本身的行为不具有规范性。当 fixture 与实现不一致时，依据 [`spec/README.md`](/zh-CN/spec) 中的规范优先级，更新实现或更新 fixture。
 
-XTL 0.1 核心行为的 fixture 避免使用实现定义的扩展，例如 [`spec/language.md`](../spec/language.md) 中最小表格之外的 `TEXT()` 格式。
+XTL 0.1 核心行为的 fixture 避免使用实现定义的扩展，例如 [`spec/language.md`](/zh-CN/spec/language) 中最小表格之外的 `TEXT()` 格式。

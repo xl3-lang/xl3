@@ -90,7 +90,7 @@ pagination_label: '15 · 組合指示子'
 ## 規格指引
 
 - ADR-0029 — Directive composition + source edge semantics。
-- [`spec/language.md`](../../spec/language.md) 的「Filter」、「Sort」、「Top」、「Source」、「Join」。
+- [`spec/language.md`](/zh-TW/spec/language) 的「Filter」、「Sort」、「Top」、「Source」、「Join」。
 - [食譜 05](./05-sheet-per-group.md) 介紹 `@filter in __lists__[…]`。
 - [食譜 07](./07-multi-source-join.md) 介紹 `@source` + `@join` 基本用法。
 - [食譜 09](./09-sort-and-top.md) 介紹 `@sort` + `@top` 基本用法。

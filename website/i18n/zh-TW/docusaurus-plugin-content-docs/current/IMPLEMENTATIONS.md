@@ -9,12 +9,12 @@
 
 ## 新增實作
 
-請先讀 [`PORTERS_GUIDE.md`](./PORTERS_GUIDE.md) — 它區分了「規範性需求」與「TS 實作偶然細節」，並給出對應符合性語料庫的建議開發順序。
+請先讀 [`PORTERS_GUIDE.md`](/zh-TW/porters-guide) — 它區分了「規範性需求」與「TS 實作偶然細節」，並給出對應符合性語料庫的建議開發順序。
 
 要在這裡列出移植：
 
 1. 實作 XTL 0.1 中你要目標的[符合性測試案例](./conformance/fixtures/)所需的部分。
-2. 依 [`conformance/runner-protocol.md`](./conformance/runner-protocol.md) 跑你的實作通過 [`conformance/`](./conformance/)。
+2. 依 [`conformance/runner-protocol.md`](/zh-TW/conformance/runner-protocol) 跑你的實作通過 [`conformance/`](./conformance/)。
 3. 送 PR 在上方表格加一列：語言、套件 URL、目標規範版本、符合性狀態（full／partial／N of M 測試案例）。
 
 開發中的移植也歡迎 — 即使符合性還是部份，也可以把進行中的 repo 連結列上。

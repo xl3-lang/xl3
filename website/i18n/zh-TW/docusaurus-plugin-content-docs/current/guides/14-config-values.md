@@ -81,5 +81,5 @@ __config__[start_date] = TODAY()           ← 日期比較
 ## 規格指引
 
 - ADR-0011 — Reserved sheet naming。
-- [`spec/evaluation.md`](../../spec/evaluation.md) 的「Template Configuration」。
+- [`spec/evaluation.md`](/zh-TW/spec/evaluation) 的「Template Configuration」。
 - [食譜 06](./06-runtime-inputs.md) 介紹 `__inputs__`（每次執行可調整的替代方案）。

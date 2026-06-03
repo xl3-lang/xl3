@@ -66,4 +66,4 @@ Si tus operadores quieren ordenación sensible al idioma, preordena en el origen
 
 - "Orden estable" significa que las claves iguales conservan el orden de inserción — crítico cuando se encadenan varios `@sort` como criterios de desempate.
 - `@top` tras `@sort` es el patrón canónico de "top N". `@top` solo (sin `@sort`) devuelve las primeras N filas en el orden del origen.
-- Referencia de especificación: [`spec/language.md`](../../spec/language.md) "Sort" y "Top"; ADR-0016.
+- Referencia de especificación: [`spec/language.md`](/es/spec/language) "Sort" y "Top"; ADR-0016.

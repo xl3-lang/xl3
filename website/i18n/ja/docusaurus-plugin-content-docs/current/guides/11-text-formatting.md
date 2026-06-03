@@ -64,7 +64,7 @@ xl3 は Excel コア書式表をサポートします。コア表外の書式は
 
 ## スペック参照
 
-- [`spec/language.md`](../../spec/language.md) の「TEXT」とコア書式表。
+- [`spec/language.md`](/ja/spec/language) の「TEXT」とコア書式表。
 - ADR-0001(`TODAY()` は UTC)。
 - ADR-0017(日付値モデル)。
 - ADR-0021(ユーザー定義書式文字列は実装定義)。

@@ -87,4 +87,4 @@ La UI del host que llama a `readTemplateInputs()` ve las cadenas ya evaluadas (p
 - Las opciones de `select` se separan por barras verticales en la fila de `__inputs__` (p. ej. `Madrid|Barcelona|Valencia`). Un valor suministrado que no esté en las opciones lanza `xl3/inputs/select-option`. La división por `|` ocurre **después** de evaluar la plantilla de la celda, así que `options: {{ __config__[regions] }}` funciona si `__config__[regions]` es la cadena literal `Madrid|Barcelona|Valencia`.
 - Las entradas de tipo fecha se parsean como `YYYY-MM-DD` o `YYYY-MM-DDTHH:mm:ss`.
 - Las entradas numéricas aceptan literales de número de JS; se permiten espacios al final.
-- Referencia de especificación: [`spec/evaluation.md`](../../spec/evaluation.md) "Inputs"; ADR-0010, ADR-0011, ADR-0050.
+- Referencia de especificación: [`spec/evaluation.md`](/es/spec/evaluation) "Inputs"; ADR-0010, ADR-0011, ADR-0050.

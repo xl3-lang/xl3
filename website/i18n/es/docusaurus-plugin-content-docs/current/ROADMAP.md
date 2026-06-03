@@ -9,7 +9,7 @@ corte 1.0 depende de los criterios que aparecen abajo, no de una fecha
 de calendario.
 
 > La **planificación profunda de versiones** vive en
-> [`docs/internal/blueprint-to-1.0.md`](./docs/internal/blueprint-to-1.0.md)
+> [`docs/internal/blueprint-to-1.0.md`](https://github.com/jinyoung4478/xl3/blob/main/docs/internal/blueprint-to-1.0.md)
 > — análisis de huecos, frontera filosófica (xl3 ≠ JXLS) y plan paso a
 > paso por versión. Este documento es el resumen ejecutivo; el blueprint
 > es la justificación.
@@ -239,29 +239,29 @@ Estos están diferidos intencionalmente. Cada uno tiene un ADR que
 explica por qué:
 
 - **Aritmética de fechas más allá de Y/M/D/EOMONTH/EDATE/DATEDIF** — el
-  resto de la familia se difiere según la [enmienda de ADR-0019](./spec/decisions/0019-deferred-date-arithmetic.md).
+  resto de la familia se difiere según la [enmienda de ADR-0019](/es/spec/decisions/0019-deferred-date-arithmetic).
 - **Collation de cadenas con conciencia de locale** —
-  [ADR-0020](./spec/decisions/0020-deferred-locale-collation.md).
+  [ADR-0020](/es/spec/decisions/0020-deferred-locale-collation).
 - **Multi-join, left-join, coincidencias multi-fila** —
-  [ADR-0014](./spec/decisions/0014-source-joins.md), sección de fuera de
+  [ADR-0014](/es/spec/decisions/0014-source-joins), sección de fuera de
   alcance.
 - **Comodín / aproximado / búsqueda inversa de XLOOKUP** —
-  [ADR-0013](./spec/decisions/0013-xlookup-cross-source-lookup.md),
+  [ADR-0013](/es/spec/decisions/0013-xlookup-cross-source-lookup),
   sección de fuera de alcance.
-- **Inserción dinámica de imágenes** — [ADR-0037](./spec/decisions/0037-rejected-dynamic-image-insertion.md).
-- **Mutación de celdas en runtime** — [ADR-0042](./spec/decisions/0042-rejected-runtime-cell-mutation.md).
+- **Inserción dinámica de imágenes** — [ADR-0037](/es/spec/decisions/0037-rejected-dynamic-image-insertion).
+- **Mutación de celdas en runtime** — [ADR-0042](/es/spec/decisions/0042-rejected-runtime-cell-mutation).
 - **Funciones rechazadas por el filtro de ADR-0043** — expansión
   matemática, tests de tipos (excepto `ISBLANK` según ADR-0047),
   NOW / WEEKDAY etc., agregados condicionales, expansión de tokens de
   formato de TEXT(). Ver
-  [ADR-0045](./spec/decisions/0045-function-batch-rejected.md).
+  [ADR-0045](/es/spec/decisions/0045-function-batch-rejected).
 - **Salida en streaming / análogo de SXSSF.** Diferido a 1.1+. **En
   1.0, los límites duros de memoria/filas se documentan (G21) en su
   lugar.**
 - **API de caché para compilación de plantillas.** Diferido a 1.1+.
 - **Salida PDF / HTML.** Fuera de alcance; xl3 es xlsx-in, xlsx-out.
 - **Fixtures Stage 2 cross-writer más allá de `093`** —
-  enmienda a [ADR-0006](./spec/decisions/0006-stage-2-ooxml-conformance.md).
+  enmienda a [ADR-0006](/es/spec/decisions/0006-stage-2-ooxml-conformance).
 
 Estos siguen como candidatos para **XTL 1.1, 1.2, 1.x** según la
 demanda.
@@ -270,9 +270,9 @@ demanda.
 
 | Elemento | Cómo ayudar |
 |---|---|
-| G13 segunda implementación ≥ 80% | Contribuye a [xl3-py](https://github.com/jinyoung4478/xl3-py) o arranca un nuevo portado (Rust, Java, Go). Ver [PORTERS_GUIDE.md](./PORTERS_GUIDE.md). |
-| G14 ADR externo | Elige un elemento diferido (preservación de tablas dinámicas, salto de página, alguna función excluida de ADR-0045) y redacta un ADR en `spec/decisions/`. Ver "Cómo entran los cambios en el proyecto" en [GOVERNANCE.md](./GOVERNANCE.md). Hay varios "stubs de ADR para empezar" disponibles como issues `good-first-ADR` en GitHub. |
-| G15 caso productivo | Usa xl3 internamente y comparte qué funcionó y qué no. Añade una fila en [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) si es apropiado. El propio empleador del mantenedor (Snack24h) califica si publica un caso de estudio. |
+| G13 segunda implementación ≥ 80% | Contribuye a [xl3-py](https://github.com/jinyoung4478/xl3-py) o arranca un nuevo portado (Rust, Java, Go). Ver [PORTERS_GUIDE.md](/es/porters-guide). |
+| G14 ADR externo | Elige un elemento diferido (preservación de tablas dinámicas, salto de página, alguna función excluida de ADR-0045) y redacta un ADR en `spec/decisions/`. Ver "Cómo entran los cambios en el proyecto" en [GOVERNANCE.md](/es/governance). Hay varios "stubs de ADR para empezar" disponibles como issues `good-first-ADR` en GitHub. |
+| G15 caso productivo | Usa xl3 internamente y comparte qué funcionó y qué no. Añade una fila en [IMPLEMENTATIONS.md](/es/implementations) si es apropiado. El propio empleador del mantenedor (Snack24h) califica si publica un caso de estudio. |
 | G17 i18n coreano del cookbook 16+17 | Traduce las dos recetas más nuevas (el resto ya está hecho). |
 | G8 benchmarks | Ejecuta `npm run bench` sobre plantillas representativas y comparte resultados. |
 | G10 multinavegador | Añade Safari + Firefox al smoke test del bundle. |
@@ -282,7 +282,7 @@ demanda.
 
 Este documento es el resumen ejecutivo público + la tabla de criterios
 es la única fuente de verdad. El más profundo
-[`docs/internal/blueprint-to-1.0.md`](./docs/internal/blueprint-to-1.0.md)
+[`docs/internal/blueprint-to-1.0.md`](https://github.com/jinyoung4478/xl3/blob/main/docs/internal/blueprint-to-1.0.md)
 mantiene el análisis de huecos, la frontera filosófica y la
 justificación por versión. A medida que los criterios marquen tick,
 ambos documentos se actualizan. A medida que afloran nuevos huecos,

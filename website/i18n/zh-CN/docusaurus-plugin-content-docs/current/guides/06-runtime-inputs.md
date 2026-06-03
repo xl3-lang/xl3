@@ -87,4 +87,4 @@ const inputs = await readTemplateInputs(templateBuffer);
 - `select` 的 options 在 `__inputs__` 这一行里用竖线分隔（例如 `北京|上海|广州`）。提供的值不在选项里会抛出 `xl3/inputs/select-option`。竖线拆分发生在单元格模板求值**之后**，所以当 `__config__[regions]` 是字面字符串 `北京|上海|广州` 时，`options: {{ __config__[regions] }}` 也能正常工作。
 - 日期输入按 `YYYY-MM-DD` 或 `YYYY-MM-DDTHH:mm:ss` 解析。
 - 数字输入接受 JS 数字字面量；允许末尾空白。
-- 规范参考：[`spec/evaluation.md`](../../spec/evaluation.md) "Inputs"；ADR-0010、ADR-0011、ADR-0050。
+- 规范参考：[`spec/evaluation.md`](/zh-CN/spec/evaluation) "Inputs"；ADR-0010、ADR-0011、ADR-0050。

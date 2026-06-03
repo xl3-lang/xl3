@@ -34,7 +34,7 @@ canónica** del zip OOXML:
 - Espacios en blanco dentro de runs de texto preservados
 - Metadatos del generador eliminados (creator, modifiedBy, lastModified)
 
-Consulta [`runner-protocol.md`](./runner-protocol.md) para la etapa de comparación y
+Consulta [`runner-protocol.md`](/es/conformance/runner-protocol) para la etapa de comparación y
 las reglas de canonicalización.
 
 Un fixture de error pasa cuando la implementación reporta un error que contiene el
@@ -175,8 +175,8 @@ El corpus de arranque de XTL 0.1 contiene actualmente estos fixtures:
 
 ## Estado
 
-El corpus de XTL 0.1 está en **estado de arranque**. Los fixtures deberían añadirse solo para comportamientos ya enunciados en [`spec/README.md`](../spec/README.md), siguiendo el mismo patrón usado por proyectos de estándares como CommonMark: la prosa define la regla, los fixtures hacen la regla ejecutable, y las implementaciones reportan qué fixtures pasan.
+El corpus de XTL 0.1 está en **estado de arranque**. Los fixtures deberían añadirse solo para comportamientos ya enunciados en [`spec/README.md`](/es/spec), siguiendo el mismo patrón usado por proyectos de estándares como CommonMark: la prosa define la regla, los fixtures hacen la regla ejecutable, y las implementaciones reportan qué fixtures pasan.
 
-La implementación de referencia no hace su propio comportamiento normativo. Cuando un fixture y la implementación discrepan, actualiza la implementación o el fixture según la precedencia de especificación en [`spec/README.md`](../spec/README.md).
+La implementación de referencia no hace su propio comportamiento normativo. Cuando un fixture y la implementación discrepan, actualiza la implementación o el fixture según la precedencia de especificación en [`spec/README.md`](/es/spec).
 
-Los fixtures del comportamiento principal de XTL 0.1 evitan extensiones definidas por la implementación, como formatos de `TEXT()` fuera de la tabla mínima en [`spec/language.md`](../spec/language.md).
+Los fixtures del comportamiento principal de XTL 0.1 evitan extensiones definidas por la implementación, como formatos de `TEXT()` fuera de la tabla mínima en [`spec/language.md`](/es/spec/language).

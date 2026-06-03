@@ -73,4 +73,4 @@ pagination_label: '07 · 複数ソースと @join'
 - データブロックあたり `@source` と `@join` はそれぞれ 1 つだけ許容されます。重複は ADR-0029 に従って `xl3/directive/invalid-syntax` を発生させます。
 - マルチジョイン(`@join` のチェーン)は ADR-0014 に従って一旦保留されています。
 - 関数名のマッチは大文字小文字を区別しません ― `if`、`If`、`IF` はすべて同じです。
-- スペック参照: [`spec/evaluation.md`](../../spec/evaluation.md) の「External Data Sources」、ADR-0012、ADR-0014。
+- スペック参照: [`spec/evaluation.md`](/ja/spec/evaluation) の「External Data Sources」、ADR-0012、ADR-0014。

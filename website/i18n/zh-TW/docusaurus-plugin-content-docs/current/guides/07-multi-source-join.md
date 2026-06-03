@@ -73,4 +73,4 @@ pagination_label: '07 · 多來源與 @join'
 - 每個資料區塊只能有一個 `@source` 與一個 `@join`。重複宣告會依 ADR-0029 丟 `xl3/directive/invalid-syntax`。
 - 多重 join（連鎖 `@join`）依 ADR-0014 暫緩。
 - 函式名稱比對不分大小寫：`if`、`If`、`IF`。
-- 規格參考：[`spec/evaluation.md`](../../spec/evaluation.md) 的「External Data Sources」；ADR-0012、ADR-0014。
+- 規格參考：[`spec/evaluation.md`](/zh-TW/spec/evaluation) 的「External Data Sources」；ADR-0012、ADR-0014。

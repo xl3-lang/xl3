@@ -118,6 +118,20 @@ async function main() {
     join(TARGET, 'ROADMAP.md'),
     join(TARGET, 'README.md'),
     join(TARGET, 'guides', 'index.md'),
+    join(TARGET, 'spec', 'evaluation.md'),
+    join(TARGET, 'spec', 'language.md'),
+    join(TARGET, 'spec', 'index.md'),
+    join(TARGET, 'spec', 'STABILITY.md'),
+    join(TARGET, 'conformance', 'index.md'),
+    join(TARGET, 'conformance', 'DASHBOARD.md'),
+    join(TARGET, 'conformance', 'AUTHORING.md'),
+    join(TARGET, 'conformance', 'runner-protocol.md'),
+    join(TARGET, 'conformance', 'coverage.md'),
+    // ADRs link spec siblings via `../language.md` etc.; when an
+    // untranslated ADR renders as the English fallback under a locale
+    // prefix, raw relative `.md` hrefs leak and 404.
+    ...(await readdirMd(join(TARGET, 'spec', 'decisions'))),
+    join(TARGET, 'spec', 'glossary.md'),
   ]);
 
   console.log('synced markdown into', TARGET);
@@ -135,6 +149,10 @@ const DEAD_LINK_PREFIXES = [
   { prefix: 'conformance/reports/', kind: 'tree' },
   { prefix: 'examples/', kind: 'tree' },
   { prefix: 'src/', kind: 'blob' },
+  // Cookbook recipes have site routes (/guides/<name>); the rest of
+  // docs/ (llm-template-authoring, internal/) is repo-only.
+  { prefix: 'docs/guides/', kind: 'site-md', target: '/guides/' },
+  { prefix: 'docs/', kind: 'blob' },
 ];
 
 const DEAD_LINK_EXACT = {
@@ -144,10 +162,55 @@ const DEAD_LINK_EXACT = {
   'examples/': { kind: 'tree' },
   'LICENSE': { kind: 'blob' },
   'spec/LICENSE': { kind: 'blob' },
+  // Repo files that are intentionally not synced into the site.
+  'CHANGELOG.md': { kind: 'blob' },
+  'SECURITY.md': { kind: 'blob' },
+  // Synced targets with a live route. Plain relative `.md` links
+  // resolve fine on the default locale, but when an untranslated doc
+  // is rendered as the English fallback under /<locale>/, Docusaurus
+  // leaves the raw `.md` href in place and it 404s. Absolute site
+  // paths render correctly from every locale.
+  'spec/language.md': { kind: 'site', target: '/spec/language' },
+  'spec/evaluation.md': { kind: 'site', target: '/spec/evaluation' },
+  'spec/glossary.md': { kind: 'site', target: '/spec/glossary' },
+  'spec/STABILITY.md': { kind: 'site', target: '/spec/stability' },
+  'spec/README.md': { kind: 'site', target: '/spec' },
+  'spec/index.md': { kind: 'site', target: '/spec' },
+  'conformance/README.md': { kind: 'site', target: '/conformance' },
+  'conformance/DASHBOARD.md': { kind: 'site', target: '/conformance/dashboard' },
+  'conformance/AUTHORING.md': { kind: 'site', target: '/conformance/authoring' },
+  'conformance/coverage.md': { kind: 'site', target: '/conformance/coverage' },
+  'conformance/runner-protocol.md': { kind: 'site', target: '/conformance/runner-protocol' },
+  'GOVERNANCE.md': { kind: 'site', target: '/governance' },
+  'IMPLEMENTATIONS.md': { kind: 'site', target: '/implementations' },
+  'ROADMAP.md': { kind: 'site', target: '/roadmap' },
+  'PORTERS_GUIDE.md': { kind: 'site', target: '/porters-guide' },
+  'CONTRIBUTING.md': { kind: 'site', target: '/contributing' },
+  'RELEASING.md': { kind: 'site', target: '/releasing' },
+  // Conformance pages cross-link siblings bare (`./runner-protocol.md`).
+  'runner-protocol.md': { kind: 'site', target: '/conformance/runner-protocol' },
+  'DASHBOARD.md': { kind: 'site', target: '/conformance/dashboard' },
+  'AUTHORING.md': { kind: 'site', target: '/conformance/authoring' },
+  'coverage.md': { kind: 'site', target: '/conformance/coverage' },
+  // Spec pages and ADRs cross-link spec siblings (`./language.md`,
+  // `../evaluation.md` from decisions/).
+  'language.md': { kind: 'site', target: '/spec/language' },
+  'evaluation.md': { kind: 'site', target: '/spec/evaluation' },
+  'glossary.md': { kind: 'site', target: '/spec/glossary' },
+  'STABILITY.md': { kind: 'site', target: '/spec/stability' },
   // Repo-level dirs/files that have a live site equivalent.
   'docs/guides/': { kind: 'site', target: '/guides/' },
   'docs/guides': { kind: 'site', target: '/guides' },
 };
+
+async function readdirMd(dir) {
+  if (!existsSync(dir)) return [];
+  const { readdir } = await import('node:fs/promises');
+  const entries = await readdir(dir, { withFileTypes: true });
+  return entries
+    .filter((e) => e.isFile() && e.name.endsWith('.md'))
+    .map((e) => join(dir, e.name));
+}
 
 async function rewriteDeadLinks(files) {
   // Match `]([./|../[…]]path)` — any number of leading `..` segments.
@@ -162,8 +225,19 @@ async function rewriteDeadLinks(files) {
         const base = exact.kind === 'tree' ? GH_TREE : GH_BLOB;
         return `](${base}/${exact.target ?? target}${frag})`;
       }
-      for (const { prefix, kind } of DEAD_LINK_PREFIXES) {
+      for (const { prefix, kind, target: siteBase } of DEAD_LINK_PREFIXES) {
         if (target.startsWith(prefix)) {
+          // site-md: repo path with a live site route — strip the
+          // prefix, the .md extension and the NN- number prefix that
+          // Docusaurus's numberPrefixParser drops from routes
+          // (docs/guides/03-aggregates.md → /guides/aggregates).
+          if (kind === 'site-md') {
+            const page = target
+              .slice(prefix.length)
+              .replace(/\.md$/, '')
+              .replace(/^\d+-/, '');
+            return `](${siteBase}${page}${frag})`;
+          }
           const base = kind === 'tree' ? GH_TREE : GH_BLOB;
           return `](${base}/${target}${frag})`;
         }
@@ -207,7 +281,7 @@ async function rewriteRelativePaths(target) {
     let body = await readFile(file, 'utf8');
     let changed = false;
     const next = body
-      .replace(/\]\(\.\.\/\.\.\/spec\/([\w.-]+)\.md(#[^)]*)?\)/g, (_, name, frag = '') => {
+      .replace(/\]\(\.\.\/\.\.\/spec\/([\w./-]+)\.md(#[^)]*)?\)/g, (_, name, frag = '') => {
         changed = true;
         return `](../spec/${name}.md${frag})`;
       })
@@ -216,15 +290,23 @@ async function rewriteRelativePaths(target) {
         // /readme is the synced top-level README; preserve anchors so
         // links to specific sections (#usage etc.) keep working.
         return `](/readme${frag})`;
+      })
+      // `../llm-template-authoring.md` points at docs/ in the repo;
+      // that file is not synced, so send it out to GitHub.
+      .replace(/\]\(\.\.\/llm-template-authoring\.md(#[^)]*)?\)/g, (_, frag = '') => {
+        changed = true;
+        return `](${GH_BLOB}/docs/llm-template-authoring.md${frag})`;
       });
     if (changed) await writeFile(file, next);
   }
 
-  // Spec/STABILITY links to `./README.md`; we promoted it to index.md.
+  // Spec/STABILITY links to `./README.md`; the overview lives at /spec.
+  // Absolute path so locale-fallback rendering doesn't leak a raw
+  // `.md` href (see DEAD_LINK_EXACT site entries).
   const stab = join(target, 'spec', 'STABILITY.md');
   if (existsSync(stab)) {
     const body = await readFile(stab, 'utf8');
-    const next = body.replace(/\]\(\.\/README\.md(#[^)]*)?\)/g, '](./index.md$1)');
+    const next = body.replace(/\]\(\.\/README\.md(#[^)]*)?\)/g, '](/spec$1)');
     if (next !== body) await writeFile(stab, next);
   }
 

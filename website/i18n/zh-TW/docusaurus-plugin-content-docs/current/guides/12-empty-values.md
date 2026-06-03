@@ -90,6 +90,6 @@ AVERAGE： 20     （不是 15）
 
 ## 規格指引
 
-- [`spec/evaluation.md`](../../spec/evaluation.md) 的「Empty Values」。
+- [`spec/evaluation.md`](/zh-TW/spec/evaluation) 的「Empty Values」。
 - ADR-0007（空值定義）、ADR-0008（真假判定）、ADR-0026（生命週期）。
 - [食譜 02](./02-conditional-cells.md) 介紹 IF / IFEMPTY 基本用法。

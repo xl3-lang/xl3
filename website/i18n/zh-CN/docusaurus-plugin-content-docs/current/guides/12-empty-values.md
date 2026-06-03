@@ -90,6 +90,6 @@ AVERAGE: 20     （而不是 15）
 
 ## 规范参考
 
-- [`spec/evaluation.md`](../../spec/evaluation.md) "Empty Values"。
+- [`spec/evaluation.md`](/zh-CN/spec/evaluation) "Empty Values"。
 - ADR-0007（空值定义）、ADR-0008（真值判定）、ADR-0026（生命周期）。
 - [Cookbook 02](./02-conditional-cells.md) ——IF / IFEMPTY 基础。

@@ -21,8 +21,8 @@ xl3 處於**形成期**。單一維護者目前同時是：
 |---|---|---|
 | **維護者** | 對 ADR 與實作 PR 做最終接受／拒絕。執行發佈。 | 目前是專案作者。 |
 | **規範編輯** | 撰寫 ADR，編輯 `spec/language.md` 與 `spec/evaluation.md`。 | 目前由維護者兼任。 |
-| **移植作者** | 用其他語言實作 XTL；以 [`conformance/fixtures/`](./conformance/fixtures/) 跑符合性測試。 | 任何人皆可。列於 [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md)。 |
-| **貢獻者** | 開議題、送 PR、提出測試案例或 ADR。 | 任何人皆可。見 [CONTRIBUTING.md](./CONTRIBUTING.md)。 |
+| **移植作者** | 用其他語言實作 XTL；以 [`conformance/fixtures/`](./conformance/fixtures/) 跑符合性測試。 | 任何人皆可。列於 [IMPLEMENTATIONS.md](/zh-TW/implementations)。 |
+| **貢獻者** | 開議題、送 PR、提出測試案例或 ADR。 | 任何人皆可。見 [CONTRIBUTING.md](/zh-TW/contributing)。 |
 
 當外部貢獻者能穩定地審查並落地變更時，維護者陣容就會擴大。沒有正式的投票流程 — 維護者承諾在合適的時機擴大陣容，並把那個時刻記錄下來。
 
@@ -56,7 +56,7 @@ xl3 處於**形成期**。單一維護者目前同時是：
 測試案例是讓 XTL _可執行_ 的關鍵。新增測試案例會擴大語料庫：
 
 1. 開議題或循「fixture proposal」議題範本提案。
-2. 依照 [`conformance/AUTHORING.md`](./conformance/AUTHORING.md) 撰寫測試案例。
+2. 依照 [`conformance/AUTHORING.md`](/zh-TW/conformance/authoring) 撰寫測試案例。
    首要規則：**預期輸出來自規範，而非執行參考實作的結果。**
 3. 送 PR。
 4. 由維護者審查。比起 ADR 通常更快通過，因為測試案例的約束較小 — 它記錄既有規範規則，而非建立新規則。
@@ -87,7 +87,7 @@ xl3 處於**形成期**。單一維護者目前同時是：
 
 1. **在生產環境使用，並回報缺什麼。** 真實採用是決定優先順序最強的訊號。
 2. **提出測試案例。** 新測試案例會強迫規範比純文字描述更清楚。即使提案未被接受，通常也會觸發規範改善。
-3. **移植到第二種語言並執行符合性語料庫。** 第二份獨立實作找出規範落差的速度比任何審查都快。詳見 [PORTERS_GUIDE.md](./PORTERS_GUIDE.md)。
+3. **移植到第二種語言並執行符合性語料庫。** 第二份獨立實作找出規範落差的速度比任何審查都快。詳見 [PORTERS_GUIDE.md](/zh-TW/porters-guide)。
 4. **針對被延後的項目開一份 ADR 草稿。** [`spec/decisions/`](./spec/decisions/) 內被延後的項目（日期運算、語言環境排序、多重 join 等）都是未來 ADR 的候選 — 歡迎提出具體方案。
 
 ## 本文件如何演進

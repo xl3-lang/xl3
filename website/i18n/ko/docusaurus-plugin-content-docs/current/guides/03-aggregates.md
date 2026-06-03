@@ -96,4 +96,4 @@ Overall:            | {{ SUM(Source[갱신액]) }}  # 전체 행
 - `COUNT` 는 비어 있지 않은 값만 셉니다. 빈 값을 포함한 전체 행 수가 필요하면, 절대 비지 않는 컬럼에 대해 `COUNT(Source[any-required-col])` 을 쓰세요.
 - 비어 있지 않은 값이 0개인 상태에서 `AVERAGE` 는 에러 대신 빈 값을 돌려줍니다.
 - 집계 인자에 합성 표현식(리터럴, 산술, 함수 호출)을 넣으면 ADR-0059 에 따라 `xl3/eval/bad-aggregate-arg` 가 발생합니다.
-- 스펙 참고: [`spec/language.md`](../../spec/language.md) 의 "Aggregates", 원본 의미론은 ADR-0012, 인자 형태 규칙은 ADR-0059.
+- 스펙 참고: [`spec/language.md`](/ko/spec/language) 의 "Aggregates", 원본 의미론은 ADR-0012, 인자 형태 규칙은 ADR-0059.

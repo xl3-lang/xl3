@@ -90,7 +90,7 @@ Si `@filter` descarta todas las filas, el bloque de datos se expande a cero fila
 ## Referencias de especificación
 
 - ADR-0029 — Composición de directivas + semántica de bordes de fuente.
-- [`spec/language.md`](../../spec/language.md) "Filter", "Sort", "Top", "Source", "Join".
+- [`spec/language.md`](/es/spec/language) "Filter", "Sort", "Top", "Source", "Join".
 - [Receta 05](./05-sheet-per-group.md) para `@filter in __lists__[…]`.
 - [Receta 07](./07-multi-source-join.md) para lo básico de `@source` + `@join`.
 - [Receta 09](./09-sort-and-top.md) para lo básico de `@sort` + `@top`.

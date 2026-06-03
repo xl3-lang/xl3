@@ -97,7 +97,7 @@ El patrón "total general vía el subtotal más externo": con un único `@group 
 
 ## Véase también
 
-- [ADR-0038 — Directivas `@group` y `@subtotal`](../../spec/decisions/0038-group-and-subtotal.md)
-- [`spec/language.md` § "Group + Subtotal"](../../spec/language.md)
+- [ADR-0038 — Directivas `@group` y `@subtotal`](/es/spec/decisions/0038-group-and-subtotal)
+- [`spec/language.md` § "Group + Subtotal"](/es/spec/language)
 - [Receta 03 — Agregados](./03-aggregates.md) — `SUM` / `COUNT` / `AVERAGE` a nivel de bloque sin agrupación
 - [Receta 15 — Composición de directivas](./15-directive-composition.md) — reglas completas de orden de directivas

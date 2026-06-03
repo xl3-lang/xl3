@@ -96,4 +96,4 @@ pagination_label: '03 · 彙總函式'
 - `COUNT` 只算非空值。若要計算所有列（含空值），請對一個永不為空的欄位使用 `COUNT(Source[必填欄位])`。
 - 對零個非空值做 `AVERAGE` 會回傳空值，不會丟錯。
 - 彙總內部的合成表達式（字面值、算術、函式呼叫）會依 ADR-0059 丟出 `xl3/eval/bad-aggregate-arg`。
-- 規格參考：[`spec/language.md`](../../spec/language.md) 的「Aggregates」；ADR-0012（來源語意）；ADR-0059（引數形態規則）。
+- 規格參考：[`spec/language.md`](/zh-TW/spec/language) 的「Aggregates」；ADR-0012（來源語意）；ADR-0059（引數形態規則）。

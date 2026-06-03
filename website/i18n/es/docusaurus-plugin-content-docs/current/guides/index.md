@@ -11,7 +11,7 @@ Una colección de recetas cortas, listas para copiar y pegar, pensadas para los 
 Estas guías complementan dos recursos ya existentes:
 
 - **[`examples/`](https://github.com/jinyoung4478/xl3/tree/main/examples/)** contiene cuatro plantillas ejecutables que muestran combinaciones completas de extremo a extremo. Copia una como punto de partida.
-- **[`spec/language.md`](../spec/language.md)** es la referencia formal de cada función y directiva (en inglés). Consúltala cuando te encuentres con un caso que las recetas no cubren.
+- **[`spec/language.md`](/es/spec/language)** es la referencia formal de cada función y directiva (en inglés). Consúltala cuando te encuentres con un caso que las recetas no cubren.
 
 Las recetas de aquí priorizan "la plantilla más pequeña que demuestra X" sobre "el realismo de producción" — el objetivo es que las consultes rápido cuando recuerdas la forma pero la sintaxis se te escapa.
 

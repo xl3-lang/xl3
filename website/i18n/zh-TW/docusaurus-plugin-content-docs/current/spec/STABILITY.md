@@ -188,7 +188,7 @@ ADR-0042、ADR-0045 為已駁回（駁回本身即契約）。
 
 規格區分：
 
-- **核心**——符合性所要求的語言特性。在 [`README.md`](./README.md) 摘要，並由 [`language.md`](./language.md) 與 [`evaluation.md`](./evaluation.md) 正式定義。此處的破壞性變更會觸發規格版本事件。
+- **核心**——符合性所要求的語言特性。在 [`README.md`](/zh-TW/spec) 摘要，並由 [`language.md`](/zh-TW/spec/language) 與 [`evaluation.md`](/zh-TW/spec/evaluation) 正式定義。此處的破壞性變更會觸發規格版本事件。
 - **擴充**——實作特定或領域特定的擴充。各實作之間 **可能**（**MAY**）不同。記錄於實作各自的 README，而非規格中。
 
 實作 **可以**（**MAY**）加入擴充，但 **不得**（**MUST NOT**）默默改變核心語意。

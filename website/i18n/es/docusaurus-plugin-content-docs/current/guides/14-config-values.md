@@ -81,5 +81,5 @@ Usa `__config__` para "esta plantilla está cableada a estas constantes; actuali
 ## Referencias de especificación
 
 - ADR-0011 — Nombres reservados de hojas.
-- [`spec/evaluation.md`](../../spec/evaluation.md) "Template Configuration".
+- [`spec/evaluation.md`](/es/spec/evaluation) "Template Configuration".
 - [Receta 06](./06-runtime-inputs.md) para `__inputs__` (la alternativa por ejecución).

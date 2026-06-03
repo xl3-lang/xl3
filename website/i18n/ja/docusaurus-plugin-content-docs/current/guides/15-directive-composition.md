@@ -90,7 +90,7 @@ ADR-0029 基準:
 ## スペックポインタ
 
 - ADR-0029 ― ディレクティブの組み合わせ + ソースエッジセマンティクス。
-- [`spec/language.md`](../../spec/language.md) の「Filter」、「Sort」、「Top」、「Source」、「Join」。
+- [`spec/language.md`](/ja/spec/language) の「Filter」、「Sort」、「Top」、「Source」、「Join」。
 - `@filter in __lists__[…]` は [Cookbook 05](./05-sheet-per-group.md) を参照。
 - `@source` + `@join` の基本は [Cookbook 07](./07-multi-source-join.md) を参照。
 - `@sort` + `@top` の基本は [Cookbook 09](./09-sort-and-top.md) を参照。

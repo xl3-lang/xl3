@@ -61,7 +61,7 @@ La respuesta nativa de Excel. Una línea por fórmula, se aprende en segundos.
 ```
 
 Vista pre-render de la plantilla: limpia (`—`, `0`).
-Salida post-render: valores reales (xl3 no toca el texto de la fórmula según [ADR-0046](../../spec/decisions/0046-cell-formula-preservation.md); Excel recalcula al abrir y el envoltorio se vuelve invisible).
+Salida post-render: valores reales (xl3 no toca el texto de la fórmula según [ADR-0046](/es/spec/decisions/0046-cell-formula-preservation); Excel recalcula al abrir y el envoltorio se vuelve invisible).
 
 ### Qué fórmulas necesitan el envoltorio
 
@@ -134,7 +134,7 @@ Opciones:
 
 ## Lo que xl3 deliberadamente NO hace
 
-Este es el contrato de [ADR-0049](../../spec/decisions/0049-template-display-vs-render-output.md):
+Este es el contrato de [ADR-0049](/es/spec/decisions/0049-template-display-vs-render-output):
 
 1. xl3 **no** pre-sustituye los marcadores con valores de muestra para la vista de plantilla. (Eso perdería la señal visual del marcador.)
 2. xl3 **no** mantiene dos `numFmt` separados por celda ("formato vista de plantilla" vs "formato render"). (Superficie extra de spec con ganancia marginal.)
@@ -144,7 +144,7 @@ El autor es dueño de la vista de plantilla; el motor es dueño de la salida ren
 
 ## Véase también
 
-- [ADR-0049 — Template-display vs render-output: intentional asymmetry](../../spec/decisions/0049-template-display-vs-render-output.md)
-- [ADR-0046 — Cell formula preservation contract](../../spec/decisions/0046-cell-formula-preservation.md)
+- [ADR-0049 — Template-display vs render-output: intentional asymmetry](/es/spec/decisions/0049-template-display-vs-render-output)
+- [ADR-0046 — Cell formula preservation contract](/es/spec/decisions/0046-cell-formula-preservation)
 - [Receta 16 — Funciones XTL vs. fórmulas de Excel](./16-xtl-vs-excel-formula.md)
-- [Documentación de la API `preview()`](../api/functions/preview.md)
+- [Documentación de la API `preview()`](/es/api/functions/preview)

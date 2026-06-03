@@ -61,7 +61,7 @@ Excel 原生的答案。每條公式加一行，幾秒鐘就會。
 ```
 
 渲染前範本檢視：乾淨（`—`、`0`）。
-渲染後輸出：真實值（xl3 依 [ADR-0046](../../spec/decisions/0046-cell-formula-preservation.md) 不會動公式文字；Excel 在開啟時重算，wrapper 變得透明）。
+渲染後輸出：真實值（xl3 依 [ADR-0046](/zh-TW/spec/decisions/0046-cell-formula-preservation) 不會動公式文字；Excel 在開啟時重算，wrapper 變得透明）。
 
 ### 哪些公式需要包
 
@@ -134,7 +134,7 @@ import('@jinyoung4478/xl3').then(async ({ convert }) => {
 
 ## xl3 刻意**不做**什麼
 
-這是 [ADR-0049](../../spec/decisions/0049-template-display-vs-render-output.md) 的契約：
+這是 [ADR-0049](/zh-TW/spec/decisions/0049-template-display-vs-render-output) 的契約：
 
 1. xl3 **不會**在範本檢視中用範例值預先替換佔位符。（那會抹掉視覺上的佔位符訊號。）
 2. xl3 **不會**為每個儲存格維護兩份 `numFmt`（「範本檢視格式」vs「渲染格式」）。（規格面變大，效益微薄。）
@@ -144,7 +144,7 @@ import('@jinyoung4478/xl3').then(async ({ convert }) => {
 
 ## 延伸閱讀
 
-- [ADR-0049 — Template-display vs render-output: intentional asymmetry](../../spec/decisions/0049-template-display-vs-render-output.md)
-- [ADR-0046 — Cell formula preservation contract](../../spec/decisions/0046-cell-formula-preservation.md)
+- [ADR-0049 — Template-display vs render-output: intentional asymmetry](/zh-TW/spec/decisions/0049-template-display-vs-render-output)
+- [ADR-0046 — Cell formula preservation contract](/zh-TW/spec/decisions/0046-cell-formula-preservation)
 - [食譜 16 — XTL 函式 vs Excel 公式](./16-xtl-vs-excel-formula.md)
-- [`preview()` API 文件](../api/functions/preview.md)
+- [`preview()` API 文件](/zh-TW/api/functions/preview)

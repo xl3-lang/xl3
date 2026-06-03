@@ -66,4 +66,4 @@ pagination_label: '09 · 排序與前 N 名'
 
 - 「穩定排序」表示相等鍵保持插入順序 — 多個 `@sort` 作為 tiebreaker 時非常關鍵。
 - 「`@top` 接在 `@sort` 之後」是正規的「前 N」模式。單獨 `@top`（不接 sort）會以來源順序取前 N 列。
-- 規格參考：[`spec/language.md`](../../spec/language.md) 的「Sort」與「Top」；ADR-0016。
+- 規格參考：[`spec/language.md`](/zh-TW/spec/language) 的「Sort」與「Top」；ADR-0016。

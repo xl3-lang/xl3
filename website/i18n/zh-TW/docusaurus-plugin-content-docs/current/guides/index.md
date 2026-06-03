@@ -11,7 +11,7 @@ pagination_label: '概覽'
 這些指南補強了既有的兩個資料來源：
 
 - **[`examples/`](https://github.com/jinyoung4478/xl3/tree/main/examples/)** 內含四個可執行範本，以端對端方式展示組合後的形態。挑一個複製當作起點即可。中文範例可參考 `04-cafe-weekly-report`。
-- **[`spec/language.md`](../spec/language.md)** 是各函式與指示子的正式參考（英文）。當食譜未涵蓋你的情境時，回頭翻它。
+- **[`spec/language.md`](/zh-TW/spec/language)** 是各函式與指示子的正式參考（英文）。當食譜未涵蓋你的情境時，回頭翻它。
 
 這裡的食譜優先「展示 X 的最小範本」而非「完全擬真的生產級範本」 — 目標是當你還記得形態、卻一時想不起語法時，能快速查到。
 

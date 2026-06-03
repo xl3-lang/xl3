@@ -66,7 +66,7 @@ Los agregados XTL no aceptan aritmética por fila dentro del argumento. `{{ SUM(
 Tres opciones, en orden de preferencia:
 
 1. **Columna auxiliar en el origen** — añade una columna `Importe` al origen (calculada o premultiplicada) y luego `{{ SUM([Importe]) }}`. Es el patrón canónico de XTL para "suma de A × B".
-2. **`SUMPRODUCT` nativo de Excel en la celda del pie** — xl3 conserva las fórmulas de celda tal cual (ADR-0046). Escribe `=SUMPRODUCT(E2:E10000, F2:F10000)` directamente en la celda del pie. Usa rangos sobredimensionados (`E2:E10000`) porque no se conoce el número de filas renderizadas en tiempo de autoría. Atención a las dos trampas del pie (referencia a la propia columna; doble conteo por sobredimensionado) — véase [Guía LLM § Footer pitfalls](../llm-template-authoring.md#footer-pitfall-1--self-column-sum-raises-순환-참조-circular-reference).
+2. **`SUMPRODUCT` nativo de Excel en la celda del pie** — xl3 conserva las fórmulas de celda tal cual (ADR-0046). Escribe `=SUMPRODUCT(E2:E10000, F2:F10000)` directamente en la celda del pie. Usa rangos sobredimensionados (`E2:E10000`) porque no se conoce el número de filas renderizadas en tiempo de autoría. Atención a las dos trampas del pie (referencia a la propia columna; doble conteo por sobredimensionado) — véase [Guía LLM § Footer pitfalls](https://github.com/jinyoung4478/xl3/blob/main/docs/llm-template-authoring.md#footer-pitfall-1--self-column-sum-raises-순환-참조-circular-reference).
 3. **Celda XTL por fila + columna auxiliar en la salida renderizada** — pon `{{ [Cantidad] * [Precio] }}` en una celda por fila (esto funciona; es un contexto no agregado) y suma en el pie con `{{ SUM([ColumnaAuxiliar]) }}` solo si `ColumnaAuxiliar` también es una columna del origen. Si no, vuelves a la opción 1 o 2.
 
 Por qué la restricción: XTL 0.x mantiene la superficie de funciones pequeña y predecible. La agregación con cómputo por fila (comportamiento de fórmula matricial de Excel) es una funcionalidad aplazada — véase ADR-0059 § "Why not allow `SUM([a] + [b])`".
@@ -161,11 +161,11 @@ Cuando te encuentres buscando una función que XTL no tiene:
 
 ## Véase también
 
-- [ADR-0043 — Excel-native preference principle](../../spec/decisions/0043-excel-native-preference.md)
-- [ADR-0044 — Function batch accepted](../../spec/decisions/0044-function-batch-accepted.md)
-- [ADR-0045 — Function batch rejected](../../spec/decisions/0045-function-batch-rejected.md)
-- [ADR-0046 — Cell formula preservation contract](../../spec/decisions/0046-cell-formula-preservation.md)
-- [ADR-0047 — ISBLANK as IFEMPTY alias](../../spec/decisions/0047-isblank-as-ifempty-alias.md)
+- [ADR-0043 — Excel-native preference principle](/es/spec/decisions/0043-excel-native-preference)
+- [ADR-0044 — Function batch accepted](/es/spec/decisions/0044-function-batch-accepted)
+- [ADR-0045 — Function batch rejected](/es/spec/decisions/0045-function-batch-rejected)
+- [ADR-0046 — Cell formula preservation contract](/es/spec/decisions/0046-cell-formula-preservation)
+- [ADR-0047 — ISBLANK as IFEMPTY alias](/es/spec/decisions/0047-isblank-as-ifempty-alias)
 - [Receta 10 — Estilos y marca](./10-styling-and-branding.md) — cuándo `numFmt` es la respuesta correcta
 - [Receta 11 — Formato con TEXT()](./11-text-formatting.md) — cuándo `TEXT()` *es* la respuesta correcta
 - [Receta 12 — Valores vacíos en profundidad](./12-empty-values.md) — compañero de IFEMPTY / ISBLANK

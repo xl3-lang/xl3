@@ -97,7 +97,7 @@ XTL 0.6 提供兩個指示子，可以在單一資料區塊裡完成這件事，
 
 ## 延伸閱讀
 
-- [ADR-0038 — `@group` 與 `@subtotal` 指示子](../../spec/decisions/0038-group-and-subtotal.md)
-- [`spec/language.md` §「Group + Subtotal」](../../spec/language.md)
+- [ADR-0038 — `@group` 與 `@subtotal` 指示子](/zh-TW/spec/decisions/0038-group-and-subtotal)
+- [`spec/language.md` §「Group + Subtotal」](/zh-TW/spec/language)
 - [食譜 03 — 彙總函式](./03-aggregates.md) — 無分組時的區塊層級 `SUM` / `COUNT` / `AVERAGE`
 - [食譜 15 — 指示子組合](./15-directive-composition.md) — 完整的指示子順序規則

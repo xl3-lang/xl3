@@ -41,7 +41,7 @@ pagination_label: '02 · 條件式儲存格'
 {{ "等級-" & IF([續約金額] > 10000, "A", "B") & "-" & [地區] }}
 ```
 
-`&` 是字串串接運算子。運算元會以正規字串形式轉換（見 [`spec/language.md`](../../spec/language.md) 的「Canonical String Form」）。
+`&` 是字串串接運算子。運算元會以正規字串形式轉換（見 [`spec/language.md`](/zh-TW/spec/language) 的「Canonical String Form」）。
 
 ## 備註
 

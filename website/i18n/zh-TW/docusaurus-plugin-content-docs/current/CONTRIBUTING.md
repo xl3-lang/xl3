@@ -4,7 +4,7 @@ xl3 是 [XTL 規範](./spec/)的 TypeScript 參考實作。本檔同時涵蓋實
 
 在 0.x 階段，本專案由單一作者維護。歡迎貢獻，但規範變更的門檻較高 — XTL 致力成為穩定、語言中立的標準。
 
-決策方式請見 [GOVERNANCE.md](./GOVERNANCE.md)，1.0 切版的阻塞項目請見 [ROADMAP.md](./ROADMAP.md)。
+決策方式請見 [GOVERNANCE.md](/zh-TW/governance)，1.0 切版的阻塞項目請見 [ROADMAP.md](/zh-TW/roadmap)。
 
 ## 快速開始
 
@@ -36,16 +36,16 @@ npm test
 
 ### 3. 符合性測試案例（`conformance/fixtures/`）
 
-符合性語料庫是 XTL 的可執行定義。這裡的測試案例比任何單一實作都更長壽。**撰寫前請先讀 [`conformance/AUTHORING.md`](./conformance/AUTHORING.md)。**
+符合性語料庫是 XTL 的可執行定義。這裡的測試案例比任何單一實作都更長壽。**撰寫前請先讀 [`conformance/AUTHORING.md`](/zh-TW/conformance/authoring)。**
 
 首要規則：**預期輸出依規範撰寫，不從 JS 實作產生。** 只把 JS 實作的行為紀錄下來的測試案例，會把實作凍結成事實上的規範 — 這正是 XTL 想避免的。
 
 ### 4. 移植到其他語言
 
-歡迎其他語言的實作，並在 [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) 追蹤。要列入移植：
+歡迎其他語言的實作，並在 [IMPLEMENTATIONS.md](/zh-TW/implementations) 追蹤。要列入移植：
 
 1. 依規範實作，不要依 JS 實作。
-2. 依 [`conformance/runner-protocol.md`](./conformance/runner-protocol.md) 跑你的實作通過符合性語料庫。
+2. 依 [`conformance/runner-protocol.md`](/zh-TW/conformance/runner-protocol) 跑你的實作通過符合性語料庫。
 3. 送 PR 在 `IMPLEMENTATIONS.md` 新增一列。
 
 ## 程式撰寫慣例（TypeScript 實作）
@@ -89,13 +89,13 @@ npm test
 
 ## 適合新手的貢獻
 
-若你想貢獻但沒有特定癢處，這幾項投資報酬率最高。每項都對應 [ROADMAP.md](./ROADMAP.md) 的某個 1.0 阻塞項目。
+若你想貢獻但沒有特定癢處，這幾項投資報酬率最高。每項都對應 [ROADMAP.md](/zh-TW/roadmap) 的某個 1.0 阻塞項目。
 
 1. **提案一個符合性測試案例**，補上目前還沒有測試案例的規範規則。使用「**Conformance fixture proposal**」議題範本。撰寫測試案例本身不需要 TypeScript — 只需 `template.xlsx` + `data.xlsx` + 預期輸出（或預期錯誤）。
 2. **食譜翻譯。** 在 [`docs/guides/`](./docs/guides/) 裡的 15 篇食譜中挑一篇，翻譯成韓文（或任何其他語言）。把檔案放在 `docs/guides/<lang>/NN-*.md` 並送 PR。協調成本低、價值高。
 3. **以真實報表資料跑 xl3 並回報摩擦點。** 開一個簡短議題並貼 `early-adopter-feedback` 標籤，內容包含：嘗試做什麼報表、哪些順利、哪些不順、希望 XTL 多支援什麼。這會塑造 1.0 的樣貌。
 4. **規範澄清。** 若你讀規範時發現某句話有歧義，開議題並貼 `spec` 標籤，附上原句加上兩種合理解釋。即使未被接受，通常也會觸發規範改善。
-5. **移植進度。** 在做 [xl3-py](https://github.com/jinyoung4478/xl3-py) 或其他移植嗎？放一份 `conformance/reports/<impl>-<version>.json`（格式定義於 [`conformance/runner-protocol.md`](./conformance/runner-protocol.md)），儀表板會自動收進來。
+5. **移植進度。** 在做 [xl3-py](https://github.com/jinyoung4478/xl3-py) 或其他移植嗎？放一份 `conformance/reports/<impl>-<version>.json`（格式定義於 [`conformance/runner-protocol.md`](/zh-TW/conformance/runner-protocol)），儀表板會自動收進來。
 
 ## 行為準則
 

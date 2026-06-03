@@ -53,4 +53,4 @@ pagination_label: '01 · 시작하기'
 - `{{ ... }}` 는 **템플릿 블록**으로, 중괄호 안의 내용은 XTL 표현식으로 평가됩니다. 중괄호 안의 공백은 의미가 없습니다.
 - 데이터 블록은 템플릿 블록이 없는 첫 번째 비어 있지 않은 행에서 멈춥니다. 푸터 행(예: "합계" 셀)을 추가해두면 그 위에서 데이터 블록만 펼쳐지고 푸터는 제자리에 머뭅니다.
 
-함께 보기: [`spec/language.md`](../../spec/language.md) 의 "Template Blocks" 와 "Source Columns" 항목.
+함께 보기: [`spec/language.md`](/ko/spec/language) 의 "Template Blocks" 와 "Source Columns" 항목.
