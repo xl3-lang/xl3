@@ -83,11 +83,20 @@ export async function tryLoadWasmEngine(): Promise<WasmExports | null> {
           typeof process !== 'undefined' &&
           !!(process as { versions?: { node?: string } }).versions?.node;
         if (isNode) {
-          const [{ readFile }, { fileURLToPath }, { createRequire }] = await Promise.all([
-            import('node:fs/promises'),
-            import('node:url'),
-            import('node:module'),
-          ]);
+          // Same trick as `xl3-wasm` above: webpack errors on the
+          // `node:` scheme when bundling for the browser even though
+          // this branch is Node-only, so hide the specifiers behind a
+          // runtime indirection it can't statically resolve.
+          const nodeImport = (specifier: string) => import(/* @vite-ignore */ specifier);
+          const [{ readFile }, { fileURLToPath }, { createRequire }] = (await Promise.all([
+            nodeImport('node:fs/promises'),
+            nodeImport('node:url'),
+            nodeImport('node:module'),
+          ])) as [
+            typeof import('node:fs/promises'),
+            typeof import('node:url'),
+            typeof import('node:module'),
+          ];
           const require = createRequire(import.meta.url);
           const jsPath = require.resolve('xl3-wasm');
           const wasmPath = jsPath.replace(/xl3_wasm\.js$/, 'xl3_wasm_bg.wasm');
