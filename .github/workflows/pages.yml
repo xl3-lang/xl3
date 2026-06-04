@@ -66,3 +66,8 @@ jobs:
           path: site
       - id: deployment
         uses: actions/deploy-pages@v4
+      # Ping IndexNow (Bing/Naver/Seznam/Yandex) with every sitemap URL
+      # so changed pages are re-crawled right away. Only after a
+      # successful deploy — submitting URLs the CDN doesn't serve yet
+      # would get them crawled as 404s.
+      - run: node website/scripts/indexnow-submit.mjs
