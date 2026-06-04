@@ -6,6 +6,21 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-06-04
+
+Backport patch on top of 0.8.0 (the 0.9.0-rc line is unaffected by
+this cut; the same fix landed on `main` as 506f616).
+
+### Fixed
+
+- ADR-0066 column-scoped blocks: outside-block cells shifted by the
+  expansion splice left their borders/fills behind at the shifted
+  position (the restore pass cleared only the value). Large expansions
+  rendered an empty, fully-bordered ghost copy of the side summary
+  block below the data. The shifted cell's style is now wiped along
+  with its value, in both the plain and `@group`/`@subtotal` render
+  paths.
+
 ## [0.8.0] - 2026-05-24
 
 0.8.0 batch. Two-part data-block design overhaul: Phase 1 (ADR-0066)

@@ -571,8 +571,12 @@ export class Renderer {
     if (outsideSnapshots.length > 0) {
       for (const snap of outsideSnapshots) {
         // Clear the shifted position so the cell doesn't appear twice.
+        // Style must be wiped along with the value — leaving the moved
+        // borders/fills behind renders a style-only ghost copy of the
+        // outside block below the expanded data.
         const shifted = sheet.getRow(snap.row + insertCount).getCell(snap.col);
         shifted.value = null;
+        shifted.style = {};
         // Restore at the original position
         const orig = sheet.getRow(snap.row).getCell(snap.col);
         orig.value = snap.value;
@@ -776,8 +780,11 @@ export class Renderer {
     // ADR-0066: restore outside-block cells to ORIGINAL row positions.
     if (outsideSnapshots.length > 0) {
       for (const snap of outsideSnapshots) {
+        // Clear value AND style at the shifted position — see
+        // renderDataRows step 5 (style-only ghost otherwise).
         const shifted = sheet.getRow(snap.row + insertDelta).getCell(snap.col);
         shifted.value = null;
+        shifted.style = {};
         const orig = sheet.getRow(snap.row).getCell(snap.col);
         orig.value = snap.value;
         if (snap.style && Object.keys(snap.style).length > 0) {
