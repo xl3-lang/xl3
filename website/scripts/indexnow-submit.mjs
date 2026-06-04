@@ -51,7 +51,16 @@ async function main() {
   });
   // 200 = processed, 202 = accepted (key validation pending) — both fine.
   if (res.status !== 200 && res.status !== 202) {
-    throw new Error(`IndexNow rejected the batch: HTTP ${res.status} ${await res.text()}`);
+    const body = await res.text();
+    // Right after the key file first goes live, IndexNow's async site
+    // verification may not have finished yet (403). The ping is
+    // best-effort — don't fail an otherwise successful deploy for it;
+    // the next deploy re-submits everything anyway.
+    if (res.status === 403 && body.includes('SiteVerificationNotCompleted')) {
+      console.warn(`IndexNow: site verification still pending, skipping (HTTP 403)`);
+      return;
+    }
+    throw new Error(`IndexNow rejected the batch: HTTP ${res.status} ${body}`);
   }
   console.log(`IndexNow: submitted ${urls.size} URLs (HTTP ${res.status})`);
 }
