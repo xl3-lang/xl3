@@ -651,13 +651,17 @@ export default function Home() {
     <Layout
       title={translate({
         id: 'homepage.layout.title',
-        message: 'xl3 — Deterministic runtime for AI-generated Excel reports',
+        // Carries both search intents: the established "excel template
+        // engine javascript" query and the AI/determinism positioning
+        // the hero leads with.
+        // Docusaurus appends "| xl3", so no brand prefix here.
+        message: 'Deterministic Excel Template Engine for JavaScript',
         description: 'HTML <title> for the landing page',
       })}
       description={translate({
         id: 'homepage.layout.description',
         message:
-          'xl3 is a deterministic runtime for AI-generated Excel reports. An LLM writes the template once; xl3 renders the workbook from (template, data) as a pure function — same inputs, same bytes, every time.',
+          'xl3 is an open-source Excel template engine for JavaScript and Node.js. Author the template in Excel itself — or let an LLM write it — and render workbooks deterministically: same inputs, same bytes, every time.',
         description: 'HTML <meta description> for the landing page',
       })}
     >

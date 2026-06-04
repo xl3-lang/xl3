@@ -100,6 +100,12 @@ async function main() {
   // (`[GOVERNANCE.md](./GOVERNANCE.md)`) still resolve.
   await injectSlugs(TARGET, LOWERCASE_SLUGS);
 
+  // SEO titles/descriptions for landing docs. Injected here (not in
+  // the canonical files) so GitHub renders stay clean. Frontmatter
+  // `title` only affects <title>/og:title — sidebars.ts pins labels
+  // explicitly, and the markdown H1 stays as-is.
+  await injectSeoMeta(TARGET, SEO_META);
+
   // Canonical repo paths use relative links that target GitHub's file
   // layout (`../../spec/language.md` from a cookbook recipe). Once the
   // file is copied into `website/docs/`, the depth changes and most
@@ -421,6 +427,42 @@ async function stampLastUpdate(target) {
   }
 
   await walk(target);
+}
+
+// Keyword-targeted <title> / meta description per landing doc.
+// "excel template language" has a near-empty SERP and /spec is the
+// exact-match answer; /guides targets the how-to long tail.
+const SEO_META = {
+  'spec/index.md': {
+    title: 'XTL — an Excel Template Language · Specification',
+    description:
+      'Normative specification for XTL, the Excel template language: template syntax, evaluation model, design decisions (ADRs), and conformance fixtures.',
+  },
+  'guides/index.md': {
+    title: 'XTL Guides — Excel templating recipes for loops, joins, and grouping',
+    description:
+      'Hands-on recipes for the XTL Excel template language: runtime inputs, multi-source joins, group-and-subtotal, conditional cells, file-per-group output, and more.',
+  },
+};
+
+async function injectSeoMeta(target, map) {
+  for (const [rel, meta] of Object.entries(map)) {
+    const file = join(target, rel);
+    if (!existsSync(file)) continue;
+    const body = await readFile(file, 'utf8');
+    const lines = [];
+    if (meta.title) lines.push(`title: "${meta.title}"`);
+    if (meta.description) lines.push(`description: "${meta.description}"`);
+    const fm = lines.join('\n');
+    if (body.startsWith('---\n')) {
+      const end = body.indexOf('\n---\n', 4);
+      if (end !== -1 && !/^title:/m.test(body.slice(0, end))) {
+        await writeFile(file, body.slice(0, end) + `\n${fm}` + body.slice(end));
+      }
+    } else {
+      await writeFile(file, `---\n${fm}\n---\n\n${body}`);
+    }
+  }
 }
 
 async function injectSlugs(target, map) {
