@@ -1,0 +1,34 @@
+# xl3
+
+> xl3 is an open-source, deterministic Excel-to-Excel template engine for JavaScript and Node.js. The template is an ordinary `.xlsx` workbook authored in Excel itself (by an operator or an LLM) using XTL — an Excel-syntax template language. Rendering is a pure function: `convert(template, data)` produces the same bytes for the same inputs, every time. npm: `@jinyoung4478/xl3`.
+
+Key facts:
+- XTL expressions use Excel syntax (`IF`, `XLOOKUP`, `SUM`, `&`, `[Column]` references) inside `{{ ... }}` cell markers — no second expression language.
+- Directives (`@filter`, `@sort`, `@group`, `@subtotal`, `@join`, `@source`, `@top`, `@repeat`, `@block`) live in visible cell values, not cell comments.
+- Data comes from a second `.xlsx` file, not host-language objects; there is no escape hatch into JavaScript, by design.
+- The language is specified independently of the implementation (spec + ADRs + conformance fixtures), so it can be ported to other runtimes.
+- xl3 is the maintained JavaScript alternative to JXLS (Java); its spec absorbed JXLS's edge cases item by item.
+
+## Docs
+
+- [Getting started](https://xl3.io/guides/getting-started): render your first template in 5 minutes
+- [Guides index](https://xl3.io/guides): 19 hands-on recipes — loops, joins, grouping, conditional cells, file-per-group
+- [JXLS to xl3](https://xl3.io/guides/jxls-to-xl3): migration guide and directive mapping for JXLS users
+- [API reference](https://xl3.io/api): `convert`, `preview`, `analyze`, `batchMatch` and the full TypeScript surface
+- [Try in browser](https://xl3.io/try): run a conversion with no install
+
+## Specification
+
+- [XTL language spec](https://xl3.io/spec/language): normative syntax — template blocks, source columns, operators, functions, directives
+- [Evaluation model](https://xl3.io/spec/evaluation): how rendering proceeds, determinism guarantees
+- [Spec index](https://xl3.io/spec): cross-reference of spec sections, ADRs, and conformance fixtures
+- [Glossary](https://xl3.io/spec/glossary): defined terms
+- [Stability policy](https://xl3.io/spec/stability): what 0.x means, compatibility promises
+
+## Optional
+
+- [Conformance suite](https://xl3.io/conformance): fixture-based conformance testing for implementations
+- [Porter's guide](https://xl3.io/porters-guide): how to implement XTL in another language
+- [Governance](https://xl3.io/governance): how spec decisions are made
+- [Roadmap](https://xl3.io/roadmap): gates to 1.0
+- [GitHub repository](https://github.com/jinyoung4478/xl3): source, issues, ADRs
