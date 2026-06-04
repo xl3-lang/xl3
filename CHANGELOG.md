@@ -11,6 +11,17 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 > days before G3 ticks. Clock reset 2026-05-26 by 0.9.0-rc.1's
 > acceleration surface additions; earliest tick 2026-06-25.
 
+### Fixed
+
+- ADR-0066 column-scoped blocks: outside-block cells shifted by the
+  expansion splice left their borders/fills behind at the shifted
+  position (the restore pass cleared only the value). Large expansions
+  rendered an empty, fully-bordered ghost copy of the side summary
+  block below the data. The shifted cell's style is now wiped along
+  with its value, in both the plain and `@group`/`@subtotal` render
+  paths. (JS engine only — the wasm core composes rows and was never
+  affected.)
+
 ## [0.9.0-rc.1] - 2026-05-26
 
 0.9.0 release candidate. Adds the `xl3-wasm` acceleration path as an
