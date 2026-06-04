@@ -39,6 +39,7 @@ shape but forget the syntax.
 | 16 | [XTL function vs Excel formula](./16-xtl-vs-excel-formula.md) | When to use `{{ ... }}` vs an `=...` cell formula. The render-time / open-time boundary per ADR-0043. |
 | 17 | [Template-authoring display](./17-template-authoring-display.md) | What you see in Excel while editing the template (errors, placeholders), why it's expected, and the `IFERROR`-wrap convention for dashboards. |
 | 18 | [`@group` and `@subtotal`](./18-group-and-subtotal.md) | Interleaved per-group subtotal rows in a single data block (ADR-0038) — single-level, nested, grand-total-via-outermost. |
+| 19 | [JXLS to xl3](./19-jxls-to-xl3.md) | The JavaScript alternative to JXLS: `jx:each`/`jx:if`/`groupBy`/`jx:multisheet` mapped to XTL, what was rejected and why, migration checklist. |
 
 ## How to read a recipe
 

@@ -443,6 +443,11 @@ const SEO_META = {
     description:
       'Hands-on recipes for the XTL Excel template language: runtime inputs, multi-source joins, group-and-subtotal, conditional cells, file-per-group output, and more.',
   },
+  'guides/19-jxls-to-xl3.md': {
+    title: 'JXLS Alternative for JavaScript & Node.js — Migrate JXLS Templates to xl3',
+    description:
+      'Migrate JXLS templates to xl3, the JavaScript Excel template engine: jx:each, jx:if, groupBy, and multisheet mapped to XTL directives, with a step-by-step checklist.',
+  },
 };
 
 async function injectSeoMeta(target, map) {

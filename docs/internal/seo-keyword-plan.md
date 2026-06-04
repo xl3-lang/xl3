@@ -31,7 +31,7 @@ Korean spot checks). Repo-internal — not synced to xl3.io.
 
 | # | Query | Comp. | Action | Status |
 |---|-------|-------|--------|--------|
-| 1 | jxls alternative / jxls javascript / jxls nodejs | weak | New guide: "JXLS for JavaScript: the modern Node.js alternative" with jx:each/jx:if ↔ XTL mapping table | todo |
+| 1 | jxls alternative / jxls javascript / jxls nodejs | weak | Guide 19 (`/guides/jxls-to-xl3`): jx:each/jx:if ↔ XTL mapping, rejection ADRs, migration checklist | **done 2026-06-04** |
 | 2 | excel template engine (javascript) | mid | Homepage title/meta carries the phrase | **done 2026-06-04** |
 | 3 | xlsx-template alternative | weak | New comparison page: placeholder-only vs directives | todo |
 | 4 | excel report generator nodejs | strong | New how-to: "Generate Excel reports in Node.js from a template" (flank, don't head-on) | todo |
