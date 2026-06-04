@@ -8,9 +8,10 @@
 // docs at the root). Docusaurus only sees `website/docs/`.
 
 import { cp, mkdir, readFile, rm, unlink, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WEBSITE = join(HERE, '..');
@@ -133,6 +134,12 @@ async function main() {
     ...(await readdirMd(join(TARGET, 'spec', 'decisions'))),
     join(TARGET, 'spec', 'glossary.md'),
   ]);
+
+  // The synced tree is gitignored, so Docusaurus's git-based lastUpdate
+  // lookup can't see it. Stamp each file with the canonical source's
+  // last commit date via `last_update` frontmatter (read before git by
+  // the docs plugin), so the sitemap gets a real <lastmod> per page.
+  await stampLastUpdate(TARGET);
 
   console.log('synced markdown into', TARGET);
 }
@@ -354,6 +361,67 @@ const LOWERCASE_SLUGS = {
   'spec/index.md': '/spec',
   'conformance/index.md': '/conformance',
 };
+
+// Last commit date (YYYY-MM-DD) of a repo path, or null if untracked.
+function gitDate(repoRel) {
+  try {
+    const out = execFileSync('git', ['log', '-1', '--format=%cs', '--', repoRel], {
+      cwd: REPO,
+      encoding: 'utf8',
+    }).trim();
+    return out || null;
+  } catch {
+    return null;
+  }
+}
+
+// Map a synced file (relative to TARGET) back to its canonical repo
+// path. Returns null for generated files (api/ comes from typedoc).
+function canonicalSource(rel) {
+  if (rel.startsWith('api/')) return null;
+  if (rel.startsWith('guides/')) return `docs/${rel}`;
+  // spec/, conformance/ and top-level files keep their repo paths.
+  return rel;
+}
+
+async function stampLastUpdate(target) {
+  // typedoc output has no git history of its own; it derives from src/,
+  // so every api/ page shares the date of the last commit touching src/.
+  const apiDate = gitDate('src');
+  const { readdir } = await import('node:fs/promises');
+
+  async function walk(dir) {
+    for (const e of await readdir(dir, { withFileTypes: true })) {
+      const abs = join(dir, e.name);
+      if (e.isDirectory()) {
+        await walk(abs);
+        continue;
+      }
+      if (!e.name.endsWith('.md')) continue;
+      const rel = relative(target, abs);
+      const src = canonicalSource(rel);
+      let date = src === null ? apiDate : gitDate(src);
+      // index.md may have been promoted from README.md by
+      // preferIndexOverReadme — retry under the original name.
+      if (!date && src && src.endsWith('index.md')) {
+        date = gitDate(src.replace(/index\.md$/, 'README.md'));
+      }
+      if (!date) continue;
+      const body = await readFile(abs, 'utf8');
+      const fm = `last_update:\n  date: ${date}`;
+      if (body.startsWith('---\n')) {
+        const end = body.indexOf('\n---\n', 4);
+        if (end !== -1 && !/^last_update:/m.test(body.slice(0, end))) {
+          await writeFile(abs, body.slice(0, end) + `\n${fm}` + body.slice(end));
+        }
+      } else {
+        await writeFile(abs, `---\n${fm}\n---\n\n${body}`);
+      }
+    }
+  }
+
+  await walk(target);
+}
 
 async function injectSlugs(target, map) {
   for (const [rel, slug] of Object.entries(map)) {

@@ -91,6 +91,11 @@ const config: Config = {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
           editUrl: 'https://github.com/jinyoung4478/xl3/edit/main/',
+          // Surfaces lastUpdatedAt in route metadata so the sitemap can
+          // emit <lastmod>. Synced docs carry the date via injected
+          // `last_update` frontmatter (see scripts/sync-docs.mjs);
+          // git-tracked i18n translations resolve through git history.
+          showLastUpdateTime: true,
         },
         blog: false,
         theme: {

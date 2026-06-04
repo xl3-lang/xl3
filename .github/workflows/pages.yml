@@ -43,6 +43,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history so the Docusaurus sitemap plugin (lastmod: 'date')
+          # can read git last-modified dates for every page.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
