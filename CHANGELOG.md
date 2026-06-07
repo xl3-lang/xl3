@@ -6,6 +6,25 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-06-07
+
+Backport patch on the 0.8.x line (cherry-pick of `5ebd3ee` from
+`main`; the same fix is in `[Unreleased]` for the 0.9.0-rc line).
+
+### Fixed
+
+- **#50 — `RangeError: Maximum call stack size exceeded` on 80k+ row
+  blocks.** `spliceRows(start, del, ...rows)` spread the whole
+  expansion as call arguments, hitting the engine's argument-count /
+  stack limit (production report: 84,706 rows; measured locally:
+  direct spread OK at 100k, crash at 150k — threshold depends on
+  remaining stack). Rows are now inserted in bounded 2,000-row chunks
+  (first chunk through `spliceRows` with the deleteCount, ascending
+  tail chunks through `insertRows`); merge and outline preservation
+  are unaffected. A 160k-row block that crashed before renders in
+  ~3.1s. JS engine only; internal interface change, no public API
+  impact.
+
 ## [0.8.1] - 2026-06-04
 
 Backport patch on top of 0.8.0 (the 0.9.0-rc line is unaffected by

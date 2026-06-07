@@ -12,7 +12,7 @@ export interface WorkbookDocument {
     sheet: ExcelJS.Worksheet,
     start: number,
     deleteCount: number,
-    ...rows: unknown[][]
+    rows?: unknown[][],
   ): void;
   writeBuffer(): Promise<ArrayBuffer>;
 }
@@ -78,7 +78,7 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
     sheet: ExcelJS.Worksheet,
     start: number,
     deleteCount: number,
-    ...rows: unknown[][]
+    rows: unknown[][] = [],
   ) {
     const rowDelta = rows.length - deleteCount;
     const preserveFromRow = deleteCount > 0 ? start + deleteCount : start;
@@ -93,7 +93,7 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
     // restore them on the post-shift row numbers.
     const savedOutlineLevels = saveOutlineLevelsFromRow(sheet, preserveFromRow);
 
-    sheet.spliceRows(start, deleteCount, ...rows);
+    spliceRowsChunked(sheet, start, deleteCount, rows);
 
     for (const merge of saved) {
       try {
@@ -114,6 +114,30 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
 
   async writeBuffer(): Promise<ArrayBuffer> {
     return await this.workbook.xlsx.writeBuffer() as ArrayBuffer;
+  }
+}
+
+// `fn(...arr)` is subject to the engine's argument-count limit (V8 caps
+// around 64k); large data blocks (80k+ source rows) used to overflow the
+// call stack inside ExcelJS `spliceRows`. Insert in bounded chunks instead
+// of one giant spread. Chunks are appended in ascending order, so each
+// insertion only shifts the (small) tail below the block once per chunk.
+const SPLICE_CHUNK = 2_000;
+
+function spliceRowsChunked(
+  sheet: ExcelJS.Worksheet,
+  start: number,
+  deleteCount: number,
+  rows: unknown[][],
+) {
+  if (rows.length <= SPLICE_CHUNK) {
+    sheet.spliceRows(start, deleteCount, ...rows);
+    return;
+  }
+  sheet.spliceRows(start, deleteCount, ...rows.slice(0, SPLICE_CHUNK));
+  for (let i = SPLICE_CHUNK; i < rows.length; i += SPLICE_CHUNK) {
+    // ExcelJS insertRows spreads internally too — keep chunks bounded.
+    sheet.insertRows(start + i, rows.slice(i, i + SPLICE_CHUNK));
   }
 }
 
