@@ -521,7 +521,7 @@ export class Renderer {
 
     // 3. Insert rows for data
     if (insertCount > 0) {
-      document.spliceRowsPreservingMerges(sheet, insertPoint, 0, ...Array(insertCount).fill([]));
+      document.spliceRowsPreservingMerges(sheet, insertPoint, 0, Array(insertCount).fill([]));
     }
 
     // 4. Render each data record (inside-col cells only; outside cols
@@ -711,7 +711,7 @@ export class Renderer {
       const insertCount = totalOutputRows - templateRowCount;
       document.spliceRowsPreservingMerges(
         sheet, st.dataStartRow + templateRowCount, 0,
-        ...Array(insertCount).fill([]),
+        Array(insertCount).fill([]),
       );
     } else if (totalOutputRows < templateRowCount) {
       const deleteCount = templateRowCount - totalOutputRows;

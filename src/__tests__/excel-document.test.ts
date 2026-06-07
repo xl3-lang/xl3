@@ -23,7 +23,7 @@ describe('ExcelJsWorkbookDocument.spliceRowsPreservingMerges', () => {
   it('shifts merges below inserted rows', async () => {
     const { doc, sheet } = await documentWithMergedSheet('A3:B3');
 
-    doc.spliceRowsPreservingMerges(sheet, 3, 0, []);
+    doc.spliceRowsPreservingMerges(sheet, 3, 0, [[]]);
 
     expect(merges(sheet)).toEqual(['A4:B4']);
   });
@@ -34,6 +34,19 @@ describe('ExcelJsWorkbookDocument.spliceRowsPreservingMerges', () => {
     doc.spliceRowsPreservingMerges(sheet, 2, 1);
 
     expect(merges(sheet)).toEqual(['A2:B2']);
+  });
+
+  it('inserts blocks past the engine spread limit without overflowing', async () => {
+    // Regression: 80k+ row blocks used to crash with "Maximum call stack
+    // size exceeded" — `spliceRows(start, del, ...rows)` spreads the whole
+    // block as call arguments. Now inserted in bounded chunks.
+    const { doc, sheet } = await documentWithMergedSheet('A3:B3');
+    const count = 150_000;
+
+    doc.spliceRowsPreservingMerges(sheet, 3, 0, Array(count).fill([]));
+
+    expect(sheet.rowCount).toBeGreaterThanOrEqual(count + 3);
+    expect(merges(sheet)).toEqual([`A${3 + count}:B${3 + count}`]);
   });
 });
 

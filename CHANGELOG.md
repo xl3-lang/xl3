@@ -32,6 +32,17 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Fixed
 
+- **#50 — `RangeError: Maximum call stack size exceeded` on 80k+ row
+  blocks.** `spliceRows(start, del, ...rows)` spread the whole
+  expansion as call arguments, hitting the engine's argument-count /
+  stack limit (production report: 84,706 rows; measured locally:
+  direct spread OK at 100k, crash at 150k — threshold depends on
+  remaining stack). Rows are now inserted in bounded 2,000-row chunks
+  (first chunk through `spliceRows` with the deleteCount, ascending
+  tail chunks through `insertRows`); merge and outline preservation
+  are unaffected. A 160k-row block that crashed before renders in
+  ~3.1s. JS engine only; internal interface change, no public API
+  impact.
 - ADR-0066 column-scoped blocks: outside-block cells shifted by the
   expansion splice left their borders/fills behind at the shifted
   position (the restore pass cleared only the value). Large expansions
