@@ -24,6 +24,13 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   (xl3-wasm, xl3-py) re-emit every cell and must carry the native
   value through explicitly — xl3-py passed 148/148 for two releases
   while silently stringifying them. Corpus: 154 → 155 fixtures.
+- Conformance fixture `157-group-block-side-cells` (#51): ADR-0066
+  outside-block cells next to a `@group`/`@subtotal` block are emitted
+  **exactly once** at their original (post-directive-removal) rows —
+  never once per group. Pins the grouped side-summary layout the wasm
+  core diverges on (xl3-rs#3): one side row lands inside group 1's
+  output span, a second beyond the last subtotal row. Corpus:
+  155 → 156 fixtures.
 - `conformance/runner-protocol.md`: Stage 1 value equality is now
   **normatively type-aware** — text never equals number/boolean/date
   even when display forms coincide; numeric equality is value-based
