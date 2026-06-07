@@ -144,6 +144,31 @@ The conformance protocol has two comparison stages:
   static-output conformance because it can catch layout, style, merge, sheet
   structure, and package regressions that Stage 1 cannot see.
 
+### Stage 1 value equality (normative)
+
+Stage 1 cell-value equality is **type-aware**. "Compares cell values"
+means comparing the typed value model, not display strings:
+
+- A text cell never equals a number, boolean, or date cell, even when
+  their display forms coincide: the text cell `"5500"` is NOT equal to
+  the numeric cell `5500`; `"TRUE"` is NOT equal to the boolean `TRUE`.
+- Numeric equality is value-based: `1` equals `1.0`. Integer-vs-float
+  storage in the host library is not a difference.
+- Boolean cells compare as booleans.
+- Date cells compare on the date-time instant (e.g., via a canonical
+  ISO-8601 form), not on the host library's rendering of it.
+- Formula cells compare by formula text (ADR-0046) — cached results are
+  not part of the contract. Shared-formula slaves compare by a stable
+  owner-address form (ADR-0066). Error cells compare by error code
+  (ADR-0025). Hyperlink cells compare by a stable text+target form
+  (ADR-0039); rich-text cells by their concatenated text.
+
+A runner that stringifies both sides before comparing MUST NOT claim
+Stage 1 conformance: coercing `5500` to `"5500"` silently waives every
+fixture that pins native value types in static or outside cells (e.g.,
+fixture 156), which is exactly the fidelity bug class such fixtures
+exist to catch in compose-model implementations.
+
 Error fixtures and dynamic fixtures are not workbook-output comparisons. They
 keep their `expected_error` and `expected_dynamic` pass/fail rules regardless of
 comparison stage.
@@ -248,7 +273,7 @@ JSON report format:
       "fixture": "007-aggregate-sum",
       "status": "fail",
       "duration_ms": 8,
-      "diff": "cell B5: expected 1234, got 1234.0"
+      "diff": "cell B5: expected 1234 (number), got \"1234\" (text)"
     }
   ],
   "summary": {

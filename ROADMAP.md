@@ -36,7 +36,7 @@ milestone. Per-version step plan below references these gates by ID.
 
 | ID | Gate | Owner | Artifact | Pass criterion | Fallback | Target |
 |----|------|-------|----------|----------------|----------|--------|
-| G1 | Conformance corpus ≥ 140 | maintainer | `conformance/fixtures/` | `ls conformance/fixtures/ \| wc -l` ≥ 140 | — | DONE (154 fixtures as of 0.8.0; ADR-0066 added 141-145 mid-0.7.x; ADRs 0067-0069 added 146-155 in 0.8.0; ADRs 0051-0065 reserved further numbers for 0.7.1) |
+| G1 | Conformance corpus ≥ 140 | maintainer | `conformance/fixtures/` | `ls conformance/fixtures/ \| wc -l` ≥ 140 | — | DONE (155 fixtures; ADR-0066 added 141-145 mid-0.7.x; ADRs 0067-0069 added 146-155 in 0.8.0; 156 added post-0.8.1 for native value preservation (#49); ADRs 0051-0065 reserved further numbers for 0.7.1) |
 | G2 | Stage 2 OOXML canonicalization spec'd | maintainer | ADR-0006 + canonicalizer in src/ | covered by fixtures 024-027, 093 + ADR-0006 amendment | — | DONE |
 | G3 | Error code catalog frozen | maintainer | `src/__tests__/error-codes.test.ts` snapshot | catalog snapshot unchanged for 30 days | — | 0.9-rc (clock reset 2026-05-23 by 0.8.0's 4 new codes: `xl3/expression/bracket-outside-block`, `xl3/block/overlap`, `xl3/block/empty-table`, `xl3/directive/orphan` — earliest tick: 2026-06-22 if no further changes) |
 | G4 | JXLS boundary published | maintainer | ADR-0048 | file exists, references PORTERS_GUIDE | — | DONE |

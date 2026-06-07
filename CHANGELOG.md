@@ -8,8 +8,27 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 > **G3 1.0-gate window active.** The error-code catalog (see
 > `src/__tests__/error-codes.test.ts`) must remain unchanged for 30
-> days before G3 ticks. Clock reset 2026-05-26 by 0.9.0-rc.1's
-> acceleration surface additions; earliest tick 2026-06-25.
+> days before G3 ticks. Clock reset 2026-05-23 by 0.8.0's 4 new codes;
+> earliest tick 2026-06-22. (A previous version of this notice claimed
+> a 2026-05-26 reset by 0.9.0-rc.1's "acceleration surface additions" —
+> git shows no catalog change at the rc.1 cut; the catalog last changed
+> with 0.8.0's codes, matching ROADMAP G3 and the test-header guard.)
+
+### Added
+
+- Conformance fixture `156-static-native-value-preservation` (#49):
+  native number/boolean/date cells in static rows and outside-block
+  cells must survive expansion as **typed** values, not text
+  (`5500` ≠ `"5500"`). Splice-model engines get this for free (the
+  OOXML cell survives untouched); compose-model implementations
+  (xl3-wasm, xl3-py) re-emit every cell and must carry the native
+  value through explicitly — xl3-py passed 148/148 for two releases
+  while silently stringifying them. Corpus: 154 → 155 fixtures.
+- `conformance/runner-protocol.md`: Stage 1 value equality is now
+  **normatively type-aware** — text never equals number/boolean/date
+  even when display forms coincide; numeric equality is value-based
+  (`1` = `1.0`); a runner that stringifies both sides before comparing
+  MUST NOT claim Stage 1 conformance (#49).
 
 ### Fixed
 

@@ -1,0 +1,5 @@
+description: Native number/boolean/date values in static rows and outside-block cells survive expansion as typed cells, not text ("5500" != 5500). Pins the value-layer half of "preserved verbatim" that splice-model engines get for free and compose-model engines must carry explicitly.
+spec_section: evaluation.md outside cells / ADR-0066
+spec_version: "0.1"
+tags: [static, value-model, adr-0066, outside-cells]
+verified_by: [manual-script]
