@@ -3,15 +3,21 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { convert, preview, readTemplateInputs } from '../index.js';
 import { _resetWasmEngineCache, tryLoadWasmEngine } from '../wasm-bridge.js';
 
-// These tests run without the optional `xl3-wasm` package installed.
-// They lock in the contract that:
-//   - `engine: 'auto'` and `engine: 'js'` always work — the wasm
-//     bridge silently returns null when the package is missing.
-//   - `engine: 'wasm'` fails fast with a recognisable message so
-//     hosts can surface the missing acceleration to the operator.
-//
-// A future PR can flip these into positive-path tests once we publish
-// (or `npm link`) the local `xl3-wasm` pkg into this repo.
+// `xl3-wasm` is an OPTIONAL dependency (not in package.json), so this
+// suite cannot assume either way — it detects availability at load
+// time and runs the matching contract:
+//   - package missing (CI default): `engine: 'auto'`/`'js'` always
+//     work — the bridge silently returns null; `engine: 'wasm'` fails
+//     fast with a recognisable message so hosts can surface the
+//     missing acceleration to the operator.
+//   - package installed (local dev with the xl3-rs artifact): the
+//     bridge loads it and the wasm positive path produces the same
+//     output shape as the JS path.
+// Before this split the missing-package suite ran unconditionally and
+// failed on any machine that had `xl3-wasm` installed for benching.
+
+const wasmAvailable = (await tryLoadWasmEngine()) !== null;
+_resetWasmEngineCache();
 
 async function buildMinimalTemplate(): Promise<ArrayBuffer> {
   const wb = new ExcelJS.Workbook();
@@ -41,17 +47,18 @@ async function buildMinimalData(): Promise<ArrayBuffer> {
   return new Uint8Array(buf).buffer;
 }
 
-describe('wasm bridge (without xl3-wasm installed)', () => {
+async function loadFirstSheet(out: { data: ArrayBuffer }[]) {
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(new Uint8Array(out[0]!.data).buffer);
+  return wb.worksheets[0]!;
+}
+
+describe('wasm bridge (engine-agnostic contract)', () => {
   afterEach(() => {
     _resetWasmEngineCache();
   });
 
-  it('tryLoadWasmEngine returns null when the package is missing', async () => {
-    const engine = await tryLoadWasmEngine();
-    expect(engine).toBeNull();
-  });
-
-  it('convert with engine: "auto" falls back to the JS path', async () => {
+  it('convert with engine: "auto" produces output regardless of wasm availability', async () => {
     const template = await buildMinimalTemplate();
     const data = await buildMinimalData();
     const out = await convert(template, data, { engine: 'auto' });
@@ -65,6 +72,17 @@ describe('wasm bridge (without xl3-wasm installed)', () => {
     const data = await buildMinimalData();
     const out = await convert(template, data, { engine: 'js' });
     expect(out).toHaveLength(1);
+  });
+});
+
+describe.skipIf(wasmAvailable)('wasm bridge (without xl3-wasm installed)', () => {
+  afterEach(() => {
+    _resetWasmEngineCache();
+  });
+
+  it('tryLoadWasmEngine returns null when the package is missing', async () => {
+    const engine = await tryLoadWasmEngine();
+    expect(engine).toBeNull();
   });
 
   it('convert with engine: "wasm" throws when the package is missing', async () => {
@@ -88,5 +106,47 @@ describe('wasm bridge (without xl3-wasm installed)', () => {
     await expect(preview(template, data, { engine: 'wasm' })).rejects.toThrow(
       /xl3-wasm/,
     );
+  });
+});
+
+describe.runIf(wasmAvailable)('wasm bridge (with xl3-wasm installed)', () => {
+  afterEach(() => {
+    _resetWasmEngineCache();
+  });
+
+  it('tryLoadWasmEngine returns the engine surface', async () => {
+    const engine = await tryLoadWasmEngine();
+    expect(engine).not.toBeNull();
+    expect(typeof engine!.convert).toBe('function');
+    expect(typeof engine!.preview).toBe('function');
+    expect(typeof engine!.readTemplateInputs).toBe('function');
+  });
+
+  it('convert with engine: "wasm" matches the JS path on the smoke template', async () => {
+    const template = await buildMinimalTemplate();
+    const data = await buildMinimalData();
+    const wasmOut = await convert(template, data, { engine: 'wasm' });
+    const jsOut = await convert(template, data, { engine: 'js' });
+    expect(wasmOut).toHaveLength(1);
+    expect(wasmOut[0].filename).toBe(jsOut[0].filename);
+
+    const wasmSheet = await loadFirstSheet(wasmOut);
+    const jsSheet = await loadFirstSheet(jsOut);
+    for (const addr of ['A1', 'A2', 'A3']) {
+      expect(wasmSheet.getCell(addr).value).toEqual(jsSheet.getCell(addr).value);
+    }
+  });
+
+  it('readTemplateInputs with engine: "wasm" succeeds', async () => {
+    const template = await buildMinimalTemplate();
+    const inputs = await readTemplateInputs(template, { engine: 'wasm' });
+    expect(Array.isArray(inputs)).toBe(true);
+  });
+
+  it('preview with engine: "wasm" reports the output shape', async () => {
+    const template = await buildMinimalTemplate();
+    const data = await buildMinimalData();
+    const shape = await preview(template, data, { engine: 'wasm' });
+    expect(shape.files.length).toBeGreaterThan(0);
   });
 });
