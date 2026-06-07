@@ -96,7 +96,8 @@ a pure impl refactor can ship as `xl3` patch with no spec change.
 
 ## Final 1.0.0 cut
 
-After a minimum 7-day rc soak with no critical issues:
+After a minimum 21-day rc soak with no critical issues (ROADMAP G23;
+extended from 7 days per review feedback):
 
 1. Bump version to `1.0.0`.
 2. Move `[1.0.0-rc.1]` → `[1.0.0] - YYYY-MM-DD` in CHANGELOG (with

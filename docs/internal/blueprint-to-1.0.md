@@ -291,7 +291,7 @@ explicit ROADMAP "next phase is sociological" gate.
   snapshot becomes the gate
 - Error code catalog frozen — no new codes for the duration
 - RC published with `--tag rc` (per `RELEASING.md`)
-- 7-day soak with no critical issues
+- 21-day soak with no critical issues (ROADMAP G23; extended from 7 days per review feedback)
 
 **Cut criteria for 0.9.0-rc:**
 - All MUSTs from 0.6 / 0.7 / 0.8 satisfied
@@ -345,7 +345,7 @@ xl3 cuts 1.0 when **all** of the following hold:
 - [ ] Migration guide 0.x → 1.0 published
 - [ ] Performance benchmarks published with at least
       1k / 10k / 100k row measurements
-- [ ] RC has soaked ≥ 7 days with no critical issues
+- [ ] RC has soaked ≥ 21 days with no critical issues (G23)
 - [ ] 0.x has had ≥ 1 quarter of stable behavior since the
       checklist became complete (per existing ROADMAP rule)
 
