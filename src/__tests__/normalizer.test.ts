@@ -64,7 +64,7 @@ describe('extractColumnRefs', () => {
 });
 
 describe('normalizeTemplate', () => {
-  const cols = new Set(['Customer', 'price', 'quantity']);
+  const cols = new Set(['Customer', 'price', 'quantity', 'a', 'b', 'c', 'Total']);
 
   it('rewrites a single bracket reference to an index call', () => {
     expect(normalizeTemplate('{{ [Customer] }}', cols)).toBe(
@@ -76,6 +76,63 @@ describe('normalizeTemplate', () => {
     expect(normalizeTemplate('{{ [price] * [quantity] }}', cols)).toBe(
       '{{ mul (index . "price") (index . "quantity") }}',
     );
+  });
+
+  // Issue #52: chained same-precedence arithmetic must be LEFT-associative,
+  // and `*`/`/` must bind tighter than `+`/`-`. The old first-operator
+  // split produced right-associative output (`a / b * c` → `a / (b * c)`),
+  // mis-scaling e.g. VAT cells by ~100x.
+  describe('chained arithmetic (issue #52)', () => {
+    it('is left-associative for division then multiplication', () => {
+      // (a / b) * c, NOT a / (b * c)
+      expect(normalizeTemplate('{{ [a] / [b] * [c] }}', cols)).toBe(
+        '{{ mul (div (index . "a") (index . "b")) (index . "c") }}',
+      );
+    });
+
+    it('is left-associative for repeated subtraction', () => {
+      expect(normalizeTemplate('{{ [a] - [b] - [c] }}', cols)).toBe(
+        '{{ sub (sub (index . "a") (index . "b")) (index . "c") }}',
+      );
+    });
+
+    it('is left-associative for mixed +/-', () => {
+      expect(normalizeTemplate('{{ [a] - [b] + [c] }}', cols)).toBe(
+        '{{ add (sub (index . "a") (index . "b")) (index . "c") }}',
+      );
+    });
+
+    it('is left-associative for repeated division', () => {
+      expect(normalizeTemplate('{{ [a] / [b] / [c] }}', cols)).toBe(
+        '{{ div (div (index . "a") (index . "b")) (index . "c") }}',
+      );
+    });
+
+    it('gives * / higher precedence than + -', () => {
+      // a + (b * c)
+      expect(normalizeTemplate('{{ [a] + [b] * [c] }}', cols)).toBe(
+        '{{ add (index . "a") (mul (index . "b") (index . "c")) }}',
+      );
+      // (a * b) + c
+      expect(normalizeTemplate('{{ [a] * [b] + [c] }}', cols)).toBe(
+        '{{ add (mul (index . "a") (index . "b")) (index . "c") }}',
+      );
+    });
+
+    it('honors author parentheses to override precedence', () => {
+      // (a + b) * c
+      expect(normalizeTemplate('{{ ([a] + [b]) * [c] }}', cols)).toBe(
+        '{{ mul (add (index . "a") (index . "b")) (index . "c") }}',
+      );
+    });
+
+    it('normalizes a chained arithmetic function argument', () => {
+      // The originating VAT bug: TEXT([합계] / 1.1 * 0.1, ...) must be
+      // ((합계 / 1.1) * 0.1), not (합계 / (1.1 * 0.1)).
+      expect(
+        normalizeTemplate('{{ TEXT([Total] / 1.1 * 0.1, "#,##0") }}', cols),
+      ).toBe('{{ TEXT (mul (div (index . "Total") 1.1) 0.1) "#,##0" }}');
+    });
   });
 
   it('rewrites SUM aggregates to sumRows', () => {

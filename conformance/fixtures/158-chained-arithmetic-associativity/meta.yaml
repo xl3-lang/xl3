@@ -1,0 +1,5 @@
+description: Chained same-precedence arithmetic is LEFT-associative and `*`/`/` bind tighter than `+`/`-` (grammar.ebnf arith_expr/mul_expr). `[a] / [b] * [c]` evaluates as `(a/b)*c` and `[a] - [b] + [c]` as `(a-b)+c`, not the right-associative grouping. Regression guard for issue #52, where a VAT cell (`[Total] / 1.1 * 0.1`) was mis-scaled ~100x.
+spec_section: grammar.ebnf#arith_expr / language.md#arithmetic
+spec_version: "0.1"
+tags: [arithmetic, precedence, associativity, issue-52]
+verified_by: [hand]
