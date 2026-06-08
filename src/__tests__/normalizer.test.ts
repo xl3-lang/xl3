@@ -64,7 +64,7 @@ describe('extractColumnRefs', () => {
 });
 
 describe('normalizeTemplate', () => {
-  const cols = new Set(['Customer', 'price', 'quantity', 'a', 'b', 'c', 'Total']);
+  const cols = new Set(['Customer', 'price', 'quantity', 'a', 'b', 'c', 'd', 'amount', 'Total']);
 
   it('rewrites a single bracket reference to an index call', () => {
     expect(normalizeTemplate('{{ [Customer] }}', cols)).toBe(
@@ -132,6 +132,42 @@ describe('normalizeTemplate', () => {
       expect(
         normalizeTemplate('{{ TEXT([Total] / 1.1 * 0.1, "#,##0") }}', cols),
       ).toBe('{{ TEXT (mul (div (index . "Total") 1.1) 0.1) "#,##0" }}');
+    });
+
+    it('folds a longer mixed-precedence chain correctly', () => {
+      // (a + (b * c)) - d
+      expect(normalizeTemplate('{{ [a] + [b] * [c] - [d] }}', cols)).toBe(
+        '{{ sub (add (index . "a") (mul (index . "b") (index . "c"))) (index . "d") }}',
+      );
+    });
+
+    it('handles parenthesized groups on both operands', () => {
+      expect(normalizeTemplate('{{ ([a] + [b]) * ([c] - [d]) }}', cols)).toBe(
+        '{{ mul (add (index . "a") (index . "b")) (sub (index . "c") (index . "d")) }}',
+      );
+    });
+
+    it('accepts Source[Column] arithmetic operands (old regex missed these)', () => {
+      expect(normalizeTemplate('{{ Customers[Rate] * [amount] }}', cols)).toBe(
+        '{{ mul (sourceCell "Customers" "Rate") (index . "amount") }}',
+      );
+    });
+
+    it('accepts function-call operands inside a chain', () => {
+      expect(normalizeTemplate('{{ ABS([a]) + [b] }}', cols)).toBe(
+        '{{ add (ABS (index . "a")) (index . "b") }}',
+      );
+      expect(normalizeTemplate('{{ [a] * ROUND([b], 2) }}', cols)).toBe(
+        '{{ mul (index . "a") (ROUND (index . "b") 2) }}',
+      );
+    });
+
+    it('keeps the (0 - [col]) negation idiom intact inside a chain', () => {
+      // ADR-0028: unary minus is spelled (0 - [col]); it must survive as
+      // a parenthesized sub-expression, not get re-associated.
+      expect(normalizeTemplate('{{ (0 - [a]) * [b] }}', cols)).toBe(
+        '{{ mul (sub 0 (index . "a")) (index . "b") }}',
+      );
     });
   });
 
