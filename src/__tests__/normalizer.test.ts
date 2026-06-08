@@ -64,7 +64,7 @@ describe('extractColumnRefs', () => {
 });
 
 describe('normalizeTemplate', () => {
-  const cols = new Set(['Customer', 'price', 'quantity']);
+  const cols = new Set(['Customer', 'price', 'quantity', 'a', 'b', 'c', 'd', 'amount', 'Total']);
 
   it('rewrites a single bracket reference to an index call', () => {
     expect(normalizeTemplate('{{ [Customer] }}', cols)).toBe(
@@ -76,6 +76,132 @@ describe('normalizeTemplate', () => {
     expect(normalizeTemplate('{{ [price] * [quantity] }}', cols)).toBe(
       '{{ mul (index . "price") (index . "quantity") }}',
     );
+  });
+
+  // Issue #52: chained same-precedence arithmetic must be LEFT-associative,
+  // and `*`/`/` must bind tighter than `+`/`-`. The old first-operator
+  // split produced right-associative output (`a / b * c` → `a / (b * c)`),
+  // mis-scaling e.g. VAT cells by ~100x.
+  describe('chained arithmetic (issue #52)', () => {
+    it('is left-associative for division then multiplication', () => {
+      // (a / b) * c, NOT a / (b * c)
+      expect(normalizeTemplate('{{ [a] / [b] * [c] }}', cols)).toBe(
+        '{{ mul (div (index . "a") (index . "b")) (index . "c") }}',
+      );
+    });
+
+    it('is left-associative for repeated subtraction', () => {
+      expect(normalizeTemplate('{{ [a] - [b] - [c] }}', cols)).toBe(
+        '{{ sub (sub (index . "a") (index . "b")) (index . "c") }}',
+      );
+    });
+
+    it('is left-associative for mixed +/-', () => {
+      expect(normalizeTemplate('{{ [a] - [b] + [c] }}', cols)).toBe(
+        '{{ add (sub (index . "a") (index . "b")) (index . "c") }}',
+      );
+    });
+
+    it('is left-associative for repeated division', () => {
+      expect(normalizeTemplate('{{ [a] / [b] / [c] }}', cols)).toBe(
+        '{{ div (div (index . "a") (index . "b")) (index . "c") }}',
+      );
+    });
+
+    it('gives * / higher precedence than + -', () => {
+      // a + (b * c)
+      expect(normalizeTemplate('{{ [a] + [b] * [c] }}', cols)).toBe(
+        '{{ add (index . "a") (mul (index . "b") (index . "c")) }}',
+      );
+      // (a * b) + c
+      expect(normalizeTemplate('{{ [a] * [b] + [c] }}', cols)).toBe(
+        '{{ add (mul (index . "a") (index . "b")) (index . "c") }}',
+      );
+    });
+
+    it('honors author parentheses to override precedence', () => {
+      // (a + b) * c
+      expect(normalizeTemplate('{{ ([a] + [b]) * [c] }}', cols)).toBe(
+        '{{ mul (add (index . "a") (index . "b")) (index . "c") }}',
+      );
+    });
+
+    it('normalizes a chained arithmetic function argument', () => {
+      // The originating VAT bug: TEXT([합계] / 1.1 * 0.1, ...) must be
+      // ((합계 / 1.1) * 0.1), not (합계 / (1.1 * 0.1)).
+      expect(
+        normalizeTemplate('{{ TEXT([Total] / 1.1 * 0.1, "#,##0") }}', cols),
+      ).toBe('{{ TEXT (mul (div (index . "Total") 1.1) 0.1) "#,##0" }}');
+    });
+
+    it('folds a longer mixed-precedence chain correctly', () => {
+      // (a + (b * c)) - d
+      expect(normalizeTemplate('{{ [a] + [b] * [c] - [d] }}', cols)).toBe(
+        '{{ sub (add (index . "a") (mul (index . "b") (index . "c"))) (index . "d") }}',
+      );
+    });
+
+    it('handles parenthesized groups on both operands', () => {
+      expect(normalizeTemplate('{{ ([a] + [b]) * ([c] - [d]) }}', cols)).toBe(
+        '{{ mul (add (index . "a") (index . "b")) (sub (index . "c") (index . "d")) }}',
+      );
+    });
+
+    it('accepts Source[Column] arithmetic operands (old regex missed these)', () => {
+      expect(normalizeTemplate('{{ Customers[Rate] * [amount] }}', cols)).toBe(
+        '{{ mul (sourceCell "Customers" "Rate") (index . "amount") }}',
+      );
+    });
+
+    it('accepts function-call operands inside a chain', () => {
+      expect(normalizeTemplate('{{ ABS([a]) + [b] }}', cols)).toBe(
+        '{{ add (ABS (index . "a")) (index . "b") }}',
+      );
+      expect(normalizeTemplate('{{ [a] * ROUND([b], 2) }}', cols)).toBe(
+        '{{ mul (index . "a") (ROUND (index . "b") 2) }}',
+      );
+    });
+
+    it('keeps the (0 - [col]) negation idiom intact inside a chain', () => {
+      // ADR-0028: unary minus is spelled (0 - [col]); it must survive as
+      // a parenthesized sub-expression, not get re-associated.
+      expect(normalizeTemplate('{{ (0 - [a]) * [b] }}', cols)).toBe(
+        '{{ mul (sub 0 (index . "a")) (index . "b") }}',
+      );
+    });
+
+    it('parenthesizes the right operand', () => {
+      expect(normalizeTemplate('{{ [a] * ([b] + [c]) }}', cols)).toBe(
+        '{{ mul (index . "a") (add (index . "b") (index . "c")) }}',
+      );
+    });
+
+    it('handles nested parentheses', () => {
+      expect(normalizeTemplate('{{ (([a] + [b]) * [c]) - [d] }}', cols)).toBe(
+        '{{ sub (mul (add (index . "a") (index . "b")) (index . "c")) (index . "d") }}',
+      );
+    });
+
+    it('strips redundant parens wrapping the whole expression', () => {
+      // `{{ ([a] + [b]) }}` used to leak through as the raw string
+      // "[a] + [b]"; the outer pair must be stripped and the interior
+      // normalized. Double-wrapping collapses too.
+      expect(normalizeTemplate('{{ ([a] + [b]) }}', cols)).toBe(
+        '{{ add (index . "a") (index . "b") }}',
+      );
+      expect(normalizeTemplate('{{ (([a] + [b])) }}', cols)).toBe(
+        '{{ add (index . "a") (index . "b") }}',
+      );
+    });
+
+    it('normalizes a parenthesized value argument', () => {
+      expect(normalizeTemplate('{{ IF([a] > 0, ([a] + [b]), 0) }}', cols)).toBe(
+        '{{ IF (gt (index . "a") 0) (add (index . "a") (index . "b")) 0 }}',
+      );
+      expect(normalizeTemplate('{{ ROUND(([a] + [b]) / [c], 0) }}', cols)).toBe(
+        '{{ ROUND (div (add (index . "a") (index . "b")) (index . "c")) 0 }}',
+      );
+    });
   });
 
   it('rewrites SUM aggregates to sumRows', () => {

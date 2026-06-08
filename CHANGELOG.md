@@ -31,6 +31,12 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   core diverges on (xl3-rs#3): one side row lands inside group 1's
   output span, a second beyond the last subtotal row. Corpus:
   155 → 156 fixtures.
+- Conformance fixture `158-chained-arithmetic-associativity` (#52):
+  chained same-precedence arithmetic is LEFT-associative and `*`/`/`
+  bind tighter than `+`/`-` (per `grammar.ebnf` `arith_expr`/`mul_expr`).
+  `[a] / [b] * [c]` is `(a/b)*c`, not `a/(b*c)`. Data is chosen so the
+  left- and right-associative groupings diverge. Corpus:
+  156 → 157 fixtures.
 - `conformance/runner-protocol.md`: Stage 1 value equality is now
   **normatively type-aware** — text never equals number/boolean/date
   even when display forms coincide; numeric equality is value-based
@@ -39,6 +45,20 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Fixed
 
+- **#52 — chained arithmetic was evaluated right-associatively.**
+  `findArithmeticOp` split on the FIRST operator and recursed
+  rightward, so `a / b * c` was grouped `a / (b * c)` instead of
+  `(a / b) * c`; in the function-argument path the rest of the chain
+  leaked through as a raw operand. A 거래명세서 VAT cell
+  (`[Total] / 1.1 * 0.1`) was silently mis-scaled ~100x (188 →
+  18,764). Replaced with a precedence-aware, left-associative chain
+  parser matching `grammar.ebnf` (`arith_expr` / `mul_expr`): `*`/`/`
+  bind tighter than `+`/`-`, same-precedence operators fold left. Also
+  normalizes `Source[Column]` / `__config__[key]` arithmetic operands,
+  `(a + b) * c` grouping, and redundant parentheses wrapping a whole
+  expression or value argument (`{{ ([a] + [b]) }}`, `IF(c, ([a] +
+  [b]), 0)`) — previously these leaked through unnormalized. JS impl
+  bug fix; no public API, spec, or error-code change.
 - **#50 — `RangeError: Maximum call stack size exceeded` on 80k+ row
   blocks.** `spliceRows(start, del, ...rows)` spread the whole
   expansion as call arguments, hitting the engine's argument-count /
