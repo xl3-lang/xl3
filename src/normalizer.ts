@@ -103,6 +103,12 @@ export function normalizeTemplate(
 }
 
 function normalizeInner(expr: string, columns: Set<string>): string {
+  // Issue #52: redundant parentheses wrapping the WHOLE expression
+  // (`{{ ([a] + [b]) }}`, `{{ (SUM([x])) }}`) — strip one outer pair and
+  // re-dispatch so the interior is normalized instead of leaking through
+  // as a raw string. `(a + b) * c` is NOT single-wrapped (the first `)`
+  // closes mid-expression), so the arithmetic path still handles it.
+  if (isSingleWrapped(expr)) return normalizeInner(expr.slice(1, -1).trim(), columns);
   // ADR-0038: `@subtotal <aggregate>` is the same aggregate normalization
   // applied to its inner body. The renderer sets `ctx.Rows` to the
   // current group's row set before evaluating, so the same `sumRows
@@ -319,14 +325,12 @@ function isSingleWrapped(s: string): boolean {
   return depth === 0;
 }
 
-// Normalize a single arithmetic operand. A parenthesized sub-expression
-// has its interior normalized (parens are author grouping, not part of
-// the value); everything else routes through normalizeValueArg, which
-// already wraps compound forms and leaves atoms bare.
+// Normalize a single arithmetic operand. normalizeValueArg strips a
+// redundant outer paren pair and normalizes the interior, so a
+// parenthesized sub-expression operand (`(a + b)` in `(a + b) * c`) is
+// handled uniformly with every other operand shape.
 function normalizeArithOperand(tok: string, columns: Set<string>): string {
-  const t = tok.trim();
-  if (isSingleWrapped(t)) return normalizeValueArg(t.slice(1, -1).trim(), columns);
-  return normalizeValueArg(t, columns);
+  return normalizeValueArg(tok.trim(), columns);
 }
 
 // Issue #52: precedence- and associativity-correct arithmetic. Returns a
@@ -544,6 +548,10 @@ function normalizeFunctionCall(
 
 function normalizeValueArg(arg: string, columns: Set<string>): string {
   const a = arg.trim();
+  // Issue #52: a value arg wrapped in redundant parens (`IF(c, ([a] + [b]),
+  // 0)`) — strip one outer pair and normalize the interior, then it flows
+  // back as a properly wrapped node.
+  if (isSingleWrapped(a)) return normalizeValueArg(a.slice(1, -1).trim(), columns);
   const call = parseFunctionCall(a);
   if (call) return `(${normalizeFunctionCall(call.name, call.args, columns)})`;
   if (a.includes('&')) return `(${normalizeConcatenation(a, columns)})`;
