@@ -6,6 +6,30 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.8.3] - 2026-06-08
+
+Backport patch on the 0.8.x line (cherry-pick of `d914ebf`..`465d293`
+from the 0.9.0-rc line / PR #53; the same fix is in `[Unreleased]` for
+the 0.9.0-rc line).
+
+### Fixed
+
+- **#52 — chained arithmetic was right-associative.**
+  `findArithmeticOp` split on the FIRST operator and recursed
+  rightward, so `a / b * c` was grouped `a / (b * c)` instead of
+  `(a / b) * c`; in the function-argument path the rest of the chain
+  was emitted as a raw operand. A 거래명세서 VAT cell
+  (`[Total] / 1.1 * 0.1`) was silently mis-scaled ~100x (188 →
+  18,764). Replaced with a precedence-aware, left-associative chain
+  parser matching `grammar.ebnf` (`arith_expr` / `mul_expr`): `*`/`/`
+  bind tighter than `+`/`-`, same-precedence operators fold left. Also
+  fixes `Source[Column]` / `__config__[key]` arithmetic operands,
+  `(a + b) * c` grouping, and redundant parentheses wrapping a whole
+  expression or value argument (`{{ ([a] + [b]) }}`, `IF(c, ([a] +
+  [b]), 0)`) — previously these leaked through unnormalized. New
+  fixture `158-chained-arithmetic-associativity`. JS impl bug fix; no
+  public API, spec, or error-code change.
+
 ## [0.8.2] - 2026-06-07
 
 Backport patch on the 0.8.x line (cherry-pick of `5ebd3ee` from
