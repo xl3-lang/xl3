@@ -169,6 +169,39 @@ describe('normalizeTemplate', () => {
         '{{ mul (sub 0 (index . "a")) (index . "b") }}',
       );
     });
+
+    it('parenthesizes the right operand', () => {
+      expect(normalizeTemplate('{{ [a] * ([b] + [c]) }}', cols)).toBe(
+        '{{ mul (index . "a") (add (index . "b") (index . "c")) }}',
+      );
+    });
+
+    it('handles nested parentheses', () => {
+      expect(normalizeTemplate('{{ (([a] + [b]) * [c]) - [d] }}', cols)).toBe(
+        '{{ sub (mul (add (index . "a") (index . "b")) (index . "c")) (index . "d") }}',
+      );
+    });
+
+    it('strips redundant parens wrapping the whole expression', () => {
+      // `{{ ([a] + [b]) }}` used to leak through as the raw string
+      // "[a] + [b]"; the outer pair must be stripped and the interior
+      // normalized. Double-wrapping collapses too.
+      expect(normalizeTemplate('{{ ([a] + [b]) }}', cols)).toBe(
+        '{{ add (index . "a") (index . "b") }}',
+      );
+      expect(normalizeTemplate('{{ (([a] + [b])) }}', cols)).toBe(
+        '{{ add (index . "a") (index . "b") }}',
+      );
+    });
+
+    it('normalizes a parenthesized value argument', () => {
+      expect(normalizeTemplate('{{ IF([a] > 0, ([a] + [b]), 0) }}', cols)).toBe(
+        '{{ IF (gt (index . "a") 0) (add (index . "a") (index . "b")) 0 }}',
+      );
+      expect(normalizeTemplate('{{ ROUND(([a] + [b]) / [c], 0) }}', cols)).toBe(
+        '{{ ROUND (div (add (index . "a") (index . "b")) (index . "c")) 0 }}',
+      );
+    });
   });
 
   it('rewrites SUM aggregates to sumRows', () => {

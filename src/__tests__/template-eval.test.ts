@@ -72,4 +72,18 @@ describe('chained arithmetic value semantics (issue #52)', () => {
     // The right-associative bug computed Total / (1.1 * 0.1) = 18,764.
     expect(val('{{ TEXT([Total] / 1.1 * 0.1, "#,##0") }}', { Total: 2063.6 })).toBe('188');
   });
+
+  it('parentheses on the right operand group correctly', () => {
+    expect(val('{{ [a] * ([b] + [c]) }}', { a: 2, b: 3, c: 4 })).toBe(14);
+  });
+
+  it('a cell wrapped entirely in parens evaluates its interior', () => {
+    // `{{ ([a] + [b]) }}` used to return the literal string "[a] + [b]".
+    expect(val('{{ ([a] + [b]) }}', { a: 3, b: 4 })).toBe(7);
+    expect(val('{{ ((([a] / [b])) * [c]) }}', { a: 12, b: 2, c: 3 })).toBe(18);
+  });
+
+  it('a parenthesized sub-expression inside a function arg evaluates', () => {
+    expect(val('{{ ROUND(([a] + [b]) / [c], 0) }}', { a: 7, b: 5, c: 4 })).toBe(3);
+  });
 });
