@@ -64,6 +64,10 @@ const INFORMATIONAL_ADRS = new Set([
   '0063', // __inputs__ options pipe-split rules
   '0064', // string→number coercion scope
   '0065', // @source default explicit form
+  // ADR-0070 — proposed / impl-pending. #54(A) derived columns: doc-only
+  // design ahead of implementation, so no covering fixture yet. Remove
+  // from this list when the derived-key conformance fixtures land.
+  '0070', // proposed — #54(A) derived columns
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.
