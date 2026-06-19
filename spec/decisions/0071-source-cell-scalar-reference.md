@@ -1,9 +1,9 @@
-# ADR 0071 — Source cell scalar reference (read a fixed cell from the dynamic source)
+# ADR 0071 — Source cell scalar reference (`SOURCECELL` — read a fixed cell from the dynamic source)
 
 - **Status:** proposed
 - **Date:** 2026-06-19
 - **Spec target:** XTL 1.x (additive; backward-compatible, deferred from the 0.1 → 1.0 freeze per STABILITY.md "intentionally deferred")
-- **Affects:** language.md (Data Expressions / bracket forms, new "Source cell references" subsection); evaluation.md (Source Data Model, render phases); grammar.ebnf (bracket content classification); impl (reader, normalizer, types); new error codes
+- **Affects:** language.md (function table + new "SOURCECELL" subsection); ADR-0024 arity table (new row); evaluation.md (Source Data Model, render phases); impl (normalizer, template-eval, reader, types); new error codes
 - **Issue:** #57
 
 ## Context
@@ -54,78 +54,89 @@ transfer; see "Relationship to ADR-0042" below.
 
 ## Considered Options
 
-**A. A reserved sheet `__cells__` mapping name → (source, cell).** A
-dedicated declaration sheet, parallel to `__lists__`/`__sources__`; cells
-reference the bare name. *For:* one audit site; a name is usable in sheet
-*and* file name patterns. *Against:* a whole new reserved sheet for a
-narrow need, and **its one unique benefit — naming — is already covered by
-the proposed `__derived__` sheet** (ADR-0070): a derived column
-`Title = [$A$1]` is a *named* source-cell scalar, usable bare in names.
-Adding `__cells__` duplicates that mechanism. Rejected as redundant — see
-Alternatives.
+The hard part is the **surface**, not the capability. Two prior ADR
+decisions constrain it:
 
-**B. A directive form `{{ @source[A2] }}`.** *For:* visually "source-
-scoped". *Against:* three hard collisions with existing grammar — a `{{ }}`
-block is `directive | expression` and a directive produces no cell value
-(category error); `@source` is already the source-switch directive
-(ADR-0012/0065); and `[A2]` already denotes a *column named `A2`*.
-Rejected.
+- ADR-0012 chose `Source[Column]` for cell references **specifically to
+  mirror Excel's structured-ref `=Sales[Amount]`** — in Excel and XTL
+  alike, `[...]` means *column/field*.
+- ADR-0012 Option D **rejected the sheet-bang form** (`Customers!Account`)
+  because "Excel uses `!` for sheet+cell, not sheet+column; repurposing it
+  would invent a hybrid that matches neither convention." XTL deliberately
+  keeps `!` out of its grammar.
 
-**C. An inline `$`-coordinate bracket form — ADOPTED.**
-`{{ [$A$2] }}`, `{{ Source[$A$2] }}`, `{{ [Sheet1!$A$2] }}`. Reuses the
-existing `bracket_field` / `source_bracket_field` surface, disambiguated
-by **bracket content**: an absolute-coordinate pattern (`$`-bearing) reads
-a cell; anything else stays a column reference. *For:* reuses Excel's own
-absolute-reference mental model (`$A$2` "does not move" ⇒ constant across
-`@repeat` rows — the semantics fall out for free); no new reserved sheet;
-the value-carrying cell keeps a visible `{{ }}` marker. *Against:* `$` and
-`!` are already legal `column_name` characters, so this **overloads**
-existing-but-pathological syntax (a column literally named `$A$2`); needs a
-content-classification rule and a documented carve-out. Accepted — the
-overload is vanishingly rare and precisely specifiable; see Decision.
+**A. Inline bracket coordinate** — `{{ [$A$2] }}`, `{{ Source[$A$2] }}`,
+`{{ [Sheet1!$A$2] }}`, disambiguated by `$`-bearing bracket content.
+*Against:* (P2) `[$A$2]` puts a coordinate in the **column namespace** —
+Excel never writes a cell as `[$A$2]`, so it fights the very convention
+ADR-0012 chose `[Column]` to honor; (P1) `[Sheet1!$A$2]` reintroduces the
+`!` sheet-qualifier ADR-0012 D explicitly removed; (P3) `Source[Sheet!…]`
+crams two addressing axes (source name *outside*, sheet name *inside*)
+into one bracket, admitting ill-defined combinations; (P4) `$`/`!` are
+already legal `column_name` characters, so the form overloads
+existing-but-pathological syntax and needs a carve-out. Rejected.
+
+**B. Directive `{{ @source[A2] }}`.** *Against:* a `{{ }}` block is
+`directive | expression` and a directive yields no cell value (category
+error); `@source` is already the source-switch directive (ADR-0012/0065);
+`[A2]` already a column. Rejected.
+
+**C. A function `SOURCECELL(...)` — ADOPTED.** The coordinate travels as a
+**string-literal argument**, so it never touches the `[...]` column
+namespace and never reintroduces `!` as XTL syntax. Brackets keep meaning
+columns; `"Sheet1!A2"` inside a string is Excel's *exact, real* notation,
+parsed opaquely. Source selection is an explicit argument, not a colliding
+axis. Consistent with how XTL already "reaches into a source" — ADR-0070's
+map primitive is `XLOOKUP(Source[…])`, and `TODAY()`/`DATE()` are the
+precedent for "evaluated once, constant" functions. *Against:* more verbose
+than `[$A$2]`; adds one function-table row. Accepted — verbosity is a
+non-issue for a rare metadata read, and the function table is the normal
+place capability is added (ADR-0024/0044).
 
 ## Decision
 
-Adopt **C**. Introduce an **inline source-cell reference**: a bracket
-whose content matches an **absolute A1 coordinate** reads a single cell
-from the source workbook by address. Naming/reuse is **not** part of this
-ADR — it rides on `__derived__` (ADR-0070). No new reserved sheet.
+Adopt **C**. Add a user-facing function **`SOURCECELL`** that reads a
+single cell from the source workbook by address. Naming/reuse is **not**
+part of this ADR — it rides on `__derived__` (ADR-0070).
 
-### Surface and disambiguation
-
-Inside `{{ }}`, the contents of a `[...]` bracket are classified by
-**content**, not by a new sigil:
+### Signature and arity (ADR-0024 table addition)
 
 ```
-cell_coordinate = [ sheet_name "!" ] "$" column_letters "$" row_number
-   column_letters = "A".."Z" (1–3, case-insensitive)
-   row_number     = digit_seq (>= 1)
-   sheet_name     = a simple worksheet name (letters, digits, _, space-free)
+SOURCECELL( address )            -- arity 1
+SOURCECELL( source , address )   -- arity 2
 ```
 
-- A bracket whose **entire trimmed content** matches `cell_coordinate`
-  is a **source cell reference**. Forms:
-  - `[$A$2]` — cell `A2` of the **default source's** worksheet.
-  - `Source[$A$2]` — cell `A2` of named source `Source`'s worksheet.
-  - `[Sheet1!$A$2]` — cell `A2` of worksheet `Sheet1` in the source
-    workbook (a sheet that need **not** be a declared source).
-- A bracket whose content does **not** match `cell_coordinate` is a
-  **column reference**, exactly as today — no behavior change.
-- **Both `$` signs are required.** `[A2]`, `[A$2]`, `[$A2]` remain column
-  references (no ambiguity introduced). The full Excel-absolute spelling
-  `$A$2` is the lexical signal.
-- A range (`[$A$1:$B$5]`) is **not** a scalar →
-  `xl3/cells/range-not-scalar`. Exactly one cell.
+| function | min | max | shape |
+|----------|-----|-----|-------|
+| `SOURCECELL` | 1 | 2 | `[source,] address` |
 
-### Carve-out (the overload cost)
+- **`address`** — a **string literal** (`"A2"`, `"$A$2"`, `"Sheet1!A2"`).
+  It MUST be a literal, not a column/expression (`SOURCECELL([Col])` →
+  `xl3/cells/dynamic-address`); this keeps the value constant-foldable at
+  source-read time. `$` signs are optional and ignored (absolute vs
+  relative is meaningless for a fixed read) — accepted for Excel
+  paste-compatibility.
+- **`source`** (arity 2) — a **declared source name** as a bare
+  identifier (the `Source[Column]` style, ADR-0012), e.g.
+  `SOURCECELL(Customers, "A2")`. Omitted ⇒ the default source (ADR-0065).
+- **Arity** is validated at normalize time per ADR-0024
+  (`xl3/eval/arity-mismatch`).
 
-Because `column_name` permits any character except `]`/CR/LF, a source
-column whose **header literally is** `$A$2` (or `Sheet1!$A$2`) can no
-longer be referenced by the bare bracket form — that spelling now means
-the cell. XTL has no escape mechanism (ADR-0051), so such a column is
-**unreferenceable by `[...]`** and must be renamed upstream or read via a
-`__derived__` alias. This is accepted: a header literally equal to an
-absolute coordinate is pathological, and the rule is precisely specified.
+### Address grammar
+
+```
+address_string = '"' , [ sheet_ref "!" ] , a1_coordinate , '"' ;
+a1_coordinate  = [ "$" ] , column_letters , [ "$" ] , row_number ;  (* single cell *)
+column_letters = letter , [ letter ] , [ letter ] ;                 (* A … XFD *)
+sheet_ref      = simple_sheet_name | "'" , sheet_name , "'" ;
+```
+
+- Exactly **one** cell. A range (`"A1:B2"`) ⇒ `xl3/cells/range-not-scalar`.
+- A sheet may be named (`"Summary!B2"`) and **need not be a declared
+  source** — the cell is read straight from the worksheet. Sheet names with
+  spaces/special chars use Excel's quoting inside the string
+  (`"'2026 결산'!B2"`).
+- A malformed address ⇒ `xl3/cells/invalid-address`.
 
 ### Semantics
 
@@ -133,10 +144,10 @@ absolute coordinate is pathological, and the rule is precisely specified.
   before `@filter`/grouping. Independent of `source_table` — the
   coordinate addresses the **worksheet**, not the table region (that is
   the point: the metadata lives outside the table).
-- **Row-independence:** a source cell reference is **constant on every
-  output row** — it does not vary per `@repeat` iteration. This mirrors
-  Excel: `$A$2` is an absolute reference that does not move on fill-down.
-  (Contrast `{{ [Region] }}`, a relative column read that varies per row.)
+- **Constant / row-independent:** `SOURCECELL` returns the **same value on
+  every output row** — it does not vary per `@repeat` iteration. With a
+  literal address it is effectively a constant folded once. (Contrast
+  `{{ [Region] }}`, a per-row column read.)
 - **Value & type:** the cell's stored value, with the same value-type and
   number/date-format coercion a single-expression data cell receives
   (ADR-0052/0064). An empty target cell yields the empty string
@@ -144,67 +155,84 @@ absolute coordinate is pathological, and the rule is precisely specified.
   computed value** (the `source_table` formula-column read path, ADR-0046)
   — not the formula text. Embedded in mixed text it renders as a string,
   like any expression.
-- **Merged cells:** the value lives in the merge's top-left cell; a
-  reference to a non-top-left member of a merged region yields the empty
-  string (Excel behavior).
-- **Errors:** target sheet missing (`xl3/cells/sheet-not-found`); a
-  declared `Source` that names no known source
-  (`xl3/cells/unknown-source`); a range coordinate
-  (`xl3/cells/range-not-scalar`). An in-workbook address beyond the
-  worksheet's used bounds resolves to empty string (not an error — matches
-  reading a blank cell).
+- **Merged cells:** the value lives in the merge's top-left cell; an
+  address pointing at a non-top-left member of a merged region yields the
+  empty string (Excel behavior).
+- **Errors:** `xl3/eval/arity-mismatch` (0 or >2 args, ADR-0024);
+  `xl3/cells/dynamic-address` (address arg not a string literal);
+  `xl3/cells/invalid-address`; `xl3/cells/range-not-scalar`;
+  `xl3/cells/sheet-not-found`; `xl3/cells/unknown-source` (arity-2 source
+  name not declared). An address beyond the worksheet's used bounds
+  resolves to empty string (not an error — matches reading a blank cell).
 
 ### Naming and reuse → `__derived__` (ADR-0070), not here
 
-A source cell reference has **no name**, so it cannot appear in sheet-tab
-or `@file` patterns (which forbid `[`/`]`). When a name is needed — for
-naming an output, for reuse across many cells, or for a single audit site
-— declare a **derived column** (ADR-0070) whose expression is the
-coordinate read:
+`SOURCECELL(...)` is an expression with no name, so it cannot appear in
+sheet-tab or `@file` patterns (which forbid `[`/`]`). When a name is
+needed — for naming an output, for reuse across many cells, or for a
+single audit site — declare a **derived column** (ADR-0070) whose
+expression is the read:
 
-| name        | expression  |
-|-------------|-------------|
-| ReportTitle | `[$A$1]`     |
+| name        | expression           |
+|-------------|----------------------|
+| ReportTitle | `SOURCECELL("A1")`   |
 
 `ReportTitle` is then a bare identifier usable in sheet/file names and in
 cells (`{{ [ReportTitle] }}`). This composes the two proposals into **one
-read primitive + one naming layer**, with no third mechanism.
+read function + one naming layer**, with no third mechanism and no new
+reserved sheet.
+
+## Examples
+
+```text
+{{ SOURCECELL("A1") }}                  -- default source sheet, cell A1
+거래처명: {{ SOURCECELL("A2") }}          -- mixed text → string
+{{ SOURCECELL(Customers, "A1") }}       -- named source Customers, cell A1
+{{ SOURCECELL("Summary!B2") }}          -- worksheet Summary (need not be a source)
+{{ SOURCECELL("'2026 결산'!B2") }}        -- quoted sheet name with a space
+```
+
+A banner-plus-table template: `A1 = {{ SOURCECELL("A1") }}` (title, outside
+the table) sits above `A5 = {{ [품목] }}` (`@repeat` data block). The title
+is constant on every rendered row; the data cells vary per row.
 
 ## Scope
 
-- **In scope:** inline scalar reads from a fixed source cell by absolute
-  coordinate, optionally source- or sheet-qualified; use anywhere an
-  expression is legal.
-- **Out of scope (separate proposals if demanded):** ranges/spilled reads
-  (`$A$1:$B$5` → array); per-row positional reads (a different address per
-  iteration); *writing* to cells by address (remains rejected, ADR-0042);
-  quoted/space-bearing sheet names in the inline form (use a `__derived__`
-  alias, or revisit); a dedicated `__cells__` reserved sheet (redundant
-  with `__derived__` — see Alternatives).
+- **In scope:** `SOURCECELL` reading a single fixed cell from the source
+  workbook by address, optionally source- or sheet-qualified; usable
+  anywhere an expression is legal.
+- **Out of scope (separate proposals if demanded):** range/spilled reads
+  (`"A1:B5"` → array); dynamic/computed addresses; per-row positional
+  reads; *writing* to cells by address (remains rejected, ADR-0042); a
+  dedicated `__cells__` reserved sheet (redundant with `__derived__`); the
+  inline bracket and `@source[A2]` surfaces (see Alternatives).
 
 ## Consequences
 
 - Operators lift positional metadata (title/date/거래처명 in a banner cell)
   **in the template**, once, with no per-run host pre-processing — matching
   the product positioning.
-- One new concept (coordinate read), zero new reserved sheets. Naming
-  reuses the already-proposed `__derived__` (ADR-0070).
+- One new function, zero new reserved sheets, **no change to bracket
+  semantics** (brackets stay column-only, honoring ADR-0012). Naming reuses
+  the already-proposed `__derived__` (ADR-0070).
 - Implementation is contained: `reader.ts` gains an address-keyed read on
-  the already-open source workbook (independent of the table parse); the
-  `normalizer` bracket classifier (`BRACKET_FIELD_RE` / `SOURCE_BRACKET_RE`
-  at `src/normalizer.ts:7,13`) gains a content check — coordinate pattern →
-  `sourceCell` IR, else the existing column path; `types.ts` carries the
-  ref; `grammar.ebnf` documents the bracket-content split. New error codes
-  are catalog **additions** (not a G3-resetting change).
-- Additive only: existing templates are unchanged **except** the
-  pathological "column literally named `$A$2`" carve-out, which is
-  documented and accepted. No public API break.
+  the already-open source workbook (independent of the table parse);
+  `normalizer` adds `SOURCECELL` to the function table and emits a tagged
+  IR (distinct from the existing `sourceCell "Name" "Col"` row×column IR —
+  the function is coordinate-based, so name it unambiguously, e.g.
+  `sourceCellAt "<source>" "<address>"`); `template-eval` resolves it
+  against the workbook; `types.ts` carries it; ADR-0024's arity table and
+  the language.md function table gain a row. New error codes are catalog
+  **additions** (not a G3-resetting change).
+- Additive only: no existing template changes behavior; no bracket
+  overload, no carve-out, no public API break.
 - New conformance fixtures (stage 1): scalar from an out-of-table cell read
-  into a header; `Source[$A$2]` source-qualified; `[Sheet1!$A$2]`
-  sheet-qualified; constant across a `@repeat` block; cached-formula-value
-  read; merged-cell member; `[A2]`-stays-a-column regression;
-  `range-not-scalar` / `sheet-not-found` / `unknown-source` errors; a
-  `__derived__` alias used as a sheet name.
+  into a header; `SOURCECELL(Source, …)` source-qualified;
+  `SOURCECELL("Sheet!…")` sheet-qualified; quoted-sheet-name;
+  constant across a `@repeat` block; cached-formula-value read;
+  merged-cell member; arity-mismatch / dynamic-address / range-not-scalar /
+  sheet-not-found / unknown-source errors; a `__derived__` alias
+  (`SOURCECELL("A1")`) used as a sheet name.
 - Listed in `INFORMATIONAL_ADRS` of `src/__tests__/spec-coverage.test.ts`
   while **proposed** (doc-only design ahead of impl), removed when the
   fixtures land — same handling as ADR-0070.
@@ -218,10 +246,9 @@ ADR-0042 rejected runtime cell *mutation*. This ADR proposes a source
   into a `{{ }}`-marked template cell. Every cell that changes still
   carries a visible marker (ADR-0042 objection #1 — template-is-handover —
   satisfied, not violated).
-- **No evaluation-order dependence.** A source cell read is a pure
-  function of the source workbook, fixed before grouping; there is no
-  "cell A updates, then B reads A" chain (ADR-0042 objection #4 / ADR-0016
-  does not apply).
+- **No evaluation-order dependence.** `SOURCECELL` is a pure function of
+  the source workbook, fixed before grouping; there is no "cell A updates,
+  then B reads A" chain (ADR-0042 objection #4 / ADR-0016 does not apply).
 - **Substitution does *not* already cover this** (ADR-0042 objection #2's
   premise fails here): no column and no in-cell expression can reach a
   value sitting *outside the table region* of a dynamic source. That gap
@@ -229,42 +256,48 @@ ADR-0042 rejected runtime cell *mutation*. This ADR proposes a source
 
 ## Alternatives considered
 
-1. **`__cells__` reserved sheet** (Option A). Rejected as **redundant with
-   ADR-0070**: the only thing a name buys — use in sheet/file patterns and
-   reuse — is exactly what a `__derived__` column with a coordinate
-   expression already provides. Adding `__cells__` would be a second
-   naming mechanism for the same job, against the small-surface thesis
-   (README; ADR-0043) and the no-speculative-feature bar (ADR-0042 #5).
-2. **`{{ @source[A2] }}` directive form** (Option B). Rejected: directive-
-   in-value-position category error; `@source` already taken; `[A2]`
-   already a column.
-3. **Lexical `Source!A1` (no brackets).** Rejected: `!` collides with the
-   sheet-qualifier role and reads as ad-hoc; the bracket form reuses the
-   established `Source[…]` surface instead.
-4. **Require a new sigil (`[#A2]`, `[@A2]`).** Rejected: `$A$2` already is
-   Excel's unambiguous absolute-coordinate spelling and carries the
-   "does-not-move" meaning for free; inventing a sigil discards that
-   mnemonic.
+1. **Inline bracket coordinate** `[$A$2]` / `Source[$A$2]` /
+   `[Sheet1!$A$2]` (Option A). Rejected on four grounds: (P2) a bracketed
+   coordinate fights ADR-0012's `[...]`=column convention — Excel never
+   writes a cell that way; (P1) the `!` sheet-qualifier was explicitly
+   removed by ADR-0012 Option D; (P3) source-vs-sheet axis collision in
+   `Source[Sheet!…]`; (P4) overload of legal `column_name` characters
+   forcing a carve-out. `SOURCECELL` dissolves all four by keeping the
+   coordinate in a string argument.
+2. **`__cells__` reserved sheet.** Rejected as redundant with ADR-0070:
+   the only thing a name buys — use in sheet/file patterns and reuse — is
+   exactly what a `__derived__` column with a `SOURCECELL(...)` expression
+   already provides. A second naming mechanism violates the small-surface
+   thesis (README; ADR-0043) and the no-speculative-feature bar
+   (ADR-0042 #5).
+3. **`{{ @source[A2] }}` directive form** (Option B). Rejected:
+   directive-in-value-position category error; `@source` already taken;
+   `[A2]` already a column.
+4. **Bare `Sheet1!$A$2`** (no function, no brackets). Rejected: doubly
+   blocked — bare `A1` as a coordinate was rejected by ADR-0054, and `!`
+   as bare XTL syntax was removed by ADR-0012 D.
 
 ## Open questions (for review before implementation)
 
-- Sheet-qualified inline form: support only simple sheet names now, and
-  defer quoted/space-bearing names to a `__derived__` alias — or specify a
-  quoting rule (`['My Sheet'!$A$1]`) up front?
-- Require both `$` signs (adopted), or also accept a single `$`
-  (`[$A2]`/`[A$2]`) as a coordinate? Adopted: both, to keep `[A$2]` /
-  `[$A2]` available as column references and the signal unambiguous.
+- Function name: `SOURCECELL` vs `CELLOF` vs `SRCCELL`. (`SOURCECELL`
+  chosen for readability and to echo `Source[…]`.)
+- Whether to allow the arity-2 `source` to also be a `__derived__`-style
+  name or strictly a declared source — proposed strictly declared.
 - Whether the cached-formula-value rule needs a `recalc`-staleness caveat
   mirroring ADR-0046's note.
+- Quoted-sheet-name escaping: does a sheet name containing a literal `'`
+  need an escape, or is that out of scope (use a `__derived__` alias)?
 
 ## References
 
-- ADR-0070 — Derived columns (the naming/reuse layer; `__cells__` folds
-  into a derived column whose expression is a coordinate read)
+- ADR-0070 — Derived columns (the naming/reuse layer; a derived column
+  whose expression is `SOURCECELL(...)`)
+- ADR-0012 — Multi-source data model (chose `Source[Column]`; rejected the
+  `!` sheet-bang form in Option D — the constraints this surface honors)
+- ADR-0024 — Function arity (the table `SOURCECELL` joins;
+  `xl3/eval/arity-mismatch`)
+- ADR-0044 — Function batch accepted (precedent for adding functions)
 - ADR-0017 — Source value model (tabular row/column access this extends)
-- ADR-0012 — Multi-source data model (named sources; `Source[…]` surface)
-- ADR-0061 — Source name lexical disambiguation (the `Identifier "["`
-  rule this refines with a bracket-content check)
 - ADR-0065 — `@source` default explicit form (default-source resolution)
 - ADR-0042 — Rejected: runtime cell mutation (the *write* this is distinct
   from)
@@ -272,8 +305,6 @@ ADR-0042 rejected runtime cell *mutation*. This ADR proposes a source
 - ADR-0050 — Template inputs as XTL expressions (why `__inputs__` cannot
   reach the source)
 - ADR-0054 — Bare name in cell context (why bare `A1` is not a coordinate)
-- ADR-0051 — String literal / block delimiter boundary (no escape
-  mechanism → the carve-out)
 - ADR-0046 — Cell formula preservation (cached-value read path)
 - ADR-0052 / ADR-0062 / ADR-0064 — value-type coercion, empty-string,
   string→number scope (scalar value semantics)
