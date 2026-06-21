@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-// Generates Korean-localized playground samples that mirror the structure of
-// the English samples but use Korean field names, company names, and labels.
-// Output: website/static/playground-samples/sample-{raw,template}-ko.xlsx
+// Generates the English playground samples served from the /try page.
+// Output: website/static/playground-samples/sample-{raw,template}.xlsx
+//
+// Keep this in sync with build-ko-samples.mjs (same structure, English copy).
+// The template's reserved config sheet MUST be named `__config__` (ADR-0011).
 
 import ExcelJS from 'exceljs';
 import { dirname, join } from 'node:path';
@@ -12,19 +14,19 @@ const here = dirname(fileURLToPath(import.meta.url));
 const outDir = join(here, '..', 'static', 'playground-samples');
 
 const RAW_ROWS = [
-  ['거래처', '지역', '갱신액', '담당자'],
-  ['한솔물산', '서울', 18400, '민아'],
-  ['베타웍스', '부산', 7200, '준호'],
-  ['코어식품', '대전', 12600, '하나'],
-  ['델타리테일', '인천', 9800, '솔'],
-  ['에버그린푸드', '광주', 21300, '민아'],
+  ['Account', 'Region', 'Renewal', 'Owner'],
+  ['Acme Logistics', 'Seoul', 18400, 'Mina'],
+  ['Beta Works', 'Busan', 7200, 'Joon'],
+  ['Core Labs', 'Daejeon', 12600, 'Hana'],
+  ['Delta Retail', 'Incheon', 9800, 'Sol'],
+  ['Evergreen Foods', 'Gwangju', 21300, 'Mina'],
 ];
 
 async function buildRaw() {
   const wb = new ExcelJS.Workbook();
   wb.creator = 'xl3 playground';
   wb.created = new Date();
-  const ws = wb.addWorksheet('원본');
+  const ws = wb.addWorksheet('Raw');
   for (const row of RAW_ROWS) ws.addRow(row);
 
   ws.getRow(1).font = { bold: true };
@@ -45,48 +47,48 @@ async function buildTemplate() {
 
   // ADR-0011: reserved config sheet is dunder-wrapped (`__config__`).
   const cfg = wb.addWorksheet('__config__');
-  cfg.addRow(['name', '거래처 갱신 리포트 샘플']);
-  cfg.addRow(['source_sheet', '원본']);
+  cfg.addRow(['name', 'Sample customer renewal report']);
+  cfg.addRow(['source_sheet', 'Raw']);
   cfg.addRow(['source_table', '1']);
-  cfg.addRow(['output_file_pattern', '거래처-갱신-리포트.xlsx']);
+  cfg.addRow(['output_file_pattern', 'customer-renewal-report.xlsx']);
   cfg.getColumn(1).width = 22;
   cfg.getColumn(2).width = 36;
   cfg.getColumn(1).font = { bold: true };
 
-  const report = wb.addWorksheet('갱신 리포트');
+  const report = wb.addWorksheet('Renewal Report');
 
   // Title (merged across A1:E1)
-  const titleRow = report.addRow(['거래처 갱신 파이프라인']);
+  const titleRow = report.addRow(['Customer Renewal Pipeline']);
   titleRow.font = { bold: true, size: 16 };
   report.mergeCells('A1:E1');
 
   // Subtitle (merged across A2:E2)
-  report.addRow(['운영자가 raw.xlsx 와 이 템플릿을 업로드합니다. 규칙은 __config__ 시트에 보관됩니다.']);
+  report.addRow(['Operators upload raw.xlsx and this template. Rules are archived in __config__.']);
   report.mergeCells('A2:E2');
   report.getRow(2).font = { italic: true, color: { argb: 'FF666666' } };
 
   // Stats row
-  report.addRow(['거래처 수', '{{ COUNT() }}', '', '우선 기준', '갱신액 > 10,000']);
+  report.addRow(['Accounts', '{{ COUNT() }}', '', 'Priority rule', 'Renewal > 10,000']);
   report.getRow(3).font = { bold: true };
 
   // Spacer row
   report.addRow([]);
 
-  // Empty row for visual separation (mirrors English template's row 5)
+  // Empty row for visual separation
   report.addRow([]);
 
   // Header row (row 6)
-  report.addRow(['거래처', '지역', '갱신액', '담당자', '등급']);
+  report.addRow(['Account', 'Region', 'Renewal', 'Owner', 'Tier']);
   report.getRow(6).font = { bold: true };
   report.getRow(6).alignment = { horizontal: 'left' };
 
   // Data row (row 7) — template expressions
   report.addRow([
-    '{{ [거래처] }}',
-    '{{ [지역] }}',
-    '{{ [갱신액] }}',
-    '{{ [담당자] }}',
-    '{{ IF([갱신액] > 10000, "우선", "일반") }}',
+    '{{ [Account] }}',
+    '{{ [Region] }}',
+    '{{ [Renewal] }}',
+    '{{ [Owner] }}',
+    '{{ IF([Renewal] > 10000, "Priority", "Standard") }}',
   ]);
 
   report.getColumn(1).width = 18;
@@ -101,8 +103,8 @@ async function buildTemplate() {
 
 async function main() {
   await mkdir(outDir, { recursive: true });
-  const rawPath = join(outDir, 'sample-raw-ko.xlsx');
-  const tplPath = join(outDir, 'sample-template-ko.xlsx');
+  const rawPath = join(outDir, 'sample-raw.xlsx');
+  const tplPath = join(outDir, 'sample-template.xlsx');
 
   const raw = await buildRaw();
   await raw.xlsx.writeFile(rawPath);

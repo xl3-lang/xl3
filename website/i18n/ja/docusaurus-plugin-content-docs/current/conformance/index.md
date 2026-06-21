@@ -132,9 +132,9 @@ XTL 0.1 のブートストラップコーパスには現在以下のフィクス
 | 062 | `concat-empty-stringifies-to-empty` | `&` における空の被演算子は ADR-0009 に従い空文字列を寄与する。 |
 | 063 | `compare-empty-vs-value` | 2 つの空の被演算子は等価。片方だけが空のとき `=` は ADR-0009 のルール 1 と 2 に従い false となる。 |
 | 064 | `compare-unicode-minus-not-numeric` | Unicode マイナス（U+2212）を含む文字列は数値として解析されない。比較は ADR-0009 に従い正規文字列フォールバックに落ちる。 |
-| 065 | `input-text-default-applied` | `_inputs` のテキスト入力デフォルトは、ホストが値を省略した場合に補完される（ADR-0010）。 |
+| 065 | `input-text-default-applied` | `__inputs__` のテキスト入力デフォルトは、ホストが値を省略した場合に補完される（ADR-0010）。 |
 | 066 | `input-text-host-supplied` | ホスト提供の入力はセル、シート名、出力ファイル名パターンを通って流れる（ADR-0010）。 |
-| 067 | `input-missing-required-error` | デフォルトなしの必須 `_inputs` 宣言をホストが省略した場合はエラー（ADR-0010）。 |
+| 067 | `input-missing-required-error` | デフォルトなしの必須 `__inputs__` 宣言をホストが省略した場合はエラー（ADR-0010）。 |
 | 068 | `input-select-host-supplied` | `select` 入力は、宣言された `|` 区切りのオプションに含まれるホスト値を受け入れる（ADR-0010）。 |
 | 069 | `source-multi-declaration` | `__sources__` シートが追加の名前付きソースを宣言する。集計はその全行集合に対して動作する（ADR-0012）。 |
 | 070 | `source-aggregate-cross-source` | 名前付きソースに対する COUNT/MIN/MAX は ADR-0012 に従い、その全行集合に対して動作する。 |

@@ -73,9 +73,9 @@ inputs:                            # host-supplied runtime inputs (ADR-0010)
 ```
 
 The `inputs` block lists name/value pairs that the runner passes to
-the implementation as runtime inputs (per ADR-0010's `_inputs` sheet).
+the implementation as runtime inputs (per ADR-0010's `__inputs__` sheet).
 Runners MUST forward these values to the implementation's conversion
-entry point. Templates without an `_inputs` sheet ignore the field.
+entry point. Templates without an `__inputs__` sheet ignore the field.
 
 Stage-gating metadata:
 
