@@ -778,6 +778,15 @@ function evalInputCellTemplate(
  * no forward refs to other inputs).
  *
  * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
+ *
+ * @example
+ * ```ts
+ * const wb = new ExcelJS.Workbook();
+ * await wb.xlsx.load(templateBuffer);
+ * const { configVars } = readConfigSheet(wb);
+ * const specs = readInputsSheet(wb, configVars);
+ * // specs[0] === { name: 'month', type: 'string', default: '2026-05', ... }
+ * ```
  */
 export function readInputsSheet(
   workbook: ExcelJS.Workbook,
@@ -894,6 +903,14 @@ export interface ConfigResult {
  * plus any author-defined config variables.
  *
  * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
+ *
+ * @example
+ * ```ts
+ * const wb = new ExcelJS.Workbook();
+ * await wb.xlsx.load(templateBuffer);
+ * const { meta, configVars } = readConfigSheet(wb);
+ * console.log(meta.name, meta.output_file_pattern);
+ * ```
  */
 export function readConfigSheet(workbook: ExcelJS.Workbook): ConfigResult {
   const meta: TemplateMeta = {
@@ -1046,6 +1063,16 @@ export function readListsSheet(workbook: ExcelJS.Workbook): Record<string, strin
  * sheet, replacing any existing config sheet.
  *
  * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
+ *
+ * @example
+ * ```ts
+ * const wb = new ExcelJS.Workbook();
+ * writeConfigSheet(wb, {
+ *   name: 'Invoice', description: '', source_sheet: 'Sheet1',
+ *   output_file_pattern: '{{ [거래처] }}.xlsx', match_pattern: '*',
+ * });
+ * const buffer = await wb.xlsx.writeBuffer();
+ * ```
  */
 export function writeConfigSheet(workbook: ExcelJS.Workbook, meta: TemplateMeta) {
   // Remove existing
