@@ -77,15 +77,68 @@ A new reserved sheet `__derived__`, parallel to `__lists__`/`__sources__`:
   reference another derived column (no forward/inter-derived refs in
   1.x — keeps evaluation a single pass; revisit if needed).
 - **Materialization:** `row[name] = eval(expression, rowCtx)`. The name
-  occupies the same namespace as source columns; declaring a derived
-  name equal to an existing source column is an error
-  (`xl3/derived/name-collision`).
-- **Naming:** no change to the naming layer. A derived name is a bare
-  identifier, so `extractGroupKeys` already picks it up; grouping reads
-  the materialized value. Works identically for `output_file_pattern`
-  and sheet-tab patterns.
+  occupies the same namespace as source columns. A derived name MUST be
+  unique across the whole bare-resolution surface, enforced at
+  **declaration time** (`xl3/derived/name-collision`) — see **Name
+  collision** below.
+- **Naming and reference surface:** no change to the naming or reference
+  layer. A derived name is referenced **exactly like a source column** —
+  bare in sheet/file-name patterns (`extractGroupKeys` already picks it
+  up; grouping reads the materialized value) and `{{ [Name] }}` in cells
+  / directives. There is **no** `__derived__[Name]` reference form: once
+  declaration-time uniqueness (below) holds, a bare/`[Name]` reference is
+  already unambiguous, so a qualifier would add a second spelling with
+  zero correctness gain — and could not be applied in sheet names anyway
+  (`[`/`]` forbidden), producing inconsistent spellings for one key.
+  Keeping references identical to source columns preserves this ADR's
+  "indistinguishable from a real column" property (see Alternatives 5).
 - **Errors:** a derived expression that throws surfaces with the
   derived column's name and the offending row context.
+
+### Name collision (declaration-time uniqueness)
+
+*(Scope and identity below resolved in #54 review.)*
+
+Because a derived name is referenced bare, and **sheet-tab names cannot
+carry a qualifier** (`[`/`]` forbidden — limit (1) above), a name clash
+cannot be disambiguated at the reference site. A derived name materialized
+as a group key sits **first** in the bare sheet-name chain (group key →
+`__inputs__` → `__config__`, ADR-0054), so a clash would **silently
+shadow** the other binding rather than error. Namespacing the reference
+therefore cannot be the safety mechanism; the only sound guard is to make
+the name **unique at declaration time**, mirroring evaluation.md's
+"Authors MUST NOT reuse system key names".
+
+A derived name is a **declaration error** (`xl3/derived/name-collision`)
+when it equals any of:
+
+1. a source column in the **post-`@join` combined row schema** (wider than
+   a single source's columns — the row a derived expression sees);
+2. another derived name (`__derived__` internal duplicate);
+3. an `__inputs__` key or a `__config__` key (the rest of the bare
+   sheet-name chain);
+4. an **engine-reserved context identifier** injected into the row/name
+   context — `Rows`, `__rownum`, `__activeSource__`, `__joinedRow__`.
+   (`Rows` in particular is spread onto the row context *after* the row's
+   own keys, so a derived `Rows` would be silently clobbered, not errored
+   — hence a declaration guard.) Reserved **sheet** names (`__config__`,
+   `__lists__`, …) are already rejected by `xl3/sheet/reserved-name`.
+
+`__sources__` and `__lists__` names are **not** in this set: a source name
+appears only as the `Source[col]` prefix (distinct syntax from a bare/
+`[Name]` reference) and a list name only as the `@filter … in __lists__[X]`
+RHS (`xl3/lists/invalid-use` blocks it elsewhere, ADR-0057) — neither lies
+on any bare-resolution path, so a derived name cannot shadow them.
+
+**Identity for the comparison:** trimmed, **byte-exact (case-sensitive,
+no NFC folding)** — the same identity every resolver in the engine uses
+for column / group-key / `__config__`-key lookup (`ctx[column]`,
+`row[key]`, `sheetKey.values[name.trim()]`). NFC normalization is applied
+**only** to filename↔template matching (`match_pattern`), not to name
+resolution, so the guard must not fold case or normalize either, on pain
+of false collisions or a gap versus the resolver. (Engine-wide
+case/Unicode folding, if ever wanted, is a separate decision, not this
+ADR's.)
 
 ## Scope
 
@@ -106,12 +159,15 @@ A new reserved sheet `__derived__`, parallel to `__lists__`/`__sources__`:
 - Implementation is contained and low-risk: a **pre-pass** that stamps
   derived values onto rows; grouping, naming, and cell eval are
   unchanged because they already operate on `row[col]`.
-- Files: `parser.ts` (read `__derived__`, validate, collect into the
+- Files: `parser.ts` (read `__derived__`, validate the declaration-time
+  uniqueness guard over the full bare-resolution surface, collect into the
   template model), a grouper/render pre-pass (materialize per row),
-  `normalizer`/`extractColumnRefs` (derived names resolve as columns),
-  `types.ts`, new error codes, spec text, and stage-1 conformance
-  fixtures (derived-key sheet name, derived-key filename, lookup via
-  source, name-collision error).
+  `normalizer`/`extractColumnRefs` (derived names resolve as columns —
+  no new reference syntax), `types.ts`, new error codes, spec text, and
+  stage-1 conformance fixtures (derived-key sheet name, derived-key
+  filename, lookup via source, and `name-collision` errors covering each
+  bucket: source column, duplicate derived, `__inputs__`/`__config__`
+  key, reserved identifier such as `Rows`).
 - Additive only: no existing template changes behavior. No public API
   break; new reserved sheet + new error codes (catalog addition, not a
   G3-resetting change — additions are allowed).
@@ -131,6 +187,19 @@ A new reserved sheet `__derived__`, parallel to `__lists__`/`__sources__`:
    do not need.
 4. **Allow brackets in sheet-name patterns.** Impossible: the constraint
    is Excel's (tab names cannot contain `[`/`]`), not ours.
+5. **A `__derived__[Name]` reference form** (an explicit qualifier in
+   bracket-legal contexts, for self-documentation). Rejected: with
+   declaration-time uniqueness (Name collision) a bare / `[Name]`
+   reference is already unambiguous, so the qualifier adds no
+   correctness; it cannot appear in sheet names (`[`/`]` forbidden), so a
+   single key would be spelled two different ways across contexts; and a
+   second reference spelling is precisely the surplus surface the
+   small-surface thesis (ADR-0043, README "boring runtime") avoids.
+   Derived columns therefore stay referenced identically to source
+   columns, preserving the "indistinguishable from a real column"
+   property. (Debuggability — telling a derived `{{ [X] }}` from a source
+   one — is served by the single `__derived__` declaration site plus the
+   uniqueness guard, not by a reference marker.)
 
 ## Open questions (for review before implementation)
 
