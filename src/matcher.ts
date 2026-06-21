@@ -10,6 +10,15 @@ export interface MatchResult {
  * Match source filenames to templates by `match_pattern`.
  *
  * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
+ *
+ * @example
+ * ```ts
+ * const result = batchMatch(
+ *   ['2026-05_거래처A.xlsx'],
+ *   [{ id: 'invoice', meta: { match_pattern: '*_거래처*' } as TemplateMeta }],
+ * );
+ * // result[0].templateId === 'invoice', result[0].matchedBy === 'pattern'
+ * ```
  */
 export function batchMatch(
   filenames: string[],

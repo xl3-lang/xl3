@@ -92,6 +92,11 @@ export interface XtlError extends Error {
  * English `error.message` remains the conformance-corpus contract.
  *
  * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
+ *
+ * @example
+ * ```ts
+ * throw xtlError('xl3/filename/empty', 'Output filename resolved to empty');
+ * ```
  */
 export function xtlError(code: XtlErrorCode, message: string): XtlError {
   const err = new Error(message) as XtlError;
@@ -105,6 +110,16 @@ export function xtlError(code: XtlErrorCode, message: string): XtlError {
  * shapes, and non-Error values all return `false`.
  *
  * @stable Frozen at 1.0.
+ *
+ * @example
+ * ```ts
+ * try {
+ *   await convert(templateBuffer, sourceBuffer);
+ * } catch (e) {
+ *   // dispatch on the stable code, not the English message
+ *   if (isXtlError(e)) console.error(e.code); // e.g. 'xl3/filename/collision'
+ * }
+ * ```
  */
 export function isXtlError(e: unknown): e is XtlError {
   return e instanceof Error && typeof (e as XtlError).code === 'string'
