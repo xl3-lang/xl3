@@ -8,18 +8,16 @@
 // behavior; examples cover composed shapes.
 
 import ExcelJS from 'exceljs';
-import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { writeDeterministicXlsx } from '../../scripts/deterministic-xlsx.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
 
-async function writeBook(wb, filePath) {
-  await mkdir(dirname(filePath), { recursive: true });
-  const buf = await wb.xlsx.writeBuffer();
-  await writeFile(filePath, Buffer.from(buf));
-}
+// Reproducible serialization (fixed doc + zip timestamps) so repeated
+// builds leave the tree clean — see scripts/deterministic-xlsx.mjs.
+const writeBook = writeDeterministicXlsx;
 
 function addConfig(wb, rows) {
   const sh = wb.addWorksheet('__config__');

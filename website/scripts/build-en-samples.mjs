@@ -8,7 +8,7 @@
 import ExcelJS from 'exceljs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { mkdir } from 'node:fs/promises';
+import { writeDeterministicXlsx } from '../../scripts/deterministic-xlsx.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const outDir = join(here, '..', 'static', 'playground-samples');
@@ -25,7 +25,6 @@ const RAW_ROWS = [
 async function buildRaw() {
   const wb = new ExcelJS.Workbook();
   wb.creator = 'xl3 playground';
-  wb.created = new Date();
   const ws = wb.addWorksheet('Raw');
   for (const row of RAW_ROWS) ws.addRow(row);
 
@@ -43,7 +42,6 @@ async function buildRaw() {
 async function buildTemplate() {
   const wb = new ExcelJS.Workbook();
   wb.creator = 'xl3 playground';
-  wb.created = new Date();
 
   // ADR-0011: reserved config sheet is dunder-wrapped (`__config__`).
   const cfg = wb.addWorksheet('__config__');
@@ -102,16 +100,13 @@ async function buildTemplate() {
 }
 
 async function main() {
-  await mkdir(outDir, { recursive: true });
   const rawPath = join(outDir, 'sample-raw.xlsx');
   const tplPath = join(outDir, 'sample-template.xlsx');
 
-  const raw = await buildRaw();
-  await raw.xlsx.writeFile(rawPath);
+  await writeDeterministicXlsx(await buildRaw(), rawPath);
   console.log(`  wrote ${rawPath}`);
 
-  const tpl = await buildTemplate();
-  await tpl.xlsx.writeFile(tplPath);
+  await writeDeterministicXlsx(await buildTemplate(), tplPath);
   console.log(`  wrote ${tplPath}`);
 }
 
