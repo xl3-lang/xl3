@@ -68,6 +68,10 @@ const INFORMATIONAL_ADRS = new Set([
   // design ahead of implementation, so no covering fixture yet. Remove
   // from this list when the derived-key conformance fixtures land.
   '0070', // proposed — #54(A) derived columns
+  // ADR-0071 — proposed / impl-pending. Source cell scalar reference:
+  // doc-only design ahead of implementation, so no covering fixture yet.
+  // Remove from this list when the source-cell conformance fixtures land.
+  '0071', // proposed — source cell scalar reference
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.
