@@ -70,9 +70,9 @@ inputs:                            # entradas en tiempo de ejecución provistas 
 
 El bloque `inputs` lista pares nombre/valor que el ejecutor pasa a
 la implementación como entradas de tiempo de ejecución (según la hoja
-`_inputs` de ADR-0010). Los ejecutores **MUST** reenviar estos valores
+`__inputs__` de ADR-0010). Los ejecutores **MUST** reenviar estos valores
 al punto de entrada de conversión de la implementación. Las plantillas
-sin hoja `_inputs` ignoran el campo.
+sin hoja `__inputs__` ignoran el campo.
 
 Metadatos de control de etapa:
 

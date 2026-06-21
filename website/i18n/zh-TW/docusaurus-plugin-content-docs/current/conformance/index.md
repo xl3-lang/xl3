@@ -132,9 +132,9 @@ XTL 0.1 啟動版語料庫目前包含下列 fixture：
 | 062 | `concat-empty-stringifies-to-empty` | 依 ADR-0009，`&` 對空運算元貢獻空字串。 |
 | 063 | `compare-empty-vs-value` | 依 ADR-0009 規則 1 與 2，兩個空運算元視為相等；其中一個為空時 `=` 為假。 |
 | 064 | `compare-unicode-minus-not-numeric` | 含 Unicode 減號（U+2212）的字串不會被解析為數字；依 ADR-0009 落到正規字串退回比較。 |
-| 065 | `input-text-default-applied` | 當宿主省略值時，`_inputs` 文字輸入的預設值會填入（ADR-0010）。 |
+| 065 | `input-text-default-applied` | 當宿主省略值時，`__inputs__` 文字輸入的預設值會填入（ADR-0010）。 |
 | 066 | `input-text-host-supplied` | 宿主提供的輸入值會流入儲存格、工作表名稱與輸出檔名樣式（ADR-0010）。 |
-| 067 | `input-missing-required-error` | 必填的 `_inputs` 宣告（無預設值）若宿主省略，視為錯誤（ADR-0010）。 |
+| 067 | `input-missing-required-error` | 必填的 `__inputs__` 宣告（無預設值）若宿主省略，視為錯誤（ADR-0010）。 |
 | 068 | `input-select-host-supplied` | `select` 輸入接受位於宣告管線分隔選項中的宿主值（ADR-0010）。 |
 | 069 | `source-multi-declaration` | 依 ADR-0012，`__sources__` 工作表宣告額外的具名來源；對其的彙總會作用在其完整列集合上。 |
 | 070 | `source-aggregate-cross-source` | 依 ADR-0012，對具名來源的 COUNT/MIN/MAX 作用在其完整列集合上。 |

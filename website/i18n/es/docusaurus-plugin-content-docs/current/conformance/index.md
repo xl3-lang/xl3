@@ -146,9 +146,9 @@ El corpus de arranque de XTL 0.1 contiene actualmente estos fixtures:
 | 062 | `concat-empty-stringifies-to-empty` | `&` sobre un operando vacío aporta la string vacía según ADR-0009. |
 | 063 | `compare-empty-vs-value` | Dos operandos vacíos se comparan iguales; exactamente un vacío hace que `=` sea falso según las reglas 1 y 2 de ADR-0009. |
 | 064 | `compare-unicode-minus-not-numeric` | Una string con menos Unicode (U+2212) no se parsea como número; la comparación cae al fallback de string canónica según ADR-0009. |
-| 065 | `input-text-default-applied` | Un valor por defecto de input de texto `_inputs` se rellena cuando el host omite el valor (ADR-0010). |
+| 065 | `input-text-default-applied` | Un valor por defecto de input de texto `__inputs__` se rellena cuando el host omite el valor (ADR-0010). |
 | 066 | `input-text-host-supplied` | Un input provisto por el host fluye a través de celdas, nombres de hoja y el patrón de nombre de archivo de salida (ADR-0010). |
-| 067 | `input-missing-required-error` | Una declaración `_inputs` requerida (sin default) que el host omite es un error (ADR-0010). |
+| 067 | `input-missing-required-error` | Una declaración `__inputs__` requerida (sin default) que el host omite es un error (ADR-0010). |
 | 068 | `input-select-host-supplied` | Un input `select` acepta un valor del host listado en las opciones declaradas separadas por pipes (ADR-0010). |
 | 069 | `source-multi-declaration` | Una hoja `__sources__` declara una fuente nombrada adicional; los agregados sobre ella operan sobre su conjunto completo de filas según ADR-0012. |
 | 070 | `source-aggregate-cross-source` | COUNT/MIN/MAX sobre una fuente nombrada operan sobre su conjunto completo de filas según ADR-0012. |

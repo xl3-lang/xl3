@@ -56,7 +56,7 @@ inputs:                            # host-supplied runtime inputs (ADR-0010)
     value: Seoul
 ```
 
-`inputs` 块列出运行器作为运行时输入传递给实现的 name/value 对（依据 ADR-0010 的 `_inputs` 工作表）。运行器必须（**MUST**）将这些值转发到实现的转换入口点。没有 `_inputs` 工作表的模板会忽略该字段。
+`inputs` 块列出运行器作为运行时输入传递给实现的 name/value 对（依据 ADR-0010 的 `__inputs__` 工作表）。运行器必须（**MUST**）将这些值转发到实现的转换入口点。没有 `__inputs__` 工作表的模板会忽略该字段。
 
 阶段门控元数据：
 

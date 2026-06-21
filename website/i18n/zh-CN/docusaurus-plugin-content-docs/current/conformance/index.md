@@ -132,9 +132,9 @@ XTL 0.1 引导语料当前包含如下 fixture：
 | 062 | `concat-empty-stringifies-to-empty` | 按 ADR-0009，`&` 对空操作数贡献空字符串。 |
 | 063 | `compare-empty-vs-value` | 按 ADR-0009 规则 1 与 2，两个空操作数比较相等；恰好一个为空则 `=` 为假。 |
 | 064 | `compare-unicode-minus-not-numeric` | 按 ADR-0009，含 Unicode 减号（U+2212）的字符串不解析为数字；比较回落到规范字符串。 |
-| 065 | `input-text-default-applied` | 按 ADR-0010，宿主省略值时 `_inputs` 文本输入的默认值会填入。 |
+| 065 | `input-text-default-applied` | 按 ADR-0010，宿主省略值时 `__inputs__` 文本输入的默认值会填入。 |
 | 066 | `input-text-host-supplied` | 按 ADR-0010，宿主提供的输入会流经单元格、工作表名和输出文件名模式。 |
-| 067 | `input-missing-required-error` | 按 ADR-0010，宿主省略必填的（无默认值的）`_inputs` 声明属于错误。 |
+| 067 | `input-missing-required-error` | 按 ADR-0010，宿主省略必填的（无默认值的）`__inputs__` 声明属于错误。 |
 | 068 | `input-select-host-supplied` | 按 ADR-0010，`select` 输入接受声明的竖线分隔选项中列出的宿主值。 |
 | 069 | `source-multi-declaration` | 按 ADR-0012，`__sources__` 工作表声明了一个额外的具名源；对其聚合作用于其完整行集。 |
 | 070 | `source-aggregate-cross-source` | 按 ADR-0012，对具名源的 COUNT/MIN/MAX 作用于其完整行集。 |

@@ -9,7 +9,7 @@ export interface TemplateMeta {
   match_pattern: string;
 }
 
-// ADR-0010: a runtime input declaration parsed from the `_inputs`
+// ADR-0010: a runtime input declaration parsed from the `__inputs__`
 // sheet. Hosts surface these to operators and pass collected values
 // back through ConvertOptions.inputs.
 export type InputType = 'text' | 'number' | 'date' | 'select';
@@ -25,7 +25,7 @@ export interface InputSpec {
 }
 
 export interface ConvertOptions {
-  /** Host-provided values for inputs declared in the template's `_inputs` sheet. */
+  /** Host-provided values for inputs declared in the template's `__inputs__` sheet. */
   inputs?: Record<string, unknown>;
   /**
    * Which render engine to use.
