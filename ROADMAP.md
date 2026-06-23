@@ -38,11 +38,11 @@ milestone. Per-version step plan below references these gates by ID.
 |----|------|-------|----------|----------------|----------|--------|
 | G1 | Conformance corpus ≥ 140 | maintainer | `conformance/fixtures/` | `ls conformance/fixtures/ \| wc -l` ≥ 140 | — | DONE (156 fixtures; ADR-0066 added 141-145 mid-0.7.x; ADRs 0067-0069 added 146-155 in 0.8.0; 156 (#49 native value preservation) + 157 (#51 grouped side cells) added post-0.8.1; ADRs 0051-0065 reserved further numbers for 0.7.1) |
 | G2 | Stage 2 OOXML canonicalization spec'd | maintainer | ADR-0006 + canonicalizer in src/ | covered by fixtures 024-027, 093 + ADR-0006 amendment | — | DONE |
-| G3 | Error code catalog frozen | maintainer | `src/__tests__/error-codes.test.ts` snapshot | catalog snapshot unchanged for 30 days | — | 0.9-rc (clock reset 2026-05-23 by 0.8.0's 4 new codes: `xl3/expression/bracket-outside-block`, `xl3/block/overlap`, `xl3/block/empty-table`, `xl3/directive/orphan` — earliest tick: 2026-06-22 if no further changes) |
+| G3 | Error code catalog frozen | maintainer | `src/__tests__/error-codes.test.ts` snapshot | catalog snapshot unchanged for 30 days | — | ✅ ticked 2026-06-23 (last catalog change 2026-05-24 `a8f7ad3` +3 codes `xl3/block/overlap`·`xl3/block/empty-table`·`xl3/directive/orphan`; `89bee51` added `xl3/expression/bracket-outside-block` 2026-05-23; 30-day freeze elapsed — post-05-24 commits touched the file with comments/JSDoc only, `EXPECTED_CODES` unchanged) |
 | G4 | JXLS boundary published | maintainer | ADR-0048 | file exists, references PORTERS_GUIDE | — | DONE |
 | G5 | Deferred-impl ADRs landed | maintainer | ADR-0038 impl ✅ (2026-05-18) + ADR-0040 PE impl | ADR-0038 portion shipped (fixtures 132-135); ADR-0040 CF/DV range-extension still pending | — | 0.6 (partial) / 0.7.1 |
-| G6 | Public API surface frozen | maintainer | `src/__tests__/api-surface.test.ts` snapshot | snapshot unchanged for 30 days | — | 0.9-rc |
-| G7 | JSDoc examples on @stable exports | maintainer | TypeDoc output | every `@stable` symbol has `@example` block | — | 0.8 |
+| G6 | Public API surface frozen | maintainer | `src/__tests__/api-surface.test.ts` snapshot | snapshot unchanged for 30 days | — | ✅ ticked 2026-06-17 (snapshot unchanged since 2026-05-18 `16f0608`) |
+| G7 | JSDoc examples on @stable exports | maintainer | TypeDoc output | every `@stable` symbol has `@example` block | — | ✅ DONE 2026-06-21 — 13/13 `@stable` callables carry `@example` (PR #59) |
 | G8 | Performance characterized | maintainer | `scripts/BENCH.md` | 1k/10k/100k row × 5/10/20 col matrix + memory-ceiling + parse/eval/write split published | — | 0.7.1 |
 | G9 | Perf regression fixtures | maintainer | conformance corpus | ≥ 2 large fixtures with ratio-based assertion | — | 0.7.1 |
 | G10 | Cross-browser smoke | maintainer | `ci.yml` | Safari + Firefox bundle-load + 1 convert() per run | — | 0.7.1 |
@@ -58,8 +58,8 @@ milestone. Per-version step plan below references these gates by ID.
 | G20 | SECURITY.md + threat model | maintainer | `SECURITY.md` + spec amendment | docs zip-bomb / oversized workbook / formula-execution stance + limits API | — | 0.7.1 |
 | G21 | Hard limits documented (no streaming until 1.1) | maintainer | spec/evaluation.md | row / memory hard limit values + AbortSignal API documented | — | 0.7.1 |
 | G22 | API surface — internal model types separated | maintainer | `src/index.ts` exports + STABILITY.md | only `convert`/`preview`/`analyze` + stable interfaces marked `@stable`; model/parser types marked `@experimental` or moved to `xl3/internal` | — | DONE (0.6) |
-| G23 | RC soak | maintainer | git tags | RC published; ≥ 21-day soak (extended from 7 day per review feedback); 0 critical issues | — | 0.9-rc |
-| G24 | "Stable quarter" post-checklist | maintainer | release calendar | 90-day window after the FINAL gate above ticks ✅; no breaking spec/API/error-code change during the window | breaking change → restart clock | between final-gate-tick and 1.0 cut |
+| G23 | RC soak | maintainer | git tags | RC published; ≥ 21-day soak (extended from 7 day per review feedback); 0 critical issues | — | ✅ ticked 2026-06-16 (21-day soak from rc.1 2026-05-26; 0 critical — soak-period fixes #49–52 folded into 0.9.0, none reset the clock per the G23 breaking-change definition) |
+| G24 | "Stable quarter" post-checklist | maintainer | release calendar | 90-day window after the FINAL gate above ticks ✅; no breaking spec/API/error-code change during the window | breaking change → restart clock | ⏳ quarter clock started **2026-06-23** (G3 = last gate to tick); 1.0 earliest ≈ **2026-09-21** if no breaking spec/API/error-code change in the window |
 
 ### Definitions (testable)
 
@@ -222,6 +222,16 @@ Gates closed: **G3**, **G6**, **G7**, **G23** (≥ 21-day RC soak).
 
 After G23 starts, the quarter clock for G24 begins (it must have
 ticked while G3/G6/G7/etc. were closing — see definitions above).
+
+### 0.9.0 — Final freeze cut (2026-06-23)
+
+All four pre-1.0 freeze gates ticked: **G3** (2026-06-23 — last
+catalog change 2026-05-24 + 30 days), **G6** (2026-06-17), **G7**
+(2026-06-21, PR #59), **G23** (2026-06-16 — 21-day soak, 0 critical).
+RC-soak fixes #49–52 folded in; #54/#56/#57 deferred to the 0.10.0
+milestone (POST-1.0 additive). The **G24** 90-day quarter clock
+starts at the last gate tick (2026-06-23 via G3); 1.0 earliest
+≈ 2026-09-21 absent any breaking spec/API/error-code change.
 
 ### 1.0.0 — Final cut
 
