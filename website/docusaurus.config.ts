@@ -250,7 +250,7 @@ const config: Config = {
     },
     navbar: {
       title: 'xl3',
-      logo: { alt: 'xl3', src: 'img/xl3-logo.png' },
+      logo: { alt: 'xl3', src: 'img/xl3-logo.png', width: 39, height: 32 },
       // Navbar item labels translate via i18n/<locale>/docusaurus-theme-classic/navbar.json.
       // `localeDropdown` auto-switches between /, /ko/, /ja/, … based on `locales`.
       items: [

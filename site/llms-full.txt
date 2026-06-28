@@ -1,0 +1,565 @@
+# xl3
+
+> xl3 is an open-source, deterministic Excel-to-Excel template engine for JavaScript and Node.js. The template is an ordinary `.xlsx` workbook authored in Excel itself (by an operator or an LLM) using XTL — an Excel-syntax template language. Rendering is a pure function: `convert(template, data)` produces the same bytes for the same inputs, every time. npm: `@jinyoung4478/xl3`.
+
+Version: 0.9.0 (pre-1.0 freeze cut). 1.0 earliest target: ~September 21, 2026.
+Spec: 70 ADRs, 154 conformance fixtures, MIT license.
+Repository: https://github.com/jinyoung4478/xl3
+Website: https://xl3.io
+
+Key facts:
+- XTL expressions use Excel syntax (`IF`, `XLOOKUP`, `SUM`, `&`, `[Column]` references) inside `{{ ... }}` cell markers — no second expression language.
+- Directives (`@filter`, `@sort`, `@group`, `@subtotal`, `@join`, `@source`, `@top`, `@repeat`, `@block`) live in visible cell values, not cell comments.
+- Data comes from a second `.xlsx` file, not host-language objects; there is no escape hatch into JavaScript, by design.
+- The language is specified independently of the implementation (spec + ADRs + conformance fixtures), so it can be ported to other runtimes.
+- xl3 is the maintained JavaScript alternative to JXLS (Java); its spec absorbed JXLS's edge cases item by item.
+
+---
+
+## Getting Started
+
+### Scenario
+
+You have an `.xlsx` of customer renewals. You want a one-sheet report with the same rows, plus a "Tier" column derived from the renewal amount.
+
+### `__config__` sheet
+
+| key | value |
+|---|---|
+| `source_sheet` | `Raw` |
+| `source_table` | `1` |
+| `output_file_pattern` | `renewal-report.xlsx` |
+
+### Template cells (sheet `Report`)
+
+| Cell | Value |
+|---|---|
+| A1 | `Account` |
+| B1 | `Region` |
+| C1 | `Renewal` |
+| D1 | `Tier` |
+| A2 | `{{ [Account] }}` |
+| B2 | `{{ [Region] }}` |
+| C2 | `{{ [Renewal] }}` |
+| D2 | `{{ IF([Renewal] > 10000, "Priority", "Standard") }}` |
+
+### Data (sheet `Raw`)
+
+| Account | Region | Renewal |
+|---|---|---:|
+| Acme Logistics | Seoul | 18400 |
+| Beta Works | Busan | 7200 |
+| Coreon Foods | Seoul | 25100 |
+
+### Output (`renewal-report.xlsx`, sheet `Report`)
+
+| Account | Region | Renewal | Tier |
+|---|---|---:|---|
+| Acme Logistics | Seoul | 18400 | Priority |
+| Beta Works | Busan | 7200 | Standard |
+| Coreon Foods | Seoul | 25100 | Priority |
+
+### Notes
+
+- Row 2 of the template is the **data block**. xl3 expands one input row into one output row, preserving styles, number formats, and merges from the template row.
+- `[Account]` is a **column reference** — xl3 resolves it to the `Account` column of the current source row.
+- `{{ ... }}` is a **template block** — anything inside is evaluated as an XTL expression.
+- The data block stops at the first non-blank row that doesn't contain a template block. Add a footer row (e.g., a "Total" cell) and it stays put while the data block expands above it.
+
+---
+
+## XTL Language Specification
+
+### Template Blocks
+
+Template expressions are written inside double braces:
+
+```
+{{ expression }}
+```
+
+Whitespace immediately inside `{{` and `}}` is insignificant — the parser trims leading and trailing whitespace before normalization. The following are equivalent:
+
+```
+{{ [name] }}
+{{[name]}}
+{{    [name]    }}
+```
+
+A template block whose inner content is empty (`{{ }}` or whitespace-only) is a parse error (`xl3/parser/empty-block`).
+
+A template block is opened by `{{` and closed by the **first** subsequent `}}` in cell-text order. The delimiter scanner is NOT string-literal-aware: a `}}` inside a `"..."` literal CLOSES the block. Authors who need a literal `}}` inside a value hold it in `__config__[key]` and reference it via `{{ __config__[key] }}`. An expression body whose `"` count is odd raises `xl3/parser/unbalanced-literal`.
+
+### Data Blocks
+
+A *data block* on a sheet is the rectangle the engine expands across when rendering source rows. It has two dimensions:
+
+- **Row range** `[r_start..r_end]` — the maximal run of consecutive rows where each row contains at least one *data-row cell* (a cell whose `{{ ... }}` body references at least one `[Column]` outside an aggregate function).
+- **Column range** `[c_start..c_end]` — the bounding box of every cell with any `{{ ... }}` expression in the block's row range, extended outward through contiguous non-empty cells.
+
+At XTL 0.x, a sheet has at most one data block (without explicit `@block`). If the parser detects two or more disconnected clusters of `[Column]` data-row cells, it raises `xl3/expression/bracket-outside-block`.
+
+**Block expansion semantics:**
+- Block cells are cloned into the expanded rows — one record per template row height.
+- Outside cells with row `r < r_start` (headers) stay at their original position.
+- Cells in inside columns but rows `r > r_end` (footer rows — e.g., "Total" labels and SUM formulas) shift down by `(N - 1) × height` to land below the expanded data block.
+
+### Source Columns
+
+Source columns are referenced with bracket syntax:
+
+```
+{{ [Customer] }}
+{{ [Customer Name] }}
+{{ [Units Per Case] }}
+```
+
+The text inside `[` and `]` is the exact source column name after trimming surrounding whitespace. Column names MAY contain spaces, letters, numbers, and punctuation except `]` and line breaks.
+
+Bare names such as `{{ Customer }}` are not source column references in cells. Bare names resolve as sheet/file group keys, `__inputs__[name]`, or `__config__[name]` — in that order.
+
+### Literals
+
+XTL 0.1 supports:
+
+```
+"text"
+123
+123.45
+-123
+```
+
+- **String literals** — `"`-delimited matched pair. No escape sequences; backslashes pass through literally.
+- **Number literals** — decimal number, optionally with a leading `-`. `+5`, `+[col]`, `-[col]`, `-(expr)` are NOT supported unary syntax (`xl3/eval/unsupported-syntax`). Workaround: `(0 - [col])` or `[col] * -1`.
+
+### Operators
+
+**Arithmetic — `+`, `-`, `*`, `/`**
+
+Both operands MUST coerce to a finite number.
+
+| Operand type | Coerced value |
+|---|---|
+| Number (finite) | itself |
+| Boolean | 1 (TRUE) / 0 (FALSE) |
+| Empty | 0 |
+| String parsing as number | parsed number |
+| String not parsing as number | error `xl3/eval/operand-coercion` |
+| Date | error |
+
+String-to-number coercion accepts: decimal integers, decimal fractions, thousands-separated values (`"1,234"` → 1234), and scientific notation (`"1e5"`). Hex, binary, octal, leading `+`, Unicode minus, and `Infinity` are rejected.
+
+Division by zero produces an Excel `#DIV/0!` error cell.
+
+**String concatenation — `&`**
+
+Each operand stringifies to its canonical string form; results are joined. Always succeeds; no type errors.
+
+```
+{{ [item] & " (" & [size] & ")" }}
+```
+
+**Comparison — `=`, `!=`, `>`, `<`, `>=`, `<=`**
+
+Used in `IF()` and `@filter`. Comparison algorithm (in order):
+1. Both empty → equal.
+2. One empty → not equal; empty ordered less than any non-empty value.
+3. Both numeric (or both strings parsing as numbers) → numeric comparison.
+4. Both Booleans → `false` < `true`.
+5. Both dates → compare by timestamp.
+6. Otherwise → Unicode code-point order of canonical string forms. No locale collation. No Unicode normalization.
+
+### Functions
+
+Function names are case-insensitive.
+
+| Function | Args | Notes |
+|---|---|---|
+| `IF` | 3 | condition, true-value, false-value |
+| `IFEMPTY` | 2 | value, fallback (alias: `IFBLANK`) |
+| `ROUND` | 2 | value, places — half-away-from-zero |
+| `ABS` | 1 | value |
+| `TEXT` | 2 | value, format |
+| `ROW` | 0 | 1-based row index in current data block |
+| `TODAY` | 0 | UTC date |
+| `YEAR` | 1 | 4-digit year of a date (UTC) |
+| `MONTH` | 1 | month 1–12 of a date (UTC) |
+| `DAY` | 1 | day-of-month 1–31 of a date (UTC) |
+| `EOMONTH` | 2 | date of last day of the month N months from a date (UTC midnight) |
+| `EDATE` | 2 | date N months from a date, same day clamped (UTC midnight) |
+| `DATEDIF` | 3 | integer count of complete "Y"/"M"/"D" units between two dates |
+| `HYPERLINK` | 2 | url, label — produces a clickable cell |
+| `UPPER` | 1 | uppercase letters |
+| `LOWER` | 1 | lowercase letters |
+| `TRIM` | 1 | strip leading/trailing whitespace (internal preserved) |
+| `IFERROR` | 2 | value, fallback — returns fallback when value is an error-cell marker |
+| `IFS` | even ≥ 2 | (cond, value) pairs; returns first truthy branch; `xl3/eval/no-match` if none |
+| `DATE` | 3 | year, 1-based month, day — UTC midnight |
+| `ISBLANK` | 1 | true if value is empty |
+| `XLOOKUP` | 3 or 4 | value, lookup-array, return-array, [fallback] |
+| `SUM` | 1 | column ref |
+| `AVERAGE` (alias `AVG`) | 1 | column ref |
+| `MIN` | 1 | column ref |
+| `MAX` | 1 | column ref |
+| `COUNT` | 0 or 1 | 0 = block row count; 1 = non-empty count for column |
+| `CONCAT` | 1+ | variadic; alternative to `&` |
+
+**TEXT() format subset (normative):**
+
+| Kind | Format | Meaning |
+|---|---|---|
+| Date | `YYYY`, `YY`, `MM`, `DD`, `HH`, `hh`, `mm`, `ss` | Zero-padded calendar fields |
+| Number | `0` | Rounded integer, no grouping |
+| Number | `#,##0` | Rounded integer with thousands grouping |
+| Number | `0.00` | Fixed 2 decimal places |
+| Number | `#,##0.00` | Fixed 2 decimal places with grouping |
+
+**XLOOKUP:**
+```
+{{ XLOOKUP([Account], Customers[Account], Customers[Name]) }}
+{{ XLOOKUP([Account], Customers[Account], Customers[Name], "(unknown)") }}
+```
+Exact match only. Walks rows in workbook order; returns first match. Returns fallback (arg 4) or errors if no match.
+
+**Aggregates:**
+```
+{{ SUM([total]) }}
+{{ COUNT() }}
+{{ COUNT([customer]) }}
+{{ AVERAGE([price]) }}
+{{ MIN([date]) }}
+{{ MAX([date]) }}
+```
+`COUNT()` counts rows. `COUNT([field])` counts rows where `[field]` is non-empty. The single argument MUST be a column reference (`[Column]` or `Source[Column]`); expressions raise `xl3/eval/bad-aggregate-arg`.
+
+### Directives
+
+Directives are template expressions starting with `@`, usually in rows above data blocks.
+
+```
+{{ @filter [Status] = "Open" }}
+{{ @filter [Customer] in __lists__[IncludedCustomers] }}
+{{ @filter [Category] !in __lists__[ExcludedCategories] }}
+{{ @sort [total] desc }}
+{{ @group [Region], [Customer] }}
+{{ @top 10 }}
+{{ @repeat right 3 }}
+{{ @source Renewals }}
+{{ @join Customers on Customers[Account] = Renewals[Account] }}
+{{ @block A:D }}
+```
+
+**`@filter`** — keeps only rows matching the predicate. Operators: `=`, `!=`, `>`, `<`, `>=`, `<=`, `in`, `!in`. Multiple `@filter` directives compose with AND. `in`/`!in` require a list reference `__lists__[<name>]`.
+
+**`@sort`** — `@sort [field] asc` or `@sort [field] desc`. Direction defaults to `asc` when omitted. Stable sort; multiple `@sort` directives create primary/tiebreaker ordering.
+
+**`@top N`** — keeps the first N rows after filters and sorts. N MUST be a positive integer ≥ 1.
+
+**`@repeat right [N]`** — repeats the data block horizontally. Optional N is the column span per record (default 1). N MUST be a positive integer ≥ 1.
+
+**`@source <SourceName>`** — scopes the data block to the named source declared in `__sources__`. Without `@source`, the default `source_sheet` is used. `@source default` is legal and equivalent to omitting the directive.
+
+**`@join <JoinedSource> on <JoinedSource>[<key>] = <PrimarySource>[<key>]`** — inner-join semantics, first match. Unmatched primary rows are dropped. Multiple `@join` and left-join are out of scope for XTL 0.1.
+
+**`@group [Key1], [Key2], …`** — partitions active rows into N-level nested groups. Group identity uses canonical-string equality. Group order is encounter order after `@filter` and `@sort`.
+
+**`@subtotal <aggregate>`** — emits a subtotal row for the innermost group nesting level not yet matched, in source order. Supported aggregate bodies: `SUM(col)`, `COUNT()`, `COUNT(col)`, `AVERAGE(col)`, `MIN(col)`, `MAX(col)`.
+
+**`@block`** — explicit data block declaration (ADR-0067). Forms:
+```
+@block                   — column range auto-detected
+@block <col-range>       — e.g., A:D
+@block <full-rect>       — e.g., A2:D7
+```
+Two `@block` rectangles on the same sheet MUST NOT overlap.
+
+### Error Codes
+
+| Code | Meaning |
+|---|---|
+| `xl3/parser/empty-block` | `{{ }}` or whitespace-only template block |
+| `xl3/parser/unbalanced-literal` | Odd number of `"` in an expression body |
+| `xl3/eval/operand-coercion` | Arithmetic operand cannot be coerced to a finite number |
+| `xl3/eval/unsupported-syntax` | Unary `+`/`-` on non-literal expressions |
+| `xl3/eval/arity-mismatch` | Wrong number of arguments to a function |
+| `xl3/eval/bad-aggregate-arg` | Aggregate argument is not a column reference |
+| `xl3/eval/no-match` | `IFS()` with no truthy branch |
+| `xl3/expression/unknown-name` | Bare name not found in resolution chain |
+| `xl3/expression/bracket-outside-block` | `[Column]` marker outside any data block |
+| `xl3/expression/row-outside-block` | `ROW()` called outside a data block |
+| `xl3/source/undeclared` | `@source` names a source not declared in `__sources__` |
+| `xl3/source/unknown-column` | Column name not found in source headers |
+| `xl3/source/row-cross-block` | `Source[Column]` used when Source is not the active source |
+| `xl3/sources/not-a-dictionary` | `__sources__[name]` used as a value reference |
+| `xl3/directive/orphan` | Directive not adjacent to any data block |
+| `xl3/directive/invalid-syntax` | Malformed directive arguments (`@top 0`, `@repeat right -3`, etc.) |
+| `xl3/group/missing-key` | `@group` with no key list |
+| `xl3/subtotal/outside-group` | `@subtotal` with no `@group`, or more `@subtotal` rows than `@group` keys |
+| `xl3/subtotal/bad-aggregate` | `@subtotal` body is not a supported aggregate form |
+| `xl3/block/overlap` | Two `@block` rectangles overlap on the same sheet |
+| `xl3/block/empty-table` | `@block` rectangle contains no `{{ ... }}` marker cells |
+| `xl3/cell/numfmt-coercion` | Source-side Excel error sentinel in a number/date-format single-expression cell |
+
+---
+
+## Evaluation Model
+
+### Inputs and Outputs
+
+An XTL conversion takes:
+```
+template.xlsx
+data.xlsx
+```
+and produces one or more `.xlsx` output files.
+
+### Reserved Sheets
+
+| Sheet | Purpose |
+|---|---|
+| `__config__` | Single configuration object — engine metadata + author-defined values |
+| `__inputs__` | Runtime input declarations |
+| `__sources__` | Named external data source declarations |
+| `__lists__` | Author-defined membership lists |
+
+Reserved sheets do not appear in output workbooks. Authors MUST NOT create sheets matching the pattern `^__[a-z]+__$`.
+
+References to reserved-sheet contents use the form `__sheet__[key]`:
+- `__config__[key]` — reads a config key
+- `__inputs__[name]` — reads a runtime input value
+- `__lists__[name]` — reads a list membership set for `@filter ... in` directives
+- `__sources__[name]` — ERROR (it's a declaration sheet, not a value dictionary)
+
+### Template Configuration (`__config__` sheet)
+
+| Key | Meaning | Example |
+|---|---|---|
+| `name` | Template display name | `Order summary` |
+| `description` | Free text | `Monthly order summary` |
+| `source_sheet` | Source sheet name | `Orders` |
+| `source_table` | Source table selector | `1`, `A1:D`, `B5:H200` |
+| `output_file_pattern` | Output filename template | `{{ [Customer] }}_report.xlsx` |
+| `match_pattern` | Batch matching pattern | `Orders*` |
+| any other key | Author-defined value | `title = Q2 Sales` |
+
+Author-defined values are referenced as `{{ __config__[key] }}`.
+
+### External Data Sources (`__sources__` sheet)
+
+| Column | Required | Meaning |
+|---|---|---|
+| `name` | yes | Source name (letters, digits, underscores; not `default`, not `__` prefix) |
+| `sheet` | yes | Source worksheet name in the data workbook |
+| `table` | no | Source-table selector, defaulting to `1` |
+| `description` | no | Free-form note |
+
+Cell references:
+```
+{{ [Account] }}               — active source's current row
+{{ Customers[Account] }}      — Customers' current row (only when active)
+{{ SUM(Renewals[Amount]) }}   — aggregate over Renewals' full row set
+```
+
+---
+
+## API Reference
+
+### `convert()`
+
+```ts
+function convert(
+  templateBuffer: ArrayBuffer,
+  sourceBuffer: ArrayBuffer,
+  options?: ConvertOptions
+): Promise<OutputFile[]>;
+```
+
+Run full conversion: template + source → output files. Returns one `OutputFile` per emitted file group. **Stable** — frozen at 1.0; signature changes are 2.0-only.
+
+```ts
+const outputs = await convert(templateBuffer, sourceBuffer, {
+  inputs: { month: '2026-05' },
+});
+// outputs: [{ filename: 'renewal-report.xlsx', buffer }, ...]
+```
+
+### `preview()`
+
+```ts
+function preview(
+  templateBuffer: ArrayBuffer,
+  sourceBuffer: ArrayBuffer,
+  options?: ConvertOptions
+): Promise<PreviewResult>;
+```
+
+Preview what conversion will produce without generating full files. Returns planned filenames, sheet names, row counts, declared inputs, and warnings. Cheaper than `convert()` because it does not serialize output workbooks. **Stable** — frozen at 1.0.
+
+```ts
+const result = await preview(templateBuffer, sourceBuffer);
+console.log(result.files, result.warnings);
+```
+
+### `analyze()`
+
+```ts
+function analyze(templateBuffer: ArrayBuffer): Promise<ParsedTemplate>;
+```
+
+Analyze a template file and return its full parsed model. Useful for tooling that needs to inspect template internals. The entry point is **Stable** (frozen at 1.0), but the return type `ParsedTemplate` is `@experimental` — it exposes internal model shapes and the live ExcelJS workbook which MAY change between minor versions. For a stable serializable view, prefer `analyzeModel()` (returns `TemplateModel`).
+
+```ts
+const parsed = await analyze(templateBuffer);
+console.log(parsed.meta.name, parsed.sheetTemplates.length);
+```
+
+### `batchMatch()`
+
+See API reference at https://xl3.io/api for `batchMatch` — matches source files to templates for bulk conversion pipelines.
+
+---
+
+## JXLS Migration Guide
+
+xl3 is the maintained JavaScript/Node.js alternative to JXLS (Java). The spec absorbed JXLS's ~10 years of edge-case experience item by item.
+
+### Model Comparison
+
+| | JXLS | xl3 |
+|---|---|---|
+| Directives live in | Cell **comments** (invisible) | Cell **values** (visible, diffable) |
+| Expression language | JEXL — a second language | Excel syntax — what template authors know |
+| Data comes from | Java objects bound in code | A second `.xlsx` — pure function |
+| Block bounds | Explicit `lastCell="D4"` | Inferred from `{{ ... }}` markers |
+| Escape hatch | Custom Java commands | None, by design |
+
+### Directive Mapping
+
+| JXLS | xl3 equivalent |
+|---|---|
+| `jx:each(items="rows" var="r" lastCell=…)` | Data block — a template row with `{{ [Column] }}` markers |
+| `${r.name}` | `{{ [Name] }}` |
+| `${r.amount * 1.1}` | `{{ [Amount] * 1.1 }}` |
+| `jx:if(condition=…)` on a cell | `{{ IF([Renewal] > 10000, "Priority", "Standard") }}` |
+| `jx:if` used to drop rows | `{{ @filter [Status] = "Open" }}` |
+| `jx:each` with `orderBy` | `{{ @sort [Total] desc }}` |
+| `jx:each` with `groupBy` | `{{ @group [Region] }}` + `{{ @subtotal SUM([Renewal]) }}` |
+| `jx:each(direction="RIGHT")` | `{{ @repeat right 3 }}` |
+| Multiple collections | `{{ @source Renewals }}` + `{{ @join Customers on … }}` |
+| `jx:multisheet` | Sheet name pattern: `Region-{{ [Region] }}` |
+| `jx:link` | `{{ HYPERLINK(url, label) }}` |
+| `jx:params(formulas=…)` | Native Excel formulas preserved as-is |
+| SUM over expanded block | `{{ SUM([Renewal]) }}` aggregate |
+
+### Render Call Comparison
+
+JXLS (Java):
+```java
+context.putVar("employees", list);
+JxlsHelper.getInstance().processTemplate(templateStream, outStream, context);
+```
+
+xl3 (Node.js or browser):
+```js
+import { convert } from '@jinyoung4478/xl3';
+const outputs = await convert(templateBuffer, dataBuffer);
+```
+
+No context object. Everything the render needs is in the two workbooks.
+
+### Migration Checklist
+
+1. **Move data out of code** — export what you `putVar`'d to a sheet (one table per collection).
+2. **Delete the comments, write the cells** — each `jx:each` region becomes a data block of `{{ [Column] }}` markers.
+3. **Rewrite JEXL as Excel expressions** — `${...}` arithmetic and conditionals map to `{{ ... }}` with `IF`/operators.
+4. **Re-create grouping declaratively** — `groupBy`/`orderBy` become `@group`/`@sort`/`@subtotal`.
+5. **Run it and diff** — `convert()` is deterministic; a golden-file test replaces visual spot-checking.
+
+### What Intentionally Does Not Carry Over
+
+- **`jx:image`** (data-driven image insertion) — rejected (ADR-0037). Template images survive rendering; inserting from data does not fit the browser-safe, deterministic pipeline.
+- **`jx:updateCell`** (runtime cell mutation) — rejected (ADR-0042). `{{ ... }}` substitution already covers the use case.
+- **Custom commands** (host-language escape hatch) — rejected (ADR-0034). Logic requiring a Java/JS helper goes into the data file, not the template.
+
+---
+
+## Glossary
+
+**Active source** — the named source that bare-bracket field references (`[Column]`) inside a data block resolve against. Set by `@source` or, in its absence, the default source declared via `source_sheet` in `__config__`.
+
+**Aggregate function** — a function whose argument is a column reference and whose result is a single scalar over many rows: `SUM`, `AVERAGE`, `AVG`, `MIN`, `MAX`, `COUNT`. Source-prefixed aggregates (`SUM(Source[col])`) operate on the source's full row set; bare aggregates (`SUM([col])`) operate on the active block's filtered rows.
+
+**Block** — see *data block*.
+
+**Bracket field** — a column reference of the form `[Column]`. Resolves against the active source's current row inside a data block. Outside a data block, it is a syntax error.
+
+**Canonical string form** — the deterministic string representation of a value used by `&` concatenation, list membership, and comparison. Empty → `""`; Boolean → `TRUE`/`FALSE` (uppercase); finite Number → shortest round-trippable form; String → itself; Date → `YYYY-MM-DD` or `YYYY-MM-DDTHH:mm:ss` (UTC).
+
+**Conformance corpus** — the set of fixture directories under `conformance/fixtures/`, each containing `template.xlsx`, `data.xlsx`, optionally `expected.xlsx`, and `meta.yaml`. The corpus is the executable contract: spec prose disagreeing with a passing fixture loses.
+
+**Data block** — a contiguous range of rows in a template sheet that expand once per matching source row at render time. Detected by finding cells with bare `[Column]` references; the range can be modified by `@source`, `@filter`, `@sort`, `@top`, `@repeat right`, and `@join` directives.
+
+**Default source** — the implicit source loaded from the workbook referenced by `__config__.source_sheet`. Inside a data block with no `@source` directive, it is the active source.
+
+**Directive** — a template-block whose contents start with `@`. Directives modify the surrounding data block. The XTL 0.1 set: `@filter`, `@sort`, `@top`, `@repeat right`, `@source`, `@join`, `@group`, `@subtotal`, `@block`.
+
+**Dunder (sheet)** — a reserved sheet whose name matches the pattern `^__[a-z]+__$`. The four declared dunder sheets are `__config__`, `__inputs__`, `__sources__`, `__lists__`. Author-created sheets matching the pattern are rejected at parse time.
+
+**Empty value** — a value that is missing (`null`/`undefined`), the empty string, or a string consisting only of Unicode whitespace. Numbers (including `0`), Booleans (including `false`), and Dates are NEVER empty.
+
+**Excel error sentinel** — a cell whose value is one of `#N/A`, `#VALUE!`, `#DIV/0!`, etc. Read as empty per ADR-0017. Implementations MAY warn when one is encountered.
+
+**Expression** — the contents of a `{{ ... }}` template block. Can be a literal, a function call, a bracket reference, a reserved-sheet reference, or any combination thereof joined by operators.
+
+**File group** — a grouping of source rows by the keys declared in `__config__.output_file_pattern` group keys. Each group becomes one output `.xlsx`. Emitted in first-seen order.
+
+**Filter** — a directive that drops rows from a data block based on a predicate. Two forms: `@filter [field] op value` and `@filter [field] in __lists__[name]` (or `!in`).
+
+**Group key** — a column whose distinct values divide source rows into file groups (when the column appears in `output_file_pattern`) or sheet groups (when it appears in a sheet's name template).
+
+**Input** — a runtime value declared in `__inputs__` and supplied by the host via the `inputs` option to `convert(...)`. Coerced per declared `type` (text, number, date, select).
+
+**Join** — a `@join` directive pairing each row of the active source with the first matching row of a second source by key. XTL 0.1 supports inner-join semantics with deterministic first-match ordering.
+
+**List sheet** — a column inside `__lists__` whose values are the membership set for `@filter ... in __lists__[name]`.
+
+**Named source** — a source declared in `__sources__` with an explicit name. Referenced as `Name[Column]` from anywhere a source-prefixed bracket is valid.
+
+**Primary source** — inside a `@join` block, the active source — its rows drive the iteration. The joined source provides paired columns through `JoinedSource[Column]` references.
+
+**Reserved sheet** — one of `__config__`, `__inputs__`, `__sources__`, `__lists__`. Author-created sheets matching the dunder pattern are reserved and rejected regardless of whether they match one of the four declared names. Reserved sheets do not appear in output workbooks.
+
+**Reserved-sheet reference** — a template expression of the form `__sheet__[key]` that looks up `key` inside a reserved sheet's key-value table. Valid for `__config__`, `__inputs__`, and `__lists__`; `__sources__[name]` is an error.
+
+**Sheet group** — a grouping of source rows by the keys in a sheet template's name. Each group becomes one output worksheet within its file. Emitted in first-seen order.
+
+**Single-expression cell** — a cell whose template content is exactly one `{{ expression }}` and nothing else. Such cells preserve the source value's type (a Date stays a Date, a Number stays a Number) when the cell's number format is compatible.
+
+**Source** — a worksheet (or worksheet + table range) read by the engine to provide row data. The default source comes from `__config__.source_sheet`; named sources are declared in `__sources__`.
+
+**Source-prefixed bracket** — a reference of the form `Source[Column]` where `Source` is a declared source name. Resolves to the source's current-row column inside a `@source` block, or feeds an aggregate or `XLOOKUP` over that source's full row set in static contexts.
+
+**Template block** — the `{{ ... }}` syntax that demarcates an XTL expression or directive within an Excel cell value.
+
+**Truthy / falsy** — a value is truthy unless it is empty, Boolean `false`, or numeric `0`. The strings `"0"` and `"false"` are truthy because they are non-empty strings.
+
+**XLOOKUP** — a function that finds the first row in a source where a lookup column equals a value, and returns a column from that row. Mirrors Excel's signature for the basic 3-arg form plus an optional fallback. Exact match only in XTL 0.1.
+
+**XTL** — Excel Template Language. The language defined by `spec/`. Implementation-neutral; xl3 is the TypeScript reference implementation.
+
+---
+
+## Docs Index
+
+- [Getting started](https://xl3.io/guides/getting-started): render your first template in 5 minutes
+- [Guides index](https://xl3.io/guides): 19 hands-on recipes — loops, joins, grouping, conditional cells, file-per-group
+- [JXLS to xl3](https://xl3.io/guides/jxls-to-xl3): migration guide and directive mapping for JXLS users
+- [API reference](https://xl3.io/api): `convert`, `preview`, `analyze`, `batchMatch` and the full TypeScript surface
+- [Try in browser](https://xl3.io/try): run a conversion with no install
+- [XTL language spec](https://xl3.io/spec/language): normative syntax — template blocks, source columns, operators, functions, directives
+- [Evaluation model](https://xl3.io/spec/evaluation): how rendering proceeds, determinism guarantees
+- [Glossary](https://xl3.io/spec/glossary): defined terms
+- [Conformance suite](https://xl3.io/conformance): fixture-based conformance testing for implementations
+- [Porter's guide](https://xl3.io/porters-guide): how to implement XTL in another language
+- [Roadmap to 1.0](https://xl3.io/roadmap): gates and target dates
+- [GitHub repository](https://github.com/jinyoung4478/xl3): source, issues, ADRs
