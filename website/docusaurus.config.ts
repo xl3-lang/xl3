@@ -138,27 +138,95 @@ const config: Config = {
     ],
   ],
 
-  // JSON-LD structured data so search engines classify xl3 as software
-  // (name collisions abound: Novation XL3, XLCubed XL3, xl3.com) instead
-  // of inferring from page text alone.
+  // JSON-LD @graph so AI platforms can resolve xl3 as a distinct entity
+  // (name collisions: Novation XL3, XLCubed XL3, xl3.com). Cross-referenced
+  // via @id so Organization, Person, SoftwareApplication, and WebSite are
+  // treated as one coherent entity graph rather than isolated schema blocks.
   headTags: [
     {
       tagName: 'script',
       attributes: { type: 'application/ld+json' },
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
-        '@type': 'SoftwareApplication',
-        name: 'xl3',
-        description:
-          'Deterministic runtime for AI-generated Excel reports. An LLM writes the template once; xl3 renders the workbook from (template, data) as a pure function — same inputs, same bytes, every time.',
-        url: 'https://xl3.io',
-        applicationCategory: 'DeveloperApplication',
-        operatingSystem: 'Node.js, Browser',
-        license: 'https://opensource.org/licenses/MIT',
-        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-        sameAs: [
-          'https://github.com/jinyoung4478/xl3',
-          'https://www.npmjs.com/package/@jinyoung4478/xl3',
+        '@graph': [
+          {
+            '@type': 'Organization',
+            '@id': 'https://xl3.io/#organization',
+            name: 'xl3',
+            url: 'https://xl3.io',
+            logo: {
+              '@type': 'ImageObject',
+              url: 'https://xl3.io/img/xl3-logo.png',
+            },
+            description:
+              'Open-source deterministic Excel template engine for JavaScript and Node.js.',
+            foundingDate: '2024',
+            founder: { '@id': 'https://xl3.io/#person-jinyoung' },
+            sameAs: [
+              'https://github.com/jinyoung4478/xl3',
+            ],
+            knowsAbout: [
+              'Excel template engines',
+              'OOXML workbook generation',
+              'deterministic document rendering',
+              'AI-authored spreadsheet templates',
+              'JavaScript developer tools',
+            ],
+          },
+          {
+            '@type': 'Person',
+            '@id': 'https://xl3.io/#person-jinyoung',
+            name: 'Jinyoung Kim',
+            url: 'https://github.com/jinyoung4478',
+            sameAs: ['https://github.com/jinyoung4478'],
+            knowsAbout: [
+              'Excel workbook generation',
+              'OOXML specification',
+              'TypeScript',
+              'open-source software',
+            ],
+          },
+          {
+            '@type': 'SoftwareApplication',
+            '@id': 'https://xl3.io/#software',
+            name: 'xl3',
+            description:
+              'Deterministic runtime for AI-generated Excel reports. An LLM writes the template once; xl3 renders the workbook from (template, data) as a pure function — same inputs, same bytes, every time.',
+            url: 'https://xl3.io',
+            applicationCategory: 'DeveloperApplication',
+            operatingSystem: 'Node.js 18+, Browser (ESM)',
+            programmingLanguage: 'TypeScript',
+            license: 'https://opensource.org/licenses/MIT',
+            softwareVersion: '0.9.0',
+            releaseNotes: 'https://github.com/jinyoung4478/xl3/blob/main/CHANGELOG.md',
+            codeRepository: 'https://github.com/jinyoung4478/xl3',
+            creator: { '@id': 'https://xl3.io/#organization' },
+            offers: {
+              '@type': 'Offer',
+              price: '0',
+              priceCurrency: 'USD',
+              availability: 'https://schema.org/InStock',
+            },
+            featureList: [
+              'Deterministic Excel workbook rendering — same inputs produce identical byte-for-byte output',
+              'LLM-authored templates — AI writes the template.xlsx once, xl3 renders every run',
+              'XTL expression language for cell-level transformations',
+              'Preserves sheet structure, number formats, styles, and merged cells',
+              'Works in Node.js and browser environments',
+              'Open-source with MIT license',
+              '70 Architecture Decision Records and 154 conformance fixtures',
+              "Porter's Guide enables second-language implementations",
+            ],
+            screenshot: 'https://xl3.io/img/og.png',
+            sameAs: ['https://github.com/jinyoung4478/xl3'],
+          },
+          {
+            '@type': 'WebSite',
+            '@id': 'https://xl3.io/#website',
+            name: 'xl3',
+            url: 'https://xl3.io',
+            publisher: { '@id': 'https://xl3.io/#organization' },
+          },
         ],
       }),
     },
@@ -169,6 +237,12 @@ const config: Config = {
     metadata: [
       { name: 'theme-color', content: '#185c37' },
       { name: 'keywords', content: 'xl3, XTL, Excel template, Excel-to-Excel, OOXML, xlsx, workbook transformation, conformance, spec' },
+      {
+        name: 'description',
+        content:
+          'xl3 is an open-source, deterministic Excel template engine for JavaScript. Write templates in .xlsx using XTL expressions; xl3 renders the same bytes every time. npm: @jinyoung4478/xl3.',
+      },
+      { property: 'og:type', content: 'website' },
     ],
     colorMode: {
       defaultMode: 'light',

@@ -60,6 +60,9 @@ PLANNING.md
 TODO.local.md
 *.plan.md
 
+# GEO audit reports (local analysis artifacts)
+GEO-*.md
+
 # Playwright MCP scratch
 .playwright-mcp/
 
