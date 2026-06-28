@@ -1,6 +1,6 @@
 # ADR 0003 — Single-expression cell numFmt coercion is MUST
 
-- **Status:** accepted
+- **Status:** accepted (failure-mode clause amended by [ADR-0072](./0072-numfmt-coercion-warned-fallback.md))
 - **Date:** 2026-05-03
 - **Spec target:** XTL 0.1 draft
 - **Affects:** evaluation.md
@@ -36,6 +36,14 @@ to:
 > If the template cell has a number/date/text format, the implementation MUST coerce string source values to match that format. Date-like formats coerce supported date strings or Excel serial numbers to dates. Number-like formats coerce numeric strings to numbers. Text format `@` coerces to string. Failing to coerce is an error.
 
 The error case is already enumerated in the existing errors list ("Failing to coerce a single-expression cell value to its template cell format") and remains unchanged.
+
+> **Amendment (ADR-0072, 2026-06-28):** the *failure mode* of this clause
+> is relaxed. Coercion remains MUST and a successful coercion still MUST
+> produce the typed value, but **failure no longer aborts** — it emits a
+> normative warning `xl3w/cell/numfmt-coercion` and falls back to the
+> cell's text rendering. The "silent string-pass-through is no longer
+> conformant" guarantee holds because the fallback is *warned*, not
+> silent. See [ADR-0072](./0072-numfmt-coercion-warned-fallback.md).
 
 The set of supported date formats and numeric format tokens is **not** normatively specified by this ADR — that is deferred to a future ADR (Option C). Implementations that support fewer formats than another implementation can declare partial conformance against the corpus.
 
