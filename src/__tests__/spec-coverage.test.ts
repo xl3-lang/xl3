@@ -72,6 +72,11 @@ const INFORMATIONAL_ADRS = new Set([
   // doc-only design ahead of implementation, so no covering fixture yet.
   // Remove from this list when the source-cell conformance fixtures land.
   '0071', // proposed — source cell scalar reference
+  // ADR-0072 — proposed / impl-pending. Amends ADR-0003: numFmt coercion
+  // failure degrades to a warned text fallback. Doc-only design ahead of
+  // implementation, so no covering fixture yet. Remove from this list when
+  // the warned-fallback conformance fixtures land (021/022 conversion).
+  '0072', // proposed — numFmt coercion warned fallback (amends ADR-0003)
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.
