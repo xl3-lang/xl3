@@ -141,6 +141,13 @@ intentional footer that aggregates the expanded block (see
   [`spec/language.md`](../spec/language.md) §Directives: `@source`,
   `@join`, `@filter`, `@sort`, `@top`, `@group`, `@subtotal`,
   `@repeat right`. Nothing else exists in XTL 0.x.
+- **Don't re-save a finished template from Excel/LibreOffice right
+  before shipping it** if the template contains native `=…` formulas.
+  Recalculation bakes results into formula caches, and a save can
+  consolidate identical formulas into shared formulas — both corrupt
+  how the engine reads the template. Details and safe workflows in
+  [Excel round-trips, formula caches, and programmatic
+  editing](#excel-round-trips-formula-caches-and-programmatic-editing).
 
 ---
 
@@ -325,6 +332,122 @@ Then inspect the output workbook and confirm:
 If you see extra styled rows at the bottom of the output: the template
 still has leftover rows below the data block. Reopen, Delete Row, save,
 re-render.
+
+### Diff against a known-good output when one exists
+
+If the user hands you a finished report the template is supposed to
+reproduce (a "golden" file), don't stop at eyeballing: load both
+workbooks and compare **cell by cell** — values, not formatting —
+until the mismatch count is zero. Every unexplained mismatch is either
+a template bug or a real difference in the source data; chase each one
+to its origin before declaring the template done. A rule that happens
+to hold for one month's data often breaks on the next — when you have
+two periods of data, verify against both.
+
+### Formula cells cannot be verified by reading the file
+
+Engine-written cells hold literal values and are directly checkable.
+Native `=…` formula cells are **not**: the engine writes them without
+cached results, and converted outputs do not carry a full-recalc flag,
+so a library like `exceljs` reads `{ formula, result: undefined }`.
+To verify them, force a recalculation — open the output in Excel, or
+headlessly:
+
+```bash
+soffice --headless --calc --convert-to xlsx --outdir recalc out.xlsx
+```
+
+then re-read the recalculated copy. (LibreOffice only recalculates
+volatile chains and cache-less cells by default; if a formula cell
+still shows a stale cached value, strip the cached `<v>` elements
+first.) Corollary: **where verifiability matters, prefer
+engine-evaluated XTL cells over native formulas** — they render as
+plain values you can assert against.
+
+### Probe unfamiliar behavior before committing to it
+
+Several failure modes in this document are *silent* — the render
+succeeds and the output is quietly wrong. Before you rely on a
+directive combination or formula pattern you have not used before,
+build a 10-cell scratch template and run `convert()` on tiny synthetic
+data to confirm the behavior, then apply it to the real template.
+
+---
+
+## Excel round-trips, formula caches, and programmatic editing
+
+An xl3 template is a build artifact: the exact bytes matter. Two
+Excel/LibreOffice behaviors — both invisible in the UI — can corrupt
+a template that contains native `=…` formulas, and two common library
+bugs can corrupt one you build programmatically.
+
+### Hazard 1 — recalculated caches become phantom template text
+
+The parser reads a formula cell's **cached result string** as that
+cell's template text (a cell value of `{ formula, result }` is read as
+`String(result)`). When Excel/LO opens a template it recalculates
+(volatile functions always; everything on some calc settings) and the
+save writes those results into the file. At template time a formula
+that references a marker cell evaluates to marker *text* — so after an
+innocent open-and-save, a cell can cache a string like
+`{{ [Key] }} / Subtotal`, and on the next render the parser treats it
+as a real `[Key]` marker. The classic symptom: a `@subtotal` row is
+silently reclassified as a second data row, so the "subtotal band"
+repeats after every data row carrying block-level grand totals.
+
+Defenses, in order of preference:
+
+1. **Don't open-and-save the shipped file.** Inspect a copy; upload
+   the generated file byte-for-byte.
+2. **Author formulas so their template-time value is harmless.** Wrap
+   numeric formulas in `IFERROR(…, 0)`. For text formulas that read
+   marker cells, guard on the marker prefix — and build the `{{`
+   literal as `"{"&"{"` so the formula body itself never contains a
+   marker-shaped substring:
+
+   ```text
+   =IF(LEFT(INDIRECT("W"&(ROW()-1)),2)="{"&"{", "",
+       INDIRECT("W"&(ROW()-1))) & " / Subtotal"
+   ```
+
+3. **Strip formula caches when packaging.** Remove `<v>` children of
+   `<f>`-bearing cells at the zip level; Excel and LibreOffice
+   recompute cache-less cells on load.
+
+### Hazard 2 — shared-formula consolidation
+
+Excel and LibreOffice consolidate identical (R1C1-equivalent) formulas
+into OOXML *shared formulas* on save. The engine does not expand
+shared-formula groups reliably: after a round-trip, block-row formulas
+can land in the wrong columns or smear across the row. There is no
+template-side defense — this is the hard reason behind the
+open-and-save ban above. When *building* a template with `exceljs`,
+clear pre-existing data-area formulas before rewriting rows
+("Shared Formula master" errors are this same issue surfacing at
+build time).
+
+### Hazard 3 — library serialization bugs (programmatic editing)
+
+- **Don't use `openpyxl`** on templates containing images or drawings
+  — it duplicates/corrupts drawing parts. Use an `exceljs`
+  load→modify→save round-trip.
+- **`exceljs` writes `<sheetPr>` children in a non-schema order**
+  (`pageSetUpPr` before `outlinePr`; CT_SheetPr requires
+  `tabColor → outlinePr → pageSetUpPr`). It only manifests when a
+  sheet has both fit-to-page and outline properties — and Excel then
+  shows the "repair this workbook?" dialog. Swap the two elements at
+  the zip level after saving.
+- **`exceljs` can write image anchors with `<a:ext cx="0" cy="0"/>`**
+  (zero-size images; Excel may also flag the file). Patch the real
+  EMU extents back in after saving.
+
+### Diagnosing the Excel repair dialog
+
+If Excel offers to repair a file you produced, the usual cause is XML
+**element order** (an `xsd:sequence` violation), not malformed XML —
+`xmllint` will pass. Fastest diagnosis: let Excel repair and save a
+copy, then diff the repaired part against yours — Excel deletes
+exactly the offending element, pointing you at the violation.
 
 ---
 

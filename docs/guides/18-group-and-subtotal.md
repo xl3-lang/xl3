@@ -114,6 +114,32 @@ group's boundary IS the end of the data.
   "Subtotal:" label sits next to the aggregate cell, both rendered
   on each emission. The literal cells MUST NOT reference current-
   row columns; there is no current row at a group boundary.
+- **A stray `[Column]` marker demotes the row — silently.** The
+  parser recognizes a `@subtotal` row only when it carries at least
+  one `{{ @subtotal … }}` cell and **no** current-row `[Column]`
+  reference outside an aggregate. One marker anywhere on the row —
+  including inside mixed literal text, or hiding in a native
+  formula's *cached result* after an Excel/LibreOffice re-save (see
+  [round-trip hazards](../llm-template-authoring.md#excel-round-trips-formula-caches-and-programmatic-editing))
+  — reclassifies the whole row as a second data-row template. The
+  render still succeeds; the symptom is unmistakable: the subtotal
+  band repeats after **every** data row, showing block-level grand
+  totals instead of per-group sums. If you see that signature,
+  audit the subtotal row for markers and for formula caches.
+- **Dynamic group labels on the band** come from a native formula,
+  not a marker (a marker would demote the row, and aggregates
+  coerce strings to numbers). Keep a helper column of group-key
+  markers inside the data block (hide the column), then read the
+  row above the band:
+
+  ```text
+  =IF(LEFT(INDIRECT("W"&(ROW()-1)),2)="{"&"{", "",
+      INDIRECT("W"&(ROW()-1))) & " subtotal"
+  ```
+
+  The `INDIRECT(…&ROW())` form survives verbatim per-emission
+  copying (ADR-0046); the `LEFT(...)="{"&"{"` guard keeps the
+  formula's template-time cache free of marker text.
 
 ## Errors
 
