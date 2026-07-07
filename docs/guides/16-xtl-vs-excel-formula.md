@@ -38,6 +38,52 @@ Use an XTL expression instead:
 This evaluates per row at render time and writes the computed
 number into each cell. Same result, no row-reference confusion.
 
+### "My per-row math must read a *template* cell (a header parameter), which XTL can't reference"
+
+XTL expressions see **source columns**, not other template cells. When
+a per-row computation depends on a parameter cell in the sheet itself
+(a rate in `$Q$6`, per-column weights in row 6 — the "distribute
+`[Qty]` across locations by the header row" pattern), XTL can't
+express it — and a plain `=R7/$Q$6*H$6` breaks because references are
+copied verbatim per row (previous gotcha).
+
+The escape hatch is a native formula written to be **row-agnostic**:
+reference the current row through `INDIRECT(…&ROW())` so the identical
+formula text is correct on every expanded row:
+
+```text
+H (data row):  =IFERROR(INDIRECT("R"&ROW())/$Q$6*H$6, 0)
+Q (row sum):   =IFERROR(SUM(INDIRECT("H"&ROW()&":P"&ROW())), 0)
+```
+
+Here `R` holds an XTL marker (`{{ [Qty] }}`) that renders a number;
+`$Q$6` / `H$6` are ordinary absolute/mixed references to the header
+parameters, which are outside the block and never shift.
+
+Four caveats that make this production-safe:
+
+- **Mind `INDIRECT`'s volatility.** Volatile functions recompute on
+  every recalculation event, so sheets with very many of these cells
+  get sluggish. At report scale (hundreds to a few thousand rows) the
+  cost is negligible — but treat the pattern as an escape hatch, not
+  the default; prefer XTL wherever the same result is expressible.
+- **Keep the formula's precedents static.** Converted outputs carry no
+  full-recalc flag, so a native formula must not depend on *another
+  formula's cached value* — replace parameter-cell formulas (e.g.
+  `=SUM(H6:P6)`) with literal values, or accept stale caches. Cells
+  the engine writes and cache-less formula cells are safe precedents:
+  both are fresh when Excel opens the file.
+- **Wrap in `IFERROR(…, 0)`.** At *template* time the marker cell
+  holds text, so a recalculating open-and-save would otherwise bake a
+  `#VALUE!` cache into the shipped template. (See the round-trip
+  hazards in
+  [Authoring xl3 templates with an LLM](../llm-template-authoring.md#excel-round-trips-formula-caches-and-programmatic-editing).)
+- **Verification changes.** These cells hold formulas, not values —
+  assert them after a real recalculation (Excel, or headless
+  LibreOffice), not by reading the file. Prefer XTL cells wherever the
+  same result is expressible; use this pattern only when the
+  computation genuinely lives in template cells.
+
 ### "I want a total at the bottom; `=SUM(B2:B5)` doesn't extend when rows multiply"
 
 Same root cause — xl3 doesn't rewrite range references. Two
