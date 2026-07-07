@@ -347,22 +347,27 @@ two periods of data, verify against both.
 ### Formula cells cannot be verified by reading the file
 
 Engine-written cells hold literal values and are directly checkable.
-Native `=…` formula cells are **not**: the engine writes them without
-cached results, and converted outputs do not carry a full-recalc flag,
-so a library like `exceljs` reads `{ formula, result: undefined }`.
-To verify them, force a recalculation — open the output in Excel, or
-headlessly:
+Native `=…` formula cells are **not**: the engine re-emits template
+cell values verbatim (ADR-0046) and never computes a fresh cache — a
+formula you authored cache-less stays cache-less, and converted
+outputs carry no full-recalc flag — so a library like `exceljs` reads
+`{ formula, result: undefined }`. To verify such cells, force a
+recalculation — open the output in Excel, or headlessly:
 
 ```bash
-soffice --headless --calc --convert-to xlsx --outdir recalc out.xlsx
+soffice --headless --convert-to xlsx --outdir recalc out.xlsx
 ```
 
-then re-read the recalculated copy. (LibreOffice only recalculates
-volatile chains and cache-less cells by default; if a formula cell
-still shows a stale cached value, strip the cached `<v>` elements
-first.) Corollary: **where verifiability matters, prefer
-engine-evaluated XTL cells over native formulas** — they render as
-plain values you can assert against.
+then re-read the recalculated copy. Know what this does and doesn't
+do: a plain `--convert-to` does **not** force a full recalculation —
+LibreOffice recomputes cache-less formula cells and volatile chains on
+load, which is exactly enough for engine-written formulas (cache-less,
+see above). A cell carrying a *stale* cached value keeps it; for a
+guaranteed full recalc, strip the cached `<v>` elements at the zip
+level first, or drive a real open→recalculate→save via a UNO script.
+Corollary: **where verifiability matters, prefer engine-evaluated XTL
+cells over native formulas** — they render as plain values you can
+assert against.
 
 ### Probe unfamiliar behavior before committing to it
 
@@ -417,14 +422,21 @@ Defenses, in order of preference:
 ### Hazard 2 — shared-formula consolidation
 
 Excel and LibreOffice consolidate identical (R1C1-equivalent) formulas
-into OOXML *shared formulas* on save. The engine does not expand
-shared-formula groups reliably: after a round-trip, block-row formulas
-can land in the wrong columns or smear across the row. There is no
-template-side defense — this is the hard reason behind the
-open-and-save ban above. When *building* a template with `exceljs`,
-clear pre-existing data-area formulas before rewriting rows
-("Shared Formula master" errors are this same issue surfacing at
-build time).
+into OOXML *shared formulas* on save. The engine normalizes these
+before cloning (`unshareFormula`, ADR-0066 / issue #46): the owner
+cell keeps its formula text, and each member cell resolves to the
+**owner's formula text verbatim** — references are *not* re-adjusted
+to the member's position. So a group Excel abbreviated (e.g. block
+cells `H8:P8` holding `…*H$6`, `…*I$6`, … — identical in R1C1)
+round-trips as N copies of the owner's A1 text: every member computes
+the owner column's formula, the "one column's formula smeared across
+the row" symptom. Row/column-agnostic formulas (the
+`INDIRECT(…&ROW())` style from the guides) survive this;
+position-dependent ones silently don't — that asymmetry is the second
+reason for the open-and-save ban above. When *building* a template
+with `exceljs`, clear pre-existing data-area formulas before rewriting
+rows ("Shared Formula master" errors at build time are this same
+mechanism surfacing in the library).
 
 ### Hazard 3 — library serialization bugs (programmatic editing)
 

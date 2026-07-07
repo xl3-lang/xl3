@@ -60,8 +60,13 @@ Here `R` holds an XTL marker (`{{ [Qty] }}`) that renders a number;
 `$Q$6` / `H$6` are ordinary absolute/mixed references to the header
 parameters, which are outside the block and never shift.
 
-Three caveats that make this production-safe:
+Four caveats that make this production-safe:
 
+- **Mind `INDIRECT`'s volatility.** Volatile functions recompute on
+  every recalculation event, so sheets with very many of these cells
+  get sluggish. At report scale (hundreds to a few thousand rows) the
+  cost is negligible — but treat the pattern as an escape hatch, not
+  the default; prefer XTL wherever the same result is expressible.
 - **Keep the formula's precedents static.** Converted outputs carry no
   full-recalc flag, so a native formula must not depend on *another
   formula's cached value* — replace parameter-cell formulas (e.g.
