@@ -651,17 +651,18 @@ export default function Home() {
     <Layout
       title={translate({
         id: 'homepage.layout.title',
-        // Carries both search intents: the established "excel template
-        // engine javascript" query and the AI/determinism positioning
-        // the hero leads with.
-        // Docusaurus appends "| xl3", so no brand prefix here.
-        message: 'Deterministic Excel Template Engine for JavaScript',
+        // Names xl3's identity as a rule format, not a JS library: XTL is a
+        // spec-defined, Excel-authored transformation language (spec + ADRs
+        // + conformance fixtures) with a reference implementation, so the
+        // title names the rules, not a runtime. Docusaurus appends "| xl3",
+        // so no brand prefix here.
+        message: 'Excel-to-Excel transformation rules, authored in Excel',
         description: 'HTML <title> for the landing page',
       })}
       description={translate({
         id: 'homepage.layout.description',
         message:
-          'xl3 is an open-source Excel template engine for JavaScript and Node.js. Author the template in Excel itself — or let an LLM write it — and render workbooks deterministically: same inputs, same bytes, every time.',
+          'xl3 is an open-source, deterministic rule format for Excel-to-Excel transformation. Author the rules in an .xlsx template using Excel syntax (XTL) — or let an LLM write them — and render workbooks the same way every time: same inputs, same bytes.',
         description: 'HTML <meta description> for the landing page',
       })}
     >

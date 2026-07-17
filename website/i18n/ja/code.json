@@ -583,11 +583,11 @@
     "description": "Bottom CTA link — Porter's Guide"
   },
   "homepage.layout.title": {
-    "message": "xl3 — AI が生成する Excel レポートのための決定論的ランタイム",
+    "message": "Excel の中で書く、Excel 変換ルール",
     "description": "HTML <title> for the landing page"
   },
   "homepage.layout.description": {
-    "message": "xl3 は AI が生成する Excel レポートのための決定論的ランタイムです。LLM が一度だけテンプレートを書けば、xl3 が (template, data) を純粋関数としてワークブックにレンダリングし、同じ入力なら毎回同じバイト列を返します。",
+    "message": "xl3 は Excel 変換ルールをコードではなく Excel ファイル（template.xlsx）の中に収める、決定論的なルールフォーマットです。ルールは使い慣れた Excel 構文（XTL）で記述でき、LLM に書かせることもできます。同じ入力なら毎回同じバイト列が生成されます。",
     "description": "HTML <meta description> for the landing page"
   },
   "try.status.idle": {

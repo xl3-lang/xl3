@@ -167,18 +167,18 @@ const config: Config = {
               url: 'https://xl3.io/img/xl3-logo.png',
             },
             description:
-              'Open-source deterministic Excel template engine for JavaScript and Node.js.',
+              'Open-source deterministic rule format for Excel-to-Excel transformation. The transformation rules are authored in Excel itself using XTL, an Excel-syntax template language specified independently of any runtime.',
             foundingDate: '2024',
             founder: { '@id': 'https://xl3.io/#person-jinyoung' },
             sameAs: [
               'https://github.com/jinyoung4478/xl3',
             ],
             knowsAbout: [
-              'Excel template engines',
+              'Excel-to-Excel transformation',
               'OOXML workbook generation',
               'deterministic document rendering',
               'AI-authored spreadsheet templates',
-              'JavaScript developer tools',
+              'Excel-syntax template languages',
             ],
           },
           {
@@ -248,7 +248,7 @@ const config: Config = {
       {
         name: 'description',
         content:
-          'xl3 is an open-source, deterministic Excel template engine for JavaScript. Write templates in .xlsx using XTL expressions; xl3 renders the same bytes every time. npm: @jinyoung4478/xl3.',
+          'xl3 is an open-source, deterministic rule format for Excel-to-Excel transformation. Author the rules in .xlsx using Excel-syntax XTL expressions; xl3 renders the same bytes for the same inputs, every time. npm: @jinyoung4478/xl3.',
       },
       { property: 'og:type', content: 'website' },
     ],

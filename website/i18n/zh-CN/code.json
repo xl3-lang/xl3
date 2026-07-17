@@ -583,11 +583,11 @@
     "description": "Bottom CTA link — Porter's Guide"
   },
   "homepage.layout.title": {
-    "message": "xl3 — 面向 AI 生成 Excel 报表的确定性运行时",
+    "message": "用 Excel 编写的 Excel 转换规则",
     "description": "HTML <title> for the landing page"
   },
   "homepage.layout.description": {
-    "message": "xl3 是面向 AI 生成 Excel 报表的确定性运行时。LLM 只需写一次模板，xl3 就把 (template, data) 当作纯函数渲染为工作簿——相同输入，每次都得到完全相同的字节。",
+    "message": "xl3 是一种确定性的规则格式：把 Excel 转换规则写进 Excel 文件（template.xlsx）本身，而不是代码里。规则用熟悉的 Excel 语法（XTL）编写，也可以让 LLM 来写；相同输入，每次都生成完全相同的字节。",
     "description": "HTML <meta description> for the landing page"
   },
   "try.status.idle": {

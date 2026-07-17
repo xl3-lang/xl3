@@ -346,8 +346,8 @@ function DeveloperApi() {
 export default function HomeKo() {
   return (
     <Layout
-      title="xl3 — 엑셀 변환은 엑셀 안에서"
-      description="xl3 는 엑셀 변환 규칙을 코드가 아니라 엑셀 파일 안에 담아둡니다. 비개발자도 평소 쓰던 엑셀 문법 그대로 변환 규칙을 직접 열어 보고 고칠 수 있습니다."
+      title="엑셀로 작성하는 엑셀 변환 규칙"
+      description="xl3 는 엑셀 변환 규칙을 코드가 아니라 엑셀 파일(template.xlsx) 안에 담아두는 결정적 규칙 포맷입니다. 비개발자도 평소 쓰던 엑셀 문법(XTL) 그대로 변환 규칙을 직접 열어 보고 고칠 수 있고, 같은 입력이면 언제나 같은 결과가 나옵니다."
     >
       <Hero />
       <main>

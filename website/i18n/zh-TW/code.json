@@ -583,11 +583,11 @@
     "description": "Bottom CTA link — Porter's Guide"
   },
   "homepage.layout.title": {
-    "message": "xl3 — 為 AI 生成的 Excel 報表打造的確定性 Runtime",
+    "message": "用 Excel 撰寫的 Excel 轉換規則",
     "description": "HTML <title> for the landing page"
   },
   "homepage.layout.description": {
-    "message": "xl3 是為 AI 生成的 Excel 報表所打造的確定性 Runtime。LLM 只需寫一次範本,xl3 就把 (template, data) 當成純函式渲染成活頁簿——相同輸入,每次都產出相同的位元組。",
+    "message": "xl3 是一種確定性的規則格式:把 Excel 轉換規則寫進 Excel 檔案(template.xlsx)本身,而不是程式碼裡。規則以熟悉的 Excel 語法(XTL)撰寫,也可以讓 LLM 來寫;相同輸入,每次都產出完全相同的位元組。",
     "description": "HTML <meta description> for the landing page"
   },
   "try.status.idle": {

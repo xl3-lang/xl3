@@ -583,11 +583,11 @@
     "description": "Bottom CTA link — Porter's Guide"
   },
   "homepage.layout.title": {
-    "message": "xl3 — Runtime determinista para informes de Excel generados por IA",
+    "message": "Reglas de transformación de Excel, escritas en Excel",
     "description": "HTML <title> for the landing page"
   },
   "homepage.layout.description": {
-    "message": "xl3 es un runtime determinista para informes de Excel generados por IA. Un LLM escribe la plantilla una sola vez; xl3 renderiza el libro a partir de (template, data) como una función pura: con las mismas entradas, los mismos bytes, siempre.",
+    "message": "xl3 es un formato de reglas determinista para transformar Excel en Excel: las reglas viven dentro del propio archivo .xlsx (template.xlsx), no en el código. Se escriben con la sintaxis de Excel de siempre (XTL), o las escribe un LLM, y con las mismas entradas se obtienen siempre los mismos bytes.",
     "description": "HTML <meta description> for the landing page"
   },
   "try.status.idle": {
