@@ -1,3 +1,7 @@
+---
+slug: /governance
+---
+
 # 治理
 
 XTL 规范与 xl3 参考实现的决策机制。
@@ -10,7 +14,7 @@ xl3 处于**形成期**。一位维护者同时是：
 
 - `src/` 的作者（TypeScript 参考实现）
 - `spec/` 的编辑（XTL 语言定义）
-- `spec/decisions/` 中 [ADR](./spec/decisions/) 的接受者
+- `spec/decisions/` 中 [ADR](https://github.com/jinyoung4478/xl3/tree/main/spec/decisions) 的接受者
 - 所有 PR 的评审者
 
 对于这个阶段的项目来说，这是常态。下文的结构说明变更如何进入项目，以及随着更多贡献者加入，会发生哪些变化。
@@ -21,7 +25,7 @@ xl3 处于**形成期**。一位维护者同时是：
 |---|---|---|
 | **维护者** | 对 ADR 和实现 PR 拥有最终接受/拒绝权。发布版本。 | 当前为项目作者本人。 |
 | **规范编辑** | 起草 ADR，编辑 `spec/language.md` 与 `spec/evaluation.md`。 | 当前由维护者担任。 |
-| **移植作者** | 用其他语言实现 XTL；在 [`conformance/fixtures/`](./conformance/fixtures/) 上跑一致性测试。 | 任何人。在 [IMPLEMENTATIONS.md](/zh-CN/implementations) 中列出。 |
+| **移植作者** | 用其他语言实现 XTL；在 [`conformance/fixtures/`](https://github.com/jinyoung4478/xl3/tree/main/conformance/fixtures) 上跑一致性测试。 | 任何人。在 [IMPLEMENTATIONS.md](/zh-CN/implementations) 中列出。 |
 | **贡献者** | 提议题、发 PR、提案测试用例或 ADR。 | 任何人。参见 [CONTRIBUTING.md](/zh-CN/contributing)。 |
 
 当外部贡献者能够持续审阅并落地变更时，维护者集合就会扩大。没有正式的投票流程——维护者承诺会在合适的时机扩大维护者集合，并在那一刻进行文档记录。
@@ -41,7 +45,7 @@ xl3 处于**形成期**。一位维护者同时是：
 1. **发现** —— 一个真实的边界场景（使用过程中、编写 fixture 时、移植过程中）暴露出规范沉默或含混的地方。
 2. **议题** —— 提一个 `spec` 议题，说明缺口、备选方案以及相关交叉引用。
 3. **ADR 草稿** —— 维护者（或贡献者）按照 `spec/decisions/0000-template.md` 模板，在
-   [`spec/decisions/`](./spec/decisions/) 中起草 ADR。包括 Context、Considered Options、
+   [`spec/decisions/`](https://github.com/jinyoung4478/xl3/tree/main/spec/decisions) 中起草 ADR。包括 Context、Considered Options、
    Decision、Consequences、References。
 4. **评审** —— 在引入该 ADR 的 PR 上讨论。接受标准是"理由足够充分，让另一名实现者在不看实现源码的情况下也能得出同样的结论"。
 5. **接受** —— 满足以下全部条件时设置 `status: accepted`：
@@ -50,7 +54,7 @@ xl3 处于**形成期**。一位维护者同时是：
    - 维护者签字通过。
 6. **发布** —— 下一个小版本号在变更是新增式时提升规范版本号，是不兼容时提升大版本号。
 
-[`spec/decisions/`](./spec/decisions/) 中的 ADR 是项目对每一项规范性决策及其推理过程的公开记录。
+[`spec/decisions/`](https://github.com/jinyoung4478/xl3/tree/main/spec/decisions) 中的 ADR 是项目对每一项规范性决策及其推理过程的公开记录。
 
 ### 一致性测试用例新增
 
@@ -90,7 +94,7 @@ xl3 处于**形成期**。一位维护者同时是：
 2. **提案一个 fixture。** 一个新测试用例迫使规范文字比单纯散文更清晰。即便是未被接受的 fixture 提案，通常也能触发规范改进。
 3. **移植到第二门语言并跑通一致性语料。** 一个独立的第二实现发现规范缺口的速度比任何评审都快。
    参见 [PORTERS_GUIDE.md](/zh-CN/porters-guide)。
-4. **在延期项上发起一份 ADR 草稿。** 在 [`spec/decisions/`](./spec/decisions/) 中延期的事项（日期运算、区域感知排序、多表 join 等）都是未来 ADR 的候选项——欢迎具体提案。
+4. **在延期项上发起一份 ADR 草稿。** 在 [`spec/decisions/`](https://github.com/jinyoung4478/xl3/tree/main/spec/decisions) 中延期的事项（日期运算、区域感知排序、多表 join 等）都是未来 ADR 的候选项——欢迎具体提案。
 
 ## 本文档如何演进
 

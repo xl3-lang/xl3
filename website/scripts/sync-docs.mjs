@@ -298,6 +298,21 @@ async function rewriteRelativePaths(target) {
         changed = true;
         return `](../spec/${name}.md${frag})`;
       })
+      // #67: sibling guide links (`./03-aggregates.md`) resolve fine on the
+      // default locale but leak the raw `.md` path — with the NN- prefix —
+      // when an UNtranslated guide renders as the English fallback under a
+      // locale prefix (/ja/guides/…). Rewrite to the absolute guide route
+      // (number + .md dropped, matching Docusaurus's numberPrefixParser).
+      .replace(/\]\(\.\/\d{2}-([a-z0-9-]+)\.md(#[^)]*)?\)/g, (_, name, frag = '') => {
+        changed = true;
+        return `](/guides/${name}${frag})`;
+      })
+      // Single-level spec links from a guide (`../spec/language.md`) also
+      // leak under locale fallback — send them to the absolute spec route.
+      .replace(/\]\(\.\.\/spec\/([a-z-]+)\.md(#[^)]*)?\)/g, (_, name, frag = '') => {
+        changed = true;
+        return `](/spec/${name}${frag})`;
+      })
       .replace(/\]\(\.\.\/\.\.\/README\.md(#[^)]*)?\)/g, (_, frag = '') => {
         changed = true;
         // /readme is the synced top-level README; preserve anchors so

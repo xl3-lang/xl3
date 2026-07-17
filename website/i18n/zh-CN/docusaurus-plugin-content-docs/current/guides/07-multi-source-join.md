@@ -55,7 +55,7 @@ pagination_label: '07 · 多数据源与 @join'
 {{ XLOOKUP([customer_id], Customers[id], Customers[name]) }}
 ```
 
-参考 [Recipe 08](./08-xlookup.md)。
+参考 [Recipe 08](/guides/xlookup)。
 
 ## 跨源聚合
 
@@ -66,7 +66,7 @@ pagination_label: '07 · 多数据源与 @join'
 {{ SUM(Renewals[amount]) }}      ← 续约总额，忽略过滤
 ```
 
-参考 [Recipe 03](./03-aggregates.md)。
+参考 [Recipe 03](/guides/aggregates)。
 
 ## 备注
 

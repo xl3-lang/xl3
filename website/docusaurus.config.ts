@@ -37,7 +37,14 @@ const config: Config = {
   organizationName: 'jinyoung4478',
   projectName: 'xl3',
 
-  onBrokenLinks: 'warn',
+  // #67: locale builds are clean of broken links — fail CI on any
+  // regression. All real broken anchors are fixed too (translated spec
+  // headings carry explicit `{#id}` via scripts/normalize-i18n-links.mjs),
+  // but anchors stay 'warn': the homepage `#walkthrough` target is a JSX
+  // `<section id>` that Docusaurus can't verify statically, so it's flagged
+  // as a false positive regardless of <Link>/<a>. 'throw' would fail on
+  // that non-bug; the only anchor warnings left are those 4 (one per locale).
+  onBrokenLinks: 'throw',
   onBrokenAnchors: 'warn',
   // No trailing slash on any URL — index docs become `/spec`, `/api`,
   // `/conformance` (not `/spec/`). Keeps the navbar/footer URL form

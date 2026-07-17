@@ -62,7 +62,7 @@
 
 ## 実装定義の境界
 
-XTL 0.1 では以下の領域を意図的に実装に委ねています。2 つのポート間でこれらの選択が異なっていても、どちらも非適合（non-conformant）にはなりません。完全なカタログは [ADR-0021](/ja/spec/decisions/0021-implementation-defined-boundaries) を参照してください。
+XTL 0.1 では以下の領域を意図的に実装に委ねています。2 つのポート間でこれらの選択が異なっていても、どちらも非適合（non-conformant）にはなりません。完全なカタログは [ADR-0021](/ja/spec/decisions/implementation-defined-boundaries) を参照してください。
 
 | 領域 | XTL 0.1 のスタンス |
 |---|---|

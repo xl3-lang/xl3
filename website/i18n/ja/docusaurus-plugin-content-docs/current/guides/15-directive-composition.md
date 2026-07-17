@@ -91,6 +91,6 @@ ADR-0029 基準:
 
 - ADR-0029 ― ディレクティブの組み合わせ + ソースエッジセマンティクス。
 - [`spec/language.md`](/ja/spec/language) の「Filter」、「Sort」、「Top」、「Source」、「Join」。
-- `@filter in __lists__[…]` は [Cookbook 05](./05-sheet-per-group.md) を参照。
-- `@source` + `@join` の基本は [Cookbook 07](./07-multi-source-join.md) を参照。
-- `@sort` + `@top` の基本は [Cookbook 09](./09-sort-and-top.md) を参照。
+- `@filter in __lists__[…]` は [Cookbook 05](/guides/sheet-per-group) を参照。
+- `@source` + `@join` の基本は [Cookbook 07](/guides/multi-source-join) を参照。
+- `@sort` + `@top` の基本は [Cookbook 09](/guides/sort-and-top) を参照。

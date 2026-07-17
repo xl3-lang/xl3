@@ -1,3 +1,7 @@
+---
+slug: /contributing
+---
+
 # xl3 へのコントリビュート
 
 xl3 は [XTL 仕様](./spec/) の TypeScript リファレンス実装です。本書では、実装と仕様の双方に対するコントリビューションの経路を扱います。
@@ -32,7 +36,7 @@ npm test
 
 1. `spec` タグでイシューを立てる。
 2. 答えが小さいもの(誤字、明確化)なら、PR も歓迎です。
-3. 答えが設計判断を要するなら、メンテナが [`spec/decisions/`](./spec/decisions/) に ADR を起草します。
+3. 答えが設計判断を要するなら、メンテナが [`spec/decisions/`](https://github.com/jinyoung4478/xl3/tree/main/spec/decisions) に ADR を起草します。
 
 ### 3. 適合性フィクスチャ(`conformance/fixtures/`)
 
@@ -73,7 +77,7 @@ npm test
 
 0.x の期間中、仕様の破壊的変更は許可されていますが、以下を満たす必要があります。
 
-1. [`spec/decisions/`](./spec/decisions/) 配下に `status: accepted` の ADR で動機付けられていること。
+1. [`spec/decisions/`](https://github.com/jinyoung4478/xl3/tree/main/spec/decisions) 配下に `status: accepted` の ADR で動機付けられていること。
 2. 仕様のマイナーバージョンを上げること(`0.1` → `0.2`)。
 3. `conformance/fixtures/` のフィクスチャ更新と同時に着地すること。
 
@@ -92,7 +96,7 @@ npm test
 特定の困りごとはないが貢献したい場合は、これらがもっともレバレッジの高い候補です。それぞれが [ROADMAP.md](/ja/roadmap) 上の 1.0 ブロッカーに対応しています。
 
 1. **適合性フィクスチャを提案する。** まだフィクスチャを持たない仕様ルールに対して、**「Conformance fixture proposal」** のイシューテンプレートを利用してください。フィクスチャ自体の作成に TypeScript は不要 — `template.xlsx` + `data.xlsx` + 期待出力(あるいは期待エラー)だけで構いません。
-2. **ガイドの翻訳。** [`docs/guides/`](./docs/guides/) の 15 レシピから 1 つを選び、韓国語(あるいは他の任意の言語)に翻訳してください。ファイルを `docs/guides/<lang>/NN-*.md` に置き、PR を送るだけです。調整コストが低く価値の高い貢献です。
+2. **ガイドの翻訳。** [`docs/guides/`](/guides) の 15 レシピから 1 つを選び、韓国語(あるいは他の任意の言語)に翻訳してください。ファイルを `docs/guides/<lang>/NN-*.md` に置き、PR を送るだけです。調整コストが低く価値の高い貢献です。
 3. **xl3 を実データのレポートに使い、引っかかった点を報告する。** `early-adopter-feedback` タグで短いイシューを立て、試したレポート、うまくいったこと、いかなかったこと、XTL に欲しかったものを書いてください。これが 1.0 の中身を形作ります。
 4. **仕様の明確化。** 仕様を読んで曖昧な文を見つけたら、`spec` タグで該当文と妥当な 2 種類の解釈を添えてイシューを立てください。受理されない報告でも、たいてい仕様改善のきっかけになります。
 5. **移植の進捗。** [xl3-py](https://github.com/jinyoung4478/xl3-py) や他のポートに取り組んでいるなら、[`conformance/runner-protocol.md`](/ja/conformance/runner-protocol) に書式が定義されている `conformance/reports/<impl>-<version>.json` を投入してください。ダッシュボードが自動で取り込みます。

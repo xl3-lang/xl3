@@ -49,7 +49,7 @@ pagination_label: '09 · 排序与 Top-N'
 {{ [客户] }} | {{ [续约金额] }}
 ```
 
-顺序：filter → sort → top。多个 `@filter` 以 AND 组合（ADR-0029 相关；列表过滤参考 [Recipe 05](./05-sheet-per-group.md)）。
+顺序：filter → sort → top。多个 `@filter` 以 AND 组合（ADR-0029 相关；列表过滤参考 [Recipe 05](/guides/sheet-per-group)）。
 
 ## 比较语义
 

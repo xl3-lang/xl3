@@ -1,3 +1,7 @@
+---
+slug: /roadmap
+---
+
 # ロードマップ
 
 **XTL 1.0**(仕様)および **xl3 1.0**(リファレンス実装)に到達するために何が必要かをまとめます。
@@ -133,17 +137,17 @@ G23 が始まると、G24 の四半期クロックがカウント開始します
 
 これらは意図的に先送りしています。それぞれ理由を説明する ADR があります。
 
-- **Y/M/D/EOMONTH/EDATE/DATEDIF を超える日付演算** — その他のファミリーは [ADR-0019 改訂](/ja/spec/decisions/0019-deferred-date-arithmetic) により先送り。
-- **ロケール対応の文字列照合** — [ADR-0020](/ja/spec/decisions/0020-deferred-locale-collation)。
-- **マルチ結合、左結合、複数行マッチ** — [ADR-0014](/ja/spec/decisions/0014-source-joins) のスコープ外セクション。
-- **XLOOKUP のワイルドカード / 近似 / 逆方向検索** — [ADR-0013](/ja/spec/decisions/0013-xlookup-cross-source-lookup) のスコープ外セクション。
-- **動的画像挿入** — [ADR-0037](/ja/spec/decisions/0037-rejected-dynamic-image-insertion)。
-- **実行時のセル変更** — [ADR-0042](/ja/spec/decisions/0042-rejected-runtime-cell-mutation)。
-- **ADR-0043 ゲートにより却下された関数群** — 数学関数の拡張、型テスト(`ISBLANK` は ADR-0047 で例外的に採用)、NOW / WEEKDAY 等、条件付き集計、TEXT() 書式トークンの拡張。[ADR-0045](/ja/spec/decisions/0045-function-batch-rejected) を参照。
+- **Y/M/D/EOMONTH/EDATE/DATEDIF を超える日付演算** — その他のファミリーは [ADR-0019 改訂](/ja/spec/decisions/deferred-date-arithmetic) により先送り。
+- **ロケール対応の文字列照合** — [ADR-0020](/ja/spec/decisions/deferred-locale-collation)。
+- **マルチ結合、左結合、複数行マッチ** — [ADR-0014](/ja/spec/decisions/source-joins) のスコープ外セクション。
+- **XLOOKUP のワイルドカード / 近似 / 逆方向検索** — [ADR-0013](/ja/spec/decisions/xlookup-cross-source-lookup) のスコープ外セクション。
+- **動的画像挿入** — [ADR-0037](/ja/spec/decisions/rejected-dynamic-image-insertion)。
+- **実行時のセル変更** — [ADR-0042](/ja/spec/decisions/rejected-runtime-cell-mutation)。
+- **ADR-0043 ゲートにより却下された関数群** — 数学関数の拡張、型テスト(`ISBLANK` は ADR-0047 で例外的に採用)、NOW / WEEKDAY 等、条件付き集計、TEXT() 書式トークンの拡張。[ADR-0045](/ja/spec/decisions/function-batch-rejected) を参照。
 - **ストリーミング出力 / SXSSF 相当機能。** 1.1+ に先送り。**1.0 では代わりに、メモリ/行数のハードリミットを文書化(G21)します。**
 - **テンプレートコンパイルキャッシュ API。** 1.1+ に先送り。
 - **PDF / HTML 出力。** スコープ外。xl3 は xlsx 入力 - xlsx 出力に特化します。
-- **`093` を超えるクロスライター Stage 2 フィクスチャ** — [ADR-0006](/ja/spec/decisions/0006-stage-2-ooxml-conformance) 改訂。
+- **`093` を超えるクロスライター Stage 2 フィクスチャ** — [ADR-0006](/ja/spec/decisions/stage-2-ooxml-conformance) 改訂。
 
 これらは需要に応じて **XTL 1.1、1.2、1.x** の候補として残ります。
 

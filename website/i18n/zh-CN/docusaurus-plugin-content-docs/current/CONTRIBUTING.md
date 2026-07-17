@@ -1,3 +1,7 @@
+---
+slug: /contributing
+---
+
 # 为 xl3 做贡献
 
 xl3 是 [XTL 规范](./spec/) 的 TypeScript 参考实现。本文档同时涵盖对实现和规范的贡献路径。
@@ -32,7 +36,7 @@ npm test
 
 1. 开一个打了 `spec` 标签的议题。
 2. 如果答案很小（错别字、澄清），欢迎直接发 PR。
-3. 如果答案需要设计决策，维护者会在 [`spec/decisions/`](./spec/decisions/) 中起草一份 ADR。
+3. 如果答案需要设计决策，维护者会在 [`spec/decisions/`](https://github.com/jinyoung4478/xl3/tree/main/spec/decisions) 中起草一份 ADR。
 
 ### 3. 一致性测试用例（`conformance/fixtures/`）
 
@@ -73,7 +77,7 @@ npm test
 
 0.x 阶段允许规范的不兼容变更，但必须：
 
-1. 由 [`spec/decisions/`](./spec/decisions/) 中 `status: accepted` 的 ADR 驱动。
+1. 由 [`spec/decisions/`](https://github.com/jinyoung4478/xl3/tree/main/spec/decisions) 中 `status: accepted` 的 ADR 驱动。
 2. 提升规范的小版本号（`0.1` → `0.2`）。
 3. 与 `conformance/fixtures/` 中的 fixture 更新一同落地。
 
@@ -93,7 +97,7 @@ npm test
 
 1. **为某条尚无 fixture 的规范规则提案一个一致性测试用例。** 使用 **"Conformance fixture proposal"** 议题模板。编写 fixture 本身不需要会 TypeScript——只需要
    `template.xlsx` + `data.xlsx` + 期望输出（或期望错误）。
-2. **指南翻译。** 从 [`docs/guides/`](./docs/guides/) 中的 15 篇配方里挑一篇，翻译成韩文（或其他任意语言）。文件放到 `docs/guides/<lang>/NN-*.md`，发 PR。协作成本低、价值高。
+2. **指南翻译。** 从 [`docs/guides/`](/guides) 中的 15 篇配方里挑一篇，翻译成韩文（或其他任意语言）。文件放到 `docs/guides/<lang>/NN-*.md`，发 PR。协作成本低、价值高。
 3. **在真实报表数据上跑 xl3，反馈摩擦点。** 一个打了 `early-adopter-feedback` 标签的简短议题，说明：你试了什么报表、什么跑通了、什么没跑通、你希望 XTL 还有什么能力。这会塑造 1.0 的形态。
 4. **规范澄清。** 如果你读规范时发现一句话含混，开一个打 `spec` 标签的议题，附上有歧义的句子 + 两种合理的解读。即便未被接受的反馈，通常也能触发规范改进。
 5. **移植进度。** 在做 [xl3-py](https://github.com/jinyoung4478/xl3-py) 或其他移植？放一份

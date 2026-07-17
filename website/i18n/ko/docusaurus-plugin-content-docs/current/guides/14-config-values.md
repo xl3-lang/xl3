@@ -82,4 +82,4 @@ ADR-0011 에 따라, 다음 `__config__` 키들은 스펙에서 정의되고 엔
 
 - ADR-0011 — 예약 시트 명명 규칙.
 - [`spec/evaluation.md`](/ko/spec/evaluation) "Template Configuration".
-- 실행 단위 대안인 `__inputs__` 는 [Cookbook 06](./06-runtime-inputs.md) 참고.
+- 실행 단위 대안인 `__inputs__` 는 [Cookbook 06](/guides/runtime-inputs) 참고.

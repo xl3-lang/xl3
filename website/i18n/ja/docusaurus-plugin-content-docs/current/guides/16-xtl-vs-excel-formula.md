@@ -180,11 +180,11 @@ XTL にない関数が必要だと感じたとき:
 
 ## 参照
 
-- [ADR-0043 — Excel-native preference principle](/ja/spec/decisions/0043-excel-native-preference)
-- [ADR-0044 — Function batch accepted](/ja/spec/decisions/0044-function-batch-accepted)
-- [ADR-0045 — Function batch rejected](/ja/spec/decisions/0045-function-batch-rejected)
-- [ADR-0046 — Cell formula preservation contract](/ja/spec/decisions/0046-cell-formula-preservation)
-- [ADR-0047 — ISBLANK as IFEMPTY alias](/ja/spec/decisions/0047-isblank-as-ifempty-alias)
-- [Cookbook 10 — スタイルとブランディング](./10-styling-and-branding.md) ― `numFmt` が正解のとき
-- [Cookbook 11 — TEXT() 書式設定](./11-text-formatting.md) ― `TEXT()` が正解のとき
-- [Cookbook 12 — 空値を扱う](./12-empty-values.md) ― IFEMPTY / ISBLANK の相棒
+- [ADR-0043 — Excel-native preference principle](/ja/spec/decisions/excel-native-preference)
+- [ADR-0044 — Function batch accepted](/ja/spec/decisions/function-batch-accepted)
+- [ADR-0045 — Function batch rejected](/ja/spec/decisions/function-batch-rejected)
+- [ADR-0046 — Cell formula preservation contract](/ja/spec/decisions/cell-formula-preservation)
+- [ADR-0047 — ISBLANK as IFEMPTY alias](/ja/spec/decisions/isblank-as-ifempty-alias)
+- [Cookbook 10 — スタイルとブランディング](/guides/styling-and-branding) ― `numFmt` が正解のとき
+- [Cookbook 11 — TEXT() 書式設定](/guides/text-formatting) ― `TEXT()` が正解のとき
+- [Cookbook 12 — 空値を扱う](/guides/empty-values) ― IFEMPTY / ISBLANK の相棒

@@ -1,3 +1,7 @@
+---
+slug: /spec/stability
+---
+
 # XTL 安定性ポリシー
 
 ## 現在の状況
