@@ -1,0 +1,7 @@
+description: 'Group + subtotal (ADR-0038) does not compose with explicit @block declarations. A sheet using @block plus a @subtotal cell raises xl3/subtotal/explicit-block-unsupported at parse time (ADR-0074), rather than silently dropping the subtotal band. Diagnostic substring: "not supported on a sheet that uses explicit @block".'
+spec_section: ADR-0074 / language.md#group--subtotal / ADR-0038 / ADR-0068
+spec_version: "0.1"
+tags: [adr-0074, adr-0038, adr-0068, subtotal, block, error, negative-path, issue-69]
+verified_by: [manual-script]
+expected_error: 'not supported on a sheet that uses explicit @block'
+expected_error_code: 'xl3/subtotal/explicit-block-unsupported'
