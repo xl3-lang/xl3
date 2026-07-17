@@ -1,49 +1,55 @@
 # xl3
 
-> **The deterministic runtime for AI-generated Excel reports.**
-> An LLM writes the template, xl3 renders the workbook — same template,
-> same data, same bytes, every time.
+> **Declarative Excel Template Engine.**
+> Jinja made HTML executable as templates; xl3 makes Excel workbooks
+> executable as templates.
 
 **Status:** alpha · XTL spec 0.1 (draft) · breaking changes possible until 1.0
 
-xl3 is a small TypeScript engine that turns a pair of `.xlsx` files —
-a **template** (the workflow contract) and **raw data** — into a
-finished, formatted workbook. The template is itself an `.xlsx`, authored
-in Excel with familiar formulas plus a tiny embedded expression
-language (XTL) for the things that must be known *before* the workbook
-is written: filters, groups, aggregates, filename patterns.
+xl3 is not a library for drawing workbooks cell by cell in code. It is a
+deterministic transformation engine that runs an ordinary `.xlsx`
+workbook as a **declarative template**.
 
-It's a good fit when the template is generated, edited, or reviewed by
-an LLM (Claude, GPT, Gemini, Cursor, Codex, …) and you need the
-**execution** layer to stay deterministic, inspectable, and verifiable —
-not "AI guessing at the output cells."
+Put the layout, styles, merged cells, and transformation rules in
+`template.xlsx`; provide `raw.xlsx`; xl3 executes the template and returns
+finished workbook(s). The template is authored in Excel with familiar
+formulas plus a small embedded expression language (XTL) for the things
+that must be known *before* the workbook is written: filters, groups,
+aggregates, filename patterns.
+
+It's a good fit when recurring Excel documents — invoices, settlement
+statements, monthly reports, financial workbooks — need to stay editable
+in Excel while execution remains deterministic, inspectable, and
+verifiable. AI authoring is a strong fit too: an LLM can emit a compact
+template contract more reliably than hundreds of lines of workbook API
+code.
 
 **English** · [한국어](./README.ko.md) · [日本語](./README.ja.md) · [简体中文](./README.zh-CN.md) · [Website](https://xl3.io) · [Spec](./spec) · [LLM authoring guide](./docs/llm-template-authoring.md) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
 ---
 
-## The split: model writes, runtime renders
+## The split: Excel is the template, xl3 executes it
 
 ```text
-  ┌──────────────────────────┐         ┌──────────────────────────┐
-  │   LLM (Claude / GPT /    │         │         xl3              │
-  │   Gemini / Cursor / …)   │         │  (deterministic runtime) │
-  │                          │         │                          │
-  │   natural language       │         │   template.xlsx          │
-  │   + sample report   ───► │  emits  │   + raw.xlsx             │
-  │                          │         │   → result.xlsx          │
-  │   "monthly settlement    │         │                          │
-  │    by region, with       │         │   same inputs            │
-  │    per-region subtotals" │         │   → same bytes, always   │
-  └──────────────────────────┘         └──────────────────────────┘
-       creative, stochastic                 boring, reproducible
+  ┌──────────────────────────┐
+  │  Business user / designer│
+  │  edits layout in Excel   │
+  └─────────────┬────────────┘
+                │ template.xlsx
+                ▼
+  ┌──────────────────────────┐       ┌──────────────────────────┐
+  │      Developer app       │       │           xl3            │
+  │  supplies data + inputs  ├──────►│  executes the template   │
+  └──────────────────────────┘       └─────────────┬────────────┘
+                                                    │
+                                                    ▼
+                                             result.xlsx
 ```
 
-LLMs are good at *drafting* a report shape from a prompt and a sample.
-They are bad at producing the same `.xlsx` twice, preserving cell styles,
-or honoring "this column must always be SUM-aggregated." xl3 fills that
-gap: the model emits an `.xlsx` template once; every subsequent render
-is a pure function of `(template, data, inputs)`.
+Workbook APIs are the DOM APIs of spreadsheets: powerful, but verbose.
+For recurring documents, the workbook itself should be the view and the
+template contract. xl3 lets the application supply data while Excel keeps
+the layout and business-facing rules.
 
 This split is what [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md),
 the 154-fixture conformance corpus, and the intentionally small XTL
@@ -86,26 +92,24 @@ Excel, Numbers, or Google Sheets without conversion.
 
 See [`spec/`](./spec) for the language draft and [`conformance/`](./conformance) for the implementation-neutral fixture corpus and runner protocol.
 
-## Why the runtime needs to be boring
+## Why Excel should be the template
 
-The pitch in one paragraph: **anything an LLM emits as Excel is one bad
-token away from a broken report.** Cell formulas drift, a merge moves
-by one row, a currency symbol becomes a literal `$` instead of a number
-format. xl3's job is to make the *execution* of that template predictable
-so the model only has to be right *once*.
+The pitch in one paragraph: **Excel is already the place where report
+layout lives.** Moving that layout into code makes every row insertion,
+style tweak, merge change, or subtotal rule a deployment. xl3 keeps the
+layout in Excel and makes the workbook executable: the application owns
+data and deployment; the template owns the recurring document contract.
 
 Concretely:
 
 - **A small, auditable XTL surface (ADR-0043).** A function lives in
   XTL only when its value must be known *before* the workbook is
   written. Everything else is a normal Excel cell formula and Excel
-  evaluates it at open time. The smaller the language, the smaller
-  the surface an LLM has to learn — and the smaller the surface to
-  verify. See [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md)
+  evaluates it at open time. The smaller the language, the easier it is
+  for humans to review — and for AI systems to draft. See [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md)
   for the side-by-side guide.
 - **Conformance corpus.** 154 fixtures, all green, across 70 ADRs.
-  This is the test bed an LLM's template can be checked against
-  *before* it ever touches user data.
+  This is the test bed for the transformation contract.
 - **One implementation, one spec.** The [`spec/`](./spec) directory
   defines XTL independently of this TypeScript reference. Ports to
   other runtimes are welcome; the corpus is the contract.
@@ -113,22 +117,55 @@ Concretely:
   You can diff it, review it in a pull request, and hand it to a
   human reviewer who has never heard of xl3.
 
-The same properties make xl3 useful even **without an LLM in the loop** —
+The same properties make xl3 useful even **without an LLM in the loop**:
 operators and analysts can read and edit templates directly, because
 expressions are written with the same `IF`, `SUM`, and column references
-they already use day to day. The AI angle is the wedge; the
-human-readability is the long tail.
+they already use day to day. AI friendliness is a consequence of the
+same design choice: small, declarative, reviewable rules.
+
+## Responsibility-driven document automation
+
+Most Excel automation tools improve developer productivity. xl3 aims at a
+different outcome: moving recurring document changes out of the
+developer-only queue.
+
+In the usual model, every layout change, column addition, repeat rule, or
+output-format tweak becomes a development request and a deployment. xl3
+separates those responsibilities:
+
+```text
+Developer  -> Runtime maintenance
+Operator   -> Template maintenance
+Business   -> Result usage
+```
+
+The developer keeps the engine, validation, integration, and deployment
+reliable. The operator edits the Excel template, including document-level
+transformation rules. The business consumes the generated workbook.
+
+This is not only a theory. xl3 was shaped by an internal service where,
+over months of operation, non-developers maintained templates and
+conversion rules directly in Excel while developers focused almost
+entirely on the runtime. The important reduction was not just code
+volume; it was the amount of work that had to be done by developers.
+
+That is why XTL keeps Excel syntax wherever possible. The intended
+experience is not "learn a new programming language", but "use Excel a
+little more powerfully." xl3 is not a project to replace developers:
+developers own the runtime, operators own the templates, and document
+automation becomes an organizational capability.
 
 ## How it compares
 
-| Approach | Best at | Tradeoff for AI-driven Excel |
+| Approach | Best at | Tradeoff |
 |---|---|---|
-| **xl3** | The execution half of an LLM-authored Excel pipeline. The model writes the template once; xl3 renders deterministically every run. | Alpha; one maintainer; the XTL surface is intentionally small and still evolving until 1.0. |
-| Direct LLM → xlsx (function-call to a spreadsheet SDK) | Quick exploratory drafting, one-off charts. | Each render is non-deterministic; styles, number formats, and totals drift between runs even with temperature 0. |
-| SheetJS / ExcelJS / openpyxl | Low-level workbook generation. | The model has to learn the entire SDK surface and re-emit it every render; the "template" is application code, not a portable file. |
+| **xl3** | Declarative Excel template execution. The workbook already exists; xl3 runs it with data. | Alpha; one maintainer; the XTL surface is intentionally small and still evolving until 1.0. |
+| Workbook APIs (ExcelJS / SheetJS / openpyxl / Apache POI) | Low-level or full-featured workbook generation from code. | Layout, styles, merges, loops, and business rules become application code. Non-developers cannot safely edit the template. |
+| Python / VBA scripts | Fast one-off automation close to existing spreadsheets. | Rules live in code or one maintainer's memory; layout changes still need code changes. |
 | Power Query / Office Scripts / Power Automate | Microsoft 365 workflows, data shaping, and action automation inside the Excel ecosystem. | Tenant-bound; the workflow rules don't travel with the workbook. |
-| JXLS / xltpl / jsreport xlsx recipe | Server-side report generation from spreadsheet-like templates. | Useful, but predate the LLM-as-author model; their template DSLs are larger and not designed to be model-emittable. |
-| Document-generation SaaS (Plumsail, Conga, Formstack) | Managed document workflows, integrations, approvals, and delivery. | Rules live in a vendor service, not a portable workbook you can hand an LLM to edit. |
+| JXLS / xltpl / jsreport xlsx recipe | Server-side report generation from spreadsheet-like templates. | Useful prior art, but often tied to one runtime and not positioned as a small, portable Excel rule format. |
+| Document-generation SaaS (Plumsail, Conga, Formstack) | Managed document workflows, integrations, approvals, and delivery. | Rules live in a vendor service, not in a portable workbook template you can review and run yourself. |
+| Direct LLM → xlsx | Quick exploratory drafting, one-off charts. | Not a deterministic transformation contract for recurring operations. |
 
 ## Install
 

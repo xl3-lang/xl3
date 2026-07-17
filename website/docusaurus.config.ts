@@ -165,17 +165,19 @@ const config: Config = {
               url: 'https://xl3.io/img/xl3-logo.png',
             },
             description:
-              'Open-source deterministic rule format for Excel-to-Excel transformation. The transformation rules are authored in Excel itself using XTL, an Excel-syntax template language specified independently of any runtime.',
+              'Open-source declarative template engine for Excel. xl3 turns ordinary workbooks into executable templates whose rules live in Excel itself.',
             foundingDate: '2024',
             founder: { '@id': 'https://xl3.io/#person-jinyoung' },
             sameAs: [
               'https://github.com/jinyoung4478/xl3',
             ],
             knowsAbout: [
-              'Excel-to-Excel transformation',
+              'Declarative Excel templates',
+              'Excel template engines',
               'OOXML workbook generation',
               'deterministic document rendering',
-              'AI-authored spreadsheet templates',
+              'responsibility-driven document automation',
+              'AI-friendly spreadsheet templates',
               'Excel-syntax template languages',
             ],
           },
@@ -197,7 +199,7 @@ const config: Config = {
             '@id': 'https://xl3.io/#software',
             name: 'xl3',
             description:
-              'Deterministic runtime for AI-generated Excel reports. An LLM writes the template once; xl3 renders the workbook from (template, data) as a pure function — same inputs, same bytes, every time.',
+              'Declarative Excel template execution engine. xl3 runs template.xlsx with raw data to produce finished workbooks as a pure function — same inputs, same workbook, every time.',
             url: 'https://xl3.io',
             applicationCategory: 'DeveloperApplication',
             operatingSystem: 'Node.js 18+, Browser (ESM)',
@@ -214,10 +216,12 @@ const config: Config = {
               availability: 'https://schema.org/InStock',
             },
             featureList: [
-              'Deterministic Excel workbook rendering — same inputs produce identical byte-for-byte output',
-              'LLM-authored templates — AI writes the template.xlsx once, xl3 renders every run',
-              'XTL expression language for cell-level transformations',
-              'Preserves sheet structure, number formats, styles, and merged cells',
+              'Executable Excel templates — transformation rules live inside template.xlsx',
+              'Deterministic rendering — same inputs produce the same workbook every time',
+              'XTL expression language for declarative Excel transformation rules',
+              'Preserves sheet structure, number formats, styles, and merged cells from the template',
+              'AI-friendly rule format that is easier to emit than workbook API code',
+              'Responsibility split: developers own the runtime, operators own templates',
               'Works in Node.js and browser environments',
               'Open-source with MIT license',
               '70 Architecture Decision Records and 154 conformance fixtures',
@@ -242,11 +246,11 @@ const config: Config = {
     image: 'img/og.png',
     metadata: [
       { name: 'theme-color', content: '#185c37' },
-      { name: 'keywords', content: 'xl3, XTL, Excel template, Excel-to-Excel, OOXML, xlsx, workbook transformation, conformance, spec' },
+      { name: 'keywords', content: 'xl3, XTL, Excel template engine, declarative Excel template, Excel-to-Excel, document automation runtime, OOXML, xlsx, workbook transformation, conformance, spec' },
       {
         name: 'description',
         content:
-          'xl3 is an open-source, deterministic rule format for Excel-to-Excel transformation. Author the rules in .xlsx using Excel-syntax XTL expressions; xl3 renders the same bytes for the same inputs, every time. npm: @jinyoung4478/xl3.',
+          'xl3 runs Excel templates with data to produce the same workbook every time.',
       },
       { property: 'og:type', content: 'website' },
     ],

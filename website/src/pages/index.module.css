@@ -262,6 +262,15 @@
   margin: 0 0 1rem;
 }
 
+/* Responsibility model */
+.responsibility {
+  padding: 4rem 0;
+}
+
+.responsibility .stageGrid {
+  margin-top: 2rem;
+}
+
 /* Reliability / stage cards */
 .reliability {
   padding: 4rem 0;

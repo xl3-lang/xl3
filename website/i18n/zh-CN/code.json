@@ -327,15 +327,15 @@
     "description": "The title of the tag list page"
   },
   "homepage.hero.kicker": {
-    "message": "AI 撰写模板 · 确定性运行时",
+    "message": "声明式 Excel 模板 · 确定性执行",
     "description": "Hero section eyebrow / kicker line"
   },
   "homepage.hero.title": {
-    "message": "面向 AI 生成 Excel 报表的确定性运行时。",
+    "message": "把 Excel 变成可执行模板。",
     "description": "Hero section H1"
   },
   "homepage.hero.lead": {
-    "message": "由 LLM（Claude、GPT、Gemini、Cursor、Codex……）一次性写出 {template}；xl3 把 ({template} + {raw}) 当作纯函数转换为 {result}——相同输入，每次都得到完全相同的字节。",
+    "message": "xl3 不是工作簿 API。把转换规则放进 {template}，提供 {raw}，确定性的引擎就会生成 {result}：相同输入，每次得到相同工作簿。",
     "description": "Hero section lead paragraph; {template}, {raw}, {result} are inline code refs"
   },
   "homepage.hero.cta.try": {
@@ -355,7 +355,7 @@
     "description": "Workflow diagram — actor label"
   },
   "homepage.hero.flow.role.developerRole": {
-    "message": "一次性定义引擎",
+    "message": "负责数据与部署",
     "description": "What the developer does in the workflow"
   },
   "homepage.hero.flowStack.ariaLabel": {
@@ -367,7 +367,7 @@
     "description": "Workflow diagram — what raw.xlsx is"
   },
   "homepage.hero.flow.template.label": {
-    "message": "归档的规则",
+    "message": "可执行规则",
     "description": "Workflow diagram — what template.xlsx is"
   },
   "homepage.hero.flow.result.label": {
@@ -379,35 +379,35 @@
     "description": "Workflow diagram — output sublabel"
   },
   "homepage.walkthrough.step01.title": {
-    "message": "在 Excel 中定义契约",
+    "message": "在 Excel 中设计工作簿",
     "description": "Walkthrough step 01 title"
   },
   "homepage.walkthrough.step01.body": {
-    "message": "用 __config__、source_table 和 XTL 表达式描述原始工作簿如何转化为报表。",
+    "message": "布局、合并单元格、数字格式和标签，都留在业务团队已经熟悉的 Excel 文件里。",
     "description": "Walkthrough step 01 body"
   },
   "homepage.walkthrough.step02.title": {
-    "message": "提供简单的上传流程",
+    "message": "声明转换规则",
     "description": "Walkthrough step 02 title"
   },
   "homepage.walkthrough.step02.body": {
-    "message": "非开发人员只需选择原始 Excel 文件和已审核的模板，再运行转换器即可。",
+    "message": "用 __config__、source_table 和 XTL 表达式声明哪些内容要重复、筛选、分组和输出。",
     "description": "Walkthrough step 02 body"
   },
   "homepage.walkthrough.step03.title": {
-    "message": "生成成品工作簿",
+    "message": "用原始数据执行",
     "description": "Walkthrough step 03 title"
   },
   "homepage.walkthrough.step03.body": {
-    "message": "输出保留工作表结构、数字格式、样式和合并单元格，同时以数据填充对应的值。",
+    "message": "引擎像纯函数一样组合 template.xlsx 和 raw.xlsx，每次生成相同的工作簿。",
     "description": "Walkthrough step 03 body"
   },
   "homepage.walkthrough.step04.title": {
-    "message": "归档运营规则",
+    "message": "交接模板",
     "description": "Walkthrough step 04 title"
   },
   "homepage.walkthrough.step04.body": {
-    "message": "模板成为移交产物：一份可携带的文件，完整记录这项例行 Excel 作业的运作方式。",
+    "message": "模板就是业务契约。重复 Excel 工作的运行方式留在一个文件里，可以直接交给下一个负责人。",
     "description": "Walkthrough step 04 body"
   },
   "homepage.walkthrough.kicker": {
@@ -415,11 +415,11 @@
     "description": "Walkthrough section kicker"
   },
   "homepage.walkthrough.title": {
-    "message": "引擎留在代码里，工作流留在工作簿里。",
+    "message": "Excel 是 View，Data 是 Model，xl3 是执行引擎。",
     "description": "Walkthrough section H2"
   },
   "homepage.walkthrough.lead": {
-    "message": "开发者只需构建一次转换器。例行的业务规则、源表映射、版式和输出形态都留在工作簿模板中，便于团队归档和移交。",
+    "message": "开发者只需一次性接好数据、校验和部署。重复使用的布局与业务规则留在普通 Excel 文件中，团队可以审查、版本管理、归档和交接。",
     "description": "Walkthrough section lead paragraph"
   },
   "homepage.handoff.kicker": {
@@ -427,19 +427,19 @@
     "description": "Handoff section kicker"
   },
   "homepage.handoff.title": {
-    "message": "把例行报表逻辑从一次性脚本中解放出来。",
+    "message": "不要把报表布局锁进一次性脚本。",
     "description": "Handoff section H2"
   },
   "homepage.handoff.body.p1": {
-    "message": "Python 脚本、VBA 宏和特定服务的工作流都能自动化 Excel，但业务规则往往散落在代码、账号和个人经验之中。",
+    "message": "ExcelJS、SheetJS、openpyxl、Apache POI 都是优秀的工作簿 API。但如果报表布局、样式、合并单元格和循环规则都写进代码，任何小设计改动都变成一次部署。",
     "description": "Handoff body paragraph 1"
   },
   "homepage.handoff.body.p2": {
-    "message": "xl3 把可复用的引擎和工作簿专属的契约分离开来。开发者负责维护 TypeScript 集成，每项例行 Excel 作业则以模板工作簿的形式自由流转。",
+    "message": "xl3 把重复使用的业务契约放回 Excel 文件。工作簿本来就是 View，XTL 让这个 View 可执行；应用只需提供数据并运行引擎。",
     "description": "Handoff body paragraph 2"
   },
   "homepage.reliability.card01.title": {
-    "message": "模板即移交",
+    "message": "作为契约的模板",
     "description": "Reliability card 01 title"
   },
   "homepage.reliability.card01.body": {
@@ -451,11 +451,11 @@
     "description": "Reliability card 02 title"
   },
   "homepage.reliability.card02.body": {
-    "message": "运行时可以作为一个浏览器页面对外提供：上传原始数据、选择模板、下载工作簿。",
+    "message": "引擎可以作为浏览器流程暴露出来：上传原始数据，选择已批准模板，下载工作簿。",
     "description": "Reliability card 02 body"
   },
   "homepage.reliability.card03.title": {
-    "message": "开发者掌控的引擎",
+    "message": "开发者负责运行时",
     "description": "Reliability card 03 title"
   },
   "homepage.reliability.card03.body": {
@@ -463,15 +463,15 @@
     "description": "Reliability card 03 body"
   },
   "homepage.reliability.kicker": {
-    "message": "贴合运营",
+    "message": "为什么可行",
     "description": "Reliability section kicker"
   },
   "homepage.reliability.title": {
-    "message": "为移交而生，不只是自动化。",
+    "message": "声明式、确定性，并且刻意保持小。",
     "description": "Reliability section H2"
   },
   "homepage.reliability.lead": {
-    "message": "运行这套工作流的人不必读代码。他们需要的是一个稳定的转换器、一份已审核的模板，以及一份可预期的结果工作簿。",
+    "message": "用户描述工作簿应该做什么，而不是命令每个单元格如何生成。XTL 表面保持很小，因此人类容易阅读，AI 也容易起草。",
     "description": "Reliability section lead paragraph"
   },
   "homepage.reliability.fact": {
@@ -483,11 +483,11 @@
     "description": "Link label inside the conformance fact sentence"
   },
   "homepage.comparison.xl3.bestAt": {
-    "message": "LLM 主笔的 Excel 流水线中的“执行”那一半。模型只需写一次模板，xl3 在每次运行时都以确定性方式渲染。",
+    "message": "声明式 Excel 模板执行。工作簿已经存在；xl3 只是把数据带进去执行。",
     "description": "Comparison row xl3 — best at"
   },
   "homepage.comparison.xl3.tradeoff": {
-    "message": "Alpha 阶段；仅有一位维护者；XTL 表面有意保持精简，在 1.0 之前仍在演进。",
+    "message": "Alpha 阶段；只有一位维护者；XTL 表面刻意保持精简，在 1.0 之前仍会演进。",
     "description": "Comparison row xl3 — tradeoff"
   },
   "homepage.comparison.llmDirect.bestAt": {
@@ -503,7 +503,7 @@
     "description": "Comparison row Python/VBA — best at"
   },
   "homepage.comparison.scripts.tradeoff": {
-    "message": "规则藏在代码或某个维护者的记忆里；不是模型可以输出的产物。",
+    "message": "规则留在代码或某个维护者的记忆里，布局变化仍然需要改代码。",
     "description": "Comparison row Python/VBA — tradeoff"
   },
   "homepage.comparison.powerQuery.bestAt": {
@@ -515,11 +515,11 @@
     "description": "Comparison row Power Query — tradeoff"
   },
   "homepage.comparison.sdk.bestAt": {
-    "message": "底层工作簿生成。",
+    "message": "从应用代码生成低层或全功能工作簿。",
     "description": "Comparison row spreadsheet SDKs — best at"
   },
   "homepage.comparison.sdk.tradeoff": {
-    "message": "模型必须掌握整个 SDK 表面，并在每次渲染时重新生成代码；这里的“模板”是应用代码，而非可携带的文件。",
+    "message": "布局、样式、合并、循环和业务规则都会变成代码，非开发者很难安全修改模板。",
     "description": "Comparison row spreadsheet SDKs — tradeoff"
   },
   "homepage.comparison.templateEngines.bestAt": {
@@ -527,7 +527,7 @@
     "description": "Comparison row template engines — best at"
   },
   "homepage.comparison.templateEngines.tradeoff": {
-    "message": "诞生于 LLM 主笔模式之前；其模板 DSL 较为庞大，并非为模型输出而设计。",
+    "message": "有价值的先例，但往往绑定某个运行时，并未定位为小型、可移植的 Excel 规则格式。",
     "description": "Comparison row template engines — tradeoff"
   },
   "homepage.comparison.docgen.bestAt": {
@@ -535,7 +535,7 @@
     "description": "Comparison row doc-gen SaaS — best at"
   },
   "homepage.comparison.docgen.tradeoff": {
-    "message": "规则放在厂商服务里，而不是一份可以交给 LLM 去编辑的、可携带的工作簿。",
+    "message": "规则留在供应商服务中，不是一个可自行审查和执行的可移植 Excel 模板。",
     "description": "Comparison row doc-gen SaaS — tradeoff"
   },
   "homepage.comparison.kicker": {
@@ -557,6 +557,50 @@
   "homepage.comparison.col.tradeoff": {
     "message": "取舍",
     "description": "Comparison table column header — tradeoff"
+  },
+  "homepage.responsibility.card01.title": {
+    "message": "开发者",
+    "description": "Responsibility section card 01 title"
+  },
+  "homepage.responsibility.card01.body": {
+    "message": "负责 Runtime:引擎行为、校验、集成、部署与可靠性。",
+    "description": "Responsibility section card 01 body"
+  },
+  "homepage.responsibility.card02.title": {
+    "message": "运营",
+    "description": "Responsibility section card 02 title"
+  },
+  "homepage.responsibility.card02.body": {
+    "message": "负责模板:布局、列、重复规则、输出格式以及具体文档的转换逻辑。",
+    "description": "Responsibility section card 02 body"
+  },
+  "homepage.responsibility.card03.title": {
+    "message": "业务",
+    "description": "Responsibility section card 03 title"
+  },
+  "homepage.responsibility.card03.body": {
+    "message": "无需等待每一次重复文档变更都进入发布流程,直接使用最终工作簿。",
+    "description": "Responsibility section card 03 body"
+  },
+  "homepage.responsibility.kicker": {
+    "message": "责任驱动的文档自动化",
+    "description": "Responsibility section kicker"
+  },
+  "homepage.responsibility.title": {
+    "message": "把文档所有权移出发布队列。",
+    "description": "Responsibility section H2"
+  },
+  "homepage.responsibility.body.p1": {
+    "message": "大多数 Excel 自动化工具让开发者更快。xl3 解决的是另一个问题:让运营人员接手过去必须由开发者介入的文档变更。",
+    "description": "Responsibility section body paragraph 1"
+  },
+  "homepage.responsibility.body.p2": {
+    "message": "在真实生产环境中,这个模型已经让开发者专注 Runtime,让运营团队直接在 Excel 中维护模板和转换规则。xl3 减少的不只是代码量,而是必须由开发者完成的工作量。",
+    "description": "Responsibility section body paragraph 2"
+  },
+  "homepage.responsibility.fact": {
+    "message": "xl3 并不是要取代开发者。开发者拥有 Runtime,运营拥有 Template;文档自动化从开发者专属任务变成组织能力。",
+    "description": "Responsibility section closing fact"
   },
   "homepage.api.kicker": {
     "message": "开发者 API",
@@ -583,11 +627,11 @@
     "description": "Bottom CTA link — Porter's Guide"
   },
   "homepage.layout.title": {
-    "message": "用 Excel 编写的 Excel 转换规则",
+    "message": "声明式 Excel 模板引擎",
     "description": "HTML <title> for the landing page"
   },
   "homepage.layout.description": {
-    "message": "xl3 是一种确定性的规则格式：把 Excel 转换规则写进 Excel 文件（template.xlsx）本身，而不是代码里。规则用熟悉的 Excel 语法（XTL）编写，也可以让 LLM 来写；相同输入，每次都生成完全相同的字节。",
+    "message": "xl3 用数据执行 Excel 模板，每次生成相同的工作簿。",
     "description": "HTML <meta description> for the landing page"
   },
   "try.status.idle": {

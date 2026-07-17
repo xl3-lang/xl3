@@ -1,13 +1,15 @@
 # xl3
 
-> xl3 is an open-source, deterministic rule format for Excel-to-Excel transformation. The transformation rules live in an ordinary `.xlsx` template authored in Excel itself (by an operator or an LLM) using XTL — an Excel-syntax template language specified independently of any runtime. Rendering is a pure function: `convert(template, data)` produces the same bytes for the same inputs, every time. The reference implementation is published on npm as `@jinyoung4478/xl3`.
+> xl3 is an open-source declarative Excel template engine. It is not a workbook API: the layout and transformation rules live in an ordinary `.xlsx` template, data comes from a second workbook, and `convert(template, data)` executes the template to produce the same workbook every time. The reference implementation is published on npm as `@jinyoung4478/xl3`.
 
 Key facts:
+- Excel is the template/view, data is the model, and xl3 is the execution engine.
 - XTL expressions use Excel syntax (`IF`, `XLOOKUP`, `SUM`, `&`, `[Column]` references) inside `{{ ... }}` cell markers — no second expression language.
 - Directives (`@filter`, `@sort`, `@group`, `@subtotal`, `@join`, `@source`, `@top`, `@repeat`, `@block`) live in visible cell values, not cell comments.
 - Data comes from a second `.xlsx` file, not host-language objects; there is no escape hatch into JavaScript, by design.
 - The language is specified independently of the implementation (spec + ADRs + conformance fixtures), so it can be ported to other runtimes.
-- xl3's XTL spec absorbed the edge cases of prior-art Excel template engines such as JXLS, item by item.
+- The small, declarative XTL surface is readable by operators and easier for AI systems to draft than workbook API code.
+- Responsibility model: developers own the runtime; operators own templates and document-specific transformation rules.
 
 ## Docs
 

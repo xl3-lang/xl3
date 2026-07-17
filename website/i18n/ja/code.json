@@ -327,15 +327,15 @@
     "description": "The title of the tag list page"
   },
   "homepage.hero.kicker": {
-    "message": "AI が書くテンプレート・決定論的ランタイム",
+    "message": "宣言的 Excel テンプレート · 決定論的実行",
     "description": "Hero section eyebrow / kicker line"
   },
   "homepage.hero.title": {
-    "message": "AI が生成する Excel レポートのための、決定論的ランタイム。",
+    "message": "Excel を実行可能なテンプレートに。",
     "description": "Hero section H1"
   },
   "homepage.hero.lead": {
-    "message": "LLM(Claude、GPT、Gemini、Cursor、Codex、…)が {template} を一度だけ書きます。xl3 は ({template} + {raw}) を純粋関数として {result} に変換します ── 同じ入力なら、毎回同じバイト列を返します。",
+    "message": "xl3 はワークブック API ではありません。変換ルールを {template} の中に置き、{raw} を渡すと、決定論的なエンジンが {result} を生成します。同じ入力なら、毎回同じワークブックです。",
     "description": "Hero section lead paragraph; {template}, {raw}, {result} are inline code refs"
   },
   "homepage.hero.cta.try": {
@@ -355,7 +355,7 @@
     "description": "Workflow diagram — actor label"
   },
   "homepage.hero.flow.role.developerRole": {
-    "message": "エンジンを一度だけ定義",
+    "message": "データとデプロイを担う",
     "description": "What the developer does in the workflow"
   },
   "homepage.hero.flowStack.ariaLabel": {
@@ -367,7 +367,7 @@
     "description": "Workflow diagram — what raw.xlsx is"
   },
   "homepage.hero.flow.template.label": {
-    "message": "アーカイブされたルール",
+    "message": "実行可能なルール",
     "description": "Workflow diagram — what template.xlsx is"
   },
   "homepage.hero.flow.result.label": {
@@ -379,35 +379,35 @@
     "description": "Workflow diagram — output sublabel"
   },
   "homepage.walkthrough.step01.title": {
-    "message": "Excel で契約を定義する",
+    "message": "Excel でワークブックを設計する",
     "description": "Walkthrough step 01 title"
   },
   "homepage.walkthrough.step01.body": {
-    "message": "__config__、source_table、XTL 式を使って、元データのワークブックをどのようにレポートへ変換するかを記述します。",
+    "message": "レイアウト、結合セル、数値書式、ラベルは、業務チームがすでに編集している Excel の中に残します。",
     "description": "Walkthrough step 01 body"
   },
   "homepage.walkthrough.step02.title": {
-    "message": "シンプルなアップロード画面を提供する",
+    "message": "変換ルールを宣言する",
     "description": "Walkthrough step 02 title"
   },
   "homepage.walkthrough.step02.body": {
-    "message": "開発者ではないメンバーが元データの Excel ファイルと承認済みテンプレートを選び、コンバーターを実行します。",
+    "message": "__config__、source_table、XTL 式で、何を繰り返し、フィルターし、グループ化し、出力するかを記述します。",
     "description": "Walkthrough step 02 body"
   },
   "homepage.walkthrough.step03.title": {
-    "message": "完成したワークブックを生成する",
+    "message": "元データで実行する",
     "description": "Walkthrough step 03 title"
   },
   "homepage.walkthrough.step03.body": {
-    "message": "出力はシート構成、数値書式、スタイル、結合セルをそのまま維持しつつ、値はデータから差し替えられます。",
+    "message": "エンジンは template.xlsx と raw.xlsx を純粋関数のように結合し、毎回同じワークブックを生成します。",
     "description": "Walkthrough step 03 body"
   },
   "homepage.walkthrough.step04.title": {
-    "message": "運用ルールをアーカイブする",
+    "message": "テンプレートを引き継ぐ",
     "description": "Walkthrough step 04 title"
   },
   "homepage.walkthrough.step04.body": {
-    "message": "テンプレートは引き継ぎの成果物となり、定期的な Excel 業務の動き方をそのまま持ち運べる 1 つのファイルに収まります。",
+    "message": "テンプレートは業務上の契約そのものです。定期的な Excel 業務の動き方が 1 つのファイルに残り、次の担当者へそのまま渡せます。",
     "description": "Walkthrough step 04 body"
   },
   "homepage.walkthrough.kicker": {
@@ -415,11 +415,11 @@
     "description": "Walkthrough section kicker"
   },
   "homepage.walkthrough.title": {
-    "message": "エンジンはコードに、ワークフローはワークブックに。",
+    "message": "Excel は View、Data は Model、xl3 は実行エンジン。",
     "description": "Walkthrough section H2"
   },
   "homepage.walkthrough.lead": {
-    "message": "開発者はコンバーターを一度だけ構築します。繰り返し使う業務ルール、ソーステーブルのマッピング、レイアウト、出力の形は、チームがアーカイブして引き継げるワークブックテンプレートの中にとどまります。",
+    "message": "開発者はデータ、検証、デプロイを一度つなぎます。繰り返し使うレイアウトと業務ルールは、チームがレビュー、バージョン管理、アーカイブ、引き継ぎできる普通の Excel ファイルの中に残ります。",
     "description": "Walkthrough section lead paragraph"
   },
   "homepage.handoff.kicker": {
@@ -427,19 +427,19 @@
     "description": "Handoff section kicker"
   },
   "homepage.handoff.title": {
-    "message": "定期レポートのロジックを、使い捨てスクリプトから卒業させる。",
+    "message": "レポートレイアウトを使い捨てスクリプトに閉じ込めない。",
     "description": "Handoff section H2"
   },
   "homepage.handoff.body.p1": {
-    "message": "Python scripts や VBA macros、サービス固有のワークフローでも Excel を自動化できますが、業務ルールがコードやアカウント、暗黙知の中に散らばってしまいがちです。",
+    "message": "ExcelJS、SheetJS、openpyxl、Apache POI は優れたワークブック API です。ただしレポートのレイアウト、スタイル、結合セル、繰り返しルールがコードに入ると、小さなデザイン変更でもデプロイが必要になります。",
     "description": "Handoff body paragraph 1"
   },
   "homepage.handoff.body.p2": {
-    "message": "xl3 は再利用可能なエンジンと、ワークブック固有の契約を分離します。開発者は TypeScript の統合部分を保守し、定期的な Excel 業務はそれぞれテンプレートワークブックとして持ち運べます。",
+    "message": "xl3 は繰り返し使う業務上の契約を Excel ファイルへ戻します。ワークブックはすでに View であり、XTL がその View を実行可能にします。アプリケーションはデータを渡してエンジンを実行するだけです。",
     "description": "Handoff body paragraph 2"
   },
   "homepage.reliability.card01.title": {
-    "message": "引き継げるテンプレート",
+    "message": "契約としてのテンプレート",
     "description": "Reliability card 01 title"
   },
   "homepage.reliability.card01.body": {
@@ -451,11 +451,11 @@
     "description": "Reliability card 02 title"
   },
   "homepage.reliability.card02.body": {
-    "message": "ランタイムはブラウザページとして公開できます。元データをアップロードし、テンプレートを選び、ワークブックをダウンロードするだけです。",
+    "message": "エンジンはブラウザフローとして公開できます。元データをアップロードし、承認済みテンプレートを選び、ワークブックをダウンロードします。",
     "description": "Reliability card 02 body"
   },
   "homepage.reliability.card03.title": {
-    "message": "開発者が握るエンジン",
+    "message": "開発者が持つランタイム",
     "description": "Reliability card 03 title"
   },
   "homepage.reliability.card03.body": {
@@ -463,15 +463,15 @@
     "description": "Reliability card 03 body"
   },
   "homepage.reliability.kicker": {
-    "message": "運用へのフィット",
+    "message": "なぜ機能するのか",
     "description": "Reliability section kicker"
   },
   "homepage.reliability.title": {
-    "message": "ただの自動化ではなく、引き継ぎのために設計。",
+    "message": "宣言的、決定論的、そして意図的に小さい。",
     "description": "Reliability section H2"
   },
   "homepage.reliability.lead": {
-    "message": "ワークフローを回す人がコードを読む必要はありません。安定したコンバーター、承認済みのテンプレート、そして予測可能な結果ワークブックがあれば十分です。",
+    "message": "ユーザーは全セルの作り方を命令するのではなく、ワークブックが何をすべきかを宣言します。XTL の表面は小さく保たれるため、人間が読みやすく、AI が下書きしやすい形式になります。",
     "description": "Reliability section lead paragraph"
   },
   "homepage.reliability.fact": {
@@ -483,11 +483,11 @@
     "description": "Link label inside the conformance fact sentence"
   },
   "homepage.comparison.xl3.bestAt": {
-    "message": "LLM が著者となる Excel パイプラインの「実行」側。モデルが一度テンプレートを書き、xl3 が毎回決定論的にレンダリングします。",
+    "message": "宣言的な Excel テンプレート実行。ワークブックはすでに存在し、xl3 はデータを渡してそれを実行します。",
     "description": "Comparison row xl3 — best at"
   },
   "homepage.comparison.xl3.tradeoff": {
-    "message": "アルファ版。メンテナーは 1 名。XTL の機能セットは意図的に小さく、1.0 までは進化が続きます。",
+    "message": "アルファ版。メンテナーは 1 名。XTL の表面は意図的に小さく、1.0 までは進化が続きます。",
     "description": "Comparison row xl3 — tradeoff"
   },
   "homepage.comparison.llmDirect.bestAt": {
@@ -503,7 +503,7 @@
     "description": "Comparison row Python/VBA — best at"
   },
   "homepage.comparison.scripts.tradeoff": {
-    "message": "ルールはコードや担当者 1 人の頭の中にあり、モデルが出力できる成果物にはなりません。",
+    "message": "ルールはコードや担当者 1 人の頭の中にあり、レイアウト変更にもコード変更が必要です。",
     "description": "Comparison row Python/VBA — tradeoff"
   },
   "homepage.comparison.powerQuery.bestAt": {
@@ -515,11 +515,11 @@
     "description": "Comparison row Power Query — tradeoff"
   },
   "homepage.comparison.sdk.bestAt": {
-    "message": "低レベルなワークブック生成。",
+    "message": "アプリケーションコードからの低レベルまたは高機能なワークブック生成。",
     "description": "Comparison row spreadsheet SDKs — best at"
   },
   "homepage.comparison.sdk.tradeoff": {
-    "message": "モデルが SDK の API 表面すべてを覚え、レンダリングのたびに再生成する必要があります。「テンプレート」はアプリケーションコードであり、持ち運べるファイルではありません。",
+    "message": "レイアウト、スタイル、結合、繰り返し、業務ルールがすべてコードになり、非開発者が安全に編集しにくくなります。",
     "description": "Comparison row spreadsheet SDKs — tradeoff"
   },
   "homepage.comparison.templateEngines.bestAt": {
@@ -527,7 +527,7 @@
     "description": "Comparison row template engines — best at"
   },
   "homepage.comparison.templateEngines.tradeoff": {
-    "message": "LLM が著者となるモデルが登場する以前の設計で、テンプレート DSL も大きく、モデルが出力する前提では作られていません。",
+    "message": "有用な先行事例ですが、特定ランタイムに縛られやすく、小さく可搬な Excel ルール形式としては位置づけられていません。",
     "description": "Comparison row template engines — tradeoff"
   },
   "homepage.comparison.docgen.bestAt": {
@@ -535,7 +535,7 @@
     "description": "Comparison row doc-gen SaaS — best at"
   },
   "homepage.comparison.docgen.tradeoff": {
-    "message": "ルールはベンダーのサービスの中にあり、LLM に渡して編集してもらえる持ち運び可能なワークブックにはなりません。",
+    "message": "ルールはベンダーサービス内にあり、自分たちでレビューして実行できる可搬な Excel テンプレートではありません。",
     "description": "Comparison row doc-gen SaaS — tradeoff"
   },
   "homepage.comparison.kicker": {
@@ -557,6 +557,50 @@
   "homepage.comparison.col.tradeoff": {
     "message": "トレードオフ",
     "description": "Comparison table column header — tradeoff"
+  },
+  "homepage.responsibility.card01.title": {
+    "message": "開発者",
+    "description": "Responsibility section card 01 title"
+  },
+  "homepage.responsibility.card01.body": {
+    "message": "ランタイムを担当します。エンジンの挙動、バリデーション、連携、デプロイ、信頼性を保ちます。",
+    "description": "Responsibility section card 01 body"
+  },
+  "homepage.responsibility.card02.title": {
+    "message": "運用担当",
+    "description": "Responsibility section card 02 title"
+  },
+  "homepage.responsibility.card02.body": {
+    "message": "テンプレートを担当します。レイアウト、列、繰り返しルール、出力形式、文書ごとのロジックを管理します。",
+    "description": "Responsibility section card 02 body"
+  },
+  "homepage.responsibility.card03.title": {
+    "message": "ビジネス",
+    "description": "Responsibility section card 03 title"
+  },
+  "homepage.responsibility.card03.body": {
+    "message": "繰り返し発生する文書変更が毎回リリースになるのを待たずに、最終ワークブックを利用します。",
+    "description": "Responsibility section card 03 body"
+  },
+  "homepage.responsibility.kicker": {
+    "message": "責任駆動の文書自動化",
+    "description": "Responsibility section kicker"
+  },
+  "homepage.responsibility.title": {
+    "message": "文書の所有権をデプロイ待ちから外す。",
+    "description": "Responsibility section H2"
+  },
+  "homepage.responsibility.body.p1": {
+    "message": "多くの Excel 自動化ツールは開発者を速くします。xl3 が解く問題は別です。これまで開発者の介入が必要だった文書変更を、運用担当が引き受けられるようにします。",
+    "description": "Responsibility section body paragraph 1"
+  },
+  "homepage.responsibility.body.p2": {
+    "message": "実運用では、開発者がランタイムに集中し、運用チームがテンプレートと変換ルールを Excel の中で直接管理するモデルが成立しています。xl3 が減らすのは、コード量だけではなく、開発者が必ず担当しなければならない仕事です。",
+    "description": "Responsibility section body paragraph 2"
+  },
+  "homepage.responsibility.fact": {
+    "message": "xl3 は開発者を置き換えるためのものではありません。開発者はランタイムを、運用担当はテンプレートを所有します。文書自動化は開発者だけの仕事ではなく、組織の能力になります。",
+    "description": "Responsibility section closing fact"
   },
   "homepage.api.kicker": {
     "message": "開発者向け API",
@@ -583,11 +627,11 @@
     "description": "Bottom CTA link — Porter's Guide"
   },
   "homepage.layout.title": {
-    "message": "Excel の中で書く、Excel 変換ルール",
+    "message": "宣言的 Excel テンプレートエンジン",
     "description": "HTML <title> for the landing page"
   },
   "homepage.layout.description": {
-    "message": "xl3 は Excel 変換ルールをコードではなく Excel ファイル（template.xlsx）の中に収める、決定論的なルールフォーマットです。ルールは使い慣れた Excel 構文（XTL）で記述でき、LLM に書かせることもできます。同じ入力なら毎回同じバイト列が生成されます。",
+    "message": "xl3 は Excel テンプレートをデータと一緒に実行し、毎回同じワークブックを生成します。",
     "description": "HTML <meta description> for the landing page"
   },
   "try.status.idle": {

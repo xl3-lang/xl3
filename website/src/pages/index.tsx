@@ -10,10 +10,10 @@ import styles from './index.module.css';
 
 const CONFIG_PREVIEW: Workbook = {
   kind: '__config__',
-  title: 'The template declares the source shape.',
-  note: 'source_table tells the engine where the raw table starts and which columns belong to it.',
+  title: 'The workbook is the execution contract.',
+  note: 'source_table tells xl3 where the raw table starts; XTL cells declare what should happen to it.',
   workbookTitle: 'template.xlsx',
-  workbookSubtitle: 'workbook with transformation rules',
+  workbookSubtitle: 'executable Excel template',
   formula: 'B2  source_table = 1',
   sheetName: '__config__',
   rows: [
@@ -35,12 +35,12 @@ function Hero() {
         <div className={styles.heroCopy}>
           <p className={styles.kicker}>
             <Translate id="homepage.hero.kicker" description="Hero section eyebrow / kicker line">
-              AI-authored templates · deterministic runtime
+              Declarative Excel templates · deterministic execution
             </Translate>
           </p>
           <h1 className={styles.heroTitle}>
             <Translate id="homepage.hero.title" description="Hero section H1">
-              The deterministic runtime for AI-generated Excel reports.
+              Make Excel an executable template.
             </Translate>
           </h1>
           <p className={styles.heroLead}>
@@ -54,7 +54,7 @@ function Hero() {
               }}
             >
               {
-                'An LLM (Claude, GPT, Gemini, Cursor, Codex, …) writes the {template} once; xl3 turns ({template} + {raw}) into {result} as a pure function — same inputs, same bytes, every time.'
+                'xl3 is not a workbook API. Put the transformation rules inside {template}, provide {raw}, and run a deterministic engine that returns {result} — same inputs, same workbook, every time.'
               }
             </Translate>
           </p>
@@ -99,7 +99,7 @@ function Hero() {
             </span>
             <strong>
               <Translate id="homepage.hero.flow.role.developerRole" description="What the developer does in the workflow">
-                defines the engine once
+                owns data and deployment
               </Translate>
             </strong>
           </div>
@@ -124,7 +124,7 @@ function Hero() {
               <span>template.xlsx</span>
               <small>
                 <Translate id="homepage.hero.flow.template.label" description="Workflow diagram — what template.xlsx is">
-                  archived rules
+                  executable rules
                 </Translate>
               </small>
             </div>
@@ -155,13 +155,13 @@ function useWalkthroughSteps() {
       index: '01',
       title: translate({
         id: 'homepage.walkthrough.step01.title',
-        message: 'Define the contract in Excel',
+        message: 'Design the workbook in Excel',
         description: 'Walkthrough step 01 title',
       }),
       body: translate({
         id: 'homepage.walkthrough.step01.body',
         message:
-          'Use __config__, source_table, and XTL expressions to describe how raw workbooks become reports.',
+          'Keep layout, merged cells, number formats, and labels where the business team already edits them.',
         description: 'Walkthrough step 01 body',
       }),
     },
@@ -169,13 +169,13 @@ function useWalkthroughSteps() {
       index: '02',
       title: translate({
         id: 'homepage.walkthrough.step02.title',
-        message: 'Expose a simple upload flow',
+        message: 'Declare transformation rules',
         description: 'Walkthrough step 02 title',
       }),
       body: translate({
         id: 'homepage.walkthrough.step02.body',
         message:
-          'Non-developers choose a raw Excel file and the approved template, then run the converter.',
+          'Use __config__, source_table, and XTL expressions to say what should repeat, filter, group, and render.',
         description: 'Walkthrough step 02 body',
       }),
     },
@@ -183,13 +183,13 @@ function useWalkthroughSteps() {
       index: '03',
       title: translate({
         id: 'homepage.walkthrough.step03.title',
-        message: 'Generate finished workbooks',
+        message: 'Execute with raw data',
         description: 'Walkthrough step 03 title',
       }),
       body: translate({
         id: 'homepage.walkthrough.step03.body',
         message:
-          'The output keeps sheet structure, number formats, styles, and merged cells while values are rendered from data.',
+          'The engine combines template.xlsx and raw.xlsx as a pure function, producing the same workbook every run.',
         description: 'Walkthrough step 03 body',
       }),
     },
@@ -197,7 +197,7 @@ function useWalkthroughSteps() {
       index: '04',
       title: translate({
         id: 'homepage.walkthrough.step04.title',
-        message: 'Archive the operating rules',
+        message: 'Hand off the template',
         description: 'Walkthrough step 04 title',
       }),
       body: translate({
@@ -223,12 +223,12 @@ function Walkthrough() {
           </p>
           <h2 className={styles.sectionTitle}>
             <Translate id="homepage.walkthrough.title" description="Walkthrough section H2">
-              Keep the engine in code, keep the workflow in the workbook.
+              Excel becomes the view. Data stays the model. xl3 executes the contract.
             </Translate>
           </h2>
           <p>
             <Translate id="homepage.walkthrough.lead" description="Walkthrough section lead paragraph">
-              Developers build the converter once. The recurring business rules, source table mapping, layout, and output shape stay inside the workbook template that teams can archive and hand over.
+              Developers wire data, validation, and deployment once. The recurring layout and business rules stay inside an ordinary workbook that teams can review, version, archive, and hand over.
             </Translate>
           </p>
         </div>
@@ -272,23 +272,120 @@ function Handoff() {
             </p>
             <h2 className={styles.sectionTitle}>
               <Translate id="homepage.handoff.title" description="Handoff section H2">
-                Move recurring report logic out of one-off scripts.
+                Stop encoding report layout in one-off scripts.
               </Translate>
             </h2>
           </div>
           <div className={styles.prose}>
             <p>
               <Translate id="homepage.handoff.body.p1" description="Handoff body paragraph 1">
-                Python scripts, VBA macros, and service-specific workflows can automate Excel, but the business rules often end up scattered across code, accounts, and tribal knowledge.
+                ExcelJS, SheetJS, openpyxl, and Apache POI are excellent workbook APIs. But when report layout, styles, merged cells, and loops live in code, every design change becomes a deployment.
               </Translate>
             </p>
             <p>
               <Translate id="homepage.handoff.body.p2" description="Handoff body paragraph 2">
-                xl3 separates the reusable engine from the workbook-specific contract. Developers maintain the TypeScript integration, while each recurring Excel job can travel as a template workbook.
+                xl3 moves the recurring contract back into Excel. The workbook is already the view; XTL makes it executable, while the application only supplies data and runs the engine.
               </Translate>
             </p>
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function useResponsibilityCards() {
+  return [
+    {
+      title: translate({
+        id: 'homepage.responsibility.card01.title',
+        message: 'Developer',
+        description: 'Responsibility section card 01 title',
+      }),
+      body: translate({
+        id: 'homepage.responsibility.card01.body',
+        message:
+          'Owns the runtime: engine behavior, validation, integration, deployment, and reliability.',
+        description: 'Responsibility section card 01 body',
+      }),
+      tag: 'runtime',
+    },
+    {
+      title: translate({
+        id: 'homepage.responsibility.card02.title',
+        message: 'Operator',
+        description: 'Responsibility section card 02 title',
+      }),
+      body: translate({
+        id: 'homepage.responsibility.card02.body',
+        message:
+          'Owns the template: layout, columns, repeat rules, output format, and document-specific logic.',
+        description: 'Responsibility section card 02 body',
+      }),
+      tag: 'template.xlsx',
+    },
+    {
+      title: translate({
+        id: 'homepage.responsibility.card03.title',
+        message: 'Business',
+        description: 'Responsibility section card 03 title',
+      }),
+      body: translate({
+        id: 'homepage.responsibility.card03.body',
+        message:
+          'Uses the final workbook without waiting for every recurring document change to become a release.',
+        description: 'Responsibility section card 03 body',
+      }),
+      tag: 'result.xlsx',
+    },
+  ] as const;
+}
+
+function Responsibility() {
+  const cards = useResponsibilityCards();
+  return (
+    <section className={styles.responsibility}>
+      <div className="container">
+        <div className={styles.narrativeGrid}>
+          <div>
+            <p className={styles.kicker}>
+              <Translate id="homepage.responsibility.kicker" description="Responsibility section kicker">
+                Responsibility-driven automation
+              </Translate>
+            </p>
+            <h2 className={styles.sectionTitle}>
+              <Translate id="homepage.responsibility.title" description="Responsibility section H2">
+                Move document ownership out of the deploy queue.
+              </Translate>
+            </h2>
+          </div>
+          <div className={styles.prose}>
+            <p>
+              <Translate id="homepage.responsibility.body.p1" description="Responsibility section body paragraph 1">
+                Most Excel automation tools make developers faster. xl3 solves a different problem: it lets operators take over the document changes that used to require developer intervention.
+              </Translate>
+            </p>
+            <p>
+              <Translate id="homepage.responsibility.body.p2" description="Responsibility section body paragraph 2">
+                In production, this model has let developers focus on the runtime while operations teams maintain templates and transformation rules directly in Excel. xl3 reduces the work that must be done by developers, not just the amount of code they write.
+              </Translate>
+            </p>
+          </div>
+        </div>
+        <div className={styles.stageGrid}>
+          {cards.map((c) => (
+            <article key={c.tag} className={styles.stageCard}>
+              <h3>{c.title}</h3>
+              <p>{c.body}</p>
+              <code>{c.tag}</code>
+            </article>
+          ))}
+        </div>
+        <p className={styles.conformanceFact}>
+          <Translate id="homepage.responsibility.fact" description="Responsibility section closing fact">
+            xl3 is not trying to replace developers. Developers own the runtime; operators own the templates; document automation becomes an organizational capability instead of a developer-only task.
+          </Translate>
+        </p>
       </div>
     </section>
   );
@@ -299,7 +396,7 @@ function useReliabilityCards() {
     {
       title: translate({
         id: 'homepage.reliability.card01.title',
-        message: 'Template as handover',
+        message: 'Template as contract',
         description: 'Reliability card 01 title',
       }),
       body: translate({
@@ -319,7 +416,7 @@ function useReliabilityCards() {
       body: translate({
         id: 'homepage.reliability.card02.body',
         message:
-          'The runtime can be exposed as a browser page: upload raw data, select the template, download the workbook.',
+          'The engine can be exposed as a browser flow: upload raw data, select the approved template, download the workbook.',
         description: 'Reliability card 02 body',
       }),
       tag: 'raw.xlsx → result.xlsx',
@@ -327,7 +424,7 @@ function useReliabilityCards() {
     {
       title: translate({
         id: 'homepage.reliability.card03.title',
-        message: 'Developer-owned engine',
+        message: 'Developer-owned runtime',
         description: 'Reliability card 03 title',
       }),
       body: translate({
@@ -349,17 +446,17 @@ function Reliability() {
         <div className={styles.sectionIntro}>
           <p className={styles.kicker}>
             <Translate id="homepage.reliability.kicker" description="Reliability section kicker">
-              Operational fit
+              Why it works
             </Translate>
           </p>
           <h2 className={styles.sectionTitle}>
             <Translate id="homepage.reliability.title" description="Reliability section H2">
-              Built for handoff, not just automation.
+              Declarative, deterministic, and small on purpose.
             </Translate>
           </h2>
           <p>
             <Translate id="homepage.reliability.lead" description="Reliability section lead paragraph">
-              The people running the workflow should not need to read code. They need a stable converter, an approved template, and a predictable result workbook.
+              Users describe what the workbook should do, not how to build every cell. The XTL surface stays small so templates remain readable by humans and easy for AI systems to draft.
             </Translate>
           </p>
         </div>
@@ -410,17 +507,17 @@ function useComparisons() {
       tool: 'xl3',
       bestAt: translate({
         id: 'homepage.comparison.xl3.bestAt',
-        message: 'The execution half of an LLM-authored Excel pipeline. Model writes the template once; xl3 renders deterministically every run.',
+        message: 'Declarative Excel template execution. The workbook already exists; xl3 runs it with data.',
         description: 'Comparison row xl3 — best at',
       }),
       tradeoff: translate({
         id: 'homepage.comparison.xl3.tradeoff',
-        message: 'Alpha; one maintainer; XTL surface is intentionally small and still evolving until 1.0.',
+        message: 'Alpha; one maintainer; the XTL surface is intentionally small and still evolving until 1.0.',
         description: 'Comparison row xl3 — tradeoff',
       }),
     },
     {
-      tool: 'Direct LLM → xlsx (spreadsheet SDK function call)',
+      tool: 'Direct LLM → xlsx',
       bestAt: translate({
         id: 'homepage.comparison.llmDirect.bestAt',
         message: 'Quick exploratory drafting, one-off charts.',
@@ -433,15 +530,15 @@ function useComparisons() {
       }),
     },
     {
-      tool: 'Spreadsheet SDKs (SheetJS, ExcelJS, openpyxl)',
+      tool: 'Workbook APIs (ExcelJS, SheetJS, openpyxl, POI)',
       bestAt: translate({
         id: 'homepage.comparison.sdk.bestAt',
-        message: 'Low-level workbook generation.',
+        message: 'Low-level or full-featured workbook generation from application code.',
         description: 'Comparison row spreadsheet SDKs — best at',
       }),
       tradeoff: translate({
         id: 'homepage.comparison.sdk.tradeoff',
-        message: 'The model must learn the entire SDK surface and re-emit it each render; the "template" is application code, not a portable file.',
+        message: 'Layout, styles, merges, loops, and business rules become code. Non-developers cannot safely edit the template.',
         description: 'Comparison row spreadsheet SDKs — tradeoff',
       }),
     },
@@ -468,7 +565,7 @@ function useComparisons() {
       }),
       tradeoff: translate({
         id: 'homepage.comparison.templateEngines.tradeoff',
-        message: 'Predate the LLM-as-author model; their template DSLs are larger and not designed to be model-emittable.',
+        message: 'Useful prior art, but often tied to one runtime and not positioned as a small, portable Excel rule format.',
         description: 'Comparison row template engines — tradeoff',
       }),
     },
@@ -481,7 +578,7 @@ function useComparisons() {
       }),
       tradeoff: translate({
         id: 'homepage.comparison.docgen.tradeoff',
-        message: 'Rules live in a vendor service, not a portable workbook you can hand an LLM to edit.',
+        message: 'Rules live in a vendor service, not in a portable workbook template you can review and run yourself.',
         description: 'Comparison row doc-gen SaaS — tradeoff',
       }),
     },
@@ -494,7 +591,7 @@ function useComparisons() {
       }),
       tradeoff: translate({
         id: 'homepage.comparison.scripts.tradeoff',
-        message: "Rules live in code or one maintainer's memory; not a model-emittable artifact.",
+        message: "Rules live in code or one maintainer's memory; layout changes still need code changes.",
         description: 'Comparison row Python/VBA — tradeoff',
       }),
     },
@@ -651,18 +748,15 @@ export default function Home() {
     <Layout
       title={translate({
         id: 'homepage.layout.title',
-        // Names xl3's identity as a rule format, not a JS library: XTL is a
-        // spec-defined, Excel-authored transformation language (spec + ADRs
-        // + conformance fixtures) with a reference implementation, so the
-        // title names the rules, not a runtime. Docusaurus appends "| xl3",
-        // so no brand prefix here.
-        message: 'Excel-to-Excel transformation rules, authored in Excel',
+        // Names xl3's identity as an Excel template engine, not a workbook API.
+        // Docusaurus appends "| xl3", so no brand prefix here.
+        message: 'Declarative Excel Template Engine',
         description: 'HTML <title> for the landing page',
       })}
       description={translate({
         id: 'homepage.layout.description',
         message:
-          'xl3 is an open-source, deterministic rule format for Excel-to-Excel transformation. Author the rules in an .xlsx template using Excel syntax (XTL) — or let an LLM write them — and render workbooks the same way every time: same inputs, same bytes.',
+          'xl3 runs Excel templates with data to produce the same workbook every time.',
         description: 'HTML <meta description> for the landing page',
       })}
     >
@@ -670,6 +764,7 @@ export default function Home() {
       <main>
         <Walkthrough />
         <Handoff />
+        <Responsibility />
         <Reliability />
         <Comparison />
         <DeveloperApi />
