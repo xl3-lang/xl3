@@ -767,6 +767,11 @@ resemble a marker does not trigger this error.
 
 Empty groups — all data rows empty (ADR-0007) — are skipped.
 
+Group + subtotal works only with **implicit** block detection. On a sheet
+that uses explicit `@block` declarations, a `@group` directive or a
+`@subtotal` cell raises `xl3/subtotal/explicit-block-unsupported`
+(ADR-0074) — the two features do not compose in XTL 0.x.
+
 ```text
 {{ @sort [Region] }}
 {{ @sort [Customer] }}
@@ -786,6 +791,8 @@ Errors:
   column reference of the allowed form.
 - `xl3/subtotal/mixed-row` — a `@subtotal` row also carries a
   current-row `[Column]` reference outside an aggregate (ADR-0058).
+- `xl3/subtotal/explicit-block-unsupported` — `@group`/`@subtotal` used on
+  a sheet that also declares explicit `@block` rectangles (ADR-0074).
 
 ## Group Keys
 

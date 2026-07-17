@@ -132,6 +132,10 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
     // attachment. Without per-cell column tracking, the proximity
     // pass would attach both directives to the same column.
     const allDirectiveCols: number[] = [];
+    // #69: whether any `@subtotal` cell appears on this sheet, tracked at
+    // sheet scope so the explicit-`@block` guard below can reject the
+    // group+subtotal feature (unsupported in explicit mode, ADR-0074).
+    let sheetHasSubtotalCell = false;
     let currentBlock: DataBlock | null = null;
     let pendingDirectives: Directive[] = [];
     let pendingDirectiveRows: number[] = [];
@@ -288,6 +292,7 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
             // a render-time eval error.
             parseSubtotalAggregate(expr);
             hasSubtotalCell = true;
+            sheetHasSubtotalCell = true;
             continue;
           }
 
@@ -430,6 +435,22 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
     const explicitMode = blockDirectives.length > 0;
 
     if (explicitMode) {
+      // #69 / ADR-0074: the group + subtotal feature (ADR-0038) is wired
+      // only into implicit single-block detection — the explicit-`@block`
+      // builder never records subtotal rows, so `@group`/`@subtotal` inside
+      // an explicit-mode sheet would silently produce output with the
+      // subtotal band dropped entirely. Reject it loudly instead. (Support
+      // is intentionally deferred; use implicit block detection for group +
+      // subtotal in XTL 0.x.)
+      const groupDirective = allDirectives.find((d) => d.kind === 'group');
+      if (groupDirective || sheetHasSubtotalCell) {
+        const which = groupDirective ? '@group' : '@subtotal';
+        throw xtlError(
+          'xl3/subtotal/explicit-block-unsupported',
+          `${which} is not supported on a sheet that uses explicit @block declarations (ADR-0074). The group + subtotal feature works only with implicit block detection in XTL 0.x. Remove the @block directive(s) to use group + subtotal, or drop @group/@subtotal from this sheet.`,
+        );
+      }
+
       // ADR-0068: explicit mode — `@block` rectangles take over from
       // implicit cluster detection. Build block list from directives.
       const explicitBlocks: DataBlock[] = blockDirectives.map(({ dir, row }) => {

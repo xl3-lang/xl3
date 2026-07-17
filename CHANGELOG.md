@@ -26,13 +26,21 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   ignores formula cells entirely, matching the renderer and ADR-0046;
   such templates render correctly again with the formula preserved
   verbatim.
+- **`@group`/`@subtotal` no longer silently drop in explicit `@block`
+  mode (#69, ADR-0074).** The group + subtotal feature is wired only into
+  implicit block detection; on a sheet using explicit `@block`
+  declarations the subtotal band was silently omitted (no error, no
+  rows). It now raises **`xl3/subtotal/explicit-block-unsupported`** at
+  parse time. Implicit-mode group + subtotal is unaffected.
 
 ### Added
 
-- **Error code `xl3/subtotal/mixed-row`** (additive; no codes removed or
-  renamed — G3 error-catalog gate unaffected).
-- **Conformance fixtures 159 / 160** — the mixed-row error and the
-  formula-cache-is-not-a-marker guarantee.
+- **Error codes `xl3/subtotal/mixed-row`,
+  `xl3/subtotal/explicit-block-unsupported`** (additive; no codes removed
+  or renamed — G3 error-catalog gate unaffected).
+- **Conformance fixtures 159 / 160 / 161** — the mixed-row error, the
+  formula-cache-is-not-a-marker guarantee, and the explicit-block
+  group/subtotal rejection.
 
 ## [0.9.0] - 2026-06-23
 

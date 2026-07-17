@@ -39,11 +39,12 @@ export type XtlErrorCode =
   | 'xl3/join/bad-on-clause'
   // Directive (ADR-0027)
   | 'xl3/directive/invalid-syntax'
-  // Group + subtotal (ADR-0038, ADR-0058)
+  // Group + subtotal (ADR-0038, ADR-0058, ADR-0074)
   | 'xl3/group/missing-key'
   | 'xl3/subtotal/outside-group'
   | 'xl3/subtotal/bad-aggregate'
   | 'xl3/subtotal/mixed-row'
+  | 'xl3/subtotal/explicit-block-unsupported'
   // Lists
   | 'xl3/lists/missing-reference'
   // Lists (ADR-0057)
