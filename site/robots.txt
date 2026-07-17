@@ -4,6 +4,4 @@ Allow: /
 Sitemap: https://xl3.io/sitemap.xml
 Sitemap: https://xl3.io/ko/sitemap.xml
 Sitemap: https://xl3.io/ja/sitemap.xml
-Sitemap: https://xl3.io/es/sitemap.xml
 Sitemap: https://xl3.io/zh-CN/sitemap.xml
-Sitemap: https://xl3.io/zh-TW/sitemap.xml

@@ -17,7 +17,7 @@ xl3 是一个小型 TypeScript 引擎,它把一对 `.xlsx` 文件 ——
 或评审,而你希望 **执行** 这一环保持确定、可审查、可验证 ——
 而不是“让 AI 自己猜输出单元格”—— 时,它就特别合适。
 
-[English](./README.md) · [한국어](./README.ko.md) · [日本語](./README.ja.md) · **简体中文** · [繁體中文](./README.zh-TW.md) · [Español](./README.es.md) · [Website](https://xl3.io) · [Spec](./spec) · [LLM authoring guide](./docs/llm-template-authoring.md) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
+[English](./README.md) · [한국어](./README.ko.md) · [日本語](./README.ja.md) · **简体中文** · [Website](https://xl3.io) · [Spec](./spec) · [LLM authoring guide](./docs/llm-template-authoring.md) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
 ---
 

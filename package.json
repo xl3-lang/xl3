@@ -53,8 +53,6 @@
     "README.ko.md",
     "README.ja.md",
     "README.zh-CN.md",
-    "README.zh-TW.md",
-    "README.es.md",
     "LICENSE"
   ],
   "scripts": {

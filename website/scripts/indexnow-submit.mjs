@@ -20,7 +20,7 @@ const SITE = join(HERE, '..', '..', 'site');
 
 const HOST = 'xl3.io';
 const KEY = 'eb18dd671c2eeb397a5669c064c8b090';
-const LOCALES = ['', 'ko', 'ja', 'es', 'zh-CN', 'zh-TW'];
+const LOCALES = ['', 'ko', 'ja', 'zh-CN'];
 
 async function main() {
   const urls = new Set();

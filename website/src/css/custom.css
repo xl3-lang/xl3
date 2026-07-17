@@ -183,8 +183,7 @@
    the CJK locales so Latin-script content is unaffected. */
 :lang(ko),
 :lang(ja),
-:lang(zh-CN),
-:lang(zh-TW) {
+:lang(zh-CN) {
   word-break: keep-all;
   overflow-wrap: break-word;
 }
@@ -195,11 +194,9 @@
 :lang(ko) code,
 :lang(ja) code,
 :lang(zh-CN) code,
-:lang(zh-TW) code,
 :lang(ko) pre,
 :lang(ja) pre,
-:lang(zh-CN) pre,
-:lang(zh-TW) pre {
+:lang(zh-CN) pre {
   word-break: normal;
   overflow-wrap: anywhere;
 }
