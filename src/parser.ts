@@ -52,8 +52,20 @@ function cellString(value: ExcelJS.CellValue): string {
       .map((r) => r.text)
       .join('');
   }
-  if (typeof value === 'object' && 'result' in value) {
-    return String((value as { result: unknown }).result ?? '');
+  // ADR-0046 / issue #66: a formula cell is preserved verbatim and
+  // re-evaluated by Excel at open time; its cached `<v>` result is NOT
+  // template text. Marker/directive recognition therefore ignores formula
+  // cells entirely — returning '' here so no `{{ … }}` is ever extracted
+  // from a cached result. This matches the renderer (`renderer.ts`
+  // `cellString` has no `result` branch and never substitutes into a
+  // formula cell) and closes the self-corruption path: an Excel/LibreOffice
+  // round-trip can cache `{{ [Col] }}`-looking text into a native label
+  // formula, and the previous impl read that cache as a live marker and
+  // silently demoted the row. The cell is still counted as non-empty by
+  // callers (they add the column to `nonEmptyColNumbers` before calling
+  // this), so ADR-0066 block-range extension is unaffected.
+  if (typeof value === 'object' && ('formula' in value || 'sharedFormula' in value)) {
+    return '';
   }
   return String(value);
 }
@@ -242,6 +254,10 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
       // 2. Check for [field] expressions
       let hasDataVar = false;
       let hasSubtotalCell = false;
+      // #66: first current-row column reference on this row (if any), used
+      // to name the offending cell when it collides with a @subtotal cell.
+      let firstDataVarExpr = '';
+      let firstDataVarCol = 0;
       const dataColNumbers: number[] = [];
       // ADR-0066: track marker cells ({{...}} expressions) AND any
       // non-empty cells in this row. The block's column range is the
@@ -278,9 +294,32 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
           if (isDataExpression(expr) && !isAggregateExpression(expr)) {
             hasDataVar = true;
             dataColNumbers.push(colNumber);
+            if (!firstDataVarExpr) {
+              firstDataVarExpr = expr;
+              firstDataVarCol = colNumber;
+            }
           }
         }
       });
+
+      // #66 / ADR-0038 / ADR-0058: a @subtotal row binds to a group
+      // boundary, where there is no "current row". It MUST NOT also carry a
+      // current-row [Column] reference outside an aggregate. The spec
+      // (language.md § "Group + Subtotal") requires an error here. The
+      // previous impl fell through to the `hasDataVar` branch below and
+      // silently demoted the row to a SECOND data-row template — the
+      // subtotal band was then emitted after every data row with its
+      // @subtotal cells evaluating as block-level (grand-total) aggregates.
+      // The render succeeded and the numbers looked real: the worst failure
+      // mode for a template author. Raise a dedicated, actionable error
+      // naming the offending cell instead.
+      if (hasSubtotalCell && hasDataVar) {
+        const addr = `${worksheet.name}!${columnToLetter(firstDataVarCol)}${rowNumber}`;
+        throw xtlError(
+          'xl3/subtotal/mixed-row',
+          `@subtotal row at ${addr} references current-row column {{ ${firstDataVarExpr} }} outside an aggregate; a @subtotal row binds to a group boundary and may not carry per-row [Column] references. Move the value into the aggregate (e.g. SUM([Amount])), or onto a data row.`,
+        );
+      }
 
       // ADR-0038: a subtotal row is a row whose only relevant template
       // cells are @subtotal expressions (no per-row [Col] refs). It

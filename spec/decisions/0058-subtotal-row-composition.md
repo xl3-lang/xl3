@@ -79,7 +79,9 @@ expressions:
 ### What is still rejected (per ADR-0038)
 
 - A current-row column reference outside an aggregate on a
-  `@subtotal` row (`xl3/expression/unknown-name`-class error).
+  `@subtotal` row. **Amended by ADR-0073:** this raises the dedicated
+  `xl3/subtotal/mixed-row` code (naming the offending cell), not the
+  `xl3/expression/unknown-name`-class error originally written here.
 - A `@subtotal` body that is not one of the five supported
   aggregates (`xl3/subtotal/bad-aggregate`).
 - More `@subtotal` rows than `@group` keys (`xl3/subtotal/outside-

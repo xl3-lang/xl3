@@ -6,6 +6,9 @@
 - **Affects:** ADR-0036 (preservation matrix), ADR-0040 (range PE),
   ADR-0043 (the Excel-native preference principle relies on this
   ADR's contract being normative)
+- **Amended by:** ADR-0073 (a formula cell's cached `<v>` result is
+  never interpreted as template text — marker/directive recognition
+  ignores formula cells)
 
 ## Context
 
