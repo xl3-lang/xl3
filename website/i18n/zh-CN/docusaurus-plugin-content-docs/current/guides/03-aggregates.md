@@ -38,7 +38,7 @@ pagination_label: '03 · 合计与聚合'
 
 写成 `SUM(SourceName[Column])` 时，xl3 会对**整张**指定源求和——而不是过滤或连接后的数据块。这种形态适合表头里那种"总合计"单元格，即使数据块被过滤也不应改变其值。
 
-`续约记录` 是 `__sources__` 中声明的名字。参考 [Recipe 07](./07-multi-source-join.md)。
+`续约记录` 是 `__sources__` 中声明的名字。参考 [Recipe 07](/guides/multi-source-join)。
 
 ## 过滤只改变数据块，不改变源
 

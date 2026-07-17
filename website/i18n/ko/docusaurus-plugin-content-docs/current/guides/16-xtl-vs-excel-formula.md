@@ -190,11 +190,11 @@ XTL에 없는 함수가 필요하다고 느낄 때:
 
 ## 참고
 
-- [ADR-0043 — Excel-native preference principle](/ko/spec/decisions/0043-excel-native-preference)
-- [ADR-0044 — Function batch accepted](/ko/spec/decisions/0044-function-batch-accepted)
-- [ADR-0045 — Function batch rejected](/ko/spec/decisions/0045-function-batch-rejected)
-- [ADR-0046 — Cell formula preservation contract](/ko/spec/decisions/0046-cell-formula-preservation)
-- [ADR-0047 — ISBLANK as IFEMPTY alias](/ko/spec/decisions/0047-isblank-as-ifempty-alias)
-- [Cookbook 10 — 스타일과 브랜딩](./10-styling-and-branding.md) — `numFmt`이 정답일 때
-- [Cookbook 11 — TEXT() 포맷팅](./11-text-formatting.md) — `TEXT()`가 정답일 때
-- [Cookbook 12 — 빈 값 다루기](./12-empty-values.md) — IFEMPTY / ISBLANK 동반자
+- [ADR-0043 — Excel-native preference principle](/ko/spec/decisions/excel-native-preference)
+- [ADR-0044 — Function batch accepted](/ko/spec/decisions/function-batch-accepted)
+- [ADR-0045 — Function batch rejected](/ko/spec/decisions/function-batch-rejected)
+- [ADR-0046 — Cell formula preservation contract](/ko/spec/decisions/cell-formula-preservation)
+- [ADR-0047 — ISBLANK as IFEMPTY alias](/ko/spec/decisions/isblank-as-ifempty-alias)
+- [Cookbook 10 — 스타일과 브랜딩](/guides/styling-and-branding) — `numFmt`이 정답일 때
+- [Cookbook 11 — TEXT() 포맷팅](/guides/text-formatting) — `TEXT()`가 정답일 때
+- [Cookbook 12 — 빈 값 다루기](/guides/empty-values) — IFEMPTY / ISBLANK 동반자

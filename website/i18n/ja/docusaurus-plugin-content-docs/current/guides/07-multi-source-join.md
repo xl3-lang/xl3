@@ -55,7 +55,7 @@ pagination_label: '07 · 複数ソースと @join'
 {{ XLOOKUP([customer_id], 顧客[id], 顧客[name]) }}
 ```
 
-[Recipe 08](./08-xlookup.md) を参照してください。
+[Recipe 08](/guides/xlookup) を参照してください。
 
 ## クロスソース集計
 
@@ -66,7 +66,7 @@ pagination_label: '07 · 複数ソースと @join'
 {{ SUM(更新一覧[金額]) }}      ← total renewals, ignores filters
 ```
 
-[Recipe 03](./03-aggregates.md) を参照してください。
+[Recipe 03](/guides/aggregates) を参照してください。
 
 ## メモ
 

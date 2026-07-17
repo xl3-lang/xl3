@@ -38,7 +38,7 @@ pagination_label: '03 · 합계와 집계'
 
 `SUM(SourceName[Column])` 으로 쓰면 xl3 는 이름으로 지정한 **원본 전체**를 합칩니다 — 필터나 조인을 거친 블록이 아닙니다. 블록이 필터되어도 값이 바뀌면 안 되는 헤더의 "전체 합계" 셀에서 이 형태를 씁니다.
 
-`갱신현황` 는 `__sources__` 에서 선언한 이름입니다. [Recipe 07](./07-multi-source-join.md) 을 참고하세요.
+`갱신현황` 는 `__sources__` 에서 선언한 이름입니다. [Recipe 07](/guides/multi-source-join) 을 참고하세요.
 
 ## 필터는 블록만 바꾸고 원본은 건드리지 않음
 

@@ -92,4 +92,4 @@ const preview = await xl3.preview(template, data, options);
 
 - ADR-0015 — 구조화된 에러 리포팅.
 - [`spec/evaluation.md`](/ko/spec/evaluation) "Errors".
-- 입력 관련 에러는 [Cookbook 06](./06-runtime-inputs.md) 참고.
+- 입력 관련 에러는 [Cookbook 06](/guides/runtime-inputs) 참고.

@@ -19,24 +19,24 @@ pagination_label: '概要'
 
 | # | レシピ | 学べる内容 |
 |---|---|---|
-| 01 | [5 分ではじめる](./01-getting-started.md) | テンプレート + データ → 結果。置換と `__config__`。 |
-| 02 | [条件付きセル](./02-conditional-cells.md) | `IF`、`IFEMPTY`、比較演算子、truthiness。 |
-| 03 | [行の集計](./03-aggregates.md) | `SUM`、`COUNT`、`AVERAGE`、`MIN`、`MAX` ― ブロック単位とソース全体。 |
-| 04 | [グループごとに 1 ファイル](./04-file-per-group.md) | `output_file_pattern` によるファイルグループ化。 |
-| 05 | [グループごとに 1 シート](./05-sheet-per-group.md) | シートグループ化 + リストベースのフィルタ。 |
-| 06 | [実行時入力値](./06-runtime-inputs.md) | 実行単位の値(月、地域など)のための `__inputs__`。 |
-| 07 | [複数ソース + `@join`](./07-multi-source-join.md) | `__sources__`、`@source`、`@join`。 |
-| 08 | [`XLOOKUP`](./08-xlookup.md) | クロスソース検索。 |
-| 09 | [並べ替えと上位 N 件](./09-sort-and-top.md) | `@sort`(stable)、`@top`、複数キー並べ替え。 |
-| 10 | [スタイルとブランディング](./10-styling-and-branding.md) | `tabColor`、セル結合、`numFmt`、`TEXT()`。 |
-| 11 | [`TEXT()` 書式設定](./11-text-formatting.md) | 通貨、日付、パーセント。`numFmt` と `TEXT()` の使い分け。 |
-| 12 | [空値を詳しく扱う](./12-empty-values.md) | `IFEMPTY`、空とゼロの落とし穴、`(blank)`、疎データの集計。 |
-| 13 | [ホスト向けエラーハンドリング](./13-error-handling.md) | `XtlError` の捕捉、コードカタログ、fail-fast のための `preview()`。 |
-| 14 | [値の辞書としての `__config__`](./14-config-values.md) | 作成者定義キー、型認識、`__config__` vs `__inputs__`。 |
-| 15 | [ディレクティブの組み合わせ](./15-directive-composition.md) | 実行順序、複数 `@filter` の AND 結合、禁止される組み合わせ。 |
-| 16 | [XTL 関数と Excel 数式](./16-xtl-vs-excel-formula.md) | `{{ ... }}` と `=...` セル数式の使い分け。ADR-0043 の render-time / open-time の境界。 |
-| 17 | [テンプレート作成時の表示](./17-template-authoring-display.md) | テンプレート編集中に Excel で見える内容(エラー、プレースホルダ)、それが想定通りである理由、ダッシュボード用の `IFERROR` wrap 慣行。 |
-| 18 | [`@group` と `@subtotal`](./18-group-and-subtotal.md) | 1 つのデータブロック内にグループごとの小計行を差し込む(ADR-0038) ― 単一レベル、ネスト、最外 @subtotal による総合計。 |
+| 01 | [5 分ではじめる](/guides/getting-started) | テンプレート + データ → 結果。置換と `__config__`。 |
+| 02 | [条件付きセル](/guides/conditional-cells) | `IF`、`IFEMPTY`、比較演算子、truthiness。 |
+| 03 | [行の集計](/guides/aggregates) | `SUM`、`COUNT`、`AVERAGE`、`MIN`、`MAX` ― ブロック単位とソース全体。 |
+| 04 | [グループごとに 1 ファイル](/guides/file-per-group) | `output_file_pattern` によるファイルグループ化。 |
+| 05 | [グループごとに 1 シート](/guides/sheet-per-group) | シートグループ化 + リストベースのフィルタ。 |
+| 06 | [実行時入力値](/guides/runtime-inputs) | 実行単位の値(月、地域など)のための `__inputs__`。 |
+| 07 | [複数ソース + `@join`](/guides/multi-source-join) | `__sources__`、`@source`、`@join`。 |
+| 08 | [`XLOOKUP`](/guides/xlookup) | クロスソース検索。 |
+| 09 | [並べ替えと上位 N 件](/guides/sort-and-top) | `@sort`(stable)、`@top`、複数キー並べ替え。 |
+| 10 | [スタイルとブランディング](/guides/styling-and-branding) | `tabColor`、セル結合、`numFmt`、`TEXT()`。 |
+| 11 | [`TEXT()` 書式設定](/guides/text-formatting) | 通貨、日付、パーセント。`numFmt` と `TEXT()` の使い分け。 |
+| 12 | [空値を詳しく扱う](/guides/empty-values) | `IFEMPTY`、空とゼロの落とし穴、`(blank)`、疎データの集計。 |
+| 13 | [ホスト向けエラーハンドリング](/guides/error-handling) | `XtlError` の捕捉、コードカタログ、fail-fast のための `preview()`。 |
+| 14 | [値の辞書としての `__config__`](/guides/config-values) | 作成者定義キー、型認識、`__config__` vs `__inputs__`。 |
+| 15 | [ディレクティブの組み合わせ](/guides/directive-composition) | 実行順序、複数 `@filter` の AND 結合、禁止される組み合わせ。 |
+| 16 | [XTL 関数と Excel 数式](/guides/xtl-vs-excel-formula) | `{{ ... }}` と `=...` セル数式の使い分け。ADR-0043 の render-time / open-time の境界。 |
+| 17 | [テンプレート作成時の表示](/guides/template-authoring-display) | テンプレート編集中に Excel で見える内容(エラー、プレースホルダ)、それが想定通りである理由、ダッシュボード用の `IFERROR` wrap 慣行。 |
+| 18 | [`@group` と `@subtotal`](/guides/group-and-subtotal) | 1 つのデータブロック内にグループごとの小計行を差し込む(ADR-0038) ― 単一レベル、ネスト、最外 @subtotal による総合計。 |
 
 ## レシピの読み方
 

@@ -1,3 +1,7 @@
+---
+slug: /conformance/authoring
+---
+
 # 撰写一致性 Fixture
 
 本目录中的语料将成为 XTL 的可执行定义。在这里编码的 fixture 会比任何单一实现存在得更久。把它们写好，比把它们写多更重要。

@@ -55,7 +55,7 @@ pagination_label: '07 · 다중 소스와 @join'
 {{ XLOOKUP([거래처코드], 거래처[id], 거래처[name]) }}
 ```
 
-[Recipe 08](./08-xlookup.md) 을 참고하세요.
+[Recipe 08](/guides/xlookup) 을 참고하세요.
 
 ## 원본 간 집계
 
@@ -66,7 +66,7 @@ pagination_label: '07 · 다중 소스와 @join'
 {{ SUM(갱신현황[금액]) }}      ← total renewals, ignores filters
 ```
 
-[Recipe 03](./03-aggregates.md) 을 참고하세요.
+[Recipe 03](/guides/aggregates) 을 참고하세요.
 
 ## 참고
 

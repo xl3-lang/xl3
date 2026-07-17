@@ -49,7 +49,7 @@ pagination_label: '09 · 정렬과 상위 N개'
 {{ [계정] }} | {{ [갱신액] }}
 ```
 
-순서는 filter → sort → top 입니다. `@filter` 가 여러 개면 AND 로 합쳐집니다 (ADR-0029 관련 — 리스트 필터는 [Recipe 05](./05-sheet-per-group.md) 참고).
+순서는 filter → sort → top 입니다. `@filter` 가 여러 개면 AND 로 합쳐집니다 (ADR-0029 관련 — 리스트 필터는 [Recipe 05](/guides/sheet-per-group) 참고).
 
 ## 비교 의미론
 

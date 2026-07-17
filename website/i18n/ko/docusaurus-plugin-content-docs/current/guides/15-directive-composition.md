@@ -91,6 +91,6 @@ ADR-0029 기준:
 
 - ADR-0029 — 디렉티브 조합 + 소스 엣지 시맨틱.
 - [`spec/language.md`](/ko/spec/language) "Filter", "Sort", "Top", "Source", "Join".
-- `@filter in __lists__[…]` 는 [Cookbook 05](./05-sheet-per-group.md) 참고.
-- `@source` + `@join` 기본은 [Cookbook 07](./07-multi-source-join.md) 참고.
-- `@sort` + `@top` 기본은 [Cookbook 09](./09-sort-and-top.md) 참고.
+- `@filter in __lists__[…]` 는 [Cookbook 05](/guides/sheet-per-group) 참고.
+- `@source` + `@join` 기본은 [Cookbook 07](/guides/multi-source-join) 참고.
+- `@sort` + `@top` 기본은 [Cookbook 09](/guides/sort-and-top) 참고.

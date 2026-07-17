@@ -82,4 +82,4 @@ ADR-0011 に従って、次の `__config__` キーはスペックで定義され
 
 - ADR-0011 ― 予約シート命名規則。
 - [`spec/evaluation.md`](/ja/spec/evaluation) の「Template Configuration」。
-- 実行単位の代替手段である `__inputs__` は [Cookbook 06](./06-runtime-inputs.md) を参照。
+- 実行単位の代替手段である `__inputs__` は [Cookbook 06](/guides/runtime-inputs) を参照。

@@ -19,24 +19,24 @@ pagination_label: '개요'
 
 | # | 레시피 | 배울 내용 |
 |---|---|---|
-| 01 | [5분 만에 시작하기](./01-getting-started.md) | 템플릿 + 데이터 → 결과. 치환과 `__config__`. |
-| 02 | [조건부 셀](./02-conditional-cells.md) | `IF`, `IFEMPTY`, 비교 연산자, truthiness. |
-| 03 | [행 집계](./03-aggregates.md) | `SUM`, `COUNT`, `AVERAGE`, `MIN`, `MAX` — 블록 단위 vs 소스 전체. |
-| 04 | [그룹마다 파일 하나](./04-file-per-group.md) | `output_file_pattern` 으로 파일을 그룹핑. |
-| 05 | [그룹마다 시트 하나](./05-sheet-per-group.md) | 시트 그룹핑 + 리스트 기반 필터. |
-| 06 | [런타임 입력](./06-runtime-inputs.md) | 실행 단위 값 (월, 지역 등) 을 위한 `__inputs__`. |
-| 07 | [멀티 소스 + `@join`](./07-multi-source-join.md) | `__sources__`, `@source`, `@join`. |
-| 08 | [`XLOOKUP`](./08-xlookup.md) | 크로스 소스 조회. |
-| 09 | [정렬과 상위 N개](./09-sort-and-top.md) | `@sort` (stable), `@top`, 다중 키 정렬. |
-| 10 | [스타일과 브랜딩](./10-styling-and-branding.md) | `tabColor`, 셀 병합, `numFmt`, `TEXT()`. |
-| 11 | [`TEXT()` 포맷팅](./11-text-formatting.md) | 통화, 날짜, 퍼센트. `numFmt` 와 `TEXT()` 의 사용처 구분. |
-| 12 | [빈 값 깊이 다루기](./12-empty-values.md) | `IFEMPTY`, empty 와 0 의 함정, `(blank)`, 희소 데이터의 집계. |
-| 13 | [호스트를 위한 에러 처리](./13-error-handling.md) | `XtlError` 잡기, 코드 카탈로그, fail-fast 를 위한 `preview()`. |
-| 14 | [값 사전으로 쓰는 `__config__`](./14-config-values.md) | 작성자 정의 키, 타입 인식, `__config__` vs `__inputs__`. |
-| 15 | [디렉티브 조합하기](./15-directive-composition.md) | 실행 순서, 여러 `@filter` 의 AND 결합, 금지된 조합. |
-| 16 | [XTL 함수 vs 엑셀 수식](./16-xtl-vs-excel-formula.md) | `{{ ... }}` 와 `=...` 셀 수식을 어떻게 나눠 쓸지. ADR-0043 의 render-time / open-time 경계. |
-| 17 | [템플릿 작성용 표시값](./17-template-authoring-display.md) | 템플릿 편집 중 엑셀에서 보이는 모습 (에러, 플레이스홀더), 그게 의도된 이유, 대시보드용 `IFERROR` wrap 관행. |
-| 18 | [`@group` 과 `@subtotal`](./18-group-and-subtotal.md) | 하나의 데이터 블록 안에 그룹별 소계 행을 끼워 넣기 (ADR-0038) — 단일 레벨, 중첩, 가장 바깥 @subtotal 로 만드는 총계. |
+| 01 | [5분 만에 시작하기](/guides/getting-started) | 템플릿 + 데이터 → 결과. 치환과 `__config__`. |
+| 02 | [조건부 셀](/guides/conditional-cells) | `IF`, `IFEMPTY`, 비교 연산자, truthiness. |
+| 03 | [행 집계](/guides/aggregates) | `SUM`, `COUNT`, `AVERAGE`, `MIN`, `MAX` — 블록 단위 vs 소스 전체. |
+| 04 | [그룹마다 파일 하나](/guides/file-per-group) | `output_file_pattern` 으로 파일을 그룹핑. |
+| 05 | [그룹마다 시트 하나](/guides/sheet-per-group) | 시트 그룹핑 + 리스트 기반 필터. |
+| 06 | [런타임 입력](/guides/runtime-inputs) | 실행 단위 값 (월, 지역 등) 을 위한 `__inputs__`. |
+| 07 | [멀티 소스 + `@join`](/guides/multi-source-join) | `__sources__`, `@source`, `@join`. |
+| 08 | [`XLOOKUP`](/guides/xlookup) | 크로스 소스 조회. |
+| 09 | [정렬과 상위 N개](/guides/sort-and-top) | `@sort` (stable), `@top`, 다중 키 정렬. |
+| 10 | [스타일과 브랜딩](/guides/styling-and-branding) | `tabColor`, 셀 병합, `numFmt`, `TEXT()`. |
+| 11 | [`TEXT()` 포맷팅](/guides/text-formatting) | 통화, 날짜, 퍼센트. `numFmt` 와 `TEXT()` 의 사용처 구분. |
+| 12 | [빈 값 깊이 다루기](/guides/empty-values) | `IFEMPTY`, empty 와 0 의 함정, `(blank)`, 희소 데이터의 집계. |
+| 13 | [호스트를 위한 에러 처리](/guides/error-handling) | `XtlError` 잡기, 코드 카탈로그, fail-fast 를 위한 `preview()`. |
+| 14 | [값 사전으로 쓰는 `__config__`](/guides/config-values) | 작성자 정의 키, 타입 인식, `__config__` vs `__inputs__`. |
+| 15 | [디렉티브 조합하기](/guides/directive-composition) | 실행 순서, 여러 `@filter` 의 AND 결합, 금지된 조합. |
+| 16 | [XTL 함수 vs 엑셀 수식](/guides/xtl-vs-excel-formula) | `{{ ... }}` 와 `=...` 셀 수식을 어떻게 나눠 쓸지. ADR-0043 의 render-time / open-time 경계. |
+| 17 | [템플릿 작성용 표시값](/guides/template-authoring-display) | 템플릿 편집 중 엑셀에서 보이는 모습 (에러, 플레이스홀더), 그게 의도된 이유, 대시보드용 `IFERROR` wrap 관행. |
+| 18 | [`@group` 과 `@subtotal`](/guides/group-and-subtotal) | 하나의 데이터 블록 안에 그룹별 소계 행을 끼워 넣기 (ADR-0038) — 단일 레벨, 중첩, 가장 바깥 @subtotal 로 만드는 총계. |
 
 ## 레시피를 읽는 법
 

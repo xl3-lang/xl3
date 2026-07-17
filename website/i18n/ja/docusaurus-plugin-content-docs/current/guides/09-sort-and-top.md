@@ -49,7 +49,7 @@ pagination_label: '09 · 並べ替えと上位 N 件'
 {{ [取引先] }} | {{ [更新金額] }}
 ```
 
-順序は filter → sort → top です。`@filter` が複数あれば AND で結合されます(ADR-0029 関連 ― リストフィルタは [Recipe 05](./05-sheet-per-group.md) 参照)。
+順序は filter → sort → top です。`@filter` が複数あれば AND で結合されます(ADR-0029 関連 ― リストフィルタは [Recipe 05](/guides/sheet-per-group) 参照)。
 
 ## 比較意味論
 
