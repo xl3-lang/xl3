@@ -114,32 +114,31 @@ group's boundary IS the end of the data.
   "Subtotal:" label sits next to the aggregate cell, both rendered
   on each emission. The literal cells MUST NOT reference current-
   row columns; there is no current row at a group boundary.
-- **A stray `[Column]` marker demotes the row — silently.** The
-  parser recognizes a `@subtotal` row only when it carries at least
-  one `{{ @subtotal … }}` cell and **no** current-row `[Column]`
-  reference outside an aggregate. One marker anywhere on the row —
-  including inside mixed literal text, or hiding in a native
-  formula's *cached result* after an Excel/LibreOffice re-save (see
-  [round-trip hazards](../llm-template-authoring.md#excel-round-trips-formula-caches-and-programmatic-editing))
-  — reclassifies the whole row as a second data-row template. The
-  render still succeeds; the symptom is unmistakable: the subtotal
-  band repeats after **every** data row, showing block-level grand
-  totals instead of per-group sums. If you see that signature,
-  audit the subtotal row for markers and for formula caches.
-- **Dynamic group labels on the band** come from a native formula,
-  not a marker (a marker would demote the row, and aggregates
-  coerce strings to numbers). Keep a helper column of group-key
-  markers inside the data block (hide the column), then read the
-  row above the band:
+- **A stray `[Column]` marker is an error, not a silent demotion**
+  (ADR-0073). The parser recognizes a `@subtotal` row only when it
+  carries at least one `{{ @subtotal … }}` cell and **no** current-row
+  `[Column]` reference outside an aggregate. If you write such a marker
+  on a subtotal row — e.g. `{{ [Customer] }} subtotal` next to the
+  aggregate — the parser raises `xl3/subtotal/mixed-row`, naming the
+  offending cell, instead of silently reclassifying the row. (A bracket
+  that is merely *text inside a string literal*, such as
+  `{{ "Subtotal [Customer]" }}`, is fine — it is not a current-row
+  reference.)
+- **Dynamic group labels on the band** come from a native formula. The
+  formula's *cached result* is never read as template text (ADR-0046 /
+  ADR-0073), so a cached value that happens to look like a marker after
+  an Excel/LibreOffice re-save no longer demotes the row — the formula
+  is preserved verbatim and re-evaluated at open time. Keep a helper
+  column of group-key markers inside the data block (hide the column),
+  then read the row above the band:
 
   ```text
-  =IF(LEFT(INDIRECT("W"&(ROW()-1)),2)="{"&"{", "",
-      INDIRECT("W"&(ROW()-1))) & " subtotal"
+  =INDIRECT("W"&(ROW()-1)) & " subtotal"
   ```
 
-  The `INDIRECT(…&ROW())` form survives verbatim per-emission
-  copying (ADR-0046); the `LEFT(...)="{"&"{"` guard keeps the
-  formula's template-time cache free of marker text.
+  The `INDIRECT(…&ROW())` form survives verbatim per-emission copying
+  (ADR-0046). No `LEFT(...)="{"&"{"` cache guard is needed anymore;
+  formula caches are ignored for marker detection.
 
 ## Errors
 
@@ -148,6 +147,8 @@ group's boundary IS the end of the data.
   no `@group`, or more `@subtotal` rows than `@group` keys.
 - `xl3/subtotal/bad-aggregate` — body is not one of `SUM`, `COUNT`,
   `AVERAGE`, `MIN`, `MAX`, or its argument isn't a column reference.
+- `xl3/subtotal/mixed-row` — a `@subtotal` row also carries a
+  current-row `[Column]` reference outside an aggregate (ADR-0073).
 
 ## See also
 

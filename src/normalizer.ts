@@ -29,13 +29,21 @@ export function isDataExpression(expr: string): boolean {
   // time, not per-row. Reject it from the "data expression" classifier
   // so its host row does not become a regular per-row data row.
   if (/^@subtotal\b/i.test(expr.trim())) return false;
+  // #66: bracket text inside a string literal is NOT a column reference —
+  // `"Subtotal [Customer]"` renders as the literal text (the `[Customer]`
+  // is never substituted), so it does not depend on the current row. Mask
+  // `"..."` spans before bracket detection so such a literal is not
+  // misclassified as a data expression (which, on a @subtotal row, would
+  // otherwise demote the row / raise a spurious xl3/subtotal/mixed-row).
+  // ADR-0028: literals have no escapes, so `"[^"]*"` matches each pair.
+  const bare = expr.replace(/"[^"]*"/g, '');
   // A "data expression" is one whose value depends on the current
   // iterating row of a data block. Two shapes qualify:
   //
   // 1. A bare `[Field]` reference — always iterates the active source.
   //    The leading non-word boundary excludes `__sheet__[key]` and
   //    `Source[key]` matches.
-  if (HAS_BRACKET_FIELD_RE.test(expr)) return true;
+  if (HAS_BRACKET_FIELD_RE.test(bare)) return true;
   //
   // 2. A `Source[Field]` reference NOT wrapped in a static-context
   //    call (aggregate or XLOOKUP). Inside an `@source Source` block,
@@ -43,7 +51,7 @@ export function isDataExpression(expr: string): boolean {
   //    data expression. Inside a header / footer cell that just calls
   //    `SUM(Source[Column])` or `XLOOKUP("k", Source[a], Source[b])`,
   //    the brackets feed a full-row-set call and the cell is static.
-  if (!/(?<!\w)[A-Za-z]\w*\[[^\]\r\n]+\]/.test(expr)) return false;
+  if (!/(?<!\w)[A-Za-z]\w*\[[^\]\r\n]+\]/.test(bare)) return false;
   const call = parseFunctionCall(expr.trim());
   if (call && STATIC_CONTEXT_CALLS.has(call.name.toUpperCase())) return false;
   return true;

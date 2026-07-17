@@ -168,9 +168,10 @@ label + value pair the example in Context shows.
 
 A `@subtotal` row MUST NOT reference a current-row data column
 (`[Column]` outside an aggregate) — there is no "current row" at a
-group boundary. Such a reference raises the existing
-`xl3/expression/unknown-name`-class error, treated like any out-of-
-scope column reference.
+group boundary. **Amended by ADR-0073:** such a reference raises the
+dedicated `xl3/subtotal/mixed-row` error (naming the offending cell),
+not the `xl3/expression/unknown-name`-class error originally written
+here.
 
 ### Boundary emission rules
 

@@ -14,7 +14,9 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   and render the subtotal band after *every* data row with grand-total
   values — a spec violation with plausible-but-wrong output and no
   diagnostic. It now raises the dedicated **`xl3/subtotal/mixed-row`**
-  error naming the offending cell.
+  error naming the offending cell. Bracket text inside a string literal
+  (e.g. `{{ "Subtotal [Customer]" }}`) is correctly treated as literal
+  text, not a current-row reference, so such labels remain valid.
 - **A formula cell's cached result is no longer read as a template
   marker (#66, ADR-0073, amends ADR-0046).** `parser.ts` scanned a
   native formula's cached `<v>` result for `{{ … }}` markers, while the

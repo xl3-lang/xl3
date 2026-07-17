@@ -67,10 +67,18 @@ G3 error-catalog gate.
 (chosen).** Marker/directive recognition ignores formula cells entirely
 (parser `cellString` returns `''` for `{ formula }` / `{ sharedFormula }`
 shapes). This is the minimal change that removes the parser/renderer
-divergence at its root, and it *cannot* change any template where the
-two already agree — i.e. every template that renders correctly today.
-The alternative (a targeted guard only on subtotal rows) would leave the
-divergence live everywhere else.
+divergence at its root. For **cell markers** (`{{ [Col] }}` substitution)
+it changes nothing observable: the renderer never substituted into a
+formula cell, so any marker the parser read from a cached result was
+already inert at render time. The one shape whose *parse* behaviour does
+change is a **directive** expressed as a formula's cached result (e.g. a
+formula caching `{{ @group [Customer] }}` or `{{ @block A:C }}`): the
+parser used to act on it. Authoring a directive as a formula's cached
+value is not a documented pattern — directives are literal `{{ @… }}`
+strings — so no *supported* template changes, but the claim is "no
+supported template", not "no template whatsoever". The alternative (a
+targeted guard only on subtotal rows) would leave the divergence live
+everywhere else.
 
 ## Decision
 
@@ -107,11 +115,13 @@ cell for ADR-0066 block-range extension purposes.)
   (it already ignored formula caches).
 - **Catalog:** additive — one new error code, none removed or renamed.
   Backwards-compatible; does not reset the G3 gate.
-- **Behavior compatibility:** no template that renders correctly today
-  changes. Defect (1) only ever produced spec-violating output;
-  it now errors. Defect (2)'s self-corrupted templates now render
-  correctly again (the label formula is preserved and the row stays a
-  proper subtotal row) instead of silently demoting.
+- **Behavior compatibility:** no *supported* template that renders
+  correctly today changes. Defect (1) only ever produced spec-violating
+  output; it now errors. Defect (2)'s self-corrupted templates now
+  render correctly again (the label formula is preserved and the row
+  stays a proper subtotal row) instead of silently demoting. The one
+  unsupported shape that changes is a directive authored as a formula's
+  cached result (see Option C) — the parser no longer acts on it.
 - **Conformance:**
   - `159-subtotal-mixed-row-error` — a subtotal row with a plain-string
     current-row `[Column]` ref → `xl3/subtotal/mixed-row`.

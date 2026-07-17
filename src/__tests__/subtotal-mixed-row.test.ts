@@ -79,7 +79,7 @@ describe('#66 — @subtotal row with a plain current-row [Column] ref', () => {
 
     let err: unknown;
     try {
-      await convert(await toBuf(wb), await makeSource());
+      await convert(await toBuf(wb), await makeSource(), { engine: 'js' });
     } catch (e) {
       err = e;
     }
@@ -98,11 +98,28 @@ describe('#66 — @subtotal row with a plain current-row [Column] ref', () => {
     ws.getCell('A3').value = 'Subtotal';
     ws.getCell('C3').value = '{{ @subtotal SUM([Amount]) }}';
 
-    const out = await convert(await toBuf(wb), await makeSource());
+    const out = await convert(await toBuf(wb), await makeSource(), { engine: 'js' });
     const rows = await readReport(out[0]!.data as ArrayBuffer);
     // one subtotal per group boundary, with per-group sums (not grand total)
     const subtotals = rows.filter((r) => r[0] === 'Subtotal').map((r) => r[2]);
     expect(subtotals).toEqual(['150', '200']);
+  });
+
+  it('does NOT flag a string-literal label that merely contains bracket text', async () => {
+    // Regression: `[Customer]` inside a "..." literal is not a current-row
+    // reference (it renders as literal text, never substituted). The
+    // mixed-row guard must not fire, and the row must render as a proper
+    // subtotal row with the literal label intact.
+    const wb = baseTemplate();
+    const ws = wb.getWorksheet('Report')!;
+    ws.getCell('A3').value = '{{ "Subtotal [Customer]" }}';
+    ws.getCell('C3').value = '{{ @subtotal SUM([Amount]) }}';
+
+    const out = await convert(await toBuf(wb), await makeSource(), { engine: 'js' });
+    const rows = await readReport(out[0]!.data as ArrayBuffer);
+    const labelled = rows.filter((r) => r[0] === 'Subtotal [Customer]');
+    // literal text preserved verbatim; per-group sums, not grand total
+    expect(labelled.map((r) => r[2])).toEqual(['150', '200']);
   });
 });
 
@@ -121,7 +138,7 @@ describe('#66 — formula-cached-result self-corruption path', () => {
     ws.getCell('C3').value = '{{ @subtotal SUM([Amount]) }}';
 
     // Must NOT throw (no phantom marker → no mixed-row) and must NOT demote.
-    const out = await convert(await toBuf(wb), await makeSource());
+    const out = await convert(await toBuf(wb), await makeSource(), { engine: 'js' });
     const outWb = new ExcelJS.Workbook();
     await outWb.xlsx.load(out[0]!.data as ArrayBuffer);
     const rep = outWb.getWorksheet('Report')!;
