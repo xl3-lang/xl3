@@ -759,7 +759,11 @@ A `@subtotal` row MAY also carry literal-text cells, static
 formulas, and other `{{ ... }}` expressions that do NOT reference
 the current row's columns (there is no "current row" at a group
 boundary). Referencing a current-row column outside an aggregate
-raises an `xl3/expression/unknown-name`-class error.
+raises `xl3/subtotal/mixed-row` (ADR-0058), naming the offending
+cell. A native cell formula on a `@subtotal` row is preserved
+verbatim and its cached result is never interpreted as template
+text (ADR-0046), so a formula whose cached value happens to
+resemble a marker does not trigger this error.
 
 Empty groups — all data rows empty (ADR-0007) — are skipped.
 
@@ -780,6 +784,8 @@ Errors:
 - `xl3/subtotal/bad-aggregate` — `@subtotal` body is not one of
   `SUM`, `COUNT`, `AVERAGE`, `MIN`, `MAX`, or its argument is not a
   column reference of the allowed form.
+- `xl3/subtotal/mixed-row` — a `@subtotal` row also carries a
+  current-row `[Column]` reference outside an aggregate (ADR-0058).
 
 ## Group Keys
 

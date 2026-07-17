@@ -386,38 +386,35 @@ Excel/LibreOffice behaviors — both invisible in the UI — can corrupt
 a template that contains native `=…` formulas, and two common library
 bugs can corrupt one you build programmatically.
 
-### Hazard 1 — recalculated caches become phantom template text
+### Hazard 1 — recalculated caches become phantom template text (resolved, ADR-0073)
 
-The parser reads a formula cell's **cached result string** as that
-cell's template text (a cell value of `{ formula, result }` is read as
-`String(result)`). When Excel/LO opens a template it recalculates
-(volatile functions always; everything on some calc settings) and the
-save writes those results into the file. At template time a formula
-that references a marker cell evaluates to marker *text* — so after an
-innocent open-and-save, a cell can cache a string like
-`{{ [Key] }} / Subtotal`, and on the next render the parser treats it
-as a real `[Key]` marker. The classic symptom: a `@subtotal` row is
-silently reclassified as a second data row, so the "subtotal band"
-repeats after every data row carrying block-level grand totals.
+Historically the parser read a formula cell's **cached result string**
+as that cell's template text (a cell value of `{ formula, result }`
+was read as `String(result)`). When Excel/LO opens a template it
+recalculates and writes those results into the file, so an innocent
+open-and-save could cache a marker-shaped string like
+`{{ [Key] }} / Subtotal` into a native label formula — and the next
+render treated it as a real `[Key]` marker, silently reclassifying a
+`@subtotal` row as a second data row (the "subtotal band repeats after
+every data row" symptom).
 
-Defenses, in order of preference:
+**As of ADR-0073 this is fixed:** marker/directive detection ignores
+formula cells entirely. A formula's cached `<v>` result is never read
+as template text — the formula is preserved verbatim and recomputed by
+Excel at open time. So this round-trip no longer corrupts a template,
+and the old `"{"&"{"` cache-guard formula hack is no longer needed:
 
-1. **Don't open-and-save the shipped file.** Inspect a copy; upload
-   the generated file byte-for-byte.
-2. **Author formulas so their template-time value is harmless.** Wrap
-   numeric formulas in `IFERROR(…, 0)`. For text formulas that read
-   marker cells, guard on the marker prefix — and build the `{{`
-   literal as `"{"&"{"` so the formula body itself never contains a
-   marker-shaped substring:
+```text
+=INDIRECT("W"&(ROW()-1)) & " / Subtotal"
+```
 
-   ```text
-   =IF(LEFT(INDIRECT("W"&(ROW()-1)),2)="{"&"{", "",
-       INDIRECT("W"&(ROW()-1))) & " / Subtotal"
-   ```
-
-3. **Strip formula caches when packaging.** Remove `<v>` children of
-   `<f>`-bearing cells at the zip level; Excel and LibreOffice
-   recompute cache-less cells on load.
+A related but distinct mistake still errors loudly: writing a genuine
+current-row `{{ [Col] }}` marker as *literal cell text* on a
+`@subtotal` row raises `xl3/subtotal/mixed-row` (ADR-0073), naming the
+cell — rather than silently demoting the row. Stripping formula caches
+at packaging time (removing `<v>` children of `<f>`-bearing cells)
+remains harmless hygiene but is no longer required to avoid this
+hazard.
 
 ### Hazard 2 — shared-formula consolidation
 

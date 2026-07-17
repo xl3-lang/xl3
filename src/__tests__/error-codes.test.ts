@@ -46,6 +46,7 @@ const EXPECTED_CODES: XtlErrorCode[] = [
   'xl3/group/missing-key',
   'xl3/subtotal/outside-group',
   'xl3/subtotal/bad-aggregate',
+  'xl3/subtotal/mixed-row',
   'xl3/join/bad-on-clause',
   'xl3/join/undeclared-source',
   'xl3/lists/missing-reference',

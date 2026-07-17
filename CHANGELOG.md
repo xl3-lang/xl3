@@ -6,6 +6,34 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`@subtotal` rows no longer silently demote (#66, ADR-0073).** A
+  `@subtotal` row that also carried a current-row `[Column]` reference
+  outside an aggregate used to fall through to the data-row classifier
+  and render the subtotal band after *every* data row with grand-total
+  values — a spec violation with plausible-but-wrong output and no
+  diagnostic. It now raises the dedicated **`xl3/subtotal/mixed-row`**
+  error naming the offending cell. Bracket text inside a string literal
+  (e.g. `{{ "Subtotal [Customer]" }}`) is correctly treated as literal
+  text, not a current-row reference, so such labels remain valid.
+- **A formula cell's cached result is no longer read as a template
+  marker (#66, ADR-0073, amends ADR-0046).** `parser.ts` scanned a
+  native formula's cached `<v>` result for `{{ … }}` markers, while the
+  renderer never did — so a label formula whose cached value looked like
+  a marker (a common Excel/LibreOffice round-trip artifact) could
+  silently demote a `@subtotal` row. Marker/directive recognition now
+  ignores formula cells entirely, matching the renderer and ADR-0046;
+  such templates render correctly again with the formula preserved
+  verbatim.
+
+### Added
+
+- **Error code `xl3/subtotal/mixed-row`** (additive; no codes removed or
+  renamed — G3 error-catalog gate unaffected).
+- **Conformance fixtures 159 / 160** — the mixed-row error and the
+  formula-cache-is-not-a-marker guarantee.
+
 ## [0.9.0] - 2026-06-23
 
 0.9.0 final. Adds the `xl3-wasm` acceleration path as an opt-in

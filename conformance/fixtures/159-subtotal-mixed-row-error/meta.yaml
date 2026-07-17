@@ -1,0 +1,7 @@
+description: 'A @subtotal row that also carries a current-row [Column] reference outside an aggregate raises xl3/subtotal/mixed-row (language.md "Group + Subtotal", ADR-0038/ADR-0058). The pre-fix impl silently demoted the row to a second data-row template and emitted grand-total values after every data row. Diagnostic substring: "may not carry per-row [Column] references".'
+spec_section: language.md#group--subtotal / ADR-0073 / ADR-0038 / ADR-0058
+spec_version: "0.1"
+tags: [adr-0038, adr-0058, subtotal, error, negative-path, issue-66]
+verified_by: [manual-script]
+expected_error: 'may not carry per-row [Column] references'
+expected_error_code: 'xl3/subtotal/mixed-row'

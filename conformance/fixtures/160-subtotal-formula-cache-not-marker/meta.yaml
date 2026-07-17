@@ -1,0 +1,5 @@
+description: A formula cell's cached <v> result is NOT template text — marker/directive recognition ignores formula cells (ADR-0046). A @subtotal row whose label is a native formula caching `{{ [Customer] }} / Subtotal` stays a proper subtotal row: the label formula is preserved verbatim and the band fires once per @group boundary with per-group SUM([Amount]) (150, 200), not the demoted grand-total-after-every-row symptom (issue #66 self-corruption path).
+spec_section: ADR-0073 / ADR-0046 / language.md#group--subtotal / ADR-0038
+spec_version: "0.1"
+tags: [adr-0046, adr-0038, subtotal, formula-preservation, issue-66]
+verified_by: [manual-script]
