@@ -143,6 +143,14 @@ const config: Config = {
   // via @id so Organization, Person, SoftwareApplication, and WebSite are
   // treated as one coherent entity graph rather than isolated schema blocks.
   headTags: [
+    // Naver Search Advisor ownership verification (meta-tag method).
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'naver-site-verification',
+        content: '17297dad9d996f8aa377803da09a13c9de3f801b',
+      },
+    },
     {
       tagName: 'script',
       attributes: { type: 'application/ld+json' },
