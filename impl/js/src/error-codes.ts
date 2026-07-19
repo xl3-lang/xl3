@@ -31,6 +31,8 @@ export type XtlErrorCode =
   | 'xl3/source/unknown-column'
   | 'xl3/source/reserved-column-name'
   | 'xl3/sources/not-a-dictionary'
+  // Source JSON wire format (ADR-0075)
+  | 'xl3/source-json/invalid'
   // Reserved sheets (ADR-0011)
   | 'xl3/sheet/reserved-name'
   | 'xl3/sheet/duplicate-list-name'

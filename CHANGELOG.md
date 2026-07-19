@@ -6,6 +6,17 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Added
+
+- **JSON source input (`xl3-source-json/0.1`)** — new `convertJson` and
+  `previewJson` entry points accept a language-neutral JSON source instead
+  of a `data.xlsx`, so non-Excel hosts (Python, DB/ETL services) skip the
+  workbook round-trip (ADR-0075, #71). A JSON source renders identically to
+  the equivalent `data.xlsx`; the wire format is portable across
+  implementations. Malformed input raises the new `xl3/source-json/invalid`
+  error code. Additive — `convert` / `preview` / the `.xlsx` path are
+  unchanged.
+
 ## [0.10.0] - 2026-07-19
 
 Repository transferred to the **xl3-lang** GitHub organization and the npm

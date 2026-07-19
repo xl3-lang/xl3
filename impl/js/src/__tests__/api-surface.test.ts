@@ -21,6 +21,9 @@ const EXPECTED_RUNTIME_EXPORTS = [
   // Conversion entry points
   'convert',
   'preview',
+  // JSON source entry points (ADR-0075)
+  'convertJson',
+  'previewJson',
   'readTemplateInputs',
   'analyze',
   'analyzeModel',

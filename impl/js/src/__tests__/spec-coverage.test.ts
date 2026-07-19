@@ -79,6 +79,10 @@ const INFORMATIONAL_ADRS = new Set([
   // implementation, so no covering fixture yet. Remove from this list when
   // the warned-fallback conformance fixtures land (021/022 conversion).
   '0072', // proposed — numFmt coercion warned fallback (amends ADR-0003)
+  // ADR-0075 — implemented, but JSON source input is outside the
+  // .xlsx-driven conformance corpus (template.xlsx + data.xlsx). Covered
+  // by focused unit tests (json-source.test.ts) instead of a fixture.
+  '0075', // xl3-source-json — covered by unit tests, not the xlsx corpus
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.

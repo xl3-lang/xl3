@@ -42,6 +42,8 @@ removing or renaming any of them is a 2.0-only change.
 
 - `convert(template, source, options?) → Promise<OutputFile[]>`
 - `preview(template, source, options?) → Promise<PreviewResult>`
+- `convertJson(template, sourceJson, options?) → Promise<OutputFile[]>` (ADR-0075)
+- `previewJson(template, sourceJson, options?) → Promise<PreviewResult>` (ADR-0075)
 - `readTemplateInputs(template) → Promise<InputSpec[]>`
 - `analyze(template) → Promise<ParsedTemplate>`
 - `analyzeModel(template) → Promise<TemplateModel>`

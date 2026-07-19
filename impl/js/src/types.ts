@@ -55,6 +55,31 @@ export interface SourceSpec {
   description?: string;
 }
 
+// ADR-0075: the `xl3-source-json/0.1` wire format — a language-neutral
+// JSON source input consumed by `convertJson` / `previewJson`. The
+// *format* is normative (portable across implementations); the internal
+// `SourceData` the reader produces is not (see PORTERS_GUIDE.md).
+export type Xl3SourceJsonValue =
+  | null
+  | string
+  | number
+  | boolean
+  | { type: 'date'; value: string }
+  | { type: 'error'; value: string };
+
+export interface Xl3SourceJsonSource {
+  headers: string[];
+  rows: Xl3SourceJsonValue[][];
+}
+
+export interface Xl3SourceJson {
+  version: string;
+  sources: Record<string, Xl3SourceJsonSource>;
+}
+
+/** Accepted input shapes for `convertJson` / `previewJson` (ADR-0075). */
+export type Xl3SourceJsonInput = string | ArrayBuffer | Uint8Array | object;
+
 /**
  * A parsed template-expression reference inside a single cell.
  * Returned indirectly via {@link analyze} (`ParsedTemplate.variables`).
