@@ -300,11 +300,11 @@ as long as you have ruled out pitfalls #1 and #2.
 ## Verification: render and inspect
 
 Always render with a small realistic sample before handing the
-template off. The published package is `@jinyoung4478/xl3`.
+template off. The published package is `@xl3-lang/xl3`.
 
 ```js
 // verify.mjs
-import { convert } from '@jinyoung4478/xl3';
+import { convert } from '@xl3-lang/xl3';
 import { readFile, writeFile } from 'node:fs/promises';
 
 const tpl  = await readFile('template.xlsx');

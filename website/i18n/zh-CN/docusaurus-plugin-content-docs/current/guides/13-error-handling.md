@@ -14,7 +14,7 @@ xl3 会抛出**结构化错误**（按 ADR-0015），并附带稳定的 `error.c
 ## 捕获 + 分发
 
 ```ts
-import { convert, isXtlError } from '@jinyoung4478/xl3';
+import { convert, isXtlError } from '@xl3-lang/xl3';
 
 try {
   const outputs = await convert(templateBuffer, dataBuffer, options);

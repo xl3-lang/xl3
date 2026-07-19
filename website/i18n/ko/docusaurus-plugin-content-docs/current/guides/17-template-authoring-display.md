@@ -108,7 +108,7 @@ Excel native 정답입니다. 수식마다 한 줄, 익히는 데 몇 초.
 TypeScript 호스트에 xl3를 임베딩 중이라면:
 
 ```ts
-import { preview } from '@jinyoung4478/xl3';
+import { preview } from '@xl3-lang/xl3';
 
 const result = await preview(templateBuffer, dataBuffer);
 console.log(result.sources);   // 감지된 소스 행
@@ -127,7 +127,7 @@ npm run examples:build
 
 # 하나 렌더해서 확인
 node -e "
-import('@jinyoung4478/xl3').then(async ({ convert }) => {
+import('@xl3-lang/xl3').then(async ({ convert }) => {
   const fs = await import('node:fs/promises');
   const tpl = await fs.readFile('./template.xlsx');
   const data = await fs.readFile('./data.xlsx');

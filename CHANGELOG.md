@@ -6,6 +6,15 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Changed
+
+- **Package renamed `@jinyoung4478/xl3` → `@xl3-lang/xl3`.** The npm scope
+  now matches the `xl3-lang` GitHub organization the repository was
+  transferred to. The public API, the CLI bin (`xl3-conformance`), and all
+  behavior are unchanged — only the install name differs
+  (`npm install @xl3-lang/xl3`). The old `@jinyoung4478/xl3` package is
+  deprecated on npm with a pointer to the new name.
+
 ### Fixed
 
 - **`@subtotal` rows no longer silently demote (#66, ADR-0073).** A
@@ -62,7 +71,7 @@ G23 all ticked at this cut (see #48).
 External users opting in to the acceleration:
 
 ```bash
-npm install @jinyoung4478/xl3 xl3-wasm
+npm install @xl3-lang/xl3 xl3-wasm
 ```
 
 ### Added
@@ -604,7 +613,7 @@ unchanged.
 - **Package `exports` map** adds `./bundle` (minified) and
   `./bundle/dev` (unminified) entries, plus `unpkg` and `jsdelivr`
   fields so the CDN URL
-  `https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.4.1/`
+  `https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@0.4.1/`
   resolves to the bundle by default.
 - **Build script:** `npm run build:bundle` (tsup, ESM→IIFE).
   `prepublishOnly` runs it automatically.
@@ -612,13 +621,13 @@ unchanged.
 ### Usage
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.4.1/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@0.4.1/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const outputs = await xl3.convert(templateBuffer, dataBuffer);
 </script>
 ```
 
-The ESM `import { convert } from '@jinyoung4478/xl3'` form is
+The ESM `import { convert } from '@xl3-lang/xl3'` form is
 unchanged and remains the recommended path for bundler-driven
 projects.
 
@@ -869,7 +878,7 @@ patch to minor.
 Patch release rolling up everything that landed since `0.1.0` was
 published to npm. Includes one impl crash fix surfaced by the new
 boundary fixtures, the xl3-py issue #1 batch (5 findings), the
-ADR-0021/0022 documentation expansion, and the `@jinyoung4478/xl3`
+ADR-0021/0022 documentation expansion, and the `@xl3-lang/xl3`
 scoped name (which was effective with the 0.1.0 publish but
 documented here for completeness across the changelog timeline).
 
@@ -908,13 +917,13 @@ documented here for completeness across the changelog timeline).
 
 ### Changed
 
-- **npm package renamed** from `xl3` to `@jinyoung4478/xl3`. The
+- **npm package renamed** from `xl3` to `@xl3-lang/xl3`. The
   unscoped `xl3` name was rejected by npm's typosquatting prevention
   (too similar to `xlsx`, `xml`, etc.). Project name, GitHub repo,
   and the `xl3.io` domain are unchanged — only the npm package and
   the import specifier change. Install is now
-  `npm install @jinyoung4478/xl3`; importing is
-  `import { convert } from '@jinyoung4478/xl3'`. The conformance
+  `npm install @xl3-lang/xl3`; importing is
+  `import { convert } from '@xl3-lang/xl3'`. The conformance
   CLI binary (`xl3-conformance`) keeps its name.
 
 ### Fixed (xl3-py issue #1 batch)

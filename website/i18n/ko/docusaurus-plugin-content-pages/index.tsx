@@ -54,7 +54,7 @@ function Hero() {
             </Link>
             <Link
               className="button button--secondary button--lg"
-              href="https://www.npmjs.com/package/@jinyoung4478/xl3"
+              href="https://www.npmjs.com/package/@xl3-lang/xl3"
             >
               npm
             </Link>
@@ -324,7 +324,7 @@ function Reliability() {
         <p className={styles.conformanceFact}>
           XTL 0.1 은 <strong>ADR 70 개</strong>, <strong>conformance fixture 154 개</strong>를
           포함하며 Stage 2 까지 모두 통과합니다. TypeScript 레퍼런스 구현은{' '}
-          <a href="https://www.npmjs.com/package/@jinyoung4478/xl3">@jinyoung4478/xl3</a>로
+          <a href="https://www.npmjs.com/package/@xl3-lang/xl3">@xl3-lang/xl3</a>로
           공개되어 있습니다 — 다른 언어로의 포팅은{' '}
           <Link to="/porters-guide">포팅 가이드 (영문)</Link>를 참고하세요.
         </p>
@@ -356,7 +356,7 @@ function DeveloperApi() {
                 { kind: 'plain', text: ' ' },
                 { kind: 'kw', text: 'install' },
                 { kind: 'plain', text: ' ' },
-                { kind: 'var', text: '@jinyoung4478/xl3' },
+                { kind: 'var', text: '@xl3-lang/xl3' },
               ],
             ]}
           />
@@ -370,7 +370,7 @@ function DeveloperApi() {
                 { kind: 'plain', text: ' } ' },
                 { kind: 'kw', text: 'from' },
                 { kind: 'plain', text: ' ' },
-                { kind: 'string', text: "'@jinyoung4478/xl3'" },
+                { kind: 'string', text: "'@xl3-lang/xl3'" },
                 { kind: 'plain', text: ';' },
               ],
               [{ kind: 'plain', text: '' }],

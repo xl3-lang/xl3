@@ -5,7 +5,7 @@
 > 열린 표준으로.
 
 **상태:** alpha · **XTL spec 0.1 (draft)** · 레퍼런스 구현
-`@jinyoung4478/xl3` 0.9.0 · 1.0 전까지 breaking change 가능
+`@xl3-lang/xl3` 0.9.0 · 1.0 전까지 breaking change 가능
 
 **xl3**는 평범한 `.xlsx` 워크북을 결정론적·선언형 변환 템플릿으로 바꾸는
 열린 표준입니다. 레이아웃·스타일·병합 셀·규칙이 *워크북 안에* 들어가고,
@@ -18,12 +18,12 @@
 - **[Conformance 스위트](./conformance/)** — 어떤 구현이든 규격 준수를
   증명하기 위해 실행하는 언어중립 픽스처.
 - **레퍼런스 구현** —
-  [`@jinyoung4478/xl3`](https://www.npmjs.com/package/@jinyoung4478/xl3)
+  [`@xl3-lang/xl3`](https://www.npmjs.com/package/@xl3-lang/xl3)
   (TypeScript, [`src/`](./src/)) — 여러 [구현](./IMPLEMENTATIONS.md) 중
   하나 (Rust/WASM·Python 진행 중).
 
 **세 이름, 하나의 스택:** **xl3** = 표준(이 포맷) · **XTL** = 그 임베디드
-표현식 언어 · **`@jinyoung4478/xl3`** = 그 TypeScript 레퍼런스 구현.
+표현식 언어 · **`@xl3-lang/xl3`** = 그 TypeScript 레퍼런스 구현.
 
 월간 보고서·견적서·거래명세서·재무 보고서처럼 반복되는 Excel 문서를
 Excel에서 계속 수정할 수 있게 두면서도 실행은 결정론적이고 점검·검증
@@ -174,13 +174,13 @@ Business   -> 결과 사용
 ## 설치
 
 ```bash
-npm install @jinyoung4478/xl3
+npm install @xl3-lang/xl3
 ```
 
 ## 사용법
 
 ```ts
-import { convert } from '@jinyoung4478/xl3';
+import { convert } from '@xl3-lang/xl3';
 
 const templateBuffer = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
 const dataBuffer = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
@@ -197,7 +197,7 @@ const outputs = await convert(templateBuffer, dataBuffer);
 `window.xl3` 로 사용할 수 있습니다.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.8.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@0.8.0/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

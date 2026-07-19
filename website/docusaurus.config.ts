@@ -291,7 +291,7 @@ const config: Config = {
         },
         { type: 'localeDropdown', position: 'right' },
         { href: 'https://github.com/xl3-lang/xl3', label: 'GitHub', position: 'right' },
-        { href: 'https://www.npmjs.com/package/@jinyoung4478/xl3', label: 'npm', position: 'right' },
+        { href: 'https://www.npmjs.com/package/@xl3-lang/xl3', label: 'npm', position: 'right' },
       ],
     },
     footer: {
@@ -321,7 +321,7 @@ const config: Config = {
           title: 'Code',
           items: [
             { label: 'GitHub', href: 'https://github.com/xl3-lang/xl3' },
-            { label: 'npm', href: 'https://www.npmjs.com/package/@jinyoung4478/xl3' },
+            { label: 'npm', href: 'https://www.npmjs.com/package/@xl3-lang/xl3' },
             { label: 'Changelog', href: 'https://github.com/xl3-lang/xl3/blob/main/CHANGELOG.md' },
           ],
         },

@@ -38,7 +38,7 @@ Filter:         {{ @filter [地域] = __inputs__[region] OR __inputs__[region] =
 ## ホストから値を渡す
 
 ```ts
-import { convert } from '@jinyoung4478/xl3';
+import { convert } from '@xl3-lang/xl3';
 
 const outputs = await convert(templateBuffer, dataBuffer, {
   inputs: { month: '2026-05', region: '東京' },
@@ -50,7 +50,7 @@ const outputs = await convert(templateBuffer, dataBuffer, {
 ## 変換せずに入力値定義だけを読む
 
 ```ts
-import { readTemplateInputs } from '@jinyoung4478/xl3';
+import { readTemplateInputs } from '@xl3-lang/xl3';
 
 const inputs = await readTemplateInputs(templateBuffer);
 // → [{ name: 'month', type: 'text', required: true, ... }, ...]

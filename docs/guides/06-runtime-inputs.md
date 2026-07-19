@@ -38,7 +38,7 @@ specific region.
 ## Pass values from the host
 
 ```ts
-import { convert } from '@jinyoung4478/xl3';
+import { convert } from '@xl3-lang/xl3';
 
 const outputs = await convert(templateBuffer, dataBuffer, {
   inputs: { month: '2026-05', region: 'Seoul' },
@@ -52,7 +52,7 @@ isn't supplied, it falls back to the `default` (`All`).
 ## Inspect declared inputs without running
 
 ```ts
-import { readTemplateInputs } from '@jinyoung4478/xl3';
+import { readTemplateInputs } from '@xl3-lang/xl3';
 
 const inputs = await readTemplateInputs(templateBuffer);
 // → [{ name: 'month', type: 'text', required: true, ... }, ...]

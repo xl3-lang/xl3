@@ -37,7 +37,7 @@ npm install xl3-wasm
 Then pick the path per call:
 
 ```ts
-import { convert } from '@jinyoung4478/xl3';
+import { convert } from '@xl3-lang/xl3';
 
 const tpl = await readFile('examples/01-basic-renewal-report/template.xlsx');
 const data = await readFile('examples/01-basic-renewal-report/data.xlsx');

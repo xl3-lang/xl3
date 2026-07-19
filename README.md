@@ -5,7 +5,7 @@
 > standard, not a single library.
 
 **Status:** alpha · **XTL spec 0.1 (draft)** · reference implementation
-`@jinyoung4478/xl3` 0.9.0 · breaking changes possible until 1.0
+`@xl3-lang/xl3` 0.9.0 · breaking changes possible until 1.0
 
 **xl3** is an open standard for turning an ordinary `.xlsx` workbook into a
 deterministic, declarative transformation template: the layout, styles,
@@ -20,12 +20,12 @@ time. This repository *defines* the standard, in three parts:
 - **[Conformance suite](./conformance/)** — language-neutral fixtures that
   every implementation runs to prove it conforms.
 - **Reference implementation** —
-  [`@jinyoung4478/xl3`](https://www.npmjs.com/package/@jinyoung4478/xl3)
+  [`@xl3-lang/xl3`](https://www.npmjs.com/package/@xl3-lang/xl3)
   (TypeScript, in [`src/`](./src/)) — one of several
   [implementations](./IMPLEMENTATIONS.md) (Rust/WASM and Python in progress).
 
 **Three names, one stack:** **xl3** is the standard (this format) · **XTL**
-is its embedded expression language · **`@jinyoung4478/xl3`** is the
+is its embedded expression language · **`@xl3-lang/xl3`** is the
 TypeScript reference implementation of it.
 
 It fits when recurring Excel documents — invoices, settlement statements,
@@ -180,19 +180,19 @@ automation becomes an organizational capability.
 ## Install
 
 ```bash
-npm install @jinyoung4478/xl3
+npm install @xl3-lang/xl3
 ```
 
 Optional acceleration (rc):
 
 ```bash
-npm install @jinyoung4478/xl3@rc xl3-wasm
+npm install @xl3-lang/xl3@rc xl3-wasm
 ```
 
 ## Usage
 
 ```ts
-import { convert } from '@jinyoung4478/xl3';
+import { convert } from '@xl3-lang/xl3';
 
 const templateBuffer = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
 const dataBuffer = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
@@ -226,7 +226,7 @@ For projects that don't use a bundler, a self-contained IIFE bundle
 exposes `window.xl3`:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@jinyoung4478/xl3@0.8.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@0.8.0/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

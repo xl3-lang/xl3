@@ -114,7 +114,7 @@ workbook in seconds.
 If you're embedding xl3 in a TypeScript host:
 
 ```ts
-import { preview } from '@jinyoung4478/xl3';
+import { preview } from '@xl3-lang/xl3';
 
 const result = await preview(templateBuffer, dataBuffer);
 console.log(result.sources);   // detected source rows
@@ -134,7 +134,7 @@ npm run examples:build
 
 # Render one and inspect
 node -e "
-import('@jinyoung4478/xl3').then(async ({ convert }) => {
+import('@xl3-lang/xl3').then(async ({ convert }) => {
   const fs = await import('node:fs/promises');
   const tpl = await fs.readFile('./template.xlsx');
   const data = await fs.readFile('./data.xlsx');

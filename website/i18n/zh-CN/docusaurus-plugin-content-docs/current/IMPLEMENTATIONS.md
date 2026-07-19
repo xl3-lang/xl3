@@ -8,7 +8,7 @@ slug: /implementations
 
 | 语言 | 仓库 | 包 | 规范版本 | 一致性 | 备注 |
 |---|---|---|---|---|---|
-| TypeScript | [`xl3-lang/xl3`](https://github.com/xl3-lang/xl3) | [`@jinyoung4478/xl3`](https://www.npmjs.com/package/@jinyoung4478/xl3) | XTL 0.1（草案） | 参考实现；**139/139** fixture 通过（133 Stage 1 + 仅 6 Stage 2） | 浏览器 + Node ≥ 20.12；通过 `npx xl3-conformance` 运行；CI 中带 3 时区矩阵 |
+| TypeScript | [`xl3-lang/xl3`](https://github.com/xl3-lang/xl3) | [`@xl3-lang/xl3`](https://www.npmjs.com/package/@xl3-lang/xl3) | XTL 0.1（草案） | 参考实现；**139/139** fixture 通过（133 Stage 1 + 仅 6 Stage 2） | 浏览器 + Node ≥ 20.12；通过 `npx xl3-conformance` 运行；CI 中带 3 时区矩阵 |
 | Python | [`jinyoung4478/xl3-py`](https://github.com/jinyoung4478/xl3-py) | _（未发布）_ | XTL 0.1（草案） | **草案**，开发中 | 与参考实现并行跟踪；在 [`conformance/reports/`](https://github.com/xl3-lang/xl3/tree/main/conformance/reports) 下放一份 `--report=json` 产物，`npm run conformance:dashboard` 就会把它接进来 |
 
 ## 新增一个实现

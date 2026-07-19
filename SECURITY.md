@@ -57,7 +57,7 @@ These are spec-normative, not impl quirks:
 | **DoS via pathological data** (many groups, deep formulas) | Host SHOULD wrap `convert()` in `Promise.race` against a timeout or pass an `AbortSignal` (planned per G21) | xl3 ships no timeout itself — a single conversion is single-threaded; the host process is the right place to enforce wall-clock |
 | **Path traversal in output filenames** | Mitigated — ADR-0002 sanitization strips forbidden chars and reserved device names | Hosts that write outputs to disk MAY still apply additional whitelists |
 | **CSV / formula injection** in *output* cells | Out of scope for xl3; the output is XLSX, not CSV | If a downstream consumer exports xl3 output to CSV, that consumer is responsible for CSV-injection mitigation |
-| **Supply chain (npm)** | `@jinyoung4478/xl3` publishes with `npm publish --access=public --otp`. Maintainer 2FA via security key required at publish time | Per maintainer; reflected in `RELEASING.md` |
+| **Supply chain (npm)** | `@xl3-lang/xl3` publishes with `npm publish --access=public --otp`. Maintainer 2FA via security key required at publish time | Per maintainer; reflected in `RELEASING.md` |
 
 ## Hosts that accept user-supplied templates
 
@@ -99,7 +99,7 @@ records the CVE-equivalent identifier and credits the reporter
 
 The maintainer accepts security reports for:
 
-- The **current minor** of `@jinyoung4478/xl3` on npm.
+- The **current minor** of `@xl3-lang/xl3` on npm.
 - The **previous minor** for ≥ 90 days after a new minor cuts.
 
 Older versions are not patched. Users are expected to track the

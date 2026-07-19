@@ -1,7 +1,7 @@
-// Webpack alias so `import '@jinyoung4478/xl3'` from the /try page
+// Webpack alias so `import '@xl3-lang/xl3'` from the /try page
 // resolves to the local `dist/` build instead of node_modules. Keeps
 // the playground in sync with the source under development — no
-// version drift between published @jinyoung4478/xl3 and what gets
+// version drift between published @xl3-lang/xl3 and what gets
 // shipped at /try.
 
 const path = require('path');
@@ -13,7 +13,7 @@ module.exports = function xl3AliasPlugin(context) {
       return {
         resolve: {
           alias: {
-            '@jinyoung4478/xl3$': path.resolve(context.siteDir, '..', 'dist', 'index.js'),
+            '@xl3-lang/xl3$': path.resolve(context.siteDir, '..', 'dist', 'index.js'),
           },
         },
       };

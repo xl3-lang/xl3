@@ -83,7 +83,7 @@ JxlsHelper.getInstance().processTemplate(templateStream, outStream, context);
 xl3 (Node.js or browser):
 
 ```js
-import { convert } from '@jinyoung4478/xl3';
+import { convert } from '@xl3-lang/xl3';
 
 const outputs = await convert(templateBuffer, dataBuffer);
 // outputs: [{ filename: 'renewal-report.xlsx', buffer }, ...]

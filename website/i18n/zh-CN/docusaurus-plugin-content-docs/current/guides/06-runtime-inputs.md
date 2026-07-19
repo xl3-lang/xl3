@@ -37,7 +37,7 @@ pagination_label: '06 · 运行时输入'
 ## 从宿主传入值
 
 ```ts
-import { convert } from '@jinyoung4478/xl3';
+import { convert } from '@xl3-lang/xl3';
 
 const outputs = await convert(templateBuffer, dataBuffer, {
   inputs: { month: '2026-05', region: '北京' },
@@ -49,7 +49,7 @@ const outputs = await convert(templateBuffer, dataBuffer, {
 ## 不运行就查看已声明的输入
 
 ```ts
-import { readTemplateInputs } from '@jinyoung4478/xl3';
+import { readTemplateInputs } from '@xl3-lang/xl3';
 
 const inputs = await readTemplateInputs(templateBuffer);
 // → [{ name: 'month', type: 'text', required: true, ... }, ...]

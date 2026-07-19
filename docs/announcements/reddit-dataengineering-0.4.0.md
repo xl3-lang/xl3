@@ -43,7 +43,7 @@ The transformation rules live **inside an Excel template**:
 The engine in code shrinks to one line:
 
 ```ts
-import { convert } from '@jinyoung4478/xl3';
+import { convert } from '@xl3-lang/xl3';
 const outputs = await convert(templateBuffer, dataBuffer);
 ```
 
@@ -55,7 +55,7 @@ const outputs = await convert(templateBuffer, dataBuffer);
   (OOXML-canonical comparison). Stage 1 (cell-value) runs across
   three timezones in CI.
 - A **TypeScript reference implementation** on npm
-  (`@jinyoung4478/xl3`) plus a browser demo at https://xl3.io.
+  (`@xl3-lang/xl3`) plus a browser demo at https://xl3.io.
 - A **porter's guide** that catalogs the gotchas a second-language
   port hits (Unicode normalization, IEEE 754 precision, timezone
   handling, etc.). A Python port is in progress.
@@ -74,7 +74,7 @@ const outputs = await convert(templateBuffer, dataBuffer);
 Repo: https://github.com/xl3-lang/xl3
 Spec: https://github.com/xl3-lang/xl3/tree/main/spec
 Guides: https://github.com/xl3-lang/xl3/tree/main/docs/guides
-npm: `npm install @jinyoung4478/xl3@0.4.0`
+npm: `npm install @xl3-lang/xl3@0.4.0`
 
 Status: alpha. The audit pass that just landed in 0.4.0 closed every
 "silent fallthrough" the corpus exposed — either an error code or a
