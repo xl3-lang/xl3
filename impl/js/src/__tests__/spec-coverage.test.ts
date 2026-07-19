@@ -70,10 +70,10 @@ const INFORMATIONAL_ADRS = new Set([
   // design ahead of implementation, so no covering fixture yet. Remove
   // from this list when the derived-key conformance fixtures land.
   '0070', // proposed — #54(A) derived columns
-  // ADR-0071 — proposed / impl-pending. Source cell scalar reference:
-  // doc-only design ahead of implementation, so no covering fixture yet.
-  // Remove from this list when the source-cell conformance fixtures land.
-  '0071', // proposed — source cell scalar reference
+  // ADR-0071 — rejected (see the ADR): SOURCECELL not adopted; source
+  // metadata is covered by __inputs__ for host-driven flows (#57). A
+  // rejected design has no covering fixture.
+  '0071', // rejected — source cell scalar reference (superseded by __inputs__)
   // ADR-0072 — proposed / impl-pending. Amends ADR-0003: numFmt coercion
   // failure degrades to a warned text fallback. Doc-only design ahead of
   // implementation, so no covering fixture yet. Remove from this list when
