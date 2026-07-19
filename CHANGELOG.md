@@ -1298,16 +1298,16 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/jinyoung4478/xl3/compare/v0.8.0...HEAD
-[0.8.0]: https://github.com/jinyoung4478/xl3/compare/v0.7.0...v0.8.0
-[0.7.0]: https://github.com/jinyoung4478/xl3/compare/v0.6.0...v0.7.0
-[0.6.0]: https://github.com/jinyoung4478/xl3/compare/v0.5.1...v0.6.0
-[0.5.1]: https://github.com/jinyoung4478/xl3/compare/v0.5.0...v0.5.1
-[0.5.0]: https://github.com/jinyoung4478/xl3/compare/v0.4.1...v0.5.0
-[0.4.1]: https://github.com/jinyoung4478/xl3/compare/v0.4.0...v0.4.1
-[0.4.0]: https://github.com/jinyoung4478/xl3/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/jinyoung4478/xl3/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/jinyoung4478/xl3/compare/v0.1.1...v0.2.0
-[0.1.1]: https://github.com/jinyoung4478/xl3/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/jinyoung4478/xl3/compare/v0.1.0-alpha.0...v0.1.0
-[0.1.0-alpha.0]: https://github.com/jinyoung4478/xl3/releases/tag/v0.1.0-alpha.0
+[Unreleased]: https://github.com/xl3-lang/xl3/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/xl3-lang/xl3/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/xl3-lang/xl3/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/xl3-lang/xl3/compare/v0.5.1...v0.6.0
+[0.5.1]: https://github.com/xl3-lang/xl3/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/xl3-lang/xl3/compare/v0.4.1...v0.5.0
+[0.4.1]: https://github.com/xl3-lang/xl3/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/xl3-lang/xl3/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/xl3-lang/xl3/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/xl3-lang/xl3/compare/v0.1.1...v0.2.0
+[0.1.1]: https://github.com/xl3-lang/xl3/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/xl3-lang/xl3/compare/v0.1.0-alpha.0...v0.1.0
+[0.1.0-alpha.0]: https://github.com/xl3-lang/xl3/releases/tag/v0.1.0-alpha.0

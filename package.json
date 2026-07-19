@@ -16,10 +16,10 @@
   "homepage": "https://xl3.io",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jinyoung4478/xl3.git"
+    "url": "git+https://github.com/xl3-lang/xl3.git"
   },
   "bugs": {
-    "url": "https://github.com/jinyoung4478/xl3/issues"
+    "url": "https://github.com/xl3-lang/xl3/issues"
   },
   "type": "module",
   "sideEffects": false,

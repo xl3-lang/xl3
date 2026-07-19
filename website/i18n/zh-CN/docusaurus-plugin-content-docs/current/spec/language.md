@@ -6,7 +6,7 @@
 
 本文档定义 XTL 0.1 模板语言的表面。这里的写法对模板作者与实现而言均为规范性的。
 
-`{{ ... }}` 模板块内容的形式语法见 [`grammar.ebnf`](https://github.com/jinyoung4478/xl3/blob/main/spec/grammar.ebnf) —— 这是面向移植者与工具方的非规范性辅助材料。术语定义见 [`glossary.md`](/zh-CN/spec/glossary)。
+`{{ ... }}` 模板块内容的形式语法见 [`grammar.ebnf`](https://github.com/xl3-lang/xl3/blob/main/spec/grammar.ebnf) —— 这是面向移植者与工具方的非规范性辅助材料。术语定义见 [`glossary.md`](/zh-CN/spec/glossary)。
 
 ## 模板块（Template Blocks）
 

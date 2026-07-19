@@ -53,5 +53,5 @@
   <!-- Footer line -->
   <text x="80" y="595"
         font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
-        font-size="18" fill="#8b949e" letter-spacing="1">xl3.io · github.com/jinyoung4478/xl3</text>
+        font-size="18" fill="#8b949e" letter-spacing="1">xl3.io · github.com/xl3-lang/xl3</text>
 </svg>

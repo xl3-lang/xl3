@@ -36,7 +36,7 @@ export default function NotFoundKo() {
               <strong>변환기</strong>
               <span>브라우저에서 xl3 바로 실행</span>
             </Link>
-            <Link className={clsx(styles.card, styles.outbound)} href="https://github.com/jinyoung4478/xl3">
+            <Link className={clsx(styles.card, styles.outbound)} href="https://github.com/xl3-lang/xl3">
               <strong>GitHub</strong>
               <span>소스 코드, 이슈, 토론</span>
             </Link>
@@ -48,7 +48,7 @@ export default function NotFoundKo() {
 
           <p className={styles.foot}>
             이 URL 이 정상적으로 동작해야 한다고 생각하시면{' '}
-            <Link href="https://github.com/jinyoung4478/xl3/issues">이슈로 알려주세요</Link>.
+            <Link href="https://github.com/xl3-lang/xl3/issues">이슈로 알려주세요</Link>.
           </p>
         </div>
       </main>

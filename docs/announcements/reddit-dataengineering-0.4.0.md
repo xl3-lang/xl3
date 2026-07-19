@@ -71,9 +71,9 @@ const outputs = await convert(templateBuffer, dataBuffer);
    readable in one sitting. If anything in it is unclear or feels
    wrong, please say so.
 
-Repo: https://github.com/jinyoung4478/xl3
-Spec: https://github.com/jinyoung4478/xl3/tree/main/spec
-Guides: https://github.com/jinyoung4478/xl3/tree/main/docs/guides
+Repo: https://github.com/xl3-lang/xl3
+Spec: https://github.com/xl3-lang/xl3/tree/main/spec
+Guides: https://github.com/xl3-lang/xl3/tree/main/docs/guides
 npm: `npm install @jinyoung4478/xl3@0.4.0`
 
 Status: alpha. The audit pass that just landed in 0.4.0 closed every

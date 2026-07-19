@@ -465,7 +465,7 @@ exactly what abstraction the next one needs.
 
 When you discover a place where the spec is genuinely ambiguous (not
 "I don't understand it" — actually under-specified), file an issue
-against [xl3](https://github.com/jinyoung4478/xl3/issues) with:
+against [xl3](https://github.com/xl3-lang/xl3/issues) with:
 
 - The fixture number / spec section.
 - Your port's interpretation.

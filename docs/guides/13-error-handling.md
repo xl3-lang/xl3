@@ -58,7 +58,7 @@ current set:
 - **`xl3/parser/*`** — parser failures
 - **`xl3/lists/*`** — `__lists__` reference issues
 
-Full list in [`src/error-codes.ts`](https://github.com/jinyoung4478/xl3/blob/main/src/error-codes.ts).
+Full list in [`src/error-codes.ts`](https://github.com/xl3-lang/xl3/blob/main/src/error-codes.ts).
 
 ## Common cases worth handling explicitly
 

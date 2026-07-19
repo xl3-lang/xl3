@@ -6,7 +6,7 @@
 
 本ドキュメントは XTL 0.1 テンプレート言語のサーフェスを定義します。本文の記法はテンプレート作成者と実装にとって規範的（normative）です。
 
-`{{ ... }}` テンプレートブロックの内容に対する形式文法は [`grammar.ebnf`](https://github.com/jinyoung4478/xl3/blob/main/spec/grammar.ebnf) にあります。これはポーターおよびツール作成者のための非規範的な補助資料です。用語の定義は [`glossary.md`](/ja/spec/glossary) を参照してください。
+`{{ ... }}` テンプレートブロックの内容に対する形式文法は [`grammar.ebnf`](https://github.com/xl3-lang/xl3/blob/main/spec/grammar.ebnf) にあります。これはポーターおよびツール作成者のための非規範的な補助資料です。用語の定義は [`glossary.md`](/ja/spec/glossary) を参照してください。
 
 ## テンプレートブロック
 

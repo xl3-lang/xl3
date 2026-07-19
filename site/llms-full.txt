@@ -4,7 +4,7 @@
 
 Version: 0.9.0 (pre-1.0 freeze cut). 1.0 earliest target: ~September 21, 2026.
 Spec: 70 ADRs, 154 conformance fixtures, MIT license.
-Repository: https://github.com/jinyoung4478/xl3
+Repository: https://github.com/xl3-lang/xl3
 Website: https://xl3.io
 
 Key facts:
@@ -564,4 +564,4 @@ No context object. Everything the render needs is in the two workbooks.
 - [Conformance suite](https://xl3.io/conformance): fixture-based conformance testing for implementations
 - [Porter's guide](https://xl3.io/porters-guide): how to implement XTL in another language
 - [Roadmap to 1.0](https://xl3.io/roadmap): gates and target dates
-- [GitHub repository](https://github.com/jinyoung4478/xl3): source, issues, ADRs
+- [GitHub repository](https://github.com/xl3-lang/xl3): source, issues, ADRs

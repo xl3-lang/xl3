@@ -33,4 +33,4 @@ Key facts:
 - [Porter's guide](https://xl3.io/porters-guide): how to implement XTL in another language
 - [Governance](https://xl3.io/governance): how spec decisions are made
 - [Roadmap](https://xl3.io/roadmap): gates to 1.0
-- [GitHub repository](https://github.com/jinyoung4478/xl3): source, issues, ADRs
+- [GitHub repository](https://github.com/xl3-lang/xl3): source, issues, ADRs

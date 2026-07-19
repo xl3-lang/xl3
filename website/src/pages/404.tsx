@@ -36,7 +36,7 @@ export default function NotFound() {
               <strong>Try it</strong>
               <span>Run xl3 in the browser</span>
             </Link>
-            <Link className={clsx(styles.card, styles.outbound)} href="https://github.com/jinyoung4478/xl3">
+            <Link className={clsx(styles.card, styles.outbound)} href="https://github.com/xl3-lang/xl3">
               <strong>GitHub</strong>
               <span>Source, issues, discussions</span>
             </Link>
@@ -48,7 +48,7 @@ export default function NotFound() {
 
           <p className={styles.foot}>
             If you think this URL should resolve to something,{' '}
-            <Link href="https://github.com/jinyoung4478/xl3/issues">file an issue</Link>.
+            <Link href="https://github.com/xl3-lang/xl3/issues">file an issue</Link>.
           </p>
         </div>
       </main>

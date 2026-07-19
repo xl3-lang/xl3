@@ -71,7 +71,7 @@ function Hero() {
             </Link>
             <Link
               className="button button--secondary button--lg"
-              href="https://github.com/jinyoung4478/xl3"
+              href="https://github.com/xl3-lang/xl3"
             >
               GitHub
             </Link>

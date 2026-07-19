@@ -57,7 +57,7 @@ try {
 - **`xl3/parser/*`** — 파서 실패
 - **`xl3/lists/*`** — `__lists__` 참조 문제
 
-전체 목록은 [`src/error-codes.ts`](https://github.com/jinyoung4478/xl3/blob/main/src/error-codes.ts) 에 있습니다.
+전체 목록은 [`src/error-codes.ts`](https://github.com/xl3-lang/xl3/blob/main/src/error-codes.ts) 에 있습니다.
 
 ## 명시적으로 다룰 만한 흔한 케이스
 

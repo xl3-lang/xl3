@@ -69,7 +69,7 @@ XTL 集計は引数内に行単位の算術式を受け付けません。`{{ SUM
 3 つの解決策(好ましい順):
 
 1. **ソースにヘルパー列を追加** ― ソースに `金額` 列(計算式または事前に掛けた値)を作り `{{ SUM([金額]) }}` を使用。「A × B の合計」標準 XTL パターン。
-2. **フッターセルにネイティブ Excel `SUMPRODUCT`** ― xl3 はセル数式をそのまま保存します(ADR-0046)。フッターセルに `=SUMPRODUCT(E2:E10000, F2:F10000)` を直接書きます。レンダー時点の実際の行数が分からないので `E2:E10000` のようなオーバーシュート範囲を使います。2 つのフッター落とし穴(自列参照、行オーバーシュートの二重カウント)を避けないといけません ― [LLM 作成ガイド § Footer pitfalls](https://github.com/jinyoung4478/xl3/blob/main/docs/llm-template-authoring.md#footer-pitfall-1--self-column-sum-raises-순환-참조-circular-reference) を参照。
+2. **フッターセルにネイティブ Excel `SUMPRODUCT`** ― xl3 はセル数式をそのまま保存します(ADR-0046)。フッターセルに `=SUMPRODUCT(E2:E10000, F2:F10000)` を直接書きます。レンダー時点の実際の行数が分からないので `E2:E10000` のようなオーバーシュート範囲を使います。2 つのフッター落とし穴(自列参照、行オーバーシュートの二重カウント)を避けないといけません ― [LLM 作成ガイド § Footer pitfalls](https://github.com/xl3-lang/xl3/blob/main/docs/llm-template-authoring.md#footer-pitfall-1--self-column-sum-raises-순환-참조-circular-reference) を参照。
 3. **行単位 XTL セル + レンダー出力のヘルパー列** ― `{{ [数量] * [単価] }}` を行単位セルに置きます(集計ではないので正常動作)。その値までフッターで合計したいなら結局 1 番か 2 番に戻ります。
 
 なぜこの制約があるのか: XTL 0.x は関数表面を小さく予測可能に保ちます。行単位計算後の集計(Excel 配列数式動作)は意図的に deferred ― ADR-0059 § "Why not allow `SUM([a] + [b])`"。
