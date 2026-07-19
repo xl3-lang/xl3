@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 import { parseTemplate, populateColumnRefs } from './parser.js';
 import { readAllSources, columnSet } from './reader.js';
 import type { SourceData } from './reader.js';
+import { readJsonSources } from './json-source.js';
 import { groupRows } from './grouper.js';
 import { Renderer } from './renderer.js';
 import { applyDirectives } from './data-transform.js';
@@ -15,6 +16,7 @@ import type {
   ConvertOptions,
   InputSpec,
   XtlWarning,
+  Xl3SourceJsonInput,
 } from './types.js';
 
 export type {
@@ -43,6 +45,10 @@ export type {
   SourceSpec,
   XtlWarning,
   XtlWarningCode,
+  Xl3SourceJsonValue,
+  Xl3SourceJsonSource,
+  Xl3SourceJson,
+  Xl3SourceJsonInput,
 } from './types.js';
 export { readConfigSheet, writeConfigSheet, readInputsSheet } from './parser.js';
 export type { ConfigResult } from './parser.js';
@@ -67,11 +73,15 @@ interface PreparedConversion {
   columns: Set<string>;
   grouped: ReturnType<typeof groupRows>;
   renderer: Renderer;
+  // ADR-0075: how the sources were ingested, so preview can surface
+  // JSON sources without .xlsx-only sheet/table coordinates.
+  sourceKind: 'xlsx' | 'json';
 }
 
 function prepareConversionFromSources(
   parsed: ParsedTemplate,
   sources: Record<string, SourceData>,
+  sourceKind: 'xlsx' | 'json' = 'xlsx',
 ): PreparedConversion {
   const defaultSource = sources['default']!;
   const columns = columnSet(defaultSource.headers);
@@ -80,7 +90,7 @@ function prepareConversionFromSources(
   const grouped = groupRows(defaultSource.rows, parsed.fileGroupKeys, parsed.sheetTemplates);
   const renderer = new Renderer(parsed, columns, sources);
 
-  return { parsed, source: defaultSource, sources, columns, grouped, renderer };
+  return { parsed, source: defaultSource, sources, columns, grouped, renderer, sourceKind };
 }
 
 /** Shared first stage: parse template + read source + resolve columns + group. */
@@ -156,7 +166,7 @@ function buildPreviewWarnings(parsed: TemplateModel, columns: Set<string>): XtlW
 }
 
 function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
-  const { parsed, sources, columns, grouped, renderer } = prepared;
+  const { parsed, sources, columns, grouped, renderer, sourceKind } = prepared;
   const warnings = buildPreviewWarnings(parsed, columns);
   const inputs = parsed.inputs;
 
@@ -165,6 +175,28 @@ function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
   // row count and headers. Hosts use this to show operators what data
   // is available.
   const previewSources = Object.entries(sources).map(([name, data]) => {
+    // ADR-0075: JSON sources have no .xlsx sheet/table coordinates;
+    // surface sentinels so hosts still see the name, rows, and headers.
+    if (sourceKind === 'json') {
+      if (name === 'default') {
+        return {
+          name,
+          sheet: name,
+          table: '(json-source)',
+          rowCount: data.rows.length,
+          headers: data.headers,
+        };
+      }
+      const spec = parsed.sources.find((s) => s.name === name);
+      return {
+        name,
+        sheet: name,
+        table: '(json-source)',
+        description: spec?.description,
+        rowCount: data.rows.length,
+        headers: data.headers,
+      };
+    }
     if (name === 'default') {
       return {
         name,
@@ -319,6 +351,76 @@ export async function preview(
     return { ...partial, inputs, warnings: [] };
   }
   const prepared = await prepareConversion(templateBuffer, sourceBuffer, options);
+  return buildPreviewFromPrepared(prepared);
+}
+
+// ADR-0075: JSON source path. Everything below the source-read seam is
+// shared with the .xlsx path — only ingestion differs — so `convertJson`
+// renders byte-identical output to `convert` with the equivalent
+// `data.xlsx`.
+async function prepareConversionFromJson(
+  templateBuffer: ArrayBuffer,
+  sourceJson: Xl3SourceJsonInput,
+  options?: ConvertOptions,
+): Promise<PreparedConversion> {
+  const parsed = await parseTemplate(templateBuffer);
+  applyResolvedInputs(parsed, options);
+  const sources = readJsonSources(sourceJson, parsed.sources);
+  return prepareConversionFromSources(parsed, sources, 'json');
+}
+
+function assertNoWasmForJson(options?: ConvertOptions): void {
+  if (options?.engine === 'wasm') {
+    throw new Error(
+      'engine: "wasm" is not supported for JSON source input (xl3-source-json/0.1 runs the JS engine only)',
+    );
+  }
+}
+
+/**
+ * Run full conversion from a JSON source (ADR-0075) instead of a
+ * `data.xlsx`. Accepts the `xl3-source-json/0.1` wire format as a JSON
+ * string, raw bytes (`ArrayBuffer`/`Uint8Array`), or an already-parsed
+ * object. Renders the same workbook `convert()` produces from the
+ * equivalent `data.xlsx`.
+ *
+ * @stable Added in XTL 1.x (ADR-0075); additive to the frozen `convert`.
+ *
+ * @example
+ * ```ts
+ * const outputs = await convertJson(templateBuffer, {
+ *   version: 'xl3-source-json/0.1',
+ *   sources: {
+ *     default: { headers: ['Customer', 'Amount'], rows: [['Acme', 100]] },
+ *   },
+ * });
+ * ```
+ */
+export async function convertJson(
+  templateBuffer: ArrayBuffer,
+  sourceJson: Xl3SourceJsonInput,
+  options?: ConvertOptions,
+): Promise<OutputFile[]> {
+  assertNoWasmForJson(options);
+  const prepared = await prepareConversionFromJson(templateBuffer, sourceJson, options);
+  return renderPreparedConversion(prepared);
+}
+
+/**
+ * Preview what `convertJson` will produce without generating full files
+ * (ADR-0075). JSON sources surface with sentinel coordinates
+ * (`sheet` = source name, `table` = `"(json-source)"`) since they have
+ * no workbook location.
+ *
+ * @stable Added in XTL 1.x (ADR-0075); additive to the frozen `preview`.
+ */
+export async function previewJson(
+  templateBuffer: ArrayBuffer,
+  sourceJson: Xl3SourceJsonInput,
+  options?: ConvertOptions,
+): Promise<PreviewResult> {
+  assertNoWasmForJson(options);
+  const prepared = await prepareConversionFromJson(templateBuffer, sourceJson, options);
   return buildPreviewFromPrepared(prepared);
 }
 

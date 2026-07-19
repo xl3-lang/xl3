@@ -16,7 +16,7 @@ const REPO_ROOT = resolve(fileURLToPath(new URL('../../../..', import.meta.url))
 // `vm` context populated with the browser-ish globals it needs, and
 // verifies:
 //   1. the IIFE assigned `xl3` to the context (the `globalName`),
-//   2. all 13 EXPECTED_RUNTIME_EXPORTS appear on `ctx.xl3`,
+//   2. all EXPECTED_RUNTIME_EXPORTS appear on `ctx.xl3`,
 //   3. `ctx.xl3.convert(...)` produces a real .xlsx Uint8Array against
 //      the 001-bracket-substitution fixture,
 //   4. the minified bundle stays under 1.5 MB (regression guard for
@@ -36,6 +36,8 @@ const BUNDLE_SIZE_LIMIT_BYTES = 1.5 * 1024 * 1024;
 const EXPECTED_RUNTIME_EXPORTS = [
   'convert',
   'preview',
+  'convertJson',
+  'previewJson',
   'readTemplateInputs',
   'analyze',
   'analyzeModel',

@@ -64,6 +64,7 @@ const EXPECTED_CODES: XtlErrorCode[] = [
   'xl3/source/reserved-column-name',
   'xl3/source/unknown-column',
   'xl3/sources/not-a-dictionary',
+  'xl3/source-json/invalid',
   'xl3/xlookup/bare-bracket',
   'xl3/xlookup/no-match',
   'xl3/xlookup/source-mismatch',

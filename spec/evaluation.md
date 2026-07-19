@@ -325,6 +325,27 @@ For row-number shorthand (`source_table = N`), gaps between the first and last
 non-empty column name cell are therefore errors after the source column span is
 inferred.
 
+### JSON source input (`xl3-source-json/0.1`)
+
+A source MAY be supplied as a language-neutral JSON document instead of a
+`.xlsx` workbook (ADR-0075), via the `convertJson` / `previewJson` entry
+points. The `xl3-source-json/0.1` format carries the same Source Data Model
+described above — one or more named sources, each a header list plus data
+rows — so a JSON source and its equivalent `data.xlsx` produce identical
+output.
+
+- `sources.default` is required; every source declared in `__sources__`
+  MUST be present, and no undeclared source may appear.
+- Cell values map to the model in this spec: `null` and error values are
+  empty (see "Empty Values" below), `{ "type": "date", … }` is a UTC Date
+  (ADR-0017), and numbers/strings/booleans pass through. All-empty rows are
+  skipped.
+- In JSON mode, `source_sheet` / `source_table` are ignored for data
+  selection (the JSON already carries headers and rows).
+
+The wire format is normative and portable; see ADR-0075 and
+PORTERS_GUIDE.md.
+
 ## Empty Values
 
 A value is **empty** if it is missing — the source column does not exist

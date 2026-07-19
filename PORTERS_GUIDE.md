@@ -365,6 +365,17 @@ These look like JS-flavored choices but are spec:
 - ECMAScript-equivalent Unicode whitespace for trim (verify with
   fixture 050; in Python use `re.match(r'\s*$', s)` semantics).
 
+### JSON source input (ADR-0075, optional)
+
+A port MAY accept sources as `xl3-source-json/0.1` JSON in addition to
+`.xlsx`. If it does, the **wire format is normative**: the same
+`version` / `sources` object, column-oriented `headers` + `rows`, the same
+value model (`null` and error values → empty, `{ "type": "date" }` as a
+UTC Date, finite numbers, tagged-object rejection), and the same
+declared-source rules (`default` required, declared sources present, extras
+rejected). A JSON source and the equivalent `data.xlsx` MUST render
+identically. The reader's internal data structures are not normative.
+
 ## What you MUST NOT copy from the TS impl
 
 These are incidental to the reference implementation. Copying them
