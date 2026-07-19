@@ -6,6 +6,14 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-07-19
+
+Repository transferred to the **xl3-lang** GitHub organization and the npm
+package renamed **`@jinyoung4478/xl3` → `@xl3-lang/xl3`** (install name only;
+public API, subpath exports, and the `xl3-conformance` bin are unchanged).
+Also folds in `@subtotal` correctness fixes: the silent-demotion and
+explicit-`@block` gaps now raise dedicated, actionable errors.
+
 ### Changed
 
 - **Package renamed `@jinyoung4478/xl3` → `@xl3-lang/xl3`.** The npm scope
