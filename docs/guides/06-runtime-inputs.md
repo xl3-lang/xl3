@@ -49,6 +49,35 @@ If `inputs.month` is missing and `month` is marked required, xl3
 raises `xl3/inputs/missing-required` at convert time. If `region`
 isn't supplied, it falls back to the `default` (`All`).
 
+## Source metadata (title, period, values outside the table)
+
+Source exports often carry positional metadata **outside the data
+table** — a report title in `A1`, a period or 거래처명 in a banner cell,
+an author/date in a corner. xl3 reads the source as a **table** (headers
++ rows); it deliberately does **not** read arbitrary cells from the
+source workbook by address.
+
+For host-driven flows (your engine calls `convert()` / `convertJson()`),
+lift such values in the host and pass them as inputs:
+
+```ts
+// The host already has the title (from the workbook, a DB, an API, …).
+const outputs = await convert(templateBuffer, dataBuffer, {
+  inputs: { ReportTitle: '2026 상반기 정산', Period: '2026-06' },
+});
+```
+
+```text
+Title:  {{ __inputs__[ReportTitle] }}       Period: {{ __inputs__[Period] }}
+```
+
+This keeps the source a clean, language-neutral table — so the same
+template works with a `.xlsx` source **or** a JSON source
+(`convertJson`, the `xl3-source-json` format) — and keeps cell-address
+reading out of the template language. Reading fixed source cells by
+address (a `SOURCECELL` function) was proposed and **declined** for this
+reason (ADR-0071); `__inputs__` is the supported path.
+
 ## Inspect declared inputs without running
 
 ```ts
