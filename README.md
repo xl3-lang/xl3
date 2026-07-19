@@ -62,7 +62,7 @@ template contract. xl3 lets the application supply data while Excel keeps
 the layout and business-facing rules.
 
 This split is what [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md),
-the 154-fixture conformance corpus, and the intentionally small XTL
+the 160-fixture conformance corpus, and the intentionally small XTL
 surface are designed for.
 
 ## Quick example
@@ -118,7 +118,7 @@ Concretely:
   evaluates it at open time. The smaller the language, the easier it is
   for humans to review — and for AI systems to draft. See [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md)
   for the side-by-side guide.
-- **Conformance corpus.** 154 fixtures, all green, across 70 ADRs.
+- **Conformance corpus.** 160 fixtures, all green, across 74 ADRs.
   This is the test bed for the transformation contract.
 - **One implementation, one spec.** The [`spec/`](./spec) directory
   defines XTL independently of this TypeScript reference. Ports to

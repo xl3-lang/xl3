@@ -1,23 +1,33 @@
-# xl3
+# xl3 — 声明式 Excel 转换标准
 
-> **声明式 Excel 模板引擎。**
-> 就像 Jinja 让 HTML 成为模板，xl3 让 Excel 工作簿成为可执行模板。
+> 就像 Jinja 让 HTML 成为模板,**xl3 让 Excel 工作簿成为可执行模板** ——
+> 作为一个与实现无关的开放标准,而不是单一的库。
 
-**状态:** alpha · XTL spec 0.1 (draft) · 1.0 之前可能存在 breaking change
+**状态:** alpha · **XTL spec 0.1 (draft)** · 参考实现
+`@jinyoung4478/xl3` 0.9.0 · 1.0 之前可能存在 breaking change
 
-xl3 不是一个用代码逐个单元格绘制工作簿的库。它是一个确定性的
-转换引擎，把普通 `.xlsx` 文件作为 **声明式模板** 来执行。
+**xl3** 是一个开放标准,用于把普通的 `.xlsx` 工作簿变成确定性的声明式
+转换模板:布局、样式、合并单元格与规则都放在 *工作簿内部*,任何符合
+规范的引擎都能针对所给数据执行它 —— 相同输入,始终得到相同输出。本仓库
+以三个部分 *定义* 该标准:
 
-布局、样式、合并单元格和转换规则都放在 `template.xlsx` 中。
-应用提供 `raw.xlsx` 数据，xl3 执行模板并返回最终工作簿。模板在
-Excel 中编写，使用熟悉的 Excel 函数，再加上一套小巧的内嵌表达式
-语言(XTL)，用于描述那些必须在工作簿写出 *之前* 就确定的内容:
-过滤、分组、聚合、文件名模式等。
+- **[规范](./spec/)** — 规范性定义,包含 **XTL** 这套小巧的内嵌表达式
+  语言(用于描述那些必须在工作簿写出 *之前* 就确定的内容:过滤、分组、
+  聚合、文件名模式),以及设计记录 (ADR)。
+- **[Conformance 套件](./conformance/)** — 任何实现都要运行、以证明其
+  符合规范的语言中立 fixture。
+- **参考实现** —
+  [`@jinyoung4478/xl3`](https://www.npmjs.com/package/@jinyoung4478/xl3)
+  (TypeScript,位于 [`src/`](./src/)) —— 多个[实现](./IMPLEMENTATIONS.md)
+  之一(Rust/WASM 与 Python 进行中)。
 
-当月度报告、报价单、交易明细、财务工作簿等重复 Excel 文档需要
-继续由 Excel 编辑，同时执行过程又必须确定、可审查、可验证时，
-xl3 就特别合适。它也适合 AI 生成:相比数百行工作簿 API 代码，
-LLM 更容易稳定地产出一个小型模板契约。
+**三个名字,一套体系:** **xl3** = 标准(这个格式) · **XTL** = 它的内嵌
+表达式语言 · **`@jinyoung4478/xl3`** = 它的 TypeScript 参考实现。
+
+当月度报告、报价单、交易明细、财务工作簿等重复 Excel 文档需要继续由
+Excel 编辑,同时执行过程又必须确定、可审查、可验证时,xl3 就特别合适。
+它也适合 AI 生成:相比数百行工作簿 API 代码,LLM 更容易稳定地产出一个
+小型模板契约。
 
 [English](./README.md) · [한국어](./README.ko.md) · [日本語](./README.ja.md) · **简体中文** · [Website](https://xl3.io) · [Spec](./spec) · [LLM authoring guide](./docs/llm-template-authoring.md) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
@@ -46,7 +56,7 @@ LLM 更容易稳定地产出一个小型模板契约。
 继续拥有布局和面向业务的规则。
 
 这种分工正是 [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md)、
-154 条 fixture 组成的 conformance 语料库、以及刻意保持精简的 XTL
+160 条 fixture 组成的 conformance 语料库、以及刻意保持精简的 XTL
 表面所共同服务的目标。
 
 ## 一个简单的例子
@@ -102,7 +112,7 @@ xl3 把布局留在 Excel 中，并让工作簿可执行。应用负责数据与
   表面越小,人类越容易审查,AI 也越容易起草。
   并列对照参见
   [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md)。
-- **Conformance 语料库。** 70 个 ADR 下共 154 条 fixture,全部通
+- **Conformance 语料库。** 74 个 ADR 下共 160 条 fixture,全部通
   过。这是把转换契约变成可执行验证的测试床。
 - **一份实现,一份规范。** [`spec/`](./spec) 目录独立于这份
   TypeScript 参考实现定义了 XTL。欢迎向其他运行时移植 —— 语料库
