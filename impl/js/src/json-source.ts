@@ -160,7 +160,14 @@ function buildSource(name: string, raw: unknown): SourceData {
   if (!Array.isArray(rows)) return fail(`source "${name}" "rows" must be an array`);
 
   const outRows: Row[] = [];
-  rows.forEach((row, i) => {
+  for (let i = 0; i < rows.length; i++) {
+    // Own-index read over `rows` itself: `forEach` would skip holes
+    // (silently dropping rows) and, with a polluted Array.prototype,
+    // materialize an inherited index as a row. Reject any hole instead.
+    if (!Object.prototype.hasOwnProperty.call(rows, i)) {
+      return fail(`source "${name}" row ${i} is missing (sparse rows array)`);
+    }
+    const row = rows[i];
     if (!Array.isArray(row)) return fail(`source "${name}" row ${i} must be an array`);
     if (row.length !== normHeaders.length) {
       return fail(`source "${name}" row ${i} has ${row.length} value(s) but there are ${normHeaders.length} headers`);
@@ -177,7 +184,7 @@ function buildSource(name: string, raw: unknown): SourceData {
       record[header] = val;
     }
     if (!allEmpty) outRows.push(record); // matches .xlsx all-empty-row skip
-  });
+  }
 
   return { sheetName: name, headers: normHeaders, rows: outRows };
 }

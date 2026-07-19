@@ -1,6 +1,6 @@
 # ADR 0075 — `xl3-source-json`: a language-neutral JSON source input format
 
-- **Status:** proposed
+- **Status:** accepted (implemented in #80)
 - **Date:** 2026-07-19
 - **Spec target:** XTL 1.x (additive — a new wire format + new public API; **does not** change `convert()` or the `.xlsx` source path; no existing template changes behavior)
 - **Affects:** new public API (`convertJson`, `previewJson`); new normative wire format `xl3-source-json/0.1`; impl (new `json-source.ts` reader → `SourceData`, `index.ts` entry points, `types.ts`, `error-codes.ts`); `spec/evaluation.md` (Source Data Model — a second, equivalent source-ingestion path); `spec/STABILITY.md` (public API surface addition); `PORTERS_GUIDE.md` (the wire format is portable/normative; the reader IR is not); one new error code
@@ -254,7 +254,14 @@ breaking change).
   listed in `INFORMATIONAL_ADRS` (`spec-coverage.test.ts`) only until those
   tests land with the implementation.
 
-## Open questions (for review before implementation)
+## Resolved questions (during implementation, #80)
+
+All resolved as proposed below. The reader was additionally hardened per
+code review: own-property reads for schema/tagged fields and own-index
+reads for the headers / rows / cell arrays, so malformed object input
+(sparse arrays, a polluted `Array.prototype`, BigInt / cyclic values)
+always raises `xl3/source-json/invalid` rather than crashing or injecting
+inherited data. Headers are trimmed to match the `.xlsx` reader.
 
 1. **Error granularity** — one umbrella `xl3/source-json/invalid` (proposed)
    vs. distinct sub-codes (`.../version`, `.../shape`, `.../value`). Umbrella

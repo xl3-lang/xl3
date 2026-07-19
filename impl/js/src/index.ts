@@ -178,7 +178,16 @@ function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
     // ADR-0075: JSON sources have no .xlsx sheet/table coordinates;
     // surface sentinels so hosts still see the name, rows, and headers.
     if (sourceKind === 'json') {
-      const spec = name === 'default' ? undefined : parsed.sources.find((s) => s.name === name);
+      if (name === 'default') {
+        return {
+          name,
+          sheet: name,
+          table: '(json-source)',
+          rowCount: data.rows.length,
+          headers: data.headers,
+        };
+      }
+      const spec = parsed.sources.find((s) => s.name === name);
       return {
         name,
         sheet: name,

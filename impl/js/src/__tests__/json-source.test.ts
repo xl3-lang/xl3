@@ -299,15 +299,23 @@ describe('input hardening [ADR-0075]', () => {
   });
   it('rejects sparse arrays even with a polluted Array.prototype (object input)', () => {
     // Object input can carry sparse arrays (JSON strings never do). A
-    // hole must not read an inherited Array.prototype value.
-    (Array.prototype as unknown as Record<number, unknown>)[0] = 'PWNED';
+    // hole must not read/inherit an Array.prototype value — at the
+    // header, cell, OR top-level rows level. Pollute with a plausible
+    // array so an inherited value could masquerade as a row/cell.
+    (Array.prototype as unknown as Record<number, unknown>)[0] = ['x'];
     try {
+      // sparse headers: hole at index 0
       const sparseHeaders: unknown[] = [];
-      sparseHeaders[1] = 'B'; // length 2, index 0 is a hole
-      expectInvalid(() => readJsonSources(src(sparseHeaders, [[1, 2]]), []));
+      sparseHeaders[1] = 'B';
+      expectInvalid(() => readJsonSources(src(sparseHeaders, [['a', 'b']]), []));
+      // sparse cells within a row: hole at index 0
       const sparseRow: unknown[] = [];
-      sparseRow[1] = 'x'; // length 2, index 0 is a hole
+      sparseRow[1] = 'x';
       expectInvalid(() => readJsonSources(src(['A', 'B'], [sparseRow]), []));
+      // sparse top-level rows array: a hole where a row should be
+      const sparseRows: unknown[] = [];
+      sparseRows.length = 1;
+      expectInvalid(() => readJsonSources(src(['A'], sparseRows), []));
     } finally {
       delete (Array.prototype as unknown as Record<number, unknown>)[0];
     }
