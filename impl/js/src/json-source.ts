@@ -8,7 +8,8 @@
 //   null / error cell -> '' (empty string, ADR-0062/0017)
 //   date              -> JS Date (UTC, ADR-0017)
 //   number/string/boolean -> as-is
-// and all-empty rows are skipped, matching `.xlsx` source behavior.
+// and headers are trimmed and all-empty rows skipped, matching the
+// `.xlsx` source path (`headerText` trims; `allEmpty` skips).
 
 import type { Row, SourceSpec, Xl3SourceJsonInput, Xl3SourceJsonValue } from './types.js';
 import type { SourceData } from './reader.js';
@@ -28,6 +29,28 @@ const ERROR_VALUES = new Set(['#N/A', '#VALUE!', '#DIV/0!', '#REF!', '#NAME?', '
 
 function fail(message: string): never {
   throw xtlError('xl3/source-json/invalid', message);
+}
+
+// Own-property read: never trust the prototype chain. Object input may
+// carry a manipulated prototype, and `JSON.parse` places a literal
+// `"__proto__"` key as an own property — either way, schema fields must
+// come from the object itself, not something inherited.
+function own(obj: object, key: string): unknown {
+  return Object.prototype.hasOwnProperty.call(obj, key)
+    ? (obj as Record<string, unknown>)[key]
+    : undefined;
+}
+
+// Safe description for error messages: `JSON.stringify` throws on
+// BigInt and cyclic values (both reachable through object input), which
+// would surface as a native TypeError instead of `xl3/source-json/invalid`.
+function describe(v: unknown): string {
+  try {
+    const s = JSON.stringify(v);
+    return s === undefined ? String(v) : s;
+  } catch {
+    return typeof v;
+  }
 }
 
 function decodeInput(input: Xl3SourceJsonInput): unknown {
@@ -70,7 +93,7 @@ function toUtcDate(value: string, ctx: string): Date {
     }
     return dt;
   }
-  return fail(`${ctx}: date value must be "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss", got ${JSON.stringify(value)}`);
+  return fail(`${ctx}: date value must be "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss", got ${describe(value)}`);
 }
 
 function mapValue(v: Xl3SourceJsonValue, ctx: string): unknown {
@@ -78,49 +101,57 @@ function mapValue(v: Xl3SourceJsonValue, ctx: string): unknown {
   const t = typeof v;
   if (t === 'string' || t === 'boolean') return v;
   if (t === 'number') {
-    if (!Number.isFinite(v)) return fail(`${ctx}: number must be finite (got ${JSON.stringify(v)})`);
+    if (!Number.isFinite(v)) return fail(`${ctx}: number must be finite (got ${describe(v)})`);
     return v;
   }
-  if (v !== null && typeof v === 'object') {
-    const tag = (v as { type?: unknown }).type;
+  if (t === 'object') {
+    const tag = own(v as object, 'type');
     if (tag === 'date') {
-      const dv = (v as { value?: unknown }).value;
+      const dv = own(v as object, 'value');
       if (typeof dv !== 'string') return fail(`${ctx}: date value must be a string`);
       return toUtcDate(dv, ctx);
     }
     if (tag === 'error') {
-      const ev = (v as { value?: unknown }).value;
+      const ev = own(v as object, 'value');
       if (typeof ev !== 'string' || !ERROR_VALUES.has(ev)) {
-        return fail(`${ctx}: invalid error value ${JSON.stringify(ev)}`);
+        return fail(`${ctx}: invalid error value ${describe(ev)}`);
       }
       return ''; // ADR-0017: source error cell reads as empty
     }
-    return fail(`${ctx}: unknown tagged value type ${JSON.stringify(tag)} (expected "date" or "error")`);
+    return fail(`${ctx}: unknown tagged value type ${describe(tag)} (expected "date" or "error")`);
   }
-  return fail(`${ctx}: unsupported value ${JSON.stringify(v)}`);
+  return fail(`${ctx}: unsupported value ${describe(v)}`);
 }
 
 function buildSource(name: string, raw: unknown): SourceData {
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
     return fail(`source "${name}" must be an object with "headers" and "rows"`);
   }
-  const { headers, rows } = raw as { headers?: unknown; rows?: unknown };
+  const headers = own(raw, 'headers');
+  const rows = own(raw, 'rows');
 
   if (!Array.isArray(headers) || headers.length === 0) {
     return fail(`source "${name}" "headers" must be a non-empty array`);
   }
+
+  // Trim headers exactly as the .xlsx reader (`headerText`) does, then
+  // validate on the trimmed name — otherwise " Customer " would diverge
+  // from XLSX and `["A", " A "]` / " __rownum " would slip past the
+  // duplicate / reserved checks.
+  const normHeaders: string[] = [];
   const seen = new Set<string>();
   for (const h of headers) {
-    if (typeof h !== 'string' || h.trim() === '') {
-      return fail(`source "${name}" has an empty or non-string header`);
-    }
-    if (seen.has(h)) return fail(`source "${name}" has duplicate header "${h}"`);
-    if (RESERVED_COLUMN_NAMES.has(h) || DUNDER_NAME_RE.test(h)) {
+    if (typeof h !== 'string') return fail(`source "${name}" has a non-string header (${describe(h)})`);
+    const header = h.trim();
+    if (header === '') return fail(`source "${name}" has an empty header`);
+    if (seen.has(header)) return fail(`source "${name}" has duplicate header "${header}"`);
+    if (RESERVED_COLUMN_NAMES.has(header) || DUNDER_NAME_RE.test(header)) {
       return fail(
-        `source "${name}" header "${h}" uses a reserved internal name; rename it (reserved: Rows, __rownum, __activeSource__, __joinedRow__, anything matching __<lowercase>__)`,
+        `source "${name}" header "${header}" uses a reserved internal name; rename it (reserved: Rows, __rownum, __activeSource__, __joinedRow__, anything matching __<lowercase>__)`,
       );
     }
-    seen.add(h);
+    seen.add(header);
+    normHeaders.push(header);
   }
 
   if (!Array.isArray(rows)) return fail(`source "${name}" "rows" must be an array`);
@@ -128,13 +159,13 @@ function buildSource(name: string, raw: unknown): SourceData {
   const outRows: Row[] = [];
   rows.forEach((row, i) => {
     if (!Array.isArray(row)) return fail(`source "${name}" row ${i} must be an array`);
-    if (row.length !== headers.length) {
-      return fail(`source "${name}" row ${i} has ${row.length} value(s) but there are ${headers.length} headers`);
+    if (row.length !== normHeaders.length) {
+      return fail(`source "${name}" row ${i} has ${row.length} value(s) but there are ${normHeaders.length} headers`);
     }
     const record: Row = {};
     let allEmpty = true;
-    for (let c = 0; c < headers.length; c++) {
-      const header = headers[c] as string;
+    for (let c = 0; c < normHeaders.length; c++) {
+      const header = normHeaders[c]!;
       const val = mapValue(row[c] as Xl3SourceJsonValue, `source "${name}" row ${i} column "${header}"`);
       if (!isEmpty(val)) allEmpty = false;
       record[header] = val;
@@ -142,7 +173,7 @@ function buildSource(name: string, raw: unknown): SourceData {
     if (!allEmpty) outRows.push(record); // matches .xlsx all-empty-row skip
   });
 
-  return { sheetName: name, headers: headers.slice() as string[], rows: outRows };
+  return { sheetName: name, headers: normHeaders, rows: outRows };
 }
 
 /**
@@ -161,16 +192,17 @@ export function readJsonSources(
     return fail('source JSON must be an object with "version" and "sources"');
   }
 
-  const { version, sources } = parsed as { version?: unknown; sources?: unknown };
+  const version = own(parsed, 'version');
+  const sources = own(parsed, 'sources');
   if (version !== WIRE_VERSION) {
-    return fail(`unsupported source JSON version ${JSON.stringify(version)} (expected "${WIRE_VERSION}")`);
+    return fail(`unsupported source JSON version ${describe(version)} (expected "${WIRE_VERSION}")`);
   }
   if (sources === null || typeof sources !== 'object' || Array.isArray(sources)) {
     return fail('source JSON "sources" must be an object keyed by source name');
   }
 
-  const jsonSources = sources as Record<string, unknown>;
-  const jsonNames = Object.keys(jsonSources);
+  const jsonSources = sources as object;
+  const jsonNames = Object.keys(jsonSources); // own enumerable keys only
   if (!Object.prototype.hasOwnProperty.call(jsonSources, 'default')) {
     return fail('source JSON must include a "default" source');
   }
@@ -191,9 +223,9 @@ export function readJsonSources(
   }
 
   const out: Record<string, SourceData> = {};
-  out['default'] = buildSource('default', jsonSources['default']);
+  out['default'] = buildSource('default', own(jsonSources, 'default'));
   for (const spec of declaredSources) {
-    out[spec.name] = buildSource(spec.name, jsonSources[spec.name]);
+    out[spec.name] = buildSource(spec.name, own(jsonSources, spec.name));
   }
   return out;
 }

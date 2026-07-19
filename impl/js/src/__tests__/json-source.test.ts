@@ -247,8 +247,48 @@ describe('convertJson / previewJson API [ADR-0075]', () => {
     expect(def.rowCount).toBeGreaterThan(0);
   });
 
-  it('rejects engine: "wasm" for JSON input', async () => {
+  it('rejects engine: "wasm" for JSON input (convertJson and previewJson)', async () => {
     const json: Xl3SourceJson = { version: 'xl3-source-json/0.1', sources: { default: { headers: ['A'], rows: [['x']] } } };
     await expect(convertJson(templateBuf(), json, { engine: 'wasm' })).rejects.toThrow(/wasm/i);
+    await expect(previewJson(templateBuf(), json, { engine: 'wasm' })).rejects.toThrow(/wasm/i);
+  });
+});
+
+// ---- header normalization + hardening (Codex review of #80) ----
+
+const WIRE = 'xl3-source-json/0.1';
+const src = (headers: unknown, rows: unknown) => ({ version: WIRE, sources: { default: { headers, rows } } });
+
+describe('header normalization [ADR-0075]', () => {
+  it('trims headers like the .xlsx reader', () => {
+    const out = readJsonSources(src([' Customer '], [['Acme']]), []);
+    expect(out.default!.headers).toEqual(['Customer']);
+    expect(out.default!.rows).toEqual([{ Customer: 'Acme' }]);
+  });
+  it('rejects duplicate headers after trim', () => {
+    expectInvalid(() => readJsonSources(src(['A', ' A '], [[1, 2]]), []));
+  });
+  it('rejects reserved headers after trim', () => {
+    expectInvalid(() => readJsonSources(src([' __rownum '], [[1]]), []));
+  });
+});
+
+describe('input hardening [ADR-0075]', () => {
+  it('ignores prototype-inherited schema fields (object input)', () => {
+    // version/sources live only on the prototype, not as own properties.
+    const polluted = Object.create({ version: WIRE, sources: { default: { headers: ['A'], rows: [['x']] } } });
+    expectInvalid(() => readJsonSources(polluted, []));
+  });
+  it('treats an inherited-only tag as an unknown value, not a date', () => {
+    const cell = Object.create({ type: 'date', value: '2026-01-01' }); // no own type
+    expectInvalid(() => readJsonSources(src(['A'], [[cell]]), []));
+  });
+  it('rejects a BigInt cell without crashing (object input)', () => {
+    expectInvalid(() => readJsonSources(src(['A'], [[1n as unknown]]), []));
+  });
+  it('rejects a cyclic object cell without crashing', () => {
+    const cyclic: Record<string, unknown> = {};
+    cyclic.self = cyclic;
+    expectInvalid(() => readJsonSources(src(['A'], [[cyclic]]), []));
   });
 });
