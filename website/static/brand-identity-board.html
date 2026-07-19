@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XL3 Brand Identity Board</title>
+  <style>
+    :root {
+      --blue: #2563eb;
+      --graphite: #0f172a;
+      --navy: #07111f;
+      --slate: #475569;
+      --gray: #e5e7eb;
+      --paper: #ffffff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #d8dee8;
+      --panel: #f8fafc;
+      --purple: #7c3aed;
+      --green: #0ea56a;
+      --orange: #f97316;
+      --cyan: #06b6d4;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 72% 24%, rgba(37, 99, 235, 0.06), transparent 28%),
+        linear-gradient(135deg, #f8fafc 0%, #ffffff 46%, #eef2f7 100%);
+    }
+
+    .board {
+      width: min(100vw, 1600px);
+      min-height: 100vh;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 34% 66%;
+      background: var(--paper);
+      box-shadow: 0 24px 80px rgba(15, 23, 42, 0.13);
+      overflow: hidden;
+    }
+
+    .hero {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100vh;
+      padding: 84px 58px 64px;
+      color: #fff;
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.18), transparent 28%),
+        radial-gradient(circle at 94% 40%, rgba(37, 99, 235, 0.28), transparent 34%),
+        linear-gradient(145deg, #07111f 0%, #0f172a 45%, #07111f 100%);
+    }
+
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      opacity: 0.22;
+      border-top: 1px solid rgba(96, 165, 250, 0.45);
+      transform: rotate(45deg);
+      transform-origin: left top;
+    }
+
+    .hero::before {
+      width: 540px;
+      top: -10px;
+      right: -220px;
+    }
+
+    .hero::after {
+      width: 420px;
+      top: 150px;
+      right: -190px;
+    }
+
+    .heroTop,
+    .heroCopy,
+    .heroFlow,
+    .heroPillars {
+      position: relative;
+      z-index: 1;
+    }
+
+    .heroLogo {
+      width: min(78%, 390px);
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.42));
+    }
+
+    .heroCopy {
+      margin-top: 90px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(42px, 3vw, 58px);
+      line-height: 1.06;
+      letter-spacing: 0;
+      color: #fff;
+    }
+
+    .blueDot {
+      color: var(--blue);
+    }
+
+    .lead {
+      max-width: 460px;
+      margin: 24px 0 0;
+      color: rgba(226, 232, 240, 0.84);
+      font-size: 22px;
+      line-height: 1.45;
+    }
+
+    .heroRule {
+      width: 100%;
+      height: 1px;
+      margin: 58px 0 24px;
+      background: rgba(148, 163, 184, 0.22);
+    }
+
+    .heroFlow {
+      display: grid;
+      grid-template-columns: 1fr auto 1.15fr auto 1fr;
+      align-items: center;
+      gap: 18px;
+      color: rgba(255, 255, 255, 0.94);
+    }
+
+    .flowItem strong {
+      display: block;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .flowItem span {
+      display: block;
+      margin-top: 8px;
+      color: rgba(226, 232, 240, 0.74);
+      font-size: 14px;
+    }
+
+    .flowLine {
+      width: 74px;
+      height: 1px;
+      background: rgba(148, 163, 184, 0.42);
+      position: relative;
+    }
+
+    .flowLine::after {
+      content: "";
+      position: absolute;
+      right: -1px;
+      top: -4px;
+      width: 8px;
+      height: 8px;
+      border-top: 1px solid rgba(203, 213, 225, 0.72);
+      border-right: 1px solid rgba(203, 213, 225, 0.72);
+      transform: rotate(45deg);
+    }
+
+    .heroPillars {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin-top: 72px;
+      border-left: 1px solid rgba(148, 163, 184, 0.18);
+      border-right: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .pillar {
+      min-width: 0;
+      padding: 12px 20px;
+      text-align: center;
+      border-right: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .pillar:last-child {
+      border-right: 0;
+    }
+
+    .pillarIcon {
+      height: 31px;
+      margin: 0 auto 14px;
+      color: var(--blue);
+    }
+
+    .pillar strong {
+      display: block;
+      color: #fff;
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    .content {
+      min-width: 0;
+      padding: 28px 54px 30px 42px;
+      background:
+        radial-gradient(circle at 98% 12%, rgba(37, 99, 235, 0.08), transparent 32%),
+        linear-gradient(180deg, #ffffff, #fbfdff 68%, #f8fafc);
+    }
+
+    .section {
+      padding: 0 0 18px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .sectionTitle {
+      margin: 0 0 16px;
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+
+    .logoSystem {
+      display: grid;
+      grid-template-columns: 1.3fr 0.85fr 1.15fr;
+      gap: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .logoCell {
+      min-height: 132px;
+      display: grid;
+      place-items: center;
+      padding: 18px 24px;
+      border-right: 1px solid var(--line);
+    }
+
+    .logoCell:last-child {
+      border-right: 0;
+    }
+
+    .logoCell.dark {
+      margin: 12px;
+      min-height: 112px;
+      border: 0;
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.16), transparent 34%),
+        #07111f;
+    }
+
+    .lockupPrimary {
+      width: min(100%, 310px);
+      height: auto;
+    }
+
+    .lockupDark {
+      width: min(100%, 265px);
+      height: auto;
+      filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.26));
+    }
+
+    .symbolPreview {
+      width: 104px;
+      height: 104px;
+    }
+
+    .label {
+      margin-top: 12px;
+      color: #334155;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .familyGrid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .familyCard {
+      min-width: 0;
+      min-height: 150px;
+      padding: 18px 18px 16px;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 12px 34px rgba(15, 23, 42, 0.05);
+    }
+
+    .familyMark {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 10px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow:
+        inset 0 0 0 1px rgba(15, 23, 42, 0.06),
+        0 10px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .familyMark svg {
+      width: 48px;
+      height: 48px;
+    }
+
+    .familyCard h3 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 22px;
+      line-height: 1.1;
+      font-weight: 700;
+    }
+
+    .familyCard h3 span {
+      color: var(--slate);
+      font-weight: 500;
+    }
+
+    .familyCard p {
+      margin: 10px auto 0;
+      max-width: 190px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr;
+      gap: 34px;
+    }
+
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .swatch {
+      min-width: 0;
+    }
+
+    .chip {
+      height: 76px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 8px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .swatch strong,
+    .swatch span {
+      display: block;
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.15;
+    }
+
+    .swatch strong {
+      color: #1f2937;
+      font-weight: 650;
+    }
+
+    .swatch span {
+      margin-top: 2px;
+      color: #334155;
+    }
+
+    .typePanel {
+      min-height: 118px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding-left: 30px;
+      border-left: 1px solid var(--line);
+    }
+
+    .typeAa {
+      font-size: 86px;
+      line-height: 0.9;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .typeInfo strong {
+      display: block;
+      color: var(--ink);
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .typeInfo span {
+      display: block;
+      margin-top: 11px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    .usageGrid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.1fr 0.85fr;
+      gap: 16px;
+    }
+
+    .miniSite,
+    .codeCard,
+    .iconCard {
+      min-height: 176px;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
+    }
+
+    .miniSite {
+      position: relative;
+      padding: 16px 20px;
+      color: #fff;
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.2), transparent 44%),
+        linear-gradient(145deg, #07111f, #111827);
+    }
+
+    .miniNav {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: rgba(226, 232, 240, 0.78);
+      font-size: 12px;
+    }
+
+    .miniNav img {
+      width: 68px;
+      height: auto;
+      margin-right: auto;
+    }
+
+    .miniSite h3 {
+      max-width: 250px;
+      margin: 28px 0 8px;
+      color: #fff;
+      font-size: 30px;
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .miniSite p {
+      margin: 0;
+      color: rgba(226, 232, 240, 0.78);
+      font-size: 14px;
+    }
+
+    .miniButtons {
+      display: flex;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .button {
+      padding: 10px 18px;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 650;
+      background: linear-gradient(135deg, #2563eb, #0057ff);
+    }
+
+    .button.secondary {
+      background: transparent;
+      border: 1px solid rgba(226, 232, 240, 0.28);
+    }
+
+    .codeCard {
+      padding: 20px 24px;
+      background: #0f172a;
+      color: #e5e7eb;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 15px;
+      line-height: 1.72;
+    }
+
+    .traffic {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .traffic span {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+    }
+
+    .keyword {
+      color: #c4b5fd;
+    }
+
+    .string {
+      color: #fde68a;
+    }
+
+    .success {
+      color: #4ade80;
+    }
+
+    .iconCard {
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #f8fafc, #e9eef7);
+    }
+
+    .iconPair {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .appIcon {
+      width: 104px;
+      height: 104px;
+      border-radius: 24px;
+      box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
+    }
+
+    .wordmarkNote {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 1100px) {
+      .board {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+
+      .content {
+        padding: 34px 28px 46px;
+      }
+
+      .split,
+      .usageGrid {
+        grid-template-columns: 1fr;
+      }
+
+      .typePanel {
+        padding-left: 0;
+        border-left: 0;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .hero {
+        padding: 48px 26px 42px;
+      }
+
+      .heroFlow,
+      .logoSystem,
+      .familyGrid,
+      .palette {
+        grid-template-columns: 1fr;
+      }
+
+      .flowLine {
+        display: none;
+      }
+
+      .logoCell {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .logoCell:last-child {
+        border-bottom: 0;
+      }
+
+      .heroPillars {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="board" aria-label="XL3 brand identity board">
+    <section class="hero">
+      <div class="heroTop">
+        <img class="heroLogo" src="img/xl3-logo-dark.png" alt="XL3">
+      </div>
+
+      <div class="heroCopy">
+        <h1>Execute Excel.<br>Deterministically<span class="blueDot">.</span></h1>
+        <p class="lead">The runtime for Excel templates. From spreadsheet to reliable applications.</p>
+
+        <div class="heroRule"></div>
+        <div class="heroFlow" aria-label="Runtime flow">
+          <div class="flowItem">
+            <strong>Input</strong>
+            <span>Any Data</span>
+          </div>
+          <div class="flowLine"></div>
+          <div class="flowItem">
+            <strong>XL3 Runtime</strong>
+            <span>Deterministic Execution</span>
+          </div>
+          <div class="flowLine"></div>
+          <div class="flowItem">
+            <strong>Output</strong>
+            <span>Any Document</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="heroPillars" aria-label="Brand attributes">
+        <div class="pillar">
+          <svg class="pillarIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M13 2 4 14h7l-1 8 9-12h-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="miter"/>
+          </svg>
+          <strong>Fast</strong>
+        </div>
+        <div class="pillar">
+          <svg class="pillarIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3 20 6v6c0 5-3.4 7.9-8 9-4.6-1.1-8-4-8-9V6z" stroke="currentColor" stroke-width="2" stroke-linejoin="miter"/>
+            <path d="m8.5 12 2.3 2.3 4.9-5" stroke="currentColor" stroke-width="2" stroke-linecap="square"/>
+          </svg>
+          <strong>Reliable</strong>
+        </div>
+        <div class="pillar">
+          <svg class="pillarIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="4" y="10" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+            <rect x="9" y="5" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+            <rect x="14" y="10" width="6" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <strong>Scalable</strong>
+        </div>
+        <div class="pillar">
+          <svg class="pillarIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="m8 5-5 7 5 7M16 5l5 7-5 7" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/>
+            <path d="M13 4 11 20" stroke="currentColor" stroke-width="2" stroke-linecap="square"/>
+          </svg>
+          <strong>Developer First</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <section class="section" aria-labelledby="logo-system-title">
+        <h2 id="logo-system-title" class="sectionTitle">Logo System</h2>
+        <div class="logoSystem">
+          <div>
+            <div class="logoCell">
+              <img class="lockupPrimary" src="img/xl3-logo.png" alt="XL3 primary logo">
+            </div>
+            <div class="label">Primary Logo</div>
+          </div>
+          <div>
+            <div class="logoCell">
+              <svg class="symbolPreview" viewBox="0 0 256 256" aria-hidden="true">
+                <path fill="#2563EB" d="M168 64h46l-61 61-23-23z"/>
+                <path fill="#0F172A" d="M42 192h46l38-38-23-23z"/>
+                <path fill="#0F172A" d="M42 64h44l64 64h-44z"/>
+                <path fill="#2563EB" d="M106 128h44l64 64h-44z"/>
+              </svg>
+            </div>
+            <div class="label">Symbol</div>
+          </div>
+          <div>
+            <div class="logoCell dark">
+              <img class="lockupDark" src="img/xl3-logo-dark.png" alt="XL3 logo for dark backgrounds">
+            </div>
+            <div class="label">Dark Background</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="family-title">
+        <h2 id="family-title" class="sectionTitle">Product Family</h2>
+        <div class="familyGrid">
+          <article class="familyCard">
+            <div class="familyMark">
+              <svg viewBox="0 0 256 256" aria-hidden="true">
+                <path fill="#2563EB" d="M168 64h46l-61 61-23-23z"/>
+                <path fill="#0F172A" d="M42 192h46l38-38-23-23z"/>
+                <path fill="#0F172A" d="M42 64h44l64 64h-44z"/>
+                <path fill="#2563EB" d="M106 128h44l64 64h-44z"/>
+              </svg>
+            </div>
+            <h3><span>XL3</span> Runtime</h3>
+            <p>Core execution engine for Excel templates.</p>
+          </article>
+          <article class="familyCard">
+            <div class="familyMark">
+              <svg viewBox="0 0 256 256" aria-hidden="true">
+                <path fill="#7C3AED" d="M168 64h46l-61 61-23-23z"/>
+                <path fill="#0F172A" d="M42 192h46l38-38-23-23z"/>
+                <path fill="#0F172A" d="M42 64h44l64 64h-44z"/>
+                <path fill="#7C3AED" d="M106 128h44l64 64h-44z"/>
+              </svg>
+            </div>
+            <h3><span>XL3</span> Studio</h3>
+            <p>Visual editor for building and testing templates.</p>
+          </article>
+          <article class="familyCard">
+            <div class="familyMark">
+              <svg viewBox="0 0 256 256" aria-hidden="true">
+                <path fill="#0EA56A" d="M168 64h46l-61 61-23-23z"/>
+                <path fill="#0F172A" d="M42 192h46l38-38-23-23z"/>
+                <path fill="#0F172A" d="M42 64h44l64 64h-44z"/>
+                <path fill="#0EA56A" d="M106 128h44l64 64h-44z"/>
+              </svg>
+            </div>
+            <h3><span>XL3</span> CLI</h3>
+            <p>Command-line tools for automation.</p>
+          </article>
+          <article class="familyCard">
+            <div class="familyMark">
+              <svg viewBox="0 0 256 256" aria-hidden="true">
+                <path fill="#F97316" d="M168 64h46l-61 61-23-23z"/>
+                <path fill="#0F172A" d="M42 192h46l38-38-23-23z"/>
+                <path fill="#0F172A" d="M42 64h44l64 64h-44z"/>
+                <path fill="#F97316" d="M106 128h44l64 64h-44z"/>
+              </svg>
+            </div>
+            <h3><span>XL3</span> SDK</h3>
+            <p>Integrate XL3 into your own applications.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section split" aria-label="Color and typography">
+        <div>
+          <h2 class="sectionTitle">Color Palette</h2>
+          <div class="palette">
+            <div class="swatch">
+              <div class="chip" style="background:#2563eb"></div>
+              <strong>Primary</strong>
+              <span>#2563EB</span>
+            </div>
+            <div class="swatch">
+              <div class="chip" style="background:#0f172a"></div>
+              <strong>Graphite</strong>
+              <span>#0F172A</span>
+            </div>
+            <div class="swatch">
+              <div class="chip" style="background:#475569"></div>
+              <strong>Slate</strong>
+              <span>#475569</span>
+            </div>
+            <div class="swatch">
+              <div class="chip" style="background:#e5e7eb"></div>
+              <strong>Gray</strong>
+              <span>#E5E7EB</span>
+            </div>
+            <div class="swatch">
+              <div class="chip" style="background:#ffffff"></div>
+              <strong>White</strong>
+              <span>#FFFFFF</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="sectionTitle">Typography</h2>
+          <div class="typePanel">
+            <div class="typeAa">Aa</div>
+            <div class="typeInfo">
+              <strong>Inter</strong>
+              <span>Clean. Modern.<br>Developer-friendly.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="usage-title">
+        <h2 id="usage-title" class="sectionTitle">Usage Examples</h2>
+        <div class="usageGrid">
+          <article class="miniSite">
+            <nav class="miniNav" aria-label="Example website navigation">
+              <img src="img/xl3-logo-dark.png" alt="XL3">
+              <span>Docs</span>
+              <span>Guides</span>
+              <span>API</span>
+            </nav>
+            <h3>Execute Excel. Deterministically<span class="blueDot">.</span></h3>
+            <p>Turn your Excel templates into reliable software.</p>
+            <div class="miniButtons">
+              <span class="button">Get Started</span>
+              <span class="button secondary">View Docs</span>
+            </div>
+          </article>
+
+          <article class="codeCard" aria-label="Code example">
+            <div class="traffic" aria-hidden="true">
+              <span style="background:#ef4444"></span>
+              <span style="background:#f59e0b"></span>
+              <span style="background:#22c55e"></span>
+            </div>
+            <div><span class="keyword">import</span> { render } <span class="keyword">from</span> <span class="string">'xl3'</span></div>
+            <br>
+            <div><span class="keyword">const</span> output = <span class="keyword">await</span> render({</div>
+            <div>&nbsp;&nbsp;template: <span class="string">'invoice.xlsx'</span>,</div>
+            <div>&nbsp;&nbsp;data: invoiceData</div>
+            <div>})</div>
+            <br>
+            <div class="success">// Generated successfully</div>
+          </article>
+
+          <article class="iconCard">
+            <div class="iconPair">
+              <img class="appIcon" src="img/xl3-favicon.png" alt="XL3 light app icon">
+              <img class="appIcon" src="img/xl3-symbol-icon.png" alt="XL3 dark app icon">
+            </div>
+          </article>
+        </div>
+        <p class="wordmarkNote">Board uses the new XL3 symbol and the latest XL3 lockup assets from this repository.</p>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
