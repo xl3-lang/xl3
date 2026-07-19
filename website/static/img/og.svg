@@ -1,57 +1,104 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0d1f15"/>
-      <stop offset="1" stop-color="#06120b"/>
+      <stop offset="0" stop-color="#0F172A"/>
+      <stop offset="0.58" stop-color="#0B1323"/>
+      <stop offset="1" stop-color="#07111F"/>
     </linearGradient>
-    <linearGradient id="excel" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#28a85c"/>
-      <stop offset="1" stop-color="#185c37"/>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#60A5FA"/>
+      <stop offset="0.45" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#0057FF"/>
     </linearGradient>
-    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#1f3a2a" stroke-width="1"/>
-    </pattern>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#172033"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="22" stdDeviation="28" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+    <g id="symbolLight" fill-rule="evenodd" shape-rendering="geometricPrecision">
+      <path fill="url(#blue)" d="M168 64h46l-61 61-23-23z"/>
+      <path fill="#FFFFFF" d="M42 192h46l38-38-23-23z"/>
+      <path fill="#FFFFFF" d="M42 64h44l64 64h-44z"/>
+      <path fill="url(#blue)" d="M106 128h44l64 64h-44z"/>
+    </g>
   </defs>
 
   <rect width="1200" height="630" fill="url(#bg)"/>
-  <rect width="1200" height="630" fill="url(#grid)" opacity="0.45"/>
+  <path d="M792 -56 1264 416M856 -10 1328 462M934 118 1255 439M990 204 1280 494"
+        fill="none" stroke="#2563EB" stroke-width="1.2" opacity="0.16"/>
+  <path d="M-68 612 232 312M-28 664 272 364" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.08"/>
+  <rect x="0" y="0" width="1200" height="630" fill="none" stroke="#1F2937" stroke-width="1"/>
 
-  <!-- Soft Excel-green glow -->
-  <circle cx="980" cy="120" r="260" fill="#28a85c" opacity="0.08"/>
-  <circle cx="180" cy="540" r="220" fill="#79c0ff" opacity="0.05"/>
-
-  <!-- Brand mark -->
-  <g transform="translate(80,90)">
-    <rect width="96" height="96" rx="22" fill="url(#excel)"/>
-    <text x="48" y="66" text-anchor="middle"
-          font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
-          font-size="42" font-weight="800" fill="#ffffff" letter-spacing="-1">xl3</text>
-  </g>
-  <text x="200" y="158"
-        font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
-        font-size="22" fill="#7ee787" letter-spacing="2">XTL 0.1 · TYPESCRIPT REFERENCE</text>
-
-  <!-- Title -->
-  <text x="80" y="290"
-        font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
-        font-size="84" font-weight="800" fill="#f6f8f7" letter-spacing="-2">Excel-to-Excel</text>
-  <text x="80" y="378"
-        font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
-        font-size="84" font-weight="800" fill="#f6f8f7" letter-spacing="-2">transformation,</text>
-  <text x="80" y="466"
-        font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
-        font-size="84" font-weight="800" fill="#7ee787" letter-spacing="-2">specified.</text>
-
-  <!-- Subtitle row -->
-  <g transform="translate(80,540)">
-    <rect width="14" height="14" rx="3" fill="#28a85c"/>
-    <text x="28" y="13"
-          font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
-          font-size="22" fill="#c9d1d9">Templates are workbooks. Data is a workbook. Output is still a workbook.</text>
+  <g transform="translate(76 54)">
+    <use href="#symbolLight" transform="scale(0.46)"/>
+    <text x="138" y="73"
+          font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+          font-size="58" font-weight="800" fill="#FFFFFF" letter-spacing="2">XL3</text>
   </g>
 
-  <!-- Footer line -->
-  <text x="80" y="595"
-        font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
-        font-size="18" fill="#8b949e" letter-spacing="1">xl3.io · github.com/xl3-lang/xl3</text>
+  <g transform="translate(76 288)">
+    <text x="0" y="0"
+          font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+          font-size="72" font-weight="800" fill="#FFFFFF">Execute Excel.</text>
+    <text x="0" y="84"
+          font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+          font-size="72" font-weight="800" fill="#FFFFFF">Deterministically<tspan fill="#2563EB">.</tspan></text>
+    <text x="0" y="148"
+          font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+          font-size="25" font-weight="400" fill="#E5E7EB" opacity="0.86">The runtime for Excel templates.</text>
+    <text x="0" y="183"
+          font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+          font-size="25" font-weight="400" fill="#E5E7EB" opacity="0.86">From spreadsheet to reliable applications.</text>
+  </g>
+
+  <g transform="translate(76 518)">
+    <g>
+      <circle cx="0" cy="0" r="4" fill="#2563EB"/>
+      <circle cx="14" cy="0" r="4" fill="#2563EB" opacity="0.55"/>
+      <circle cx="28" cy="0" r="4" fill="#2563EB" opacity="0.24"/>
+      <path d="M38 -14 66 0 38 14" fill="none" stroke="#2563EB" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter"/>
+      <text x="0" y="50"
+            font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+            font-size="17" font-weight="700" fill="#FFFFFF">INPUT</text>
+      <text x="0" y="76"
+            font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+            font-size="17" font-weight="400" fill="#E5E7EB" opacity="0.72">Any Data</text>
+    </g>
+    <path d="M142 0H266" stroke="#475569" stroke-width="1.5"/>
+    <g transform="translate(316 -47) scale(0.36)">
+      <use href="#symbolLight"/>
+    </g>
+    <text x="298" y="50"
+          font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+          font-size="17" font-weight="700" fill="#FFFFFF">XL3 RUNTIME</text>
+    <text x="298" y="76"
+          font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+          font-size="17" font-weight="400" fill="#E5E7EB" opacity="0.72">Deterministic Execution</text>
+    <path d="M486 0H610" stroke="#475569" stroke-width="1.5"/>
+    <g transform="translate(662 0)">
+      <circle cx="0" cy="0" r="4" fill="#2563EB"/>
+      <circle cx="14" cy="0" r="4" fill="#2563EB" opacity="0.55"/>
+      <circle cx="28" cy="0" r="4" fill="#2563EB" opacity="0.24"/>
+      <path d="M38 -14 66 0 38 14" fill="none" stroke="#2563EB" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter"/>
+      <text x="0" y="50"
+            font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+            font-size="17" font-weight="700" fill="#FFFFFF">OUTPUT</text>
+      <text x="0" y="76"
+            font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+            font-size="17" font-weight="400" fill="#E5E7EB" opacity="0.72">Any Document</text>
+    </g>
+  </g>
+
+  <g transform="translate(760 126)" filter="url(#shadow)">
+    <rect x="0" y="0" width="320" height="338" rx="28" fill="url(#panel)" stroke="#1F2937"/>
+    <rect x="44" y="46" width="232" height="232" rx="44" fill="#07111F"/>
+    <g transform="translate(32 34) scale(1)">
+      <use href="#symbolLight"/>
+    </g>
+    <text x="160" y="305" text-anchor="middle"
+          font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
+          font-size="18" font-weight="700" fill="#E5E7EB">xl3.io</text>
+  </g>
 </svg>

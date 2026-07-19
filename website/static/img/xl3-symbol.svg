@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">XL3 symbol</title>
+  <desc id="desc">XL3 X symbol mark with graphite and blue beveled diagonal strokes.</desc>
+  <g fill-rule="evenodd" shape-rendering="geometricPrecision">
+    <path fill="#2563EB" d="M168 64h46l-61 61-23-23z"/>
+    <path fill="#0F172A" d="M42 192h46l38-38-23-23z"/>
+    <path fill="#0F172A" d="M42 64h44l64 64h-44z"/>
+    <path fill="#2563EB" d="M106 128h44l64 64h-44z"/>
+  </g>
+</svg>

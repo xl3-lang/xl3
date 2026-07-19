@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">XL3 favicon</title>
+  <desc id="desc">XL3 favicon with a light rounded square and the XL3 X symbol mark.</desc>
+  <rect x="8" y="8" width="240" height="240" rx="48" fill="#FFFFFF"/>
+  <rect x="8.5" y="8.5" width="239" height="239" rx="47.5" fill="none" stroke="#E5E7EB"/>
+  <g fill-rule="evenodd" shape-rendering="geometricPrecision">
+    <path fill="#2563EB" d="M168 64h46l-61 61-23-23z"/>
+    <path fill="#0F172A" d="M42 192h46l38-38-23-23z"/>
+    <path fill="#0F172A" d="M42 64h44l64 64h-44z"/>
+    <path fill="#2563EB" d="M106 128h44l64 64h-44z"/>
+  </g>
+</svg>

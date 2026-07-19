@@ -13,7 +13,7 @@ module.exports = function xl3AliasPlugin(context) {
       return {
         resolve: {
           alias: {
-            '@xl3-lang/xl3$': path.resolve(context.siteDir, '..', 'dist', 'index.js'),
+            '@xl3-lang/xl3$': path.resolve(context.siteDir, '..', 'impl', 'js', 'dist', 'index.js'),
           },
         },
       };

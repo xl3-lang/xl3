@@ -29,7 +29,7 @@ const xl3GithubDark: PrismTheme = {
 const config: Config = {
   title: 'xl3',
   tagline: 'An open standard for declarative Excel transformation.',
-  favicon: 'img/xl3-favicon.png',
+  favicon: 'img/xl3-favicon.svg',
 
   url: 'https://xl3.io',
   baseUrl: '/',
@@ -157,6 +157,60 @@ const config: Config = {
       },
     },
     {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/svg+xml',
+        href: '/img/xl3-favicon.svg',
+        media: '(prefers-color-scheme: light)',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/svg+xml',
+        href: '/img/xl3-favicon-dark.svg',
+        media: '(prefers-color-scheme: dark)',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'apple-touch-icon',
+        href: '/img/xl3-favicon.png',
+      },
+    },
+    {
+      tagName: 'script',
+      attributes: { type: 'text/javascript' },
+      innerHTML: `(() => {
+  const lightIcon = '/img/xl3-favicon.svg';
+  const darkIcon = '/img/xl3-favicon-dark.svg';
+  const applyFavicon = () => {
+    const theme = document.documentElement.getAttribute('data-theme');
+    const href = theme === 'dark' ? darkIcon : lightIcon;
+    let link = document.querySelector('link[data-xl3-theme-favicon]');
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('data-xl3-theme-favicon', '');
+      link.setAttribute('rel', 'icon');
+      link.setAttribute('type', 'image/svg+xml');
+      document.head.appendChild(link);
+    }
+    link.setAttribute('href', href);
+  };
+  new MutationObserver(applyFavicon).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyFavicon);
+  }
+  applyFavicon();
+})();`,
+    },
+    {
       tagName: 'script',
       attributes: { type: 'application/ld+json' },
       innerHTML: JSON.stringify({
@@ -169,7 +223,7 @@ const config: Config = {
             url: 'https://xl3.io',
             logo: {
               '@type': 'ImageObject',
-              url: 'https://xl3.io/img/xl3-logo.png',
+              url: 'https://xl3.io/img/xl3-favicon.png',
             },
             description:
               'Open-source declarative template engine for Excel. xl3 turns ordinary workbooks into executable templates whose rules live in Excel itself.',
@@ -252,7 +306,7 @@ const config: Config = {
   themeConfig: {
     image: 'img/og.png',
     metadata: [
-      { name: 'theme-color', content: '#185c37' },
+      { name: 'theme-color', content: '#0F172A' },
       { name: 'keywords', content: 'xl3, XTL, Excel template engine, declarative Excel template, Excel-to-Excel, document automation runtime, OOXML, xlsx, workbook transformation, conformance, spec' },
       {
         name: 'description',
@@ -266,8 +320,13 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'xl3',
-      logo: { alt: 'xl3', src: 'img/xl3-logo.png', width: 39, height: 32 },
+      logo: {
+        alt: 'XL3',
+        src: 'img/xl3-logo.png',
+        srcDark: 'img/xl3-logo-dark.png',
+        width: 105,
+        height: 32,
+      },
       // Navbar item labels translate via i18n/<locale>/docusaurus-theme-classic/navbar.json.
       // `localeDropdown` auto-switches between /, /ko/, /ja/, … based on `locales`.
       items: [

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">XL3 favicon dark mode</title>
+  <desc id="desc">XL3 favicon with a dark rounded square and the XL3 X symbol mark.</desc>
+  <defs>
+    <linearGradient id="xl3FaviconDarkBg" x1="32" y1="24" x2="224" y2="232" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#172033"/>
+      <stop offset="0.5" stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#07111F"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="url(#xl3FaviconDarkBg)"/>
+  <g fill-rule="evenodd" shape-rendering="geometricPrecision">
+    <path fill="#2563EB" d="M168 64h46l-61 61-23-23z"/>
+    <path fill="#FFFFFF" d="M42 192h46l38-38-23-23z"/>
+    <path fill="#FFFFFF" d="M42 64h44l64 64h-44z"/>
+    <path fill="#2563EB" d="M106 128h44l64 64h-44z"/>
+  </g>
+</svg>
