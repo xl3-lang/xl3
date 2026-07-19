@@ -1,28 +1,38 @@
-# xl3
+# xl3 — a standard for declarative Excel transformation
 
-> **Declarative Excel Template Engine.**
-> Jinja made HTML executable as templates; xl3 makes Excel workbooks
-> executable as templates.
+> Jinja made HTML executable as templates; **xl3 makes Excel workbooks
+> executable as templates** — as an open, implementation-independent
+> standard, not a single library.
 
-**Status:** alpha · XTL spec 0.1 (draft) · breaking changes possible until 1.0
+**Status:** alpha · **XTL spec 0.1 (draft)** · reference implementation
+`@jinyoung4478/xl3` 0.9.0 · breaking changes possible until 1.0
 
-xl3 is not a library for drawing workbooks cell by cell in code. It is a
-deterministic transformation engine that runs an ordinary `.xlsx`
-workbook as a **declarative template**.
+**xl3** is an open standard for turning an ordinary `.xlsx` workbook into a
+deterministic, declarative transformation template: the layout, styles,
+merged cells, and rules live *inside the workbook*, and any conforming
+engine executes it against supplied data — same inputs, same output, every
+time. This repository *defines* the standard, in three parts:
 
-Put the layout, styles, merged cells, and transformation rules in
-`template.xlsx`; provide `raw.xlsx`; xl3 executes the template and returns
-finished workbook(s). The template is authored in Excel with familiar
-formulas plus a small embedded expression language (XTL) for the things
-that must be known *before* the workbook is written: filters, groups,
-aggregates, filename patterns.
+- **[Spec](./spec/)** — the normative definition, including **XTL**, the
+  small embedded expression language for what must be decided *before* the
+  workbook is written (filters, groups, aggregates, filename patterns),
+  plus the design record (ADRs).
+- **[Conformance suite](./conformance/)** — language-neutral fixtures that
+  every implementation runs to prove it conforms.
+- **Reference implementation** —
+  [`@jinyoung4478/xl3`](https://www.npmjs.com/package/@jinyoung4478/xl3)
+  (TypeScript, in [`src/`](./src/)) — one of several
+  [implementations](./IMPLEMENTATIONS.md) (Rust/WASM and Python in progress).
 
-It's a good fit when recurring Excel documents — invoices, settlement
-statements, monthly reports, financial workbooks — need to stay editable
-in Excel while execution remains deterministic, inspectable, and
-verifiable. AI authoring is a strong fit too: an LLM can emit a compact
-template contract more reliably than hundreds of lines of workbook API
-code.
+**Three names, one stack:** **xl3** is the standard (this format) · **XTL**
+is its embedded expression language · **`@jinyoung4478/xl3`** is the
+TypeScript reference implementation of it.
+
+It fits when recurring Excel documents — invoices, settlement statements,
+monthly reports, financial workbooks — must stay editable in Excel while
+execution remains deterministic, inspectable, and verifiable. AI authoring
+is a strong fit too: an LLM can emit a compact template contract more
+reliably than hundreds of lines of workbook-API code.
 
 **English** · [한국어](./README.ko.md) · [日本語](./README.ja.md) · [简体中文](./README.zh-CN.md) · [Website](https://xl3.io) · [Spec](./spec) · [LLM authoring guide](./docs/llm-template-authoring.md) · [Implementations](./IMPLEMENTATIONS.md) · [Roadmap](./ROADMAP.md) · [Governance](./GOVERNANCE.md)
 
