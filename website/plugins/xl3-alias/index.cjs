@@ -1,8 +1,8 @@
 // Webpack alias so `import '@xl3-lang/xl3'` from the /try page
-// resolves to the local `dist/` build instead of node_modules. Keeps
-// the playground in sync with the source under development — no
-// version drift between published @xl3-lang/xl3 and what gets
-// shipped at /try.
+// resolves to the local reference-impl build at impl/js/dist/ instead
+// of node_modules. Keeps the playground in sync with the source under
+// development — no version drift between published @xl3-lang/xl3 and
+// what gets shipped at /try.
 
 const path = require('path');
 

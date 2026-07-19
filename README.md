@@ -21,7 +21,7 @@ time. This repository *defines* the standard, in three parts:
   every implementation runs to prove it conforms.
 - **Reference implementation** —
   [`@xl3-lang/xl3`](https://www.npmjs.com/package/@xl3-lang/xl3)
-  (TypeScript, in [`src/`](./src/)) — one of several
+  (TypeScript, in [`impl/js/`](./impl/js/)) — one of several
   [implementations](./IMPLEMENTATIONS.md) (Rust/WASM and Python in progress).
 
 **Three names, one stack:** **xl3** is the standard (this format) · **XTL**
@@ -329,7 +329,7 @@ Run the conformance corpus locally:
 
 ```bash
 npm run conformance
-node dist/bin/conformance.js --fixture-dir=conformance/fixtures --comparison-stage=2
+npm run conformance:stage2
 ```
 
 A summary of the latest reference-impl run — plus columns for any

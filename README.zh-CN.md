@@ -18,7 +18,7 @@
   符合规范的语言中立 fixture。
 - **参考实现** —
   [`@xl3-lang/xl3`](https://www.npmjs.com/package/@xl3-lang/xl3)
-  (TypeScript,位于 [`src/`](./src/)) —— 多个[实现](./IMPLEMENTATIONS.md)
+  (TypeScript,位于 [`impl/js/`](./impl/js/)) —— 多个[实现](./IMPLEMENTATIONS.md)
   之一(Rust/WASM 与 Python 进行中)。
 
 **三个名字,一套体系:** **xl3** = 标准(这个格式) · **XTL** = 它的内嵌
@@ -295,7 +295,7 @@ TypeScript 参考实现。欢迎用其他语言来移植 —— 详见
 
 ```bash
 npm run conformance
-node dist/bin/conformance.js --fixture-dir=conformance/fixtures --comparison-stage=2
+npm run conformance:stage2
 ```
 
 最新一次参考实现运行的汇总,以及任何放入

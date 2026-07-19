@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - 'site/**'
-      - 'src/**'
+      - 'impl/js/**'
       - 'docs/**'
       - 'website/**'
       - 'spec/**'
@@ -22,7 +22,6 @@ on:
       - 'RELEASING.md'
       - 'package.json'
       - 'package-lock.json'
-      - 'tsconfig.build.json'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 

@@ -22,7 +22,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { performance } from 'node:perf_hooks';
-import { convert } from '../dist/index.js';
+import { convert } from '@xl3-lang/xl3';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 

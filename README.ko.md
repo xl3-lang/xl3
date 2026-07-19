@@ -19,7 +19,7 @@
   증명하기 위해 실행하는 언어중립 픽스처.
 - **레퍼런스 구현** —
   [`@xl3-lang/xl3`](https://www.npmjs.com/package/@xl3-lang/xl3)
-  (TypeScript, [`src/`](./src/)) — 여러 [구현](./IMPLEMENTATIONS.md) 중
+  (TypeScript, [`impl/js/`](./impl/js/)) — 여러 [구현](./IMPLEMENTATIONS.md) 중
   하나 (Rust/WASM·Python 진행 중).
 
 **세 이름, 하나의 스택:** **xl3** = 표준(이 포맷) · **XTL** = 그 임베디드
@@ -275,7 +275,7 @@ Conformance 코퍼스는 로컬에서 바로 돌려볼 수 있습니다.
 
 ```bash
 npm run conformance
-node dist/bin/conformance.js --fixture-dir=conformance/fixtures --comparison-stage=2
+npm run conformance:stage2
 ```
 
 ## 프로젝트 구조

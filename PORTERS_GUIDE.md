@@ -74,9 +74,9 @@ so the maintainer can ADR-track the gap.
 
 Stable `error.code` strings of the form `xl3/<category>/<id>`. Hosts
 dispatch on these codes for localization and programmatic handling.
-The full catalog is in [`src/error-codes.ts`](./src/error-codes.ts);
+The full catalog is in [`impl/js/src/error-codes.ts`](./impl/js/src/error-codes.ts);
 the snapshot test in
-[`src/__tests__/error-codes.test.ts`](./src/__tests__/error-codes.test.ts)
+[`impl/js/src/__tests__/error-codes.test.ts`](./impl/js/src/__tests__/error-codes.test.ts)
 pins it.
 
 Your port emits the **same code** at the **same logical site**. The

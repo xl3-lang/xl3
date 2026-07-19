@@ -17,7 +17,9 @@ import { fileURLToPath } from 'node:url';
 // human review. Adding a new ADR or fixture without updating the
 // references will fail this test.
 
-const REPO_ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+// This test file lives at impl/js/src/__tests__/; the repo root
+// (spec/, conformance/, …) is four levels up.
+const REPO_ROOT = resolve(fileURLToPath(new URL('../../../..', import.meta.url)));
 const FIXTURE_DIR = join(REPO_ROOT, 'conformance', 'fixtures');
 const ADR_DIR = join(REPO_ROOT, 'spec', 'decisions');
 
