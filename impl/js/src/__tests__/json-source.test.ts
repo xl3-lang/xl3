@@ -252,6 +252,12 @@ describe('convertJson / previewJson API [ADR-0075]', () => {
     await expect(convertJson(templateBuf(), json, { engine: 'wasm' })).rejects.toThrow(/wasm/i);
     await expect(previewJson(templateBuf(), json, { engine: 'wasm' })).rejects.toThrow(/wasm/i);
   });
+
+  it('previewJson rejects invalid JSON input with xl3/source-json/invalid', async () => {
+    await expect(previewJson(templateBuf(), '{ not json')).rejects.toMatchObject({
+      code: 'xl3/source-json/invalid',
+    });
+  });
 });
 
 // ---- header normalization + hardening (Codex review of #80) ----
@@ -290,5 +296,20 @@ describe('input hardening [ADR-0075]', () => {
     const cyclic: Record<string, unknown> = {};
     cyclic.self = cyclic;
     expectInvalid(() => readJsonSources(src(['A'], [[cyclic]]), []));
+  });
+  it('rejects sparse arrays even with a polluted Array.prototype (object input)', () => {
+    // Object input can carry sparse arrays (JSON strings never do). A
+    // hole must not read an inherited Array.prototype value.
+    (Array.prototype as unknown as Record<number, unknown>)[0] = 'PWNED';
+    try {
+      const sparseHeaders: unknown[] = [];
+      sparseHeaders[1] = 'B'; // length 2, index 0 is a hole
+      expectInvalid(() => readJsonSources(src(sparseHeaders, [[1, 2]]), []));
+      const sparseRow: unknown[] = [];
+      sparseRow[1] = 'x'; // length 2, index 0 is a hole
+      expectInvalid(() => readJsonSources(src(['A', 'B'], [sparseRow]), []));
+    } finally {
+      delete (Array.prototype as unknown as Record<number, unknown>)[0];
+    }
   });
 });

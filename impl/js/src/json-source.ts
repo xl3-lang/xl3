@@ -140,7 +140,10 @@ function buildSource(name: string, raw: unknown): SourceData {
   // duplicate / reserved checks.
   const normHeaders: string[] = [];
   const seen = new Set<string>();
-  for (const h of headers) {
+  for (let i = 0; i < headers.length; i++) {
+    // Own-index read: a sparse array (hole) with a polluted
+    // Array.prototype would otherwise inject an inherited value.
+    const h = Object.prototype.hasOwnProperty.call(headers, i) ? headers[i] : undefined;
     if (typeof h !== 'string') return fail(`source "${name}" has a non-string header (${describe(h)})`);
     const header = h.trim();
     if (header === '') return fail(`source "${name}" has an empty header`);
@@ -166,7 +169,10 @@ function buildSource(name: string, raw: unknown): SourceData {
     let allEmpty = true;
     for (let c = 0; c < normHeaders.length; c++) {
       const header = normHeaders[c]!;
-      const val = mapValue(row[c] as Xl3SourceJsonValue, `source "${name}" row ${i} column "${header}"`);
+      // Own-index read (see header loop): guards sparse rows against a
+      // polluted Array.prototype supplying inherited cell values.
+      const cell = Object.prototype.hasOwnProperty.call(row, c) ? row[c] : undefined;
+      const val = mapValue(cell as Xl3SourceJsonValue, `source "${name}" row ${i} column "${header}"`);
       if (!isEmpty(val)) allEmpty = false;
       record[header] = val;
     }
