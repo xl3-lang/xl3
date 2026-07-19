@@ -35,9 +35,9 @@ function Hero() {
           <p className={styles.kicker}>선언형 엑셀 템플릿 · 결정적 실행</p>
           <h1 className={styles.heroTitle}>엑셀을 실행 가능한 템플릿으로.</h1>
           <p className={styles.heroLead}>
-            xl3 는 워크북을 코드로 그리는 API가 아닙니다. 변환 규칙을{' '}
-            <code>template.xlsx</code> 안에 두고, <code>raw.xlsx</code> 데이터를
-            넣어 같은 입력에서 같은 결과 워크북을 생성하는 실행 엔진입니다.
+            xl3 는 워크북을 코드로 그리는 API가 아니라, 열린 표준입니다. 변환 규칙을{' '}
+            <code>template.xlsx</code> 안에 두고 <code>raw.xlsx</code> 데이터를
+            넣으면, 규격을 따르는 엔진이 같은 입력에서 같은 결과 워크북을 생성합니다.
           </p>
           <div className={styles.heroLinks}>
             <Link className="button button--primary button--lg" to="/ko/try">
@@ -407,8 +407,8 @@ function DeveloperApi() {
 export default function HomeKo() {
   return (
     <Layout
-      title="엑셀 선언형 템플릿 엔진"
-      description="엑셀 파일에 변환 규칙을 담고 데이터와 함께 실행해 같은 워크북을 생성합니다."
+      title="선언형 Excel 변환 표준"
+      description="xl3는 선언형 Excel 변환을 위한 열린 표준입니다. Excel 파일에 변환 규칙을 담고 데이터와 함께 실행해 매번 같은 워크북을 생성합니다."
     >
       <Hero />
       <main>

@@ -54,7 +54,7 @@ function Hero() {
               }}
             >
               {
-                'xl3 is not a workbook API. Put the transformation rules inside {template}, provide {raw}, and run a deterministic engine that returns {result} — same inputs, same workbook, every time.'
+                'xl3 is an open standard, not a workbook API: put the transformation rules inside {template}, provide {raw}, and a conforming engine returns {result} — same inputs, same workbook, every time.'
               }
             </Translate>
           </p>
@@ -748,15 +748,15 @@ export default function Home() {
     <Layout
       title={translate({
         id: 'homepage.layout.title',
-        // Names xl3's identity as an Excel template engine, not a workbook API.
-        // Docusaurus appends "| xl3", so no brand prefix here.
-        message: 'Declarative Excel Template Engine',
+        // Names xl3's identity as a standard for Excel transformation, not a
+        // library. Docusaurus appends "| xl3", so no brand prefix here.
+        message: 'A Standard for Declarative Excel Transformation',
         description: 'HTML <title> for the landing page',
       })}
       description={translate({
         id: 'homepage.layout.description',
         message:
-          'xl3 runs Excel templates with data to produce the same workbook every time.',
+          'xl3 is an open standard for declarative Excel transformation: run an Excel template with data to get the same workbook every time.',
         description: 'HTML <meta description> for the landing page',
       })}
     >

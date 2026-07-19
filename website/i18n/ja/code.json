@@ -335,7 +335,7 @@
     "description": "Hero section H1"
   },
   "homepage.hero.lead": {
-    "message": "xl3 はワークブック API ではありません。変換ルールを {template} の中に置き、{raw} を渡すと、決定論的なエンジンが {result} を生成します。同じ入力なら、毎回同じワークブックです。",
+    "message": "xl3 はワークブック API ではなく、オープンな標準です。変換ルールを {template} の中に置き、{raw} を渡すと、仕様に準拠したエンジンが {result} を生成します。同じ入力なら、毎回同じワークブックです。",
     "description": "Hero section lead paragraph; {template}, {raw}, {result} are inline code refs"
   },
   "homepage.hero.cta.try": {
@@ -627,11 +627,11 @@
     "description": "Bottom CTA link — Porter's Guide"
   },
   "homepage.layout.title": {
-    "message": "宣言的 Excel テンプレートエンジン",
+    "message": "宣言的 Excel 変換の標準",
     "description": "HTML <title> for the landing page"
   },
   "homepage.layout.description": {
-    "message": "xl3 は Excel テンプレートをデータと一緒に実行し、毎回同じワークブックを生成します。",
+    "message": "xl3 は宣言的 Excel 変換のためのオープンな標準です。Excel テンプレートをデータと一緒に実行し、毎回同じワークブックを生成します。",
     "description": "HTML <meta description> for the landing page"
   },
   "try.status.idle": {
