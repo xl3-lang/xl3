@@ -335,7 +335,7 @@
     "description": "Hero section H1"
   },
   "homepage.hero.lead": {
-    "message": "xl3 不是工作簿 API。把转换规则放进 {template}，提供 {raw}，确定性的引擎就会生成 {result}：相同输入，每次得到相同工作簿。",
+    "message": "xl3 不是工作簿 API，而是一个开放标准。把转换规则放进 {template}，提供 {raw}，符合规范的引擎就会生成 {result}：相同输入，每次得到相同工作簿。",
     "description": "Hero section lead paragraph; {template}, {raw}, {result} are inline code refs"
   },
   "homepage.hero.cta.try": {
@@ -627,11 +627,11 @@
     "description": "Bottom CTA link — Porter's Guide"
   },
   "homepage.layout.title": {
-    "message": "声明式 Excel 模板引擎",
+    "message": "声明式 Excel 转换标准",
     "description": "HTML <title> for the landing page"
   },
   "homepage.layout.description": {
-    "message": "xl3 用数据执行 Excel 模板，每次生成相同的工作簿。",
+    "message": "xl3 是声明式 Excel 转换的开放标准:用数据执行 Excel 模板，每次生成相同的工作簿。",
     "description": "HTML <meta description> for the landing page"
   },
   "try.status.idle": {
