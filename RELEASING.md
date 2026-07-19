@@ -59,8 +59,8 @@ a pure impl refactor can ship as `xl3` patch with no spec change.
    ```
 
    The `rc` dist-tag means hosts opting in
-   (`npm install @jinyoung4478/xl3@rc`) get the candidate; default
-   `npm install @jinyoung4478/xl3` keeps the prior stable.
+   (`npm install @xl3-lang/xl3@rc`) get the candidate; default
+   `npm install @xl3-lang/xl3` keeps the prior stable.
 
 8. Create the GitHub Release **immediately after `npm publish`**.
    `npm publish` is the easy-to-forget half-step: the package goes
@@ -87,7 +87,7 @@ a pure impl refactor can ship as `xl3` patch with no spec change.
 
    | Artifact | Check |
    |---|---|
-   | npm `latest` (or `rc`) | `npm view @jinyoung4478/xl3 version` matches the cut |
+   | npm `latest` (or `rc`) | `npm view @xl3-lang/xl3 version` matches the cut |
    | Remote git tag | `git ls-remote --tags origin \| grep v1.0.0-rc.1` returns a row |
    | GitHub Release | `gh release view v1.0.0-rc.1` resolves; appears in `gh release list` |
    | CHANGELOG | `[Unreleased]` is empty; the cut version has its own dated section |
@@ -187,11 +187,11 @@ If a release ships a critical bug:
 2. If the fix can't ship within an hour:
 
    ```bash
-   npm dist-tag rm @jinyoung4478/xl3 latest      # un-recommend the bad version
-   npm dist-tag add @jinyoung4478/xl3@<previous> latest
+   npm dist-tag rm @xl3-lang/xl3 latest      # un-recommend the bad version
+   npm dist-tag add @xl3-lang/xl3@<previous> latest
    ```
 
-   Hosts that pinned to `@jinyoung4478/xl3` keep the old version
+   Hosts that pinned to `@xl3-lang/xl3` keep the old version
    until they bump.
 
 3. Never `npm unpublish` — npm policy disallows unpublishing

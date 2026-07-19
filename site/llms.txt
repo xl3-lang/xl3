@@ -1,6 +1,6 @@
 # xl3
 
-> xl3 is an open-source declarative Excel template engine. It is not a workbook API: the layout and transformation rules live in an ordinary `.xlsx` template, data comes from a second workbook, and `convert(template, data)` executes the template to produce the same workbook every time. The reference implementation is published on npm as `@jinyoung4478/xl3`.
+> xl3 is an open-source declarative Excel template engine. It is not a workbook API: the layout and transformation rules live in an ordinary `.xlsx` template, data comes from a second workbook, and `convert(template, data)` executes the template to produce the same workbook every time. The reference implementation is published on npm as `@xl3-lang/xl3`.
 
 Key facts:
 - Excel is the template/view, data is the model, and xl3 is the execution engine.

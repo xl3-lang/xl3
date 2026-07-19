@@ -12,7 +12,7 @@ retry logic, or operator-friendly messages.
 ## Catch + dispatch
 
 ```ts
-import { convert, isXtlError } from '@jinyoung4478/xl3';
+import { convert, isXtlError } from '@xl3-lang/xl3';
 
 try {
   const outputs = await convert(templateBuffer, dataBuffer, options);

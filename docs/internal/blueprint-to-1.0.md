@@ -69,7 +69,7 @@ multi-source merge via `@join`.
   Try-it, 404, 18 cookbook recipes)
 
 **Runtime:**
-- TypeScript reference impl (`@jinyoung4478/xl3` v0.6.0 on npm)
+- TypeScript reference impl (`@xl3-lang/xl3` v0.6.0 on npm)
 - xl3-py port (draft — % unknown, target 80% Stage 1 for 1.0)
 - Browser IIFE bundle (~1 MB minified, ~300 KB gzipped)
 - Node ≥ 20.12

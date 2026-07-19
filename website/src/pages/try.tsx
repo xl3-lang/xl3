@@ -37,7 +37,7 @@ type Xl3Module = {
 let xl3Promise: Promise<Xl3Module> | undefined;
 function loadXl3(): Promise<Xl3Module> {
   if (!xl3Promise) {
-    xl3Promise = import(/* webpackChunkName: 'xl3-engine' */ '@jinyoung4478/xl3') as Promise<Xl3Module>;
+    xl3Promise = import(/* webpackChunkName: 'xl3-engine' */ '@xl3-lang/xl3') as Promise<Xl3Module>;
   }
   return xl3Promise;
 }

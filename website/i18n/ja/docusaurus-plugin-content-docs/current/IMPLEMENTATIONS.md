@@ -8,7 +8,7 @@ slug: /implementations
 
 | 言語 | リポジトリ | パッケージ | 仕様バージョン | 適合性 | 備考 |
 |---|---|---|---|---|---|
-| TypeScript | [`xl3-lang/xl3`](https://github.com/xl3-lang/xl3) | [`@jinyoung4478/xl3`](https://www.npmjs.com/package/@jinyoung4478/xl3) | XTL 0.1(ドラフト) | リファレンス。**139/139** フィクスチャが通過(Stage 1 が 133 件 + Stage 2 のみ 6 件) | ブラウザ + Node ≥ 20.12;ランナーは `npx xl3-conformance`;CI で 3 タイムゾーンのマトリクスを実行 |
+| TypeScript | [`xl3-lang/xl3`](https://github.com/xl3-lang/xl3) | [`@xl3-lang/xl3`](https://www.npmjs.com/package/@xl3-lang/xl3) | XTL 0.1(ドラフト) | リファレンス。**139/139** フィクスチャが通過(Stage 1 が 133 件 + Stage 2 のみ 6 件) | ブラウザ + Node ≥ 20.12;ランナーは `npx xl3-conformance`;CI で 3 タイムゾーンのマトリクスを実行 |
 | Python | [`jinyoung4478/xl3-py`](https://github.com/jinyoung4478/xl3-py) | _(未公開)_ | XTL 0.1(ドラフト) | **ドラフト**、開発中 | リファレンス実装と並走して追跡。[`conformance/reports/`](https://github.com/xl3-lang/xl3/tree/main/conformance/reports) 配下に `--report=json` のアーティファクトを置けば、`npm run conformance:dashboard` が拾います |
 
 ## 実装の追加

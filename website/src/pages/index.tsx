@@ -77,7 +77,7 @@ function Hero() {
             </Link>
             <Link
               className="button button--secondary button--lg"
-              href="https://www.npmjs.com/package/@jinyoung4478/xl3"
+              href="https://www.npmjs.com/package/@xl3-lang/xl3"
             >
               npm
             </Link>
@@ -477,7 +477,7 @@ function Reliability() {
               adrCount: <strong>70 ADRs</strong>,
               fixtureCount: <strong>154 conformance fixtures</strong>,
               npmLink: (
-                <a href="https://www.npmjs.com/package/@jinyoung4478/xl3">@jinyoung4478/xl3</a>
+                <a href="https://www.npmjs.com/package/@xl3-lang/xl3">@xl3-lang/xl3</a>
               ),
               portersGuideLink: (
                 <Link to="/porters-guide">
@@ -683,7 +683,7 @@ function DeveloperApi() {
                 { kind: 'plain', text: ' ' },
                 { kind: 'kw', text: 'install' },
                 { kind: 'plain', text: ' ' },
-                { kind: 'var', text: '@jinyoung4478/xl3' },
+                { kind: 'var', text: '@xl3-lang/xl3' },
               ],
             ]}
           />
@@ -697,7 +697,7 @@ function DeveloperApi() {
                 { kind: 'plain', text: ' } ' },
                 { kind: 'kw', text: 'from' },
                 { kind: 'plain', text: ' ' },
-                { kind: 'string', text: "'@jinyoung4478/xl3'" },
+                { kind: 'string', text: "'@xl3-lang/xl3'" },
                 { kind: 'plain', text: ';' },
               ],
               [{ kind: 'plain', text: '' }],

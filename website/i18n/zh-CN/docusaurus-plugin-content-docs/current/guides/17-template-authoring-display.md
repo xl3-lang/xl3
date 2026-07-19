@@ -92,7 +92,7 @@ Excel 原生答案。每个公式只多一行，几秒钟就能学会。
 如果你把 xl3 嵌入到 TypeScript 宿主中：
 
 ```ts
-import { preview } from '@jinyoung4478/xl3';
+import { preview } from '@xl3-lang/xl3';
 
 const result = await preview(templateBuffer, dataBuffer);
 console.log(result.sources);   // 检测到的源行
@@ -110,7 +110,7 @@ npm run examples:build
 
 # 渲染并检查
 node -e "
-import('@jinyoung4478/xl3').then(async ({ convert }) => {
+import('@xl3-lang/xl3').then(async ({ convert }) => {
   const fs = await import('node:fs/promises');
   const tpl = await fs.readFile('./template.xlsx');
   const data = await fs.readFile('./data.xlsx');

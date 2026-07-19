@@ -31,7 +31,7 @@ XLOOKUP, comparison operators), plus a handful of XTL directives
 **language-neutral spec** ([spec/](https://github.com/xl3-lang/xl3/tree/main/spec))
 with an executable conformance corpus ([conformance/](https://github.com/xl3-lang/xl3/tree/main/conformance))
 — 119 fixtures, all green at Stage 2. The TypeScript implementation
-(`@jinyoung4478/xl3` on npm) is the reference impl, not the spec. A
+(`@xl3-lang/xl3` on npm) is the reference impl, not the spec. A
 second-language port is in progress; the
 [porter's guide](https://github.com/xl3-lang/xl3/blob/main/PORTERS_GUIDE.md)
 catalogs the gotchas (NFC/NFD, IEEE 754 2^53, etc.) we've already hit.
@@ -53,4 +53,4 @@ I'd love feedback on:
 
 Repo: https://github.com/xl3-lang/xl3
 Browser demo: https://xl3.io
-npm: https://www.npmjs.com/package/@jinyoung4478/xl3
+npm: https://www.npmjs.com/package/@xl3-lang/xl3

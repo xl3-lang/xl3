@@ -44,7 +44,7 @@ example. To run with a different month from code:
 
 ```ts
 import { readFileSync } from 'node:fs';
-import { convert } from '@jinyoung4478/xl3';
+import { convert } from '@xl3-lang/xl3';
 
 const t = readFileSync('examples/03-multi-source-join/template.xlsx');
 const d = readFileSync('examples/03-multi-source-join/data.xlsx');

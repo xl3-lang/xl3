@@ -30,6 +30,6 @@ export default defineConfig({
   // tsup emits one config per pass; we run it twice via the npm script.
   minify: process.env.MINIFY === '1',
   banner: {
-    js: '/*! @jinyoung4478/xl3 IIFE bundle — MIT — https://xl3.io */',
+    js: '/*! @xl3-lang/xl3 IIFE bundle — MIT — https://xl3.io */',
   },
 });

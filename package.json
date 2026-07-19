@@ -1,5 +1,5 @@
 {
-  "name": "@jinyoung4478/xl3",
+  "name": "@xl3-lang/xl3",
   "version": "0.9.0",
   "description": "Use Excel workbooks as templates and render formatted Excel output from Excel data.",
   "keywords": [
