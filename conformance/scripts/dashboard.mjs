@@ -20,7 +20,7 @@ const REPO_ROOT = join(HERE, '..', '..');
 const FIXTURES_DIR = join(REPO_ROOT, 'conformance', 'fixtures');
 const REPORTS_DIR = join(REPO_ROOT, 'conformance', 'reports');
 const OUT_FILE = join(REPO_ROOT, 'conformance', 'DASHBOARD.md');
-const RUNNER = join(REPO_ROOT, 'dist', 'bin', 'conformance.js');
+const RUNNER = join(REPO_ROOT, 'impl', 'js', 'dist', 'bin', 'conformance.js');
 
 async function runReferenceImpl() {
   return new Promise((resolve, reject) => {

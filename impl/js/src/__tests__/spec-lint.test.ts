@@ -16,7 +16,9 @@ import { fileURLToPath } from 'node:url';
 // also fails when an ADR is removed without a corresponding update
 // to the references that name it.
 
-const REPO_ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+// This test file lives at impl/js/src/__tests__/; the repo root
+// (spec/, conformance/, README.md, …) is four levels up.
+const REPO_ROOT = resolve(fileURLToPath(new URL('../../../..', import.meta.url)));
 const ADR_DIR = join(REPO_ROOT, 'spec', 'decisions');
 
 describe('spec corpus lint', () => {

@@ -4,7 +4,11 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import { describe, expect, it } from 'vitest';
 
-const REPO_ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+// dist/ is built inside this package (impl/js); the conformance/
+// fixtures live at the repo root, four levels up from
+// impl/js/src/__tests__/.
+const PKG_ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+const REPO_ROOT = resolve(fileURLToPath(new URL('../../../..', import.meta.url)));
 
 // Smoke test for the IIFE bundle produced by `npm run build:bundle`.
 //
@@ -23,7 +27,7 @@ const REPO_ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 // runs `npm run build:bundle` before `npm test`, so it executes
 // there.
 
-const BUNDLE_PATH = resolve(REPO_ROOT, 'dist/xl3.bundle.iife.min.js');
+const BUNDLE_PATH = resolve(PKG_ROOT, 'dist/xl3.bundle.iife.min.js');
 const BUNDLE_SIZE_LIMIT_BYTES = 1.5 * 1024 * 1024;
 
 // Same list as api-surface.test.ts. Kept duplicated rather than

@@ -20,7 +20,7 @@
   ために実行する言語非依存の fixture 群。
 - **リファレンス実装** —
   [`@xl3-lang/xl3`](https://www.npmjs.com/package/@xl3-lang/xl3)
-  (TypeScript、[`src/`](./src/)) — 複数ある[実装](./IMPLEMENTATIONS.md)の
+  (TypeScript、[`impl/js/`](./impl/js/)) — 複数ある[実装](./IMPLEMENTATIONS.md)の
   一つ (Rust/WASM・Python は進行中)。
 
 **3 つの名前、1 つのスタック:** **xl3** = 標準(このフォーマット) · **XTL**
@@ -281,7 +281,7 @@ Conformance コーパスはローカルで実行できます。
 
 ```bash
 npm run conformance
-node dist/bin/conformance.js --fixture-dir=conformance/fixtures --comparison-stage=2
+npm run conformance:stage2
 ```
 
 最新のリファレンス実装の実行サマリと、[`conformance/reports/`](./conformance/reports/) に置かれた外部ポートのレポート列は、[`conformance/DASHBOARD.md`](./conformance/DASHBOARD.md) にまとまっています。`npm run conformance:dashboard` で再生成できます。

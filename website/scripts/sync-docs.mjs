@@ -161,7 +161,7 @@ const DEAD_LINK_PREFIXES = [
   { prefix: 'conformance/fixtures/', kind: 'tree' },
   { prefix: 'conformance/reports/', kind: 'tree' },
   { prefix: 'examples/', kind: 'tree' },
-  { prefix: 'src/', kind: 'blob' },
+  { prefix: 'impl/', kind: 'tree' },
   // Cookbook recipes have site routes (/guides/<name>); the rest of
   // docs/ (llm-template-authoring, internal/) is repo-only.
   { prefix: 'docs/guides/', kind: 'site-md', target: '/guides/' },
@@ -406,9 +406,10 @@ function canonicalSource(rel) {
 }
 
 async function stampLastUpdate(target) {
-  // typedoc output has no git history of its own; it derives from src/,
-  // so every api/ page shares the date of the last commit touching src/.
-  const apiDate = gitDate('src');
+  // typedoc output has no git history of its own; it derives from
+  // impl/js/src/, so every api/ page shares the date of the last commit
+  // touching impl/js/src/.
+  const apiDate = gitDate('impl/js/src');
   const { readdir } = await import('node:fs/promises');
 
   async function walk(dir) {

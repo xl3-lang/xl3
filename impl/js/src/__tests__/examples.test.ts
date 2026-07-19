@@ -12,7 +12,9 @@ import { convert } from '../index.js';
 // isolation; together with the conformance suite they pin the
 // composed surface.
 
-const REPO_ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+// This test file lives at impl/js/src/__tests__/; the repo root
+// (examples/, …) is four levels up.
+const REPO_ROOT = resolve(fileURLToPath(new URL('../../../..', import.meta.url)));
 const EXAMPLES = join(REPO_ROOT, 'examples');
 
 const INPUTS_BY_EXAMPLE: Record<string, Record<string, string>> = {

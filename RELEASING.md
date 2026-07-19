@@ -3,9 +3,14 @@
 The reference impl publishes to npm; the spec lives in this repo.
 This file documents the cut procedure for both.
 
+The JS/TS reference implementation lives in `impl/js/` (published as
+`@xl3-lang/xl3`). The repo root is an npm workspace: run `npm ci` at
+the root, and publish with `npm publish -w @xl3-lang/xl3` (or from
+inside `impl/js/`).
+
 ## Versioning model
 
-The npm package version (`package.json`) and the XTL spec version
+The npm package version (`impl/js/package.json`) and the XTL spec version
 (`spec/STABILITY.md`) move on **independent timelines** but follow
 related rules:
 
@@ -40,7 +45,7 @@ a pure impl refactor can ship as `xl3` patch with no spec change.
    `scripts/BENCH.md` if they shifted significantly.
 
 3. Confirm `CHANGELOG.md` `[Unreleased]` is comprehensive.
-4. Bump `package.json` version to the rc form
+4. Bump `impl/js/package.json` version to the rc form
    (e.g., `1.0.0-rc.1`). Do NOT publish a `1.0.0` directly without
    an rc cycle for any major / new-spec-minor release.
 5. Move `[Unreleased]` to `[1.0.0-rc.1] - YYYY-MM-DD` and re-create
@@ -55,7 +60,7 @@ a pure impl refactor can ship as `xl3` patch with no spec change.
 7. Publish:
 
    ```bash
-   npm publish --tag rc
+   npm publish -w @xl3-lang/xl3 --tag rc
    ```
 
    The `rc` dist-tag means hosts opting in
@@ -107,7 +112,7 @@ extended from 7 days per review feedback):
    ```bash
    git tag -a v1.0.0 -m "xl3 1.0.0 — XTL 0.1 final"
    git push origin main --tags
-   npm publish
+   npm publish -w @xl3-lang/xl3
    ```
 
    No `--tag rc` this time; this becomes the new `latest`.

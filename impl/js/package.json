@@ -1,0 +1,82 @@
+{
+  "name": "@xl3-lang/xl3",
+  "version": "0.10.0",
+  "description": "Use Excel workbooks as templates and render formatted Excel output from Excel data.",
+  "keywords": [
+    "excel",
+    "xlsx",
+    "template",
+    "transform",
+    "spreadsheet",
+    "report",
+    "automation",
+    "xtl"
+  ],
+  "license": "MIT",
+  "homepage": "https://xl3.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xl3-lang/xl3.git",
+    "directory": "impl/js"
+  },
+  "bugs": {
+    "url": "https://github.com/xl3-lang/xl3/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "xl3-conformance": "dist/bin/conformance.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./conformance-runner": {
+      "types": "./dist/conformance-runner.d.ts",
+      "import": "./dist/conformance-runner.js"
+    },
+    "./bundle": "./dist/xl3.bundle.iife.min.js",
+    "./bundle/dev": "./dist/xl3.bundle.iife.js"
+  },
+  "unpkg": "./dist/xl3.bundle.iife.min.js",
+  "jsdelivr": "./dist/xl3.bundle.iife.min.js",
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "!dist/**/*.map",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "build:bundle": "tsup && MINIFY=1 tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "conformance": "node dist/bin/conformance.js --fixture-dir=../../conformance/fixtures",
+    "conformance:stage2": "node dist/bin/conformance.js --fixture-dir=../../conformance/fixtures --comparison-stage=2",
+    "docs:api": "typedoc",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build && npm run build:bundle && npm run conformance && npm run conformance:stage2"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "jszip": "^3.10.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsup": "^8.5.1",
+    "typedoc": "^0.28.19",
+    "typedoc-plugin-markdown": "^4.11.0",
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": ">=20.12"
+  }
+}

@@ -1,17 +1,8 @@
 {
-  "name": "@xl3-lang/xl3",
-  "version": "0.10.0",
-  "description": "Use Excel workbooks as templates and render formatted Excel output from Excel data.",
-  "keywords": [
-    "excel",
-    "xlsx",
-    "template",
-    "transform",
-    "spreadsheet",
-    "report",
-    "automation",
-    "xtl"
-  ],
+  "name": "xl3-standard",
+  "version": "0.0.0",
+  "private": true,
+  "description": "xl3 — an open standard for declarative Excel transformation. This is the repository root; the JavaScript/TypeScript reference implementation lives in impl/js (published to npm as @xl3-lang/xl3).",
   "license": "MIT",
   "homepage": "https://xl3.io",
   "repository": {
@@ -22,62 +13,27 @@
     "url": "https://github.com/xl3-lang/xl3/issues"
   },
   "type": "module",
-  "sideEffects": false,
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "bin": {
-    "xl3-conformance": "dist/bin/conformance.js"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./conformance-runner": {
-      "types": "./dist/conformance-runner.d.ts",
-      "import": "./dist/conformance-runner.js"
-    },
-    "./bundle": "./dist/xl3.bundle.iife.min.js",
-    "./bundle/dev": "./dist/xl3.bundle.iife.js"
-  },
-  "unpkg": "./dist/xl3.bundle.iife.min.js",
-  "jsdelivr": "./dist/xl3.bundle.iife.min.js",
-  "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts",
-    "!dist/**/*.map",
-    "README.md",
-    "README.ko.md",
-    "README.ja.md",
-    "README.zh-CN.md",
-    "LICENSE"
+  "workspaces": [
+    "impl/js"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "build:bundle": "tsup && MINIFY=1 tsup",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "conformance": "node dist/bin/conformance.js --fixture-dir=conformance/fixtures",
-    "conformance:stage2": "node dist/bin/conformance.js --fixture-dir=conformance/fixtures --comparison-stage=2",
+    "build": "npm -w @xl3-lang/xl3 run build",
+    "build:bundle": "npm -w @xl3-lang/xl3 run build:bundle",
+    "typecheck": "npm -w @xl3-lang/xl3 run typecheck",
+    "test": "npm -w @xl3-lang/xl3 run test",
+    "test:watch": "npm -w @xl3-lang/xl3 run test:watch",
+    "conformance": "npm -w @xl3-lang/xl3 run conformance",
+    "conformance:stage2": "npm -w @xl3-lang/xl3 run conformance:stage2",
     "conformance:tz": "TZ=UTC npm run conformance && TZ=America/New_York npm run conformance && TZ=Asia/Seoul npm run conformance",
     "conformance:dashboard": "node conformance/scripts/dashboard.mjs",
-    "docs:api": "typedoc",
+    "docs:api": "npm -w @xl3-lang/xl3 run docs:api",
     "docs:sync": "npm run docs:api && node website/scripts/sync-docs.mjs",
     "docs:dev": "npm run docs:sync && cd website && docusaurus start",
     "docs:build": "npm run docs:sync && cd website && docusaurus build",
     "docs:preview": "cd website && docusaurus serve",
     "examples:build": "node examples/scripts/build.mjs",
     "examples:run": "node examples/scripts/run-all.mjs",
-    "bench": "node scripts/bench.mjs",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build && npm run build:bundle && npm run conformance && npm run conformance:stage2"
-  },
-  "dependencies": {
-    "exceljs": "^4.4.0",
-    "jszip": "^3.10.1"
+    "bench": "node scripts/bench.mjs"
   },
   "devDependencies": {
     "@docusaurus/core": "^3.10.1",
@@ -87,17 +43,14 @@
     "@docusaurus/types": "^3.10.1",
     "@types/node": "^24.0.0",
     "clsx": "^2.1.1",
+    "exceljs": "^4.4.0",
     "pptxgenjs": "^4.0.1",
     "prism-react-renderer": "^2.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.6.0",
     "sharp": "^0.34.5",
-    "tsup": "^8.5.1",
-    "typedoc": "^0.28.19",
-    "typedoc-plugin-markdown": "^4.11.0",
-    "typescript": "^5.6.0",
-    "vitest": "^4.1.5"
+    "typescript": "^5.6.0"
   },
   "engines": {
     "node": ">=20.12"

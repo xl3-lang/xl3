@@ -78,4 +78,4 @@ XTL 0.1 core includes:
 
 ## Reference Implementation
 
-The TypeScript reference implementation lives in [`../src/`](../src/). It is useful for validating the draft, but it is not normative. When this spec and the implementation disagree, the implementation is wrong.
+The TypeScript reference implementation lives in [`../impl/js/`](../impl/js/). It is useful for validating the draft, but it is not normative. When this spec and the implementation disagree, the implementation is wrong.

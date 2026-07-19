@@ -18,12 +18,12 @@ npm test
 
 ## Three kinds of contributions
 
-### 1. Implementation bugs (this repo, `src/`)
+### 1. Implementation bugs (this repo, `impl/js/src/`)
 
 Reference-impl bugs that disagree with the spec are always welcome. Steps:
 
 1. Open an issue with a minimal reproduction (template.xlsx + data.xlsx + observed vs expected output).
-2. If you have a fix, send a PR with a regression test in `src/__tests__/`.
+2. If you have a fix, send a PR with a regression test in `impl/js/src/__tests__/`.
 
 If the bug is "impl matches the spec but the spec is wrong," see (3).
 
@@ -52,7 +52,7 @@ Other-language implementations are welcome and tracked in [IMPLEMENTATIONS.md](.
 ## Coding conventions (TypeScript impl)
 
 - TypeScript strict mode is on; PRs must typecheck (`npm run typecheck`).
-- Tests are in `src/__tests__/`. Run with `npm test`.
+- Tests are in `impl/js/src/__tests__/`. Run with `npm test`.
 - New features need tests. Bug fixes need regression tests.
 - Avoid adding runtime dependencies unless necessary. Current deps: `exceljs`, `jszip`.
 
