@@ -32,5 +32,5 @@
   ],
   "sort": ["alphabetical"],
   "gitRevision": "main",
-  "sourceLinkTemplate": "https://github.com/jinyoung4478/xl3/blob/{gitRevision}/{path}#L{line}"
+  "sourceLinkTemplate": "https://github.com/xl3-lang/xl3/blob/{gitRevision}/{path}#L{line}"
 }

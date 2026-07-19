@@ -10,7 +10,7 @@ pagination_label: '개요'
 
 이 가이드들은 기존에 있는 두 자료를 보완합니다:
 
-- **[`examples/`](https://github.com/jinyoung4478/xl3/tree/main/examples/)** 에는 네 개의 실행 가능한 템플릿이 있고, 조합된 형태를 end-to-end 로 보여줍니다. 하나 복사해서 출발점으로 쓰세요. 한국어 예시는 `04-cafe-weekly-report` 를 참고하세요.
+- **[`examples/`](https://github.com/xl3-lang/xl3/tree/main/examples/)** 에는 네 개의 실행 가능한 템플릿이 있고, 조합된 형태를 end-to-end 로 보여줍니다. 하나 복사해서 출발점으로 쓰세요. 한국어 예시는 `04-cafe-weekly-report` 를 참고하세요.
 - **[`spec/language.md`](/ko/spec/language)** 는 각 함수와 디렉티브에 대한 정식 레퍼런스입니다(영문). 레시피로 커버되지 않는 케이스를 만났을 때 참고하세요.
 
 여기 있는 레시피들은 "프로덕션 수준의 현실성" 보다 "X 를 보여주는 가장 작은 템플릿" 을 우선합니다 — 모양은 기억나는데 문법이 가물가물할 때 빠르게 찾아보는 것이 목적입니다.
@@ -66,4 +66,4 @@ pagination_label: '개요'
 5. `template.xlsx` 로 저장하고, 데이터는 `data.xlsx` 로 저장합니다.
 6. `convert(templateBuffer, dataBuffer)` 를 실행합니다 ([README](/readme#usage) 참고).
 
-또는 더 빠르게는, [실행 가능한 예제](https://github.com/jinyoung4478/xl3/tree/main/examples/) 중 하나를 복사해서 입맛에 맞게 고쳐 쓰세요.
+또는 더 빠르게는, [실행 가능한 예제](https://github.com/xl3-lang/xl3/tree/main/examples/) 중 하나를 복사해서 입맛에 맞게 고쳐 쓰세요.

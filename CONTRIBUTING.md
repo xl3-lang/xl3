@@ -10,7 +10,7 @@ See [GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made and
 ## Quick start
 
 ```bash
-git clone https://github.com/jinyoung4478/xl3.git
+git clone https://github.com/xl3-lang/xl3.git
 cd xl3
 npm install
 npm test

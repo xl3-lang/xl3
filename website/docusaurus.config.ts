@@ -34,7 +34,7 @@ const config: Config = {
   url: 'https://xl3.io',
   baseUrl: '/',
 
-  organizationName: 'jinyoung4478',
+  organizationName: 'xl3-lang',
   projectName: 'xl3',
 
   // #67: locale builds are clean of broken links — fail CI on any
@@ -95,7 +95,7 @@ const config: Config = {
           path: 'docs',
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/jinyoung4478/xl3/edit/main/',
+          editUrl: 'https://github.com/xl3-lang/xl3/edit/main/',
           // Surfaces lastUpdatedAt in route metadata so the sitemap can
           // emit <lastmod>. Synced docs carry the date via injected
           // `last_update` frontmatter (see scripts/sync-docs.mjs);
@@ -176,7 +176,7 @@ const config: Config = {
             foundingDate: '2024',
             founder: { '@id': 'https://xl3.io/#person-jinyoung' },
             sameAs: [
-              'https://github.com/jinyoung4478/xl3',
+              'https://github.com/xl3-lang/xl3',
             ],
             knowsAbout: [
               'Declarative Excel templates',
@@ -213,8 +213,8 @@ const config: Config = {
             programmingLanguage: 'TypeScript',
             license: 'https://opensource.org/licenses/MIT',
             softwareVersion: '0.9.0',
-            releaseNotes: 'https://github.com/jinyoung4478/xl3/blob/main/CHANGELOG.md',
-            codeRepository: 'https://github.com/jinyoung4478/xl3',
+            releaseNotes: 'https://github.com/xl3-lang/xl3/blob/main/CHANGELOG.md',
+            codeRepository: 'https://github.com/xl3-lang/xl3',
             creator: { '@id': 'https://xl3.io/#organization' },
             offers: {
               '@type': 'Offer',
@@ -235,7 +235,7 @@ const config: Config = {
               "Porter's Guide enables second-language implementations",
             ],
             screenshot: 'https://xl3.io/img/og.png',
-            sameAs: ['https://github.com/jinyoung4478/xl3'],
+            sameAs: ['https://github.com/xl3-lang/xl3'],
           },
           {
             '@type': 'WebSite',
@@ -290,7 +290,7 @@ const config: Config = {
           ],
         },
         { type: 'localeDropdown', position: 'right' },
-        { href: 'https://github.com/jinyoung4478/xl3', label: 'GitHub', position: 'right' },
+        { href: 'https://github.com/xl3-lang/xl3', label: 'GitHub', position: 'right' },
         { href: 'https://www.npmjs.com/package/@jinyoung4478/xl3', label: 'npm', position: 'right' },
       ],
     },
@@ -320,9 +320,9 @@ const config: Config = {
         {
           title: 'Code',
           items: [
-            { label: 'GitHub', href: 'https://github.com/jinyoung4478/xl3' },
+            { label: 'GitHub', href: 'https://github.com/xl3-lang/xl3' },
             { label: 'npm', href: 'https://www.npmjs.com/package/@jinyoung4478/xl3' },
-            { label: 'Changelog', href: 'https://github.com/jinyoung4478/xl3/blob/main/CHANGELOG.md' },
+            { label: 'Changelog', href: 'https://github.com/xl3-lang/xl3/blob/main/CHANGELOG.md' },
           ],
         },
       ],

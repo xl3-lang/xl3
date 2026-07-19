@@ -467,7 +467,7 @@ Unicode 字符（例如 CJK、带重音字母、emoji）不受限制：明确被
 
 ### 实现限制 —— 参考实现（xl3-js）
 
-参考实现发布以下软上限（ROADMAP 关口 G21）。这些是*正确性边界*，而非安全边界 —— 接受不可信输入的宿主必须（**MUST**）按 [`SECURITY.md`](https://github.com/jinyoung4478/xl3/blob/main/SECURITY.md) 添加自有强制层。下表值为 0.6.0 草案，会随基准语料（G8）落地而收紧。
+参考实现发布以下软上限（ROADMAP 关口 G21）。这些是*正确性边界*，而非安全边界 —— 接受不可信输入的宿主必须（**MUST**）按 [`SECURITY.md`](https://github.com/xl3-lang/xl3/blob/main/SECURITY.md) 添加自有强制层。下表值为 0.6.0 草案，会随基准语料（G8）落地而收紧。
 
 | 维度 | 软上限（草案） | 触限行为 |
 |---|---|---|

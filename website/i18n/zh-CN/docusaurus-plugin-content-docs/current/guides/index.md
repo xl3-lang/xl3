@@ -10,7 +10,7 @@ pagination_label: '概览'
 
 这些指南是对现有两类资料的补充：
 
-- **[`examples/`](https://github.com/jinyoung4478/xl3/tree/main/examples/)** 中提供了四份可运行的模板，端到端地展示组合后的形态。挑一份复制下来作为起点即可。中文示例请参考 `04-cafe-weekly-report`。
+- **[`examples/`](https://github.com/xl3-lang/xl3/tree/main/examples/)** 中提供了四份可运行的模板，端到端地展示组合后的形态。挑一份复制下来作为起点即可。中文示例请参考 `04-cafe-weekly-report`。
 - **[`spec/language.md`](/zh-CN/spec/language)** 是每个函数和指令的规范参考（英文）。当某个场景在速查手册中找不到时，请查阅它。
 
 这里的速查手册更看重"用最小的模板演示某个特性"，而不是"贴近生产现实"——目标是当你大致记得形态、但忘了具体语法时能快速翻到答案。
@@ -66,4 +66,4 @@ pagination_label: '概览'
 5. 另存为 `template.xlsx`，数据另存为 `data.xlsx`。
 6. 调用 `convert(templateBuffer, dataBuffer)`（参考 [README](/readme#usage)）。
 
-或者更快——直接复制一份[可运行示例](https://github.com/jinyoung4478/xl3/tree/main/examples/)再按需修改。
+或者更快——直接复制一份[可运行示例](https://github.com/xl3-lang/xl3/tree/main/examples/)再按需修改。

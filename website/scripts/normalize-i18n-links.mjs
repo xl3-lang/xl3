@@ -19,8 +19,8 @@ import { existsSync } from 'node:fs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const I18N = join(HERE, '..', 'i18n');
-const GH_BLOB = 'https://github.com/jinyoung4478/xl3/blob/main';
-const GH_TREE = 'https://github.com/jinyoung4478/xl3/tree/main';
+const GH_BLOB = 'https://github.com/xl3-lang/xl3/blob/main';
+const GH_TREE = 'https://github.com/xl3-lang/xl3/tree/main';
 
 // Slug frontmatter that `sync-docs.mjs` injects into the DEFAULT-locale docs
 // (LOWERCASE_SLUGS there). A translated doc file overrides frontmatter for

@@ -57,7 +57,7 @@ try {
 - **`xl3/parser/*`** ― パーサー失敗
 - **`xl3/lists/*`** ― `__lists__` 参照問題
 
-完全なリストは [`src/error-codes.ts`](https://github.com/jinyoung4478/xl3/blob/main/src/error-codes.ts) にあります。
+完全なリストは [`src/error-codes.ts`](https://github.com/xl3-lang/xl3/blob/main/src/error-codes.ts) にあります。
 
 ## 明示的に扱うべきよくあるケース
 

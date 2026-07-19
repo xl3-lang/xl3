@@ -10,7 +10,7 @@ pagination_label: '概要'
 
 これらのガイドは既存の 2 つのドキュメントを補完します:
 
-- **[`examples/`](https://github.com/jinyoung4478/xl3/tree/main/examples/)** には実行可能なテンプレートが 4 つあり、組み合わさった形を end-to-end で示しています。1 つコピーして出発点として使ってください。日本語の例は `04-cafe-weekly-report` を参考にしてください。
+- **[`examples/`](https://github.com/xl3-lang/xl3/tree/main/examples/)** には実行可能なテンプレートが 4 つあり、組み合わさった形を end-to-end で示しています。1 つコピーして出発点として使ってください。日本語の例は `04-cafe-weekly-report` を参考にしてください。
 - **[`spec/language.md`](/ja/spec/language)** は各関数とディレクティブの正式なリファレンスです(英語)。レシピでカバーできていないケースに遭遇したら参照してください。
 
 ここにあるレシピは「プロダクション品質の現実性」より「X を示す最小のテンプレート」を優先しています ― 形は覚えているけれど構文がうろ覚えのときに素早く参照できることを目的としています。
@@ -66,4 +66,4 @@ pagination_label: '概要'
 5. `template.xlsx` として保存し、データは `data.xlsx` として保存します。
 6. `convert(templateBuffer, dataBuffer)` を実行します([README](/readme#usage) 参照)。
 
-または、より速く [実行可能な例](https://github.com/jinyoung4478/xl3/tree/main/examples/) のどれかをコピーして好みに合わせて変更してください。
+または、より速く [実行可能な例](https://github.com/xl3-lang/xl3/tree/main/examples/) のどれかをコピーして好みに合わせて変更してください。

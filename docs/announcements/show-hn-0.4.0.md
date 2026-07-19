@@ -5,7 +5,7 @@
 > Show HN: xl3 – use Excel files as templates for Excel-to-Excel
 > transformations
 
-**URL:** `https://github.com/jinyoung4478/xl3`
+**URL:** `https://github.com/xl3-lang/xl3`
 
 **Body:**
 
@@ -28,12 +28,12 @@ rules without learning Python. The template is the handoff artifact.
 The language is intentionally small — Excel-flavored syntax (IF, SUM,
 XLOOKUP, comparison operators), plus a handful of XTL directives
 (`@filter`, `@sort`, `@top`, `@source`, `@join`). Documented in a
-**language-neutral spec** ([spec/](https://github.com/jinyoung4478/xl3/tree/main/spec))
-with an executable conformance corpus ([conformance/](https://github.com/jinyoung4478/xl3/tree/main/conformance))
+**language-neutral spec** ([spec/](https://github.com/xl3-lang/xl3/tree/main/spec))
+with an executable conformance corpus ([conformance/](https://github.com/xl3-lang/xl3/tree/main/conformance))
 — 119 fixtures, all green at Stage 2. The TypeScript implementation
 (`@jinyoung4478/xl3` on npm) is the reference impl, not the spec. A
 second-language port is in progress; the
-[porter's guide](https://github.com/jinyoung4478/xl3/blob/main/PORTERS_GUIDE.md)
+[porter's guide](https://github.com/xl3-lang/xl3/blob/main/PORTERS_GUIDE.md)
 catalogs the gotchas (NFC/NFD, IEEE 754 2^53, etc.) we've already hit.
 
 Status: alpha. 0.4.0 just shipped after a focused audit pass that
@@ -51,6 +51,6 @@ I'd love feedback on:
 - Other deployment shapes I haven't thought about (CLI binary,
   workers-deploy, Office add-in, etc.)
 
-Repo: https://github.com/jinyoung4478/xl3
+Repo: https://github.com/xl3-lang/xl3
 Browser demo: https://xl3.io
 npm: https://www.npmjs.com/package/@jinyoung4478/xl3

@@ -8,8 +8,8 @@ slug: /implementations
 
 | 语言 | 仓库 | 包 | 规范版本 | 一致性 | 备注 |
 |---|---|---|---|---|---|
-| TypeScript | [`jinyoung4478/xl3`](https://github.com/jinyoung4478/xl3) | [`@jinyoung4478/xl3`](https://www.npmjs.com/package/@jinyoung4478/xl3) | XTL 0.1（草案） | 参考实现；**139/139** fixture 通过（133 Stage 1 + 仅 6 Stage 2） | 浏览器 + Node ≥ 20.12；通过 `npx xl3-conformance` 运行；CI 中带 3 时区矩阵 |
-| Python | [`jinyoung4478/xl3-py`](https://github.com/jinyoung4478/xl3-py) | _（未发布）_ | XTL 0.1（草案） | **草案**，开发中 | 与参考实现并行跟踪；在 [`conformance/reports/`](https://github.com/jinyoung4478/xl3/tree/main/conformance/reports) 下放一份 `--report=json` 产物，`npm run conformance:dashboard` 就会把它接进来 |
+| TypeScript | [`xl3-lang/xl3`](https://github.com/xl3-lang/xl3) | [`@jinyoung4478/xl3`](https://www.npmjs.com/package/@jinyoung4478/xl3) | XTL 0.1（草案） | 参考实现；**139/139** fixture 通过（133 Stage 1 + 仅 6 Stage 2） | 浏览器 + Node ≥ 20.12；通过 `npx xl3-conformance` 运行；CI 中带 3 时区矩阵 |
+| Python | [`jinyoung4478/xl3-py`](https://github.com/jinyoung4478/xl3-py) | _（未发布）_ | XTL 0.1（草案） | **草案**，开发中 | 与参考实现并行跟踪；在 [`conformance/reports/`](https://github.com/xl3-lang/xl3/tree/main/conformance/reports) 下放一份 `--report=json` 产物，`npm run conformance:dashboard` 就会把它接进来 |
 
 ## 新增一个实现
 
@@ -17,7 +17,7 @@ slug: /implementations
 
 要把一个移植列在这里：
 
-1. 实现 XTL 0.1 中你打算覆盖的[一致性测试用例](https://github.com/jinyoung4478/xl3/tree/main/conformance/fixtures)的足够子集。
+1. 实现 XTL 0.1 中你打算覆盖的[一致性测试用例](https://github.com/xl3-lang/xl3/tree/main/conformance/fixtures)的足够子集。
 2. 按 [`conformance/runner-protocol.md`](/zh-CN/conformance/runner-protocol) 在 [`conformance/`](./conformance/) 上跑你的实现。
 3. 提一个 PR，在上面的表格中加一行：语言、包 URL、目标规范版本、一致性状态（full / partial / N of M fixtures）。
 

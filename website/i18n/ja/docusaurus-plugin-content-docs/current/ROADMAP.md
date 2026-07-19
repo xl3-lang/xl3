@@ -8,7 +8,7 @@ slug: /roadmap
 
 現在のバージョンは **0.7.0**(npm)で、**XTL 0.1(ドラフト)**を対象としています。0.x の期間中は依然として破壊的変更が発生し得ます。1.0 のリリースはカレンダー上の日付ではなく、以下に挙げる項目によってゲーティングされます。
 
-> **詳細なバージョン計画**は [`docs/internal/blueprint-to-1.0.md`](https://github.com/jinyoung4478/xl3/blob/main/docs/internal/blueprint-to-1.0.md) にまとめてあります — ギャップ分析、設計思想の境界(xl3 ≠ JXLS)、バージョンごとのステップ計画です。本書はエレベーターピッチであり、ブループリントは根拠そのものです。
+> **詳細なバージョン計画**は [`docs/internal/blueprint-to-1.0.md`](https://github.com/xl3-lang/xl3/blob/main/docs/internal/blueprint-to-1.0.md) にまとめてあります — ギャップ分析、設計思想の境界(xl3 ≠ JXLS)、バージョンごとのステップ計画です。本書はエレベーターピッチであり、ブループリントは根拠そのものです。
 >
 > **1.0 ゲートの唯一の正典は下記のテーブルです。** 本書とブループリントが矛盾する場合はこのテーブルが優先され、ブループリントの方をそれに合わせて更新します。
 
@@ -161,10 +161,10 @@ G23 が始まると、G24 の四半期クロックがカウント開始します
 | G17 韓国語クックブック 16+17 i18n | 新しめの 2 レシピを翻訳する(他は完了済み)。 |
 | G8 ベンチマーク | 代表的なテンプレートで `npm run bench` を回し、結果を共有する。 |
 | G10 クロスブラウザ | Safari + Firefox をバンドルスモークテストに追加する。 |
-| 関数の再提案 | ADR-0045 で却下された関数が必要な場合は、[`Function re-proposal`](https://github.com/jinyoung4478/xl3/issues/new?template=function-reproposal.md) のイシューテンプレートを使ってください。 |
+| 関数の再提案 | ADR-0045 で却下された関数が必要な場合は、[`Function re-proposal`](https://github.com/xl3-lang/xl3/issues/new?template=function-reproposal.md) のイシューテンプレートを使ってください。 |
 
 ## このロードマップの更新方法
 
-本書は公開エレベーターピッチであり、ゲートテーブルが唯一の正典です。より深い [`docs/internal/blueprint-to-1.0.md`](https://github.com/jinyoung4478/xl3/blob/main/docs/internal/blueprint-to-1.0.md) が、ギャップ分析、設計思想の境界、バージョンごとの根拠を扱います。ゲートがチェックされるごとに、両方のドキュメントを更新します。新たなギャップが浮かべば、両方に追記します。
+本書は公開エレベーターピッチであり、ゲートテーブルが唯一の正典です。より深い [`docs/internal/blueprint-to-1.0.md`](https://github.com/xl3-lang/xl3/blob/main/docs/internal/blueprint-to-1.0.md) が、ギャップ分析、設計思想の境界、バージョンごとの根拠を扱います。ゲートがチェックされるごとに、両方のドキュメントを更新します。新たなギャップが浮かべば、両方に追記します。
 
 1.0 ゲートテーブルへの追加や削除は、他のすべてと同じく ADR / イシュープロセスを通して議論されます。

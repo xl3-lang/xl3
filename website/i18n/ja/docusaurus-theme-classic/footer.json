@@ -41,7 +41,7 @@
   },
   "link.item.label.GitHub": {
     "message": "GitHub",
-    "description": "The label of footer link with label=GitHub linking to https://github.com/jinyoung4478/xl3"
+    "description": "The label of footer link with label=GitHub linking to https://github.com/xl3-lang/xl3"
   },
   "link.item.label.npm": {
     "message": "npm",
@@ -49,7 +49,7 @@
   },
   "link.item.label.Changelog": {
     "message": "変更履歴",
-    "description": "The label of footer link with label=Changelog linking to https://github.com/jinyoung4478/xl3/blob/main/CHANGELOG.md"
+    "description": "The label of footer link with label=Changelog linking to https://github.com/xl3-lang/xl3/blob/main/CHANGELOG.md"
   },
   "copyright": {
     "message": "Code MIT · Spec CC-BY-4.0. Microsoft と Excel は Microsoft Corporation の商標です。xl3 は Microsoft とは関係ありません。",

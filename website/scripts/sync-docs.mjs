@@ -150,8 +150,8 @@ async function main() {
   console.log('synced markdown into', TARGET);
 }
 
-const GH_BLOB = 'https://github.com/jinyoung4478/xl3/blob/main';
-const GH_TREE = 'https://github.com/jinyoung4478/xl3/tree/main';
+const GH_BLOB = 'https://github.com/xl3-lang/xl3/blob/main';
+const GH_TREE = 'https://github.com/xl3-lang/xl3/tree/main';
 
 // Paths that 404 on the site (excluded from the synced docs/ tree or
 // never copied). Each entry maps a relative link target to an absolute

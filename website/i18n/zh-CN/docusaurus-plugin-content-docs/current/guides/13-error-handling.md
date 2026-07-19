@@ -57,7 +57,7 @@ try {
 - **`xl3/parser/*`** ——解析器失败
 - **`xl3/lists/*`** ——`__lists__` 引用相关
 
-完整列表见 [`src/error-codes.ts`](https://github.com/jinyoung4478/xl3/blob/main/src/error-codes.ts)。
+完整列表见 [`src/error-codes.ts`](https://github.com/xl3-lang/xl3/blob/main/src/error-codes.ts)。
 
 ## 值得显式处理的常见情况
 

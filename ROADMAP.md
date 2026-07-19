@@ -299,7 +299,7 @@ These remain candidates for **XTL 1.1, 1.2, 1.x** based on demand.
 | G17 Korean cookbook 16+17 i18n | Translate the two newest recipes (the rest are done). |
 | G8 benchmarks | Run `npm run bench` on representative templates, share results. |
 | G10 cross-browser | Add Safari + Firefox to the bundle smoke test. |
-| Function re-proposal | If you need a function rejected per ADR-0045, file the [`Function re-proposal`](https://github.com/jinyoung4478/xl3/issues/new?template=function-reproposal.md) issue template. |
+| Function re-proposal | If you need a function rejected per ADR-0045, file the [`Function re-proposal`](https://github.com/xl3-lang/xl3/issues/new?template=function-reproposal.md) issue template. |
 
 ## How this roadmap evolves
 
