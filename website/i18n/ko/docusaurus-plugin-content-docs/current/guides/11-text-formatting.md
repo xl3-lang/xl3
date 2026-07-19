@@ -64,7 +64,7 @@ xl3 는 Excel 핵심 형식 표를 지원합니다. 핵심 표 밖의 형식은 
 
 ## 스펙 참고
 
-- [`spec/language.md`](/ko/spec/language) "TEXT" 와 핵심 형식 표.
+- [`spec/language.md`](https://xl3.io/spec/language) "TEXT" 와 핵심 형식 표.
 - ADR-0001 (`TODAY()` 는 UTC).
 - ADR-0017 (날짜 값 모델).
 - ADR-0021 (사용자 정의 형식 문자열은 구현 정의).

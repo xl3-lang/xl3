@@ -73,4 +73,4 @@ pagination_label: '07 · 多数据源与 @join'
 - 每个数据块只能写一个 `@source` 和一个 `@join`。重复会按 ADR-0029 抛出 `xl3/directive/invalid-syntax`。
 - 多路 join（串联多个 `@join`）按 ADR-0014 暂未支持。
 - 函数名匹配大小写不敏感：`if`、`If`、`IF` 都行。
-- 规范参考：[`spec/evaluation.md`](/zh-CN/spec/evaluation) "External Data Sources"；ADR-0012、ADR-0014。
+- 规范参考：[`spec/evaluation.md`](/spec/evaluation) "External Data Sources"；ADR-0012、ADR-0014。

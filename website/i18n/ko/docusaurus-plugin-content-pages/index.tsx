@@ -40,7 +40,7 @@ function Hero() {
             넣으면, 규격을 따르는 엔진이 같은 입력에서 같은 결과 워크북을 생성합니다.
           </p>
           <div className={styles.heroLinks}>
-            <Link className="button button--primary button--lg" to="/ko/try">
+            <Link className="button button--primary button--lg" to="/try">
               브라우저에서 바로 써보기
             </Link>
             <Link className="button button--secondary button--lg" to="#walkthrough">

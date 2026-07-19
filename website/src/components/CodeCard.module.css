@@ -3,13 +3,13 @@
 
 .card {
   margin: 0;
-  border-radius: 14px;
-  background: #0d1117;
-  border: 1px solid #1f2630;
-  box-shadow: 0 18px 50px rgba(13, 17, 23, 0.18);
-  overflow: hidden;
   display: flex;
+  overflow: hidden;
   flex-direction: column;
+  border: 1px solid #1f2630;
+  border-radius: 8px;
+  background: #0d1117;
+  box-shadow: 0 18px 44px rgba(13, 17, 23, 0.2);
 }
 
 .head {
@@ -65,10 +65,10 @@
   border: 0;
 }
 
-.tokKw      { color: #ff7b72; }
-.tokString  { color: #a5d6ff; }
-.tokFn      { color: #d2a8ff; }
+.tokKw      { color: #c4b5fd; }
+.tokString  { color: #fde68a; }
+.tokFn      { color: #60a5fa; }
 .tokConst   { color: #79c0ff; }
-.tokVar     { color: #ffa657; }
+.tokVar     { color: #fbbf24; }
 .tokComment { color: #8b949e; font-style: italic; }
 .tokPrompt  { color: #58a6ff; user-select: none; margin-right: 6px; }

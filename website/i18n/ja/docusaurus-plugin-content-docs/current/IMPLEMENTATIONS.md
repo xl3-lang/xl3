@@ -13,12 +13,12 @@ slug: /implementations
 
 ## 実装の追加
 
-まず [`PORTERS_GUIDE.md`](/ja/porters-guide) を読んでください — 仕様上の規範的要件と TS 実装に固有の都合を区別し、適合性コーパスに沿った推奨開発順を提示しています。
+まず [`PORTERS_GUIDE.md`](https://xl3.io/porters-guide) を読んでください — 仕様上の規範的要件と TS 実装に固有の都合を区別し、適合性コーパスに沿った推奨開発順を提示しています。
 
 ここに移植を掲載するには:
 
 1. 対象とする [適合性フィクスチャ](https://github.com/xl3-lang/xl3/tree/main/conformance/fixtures) を通過できる程度に XTL 0.1 を実装する。
-2. [`conformance/runner-protocol.md`](/ja/conformance/runner-protocol) に従って [`conformance/`](./conformance/) に対して実装を動かす。
+2. [`conformance/runner-protocol.md`](/conformance/runner-protocol) に従って [`conformance/`](./conformance/) に対して実装を動かす。
 3. 上の表に言語、パッケージ URL、対象とする仕様バージョン、適合性ステータス(full / partial / N of M フィクスチャ)を加える PR を送る。
 
 積極的に開発中の移植も歓迎します — 適合性が部分的でも、進行中のリポジトリをリンクしてください。

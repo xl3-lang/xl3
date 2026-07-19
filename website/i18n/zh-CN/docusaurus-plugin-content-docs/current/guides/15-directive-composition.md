@@ -90,7 +90,7 @@ pagination_label: '15 · 组合指令'
 ## 规范参考
 
 - ADR-0029 ——指令组合 + 源边界语义。
-- [`spec/language.md`](/zh-CN/spec/language) "Filter"、"Sort"、"Top"、"Source"、"Join"。
+- [`spec/language.md`](/spec/language) "Filter"、"Sort"、"Top"、"Source"、"Join"。
 - [Cookbook 05](/guides/sheet-per-group) ——`@filter in __lists__[…]`。
 - [Cookbook 07](/guides/multi-source-join) ——`@source` + `@join` 基础。
 - [Cookbook 09](/guides/sort-and-top) ——`@sort` + `@top` 基础。

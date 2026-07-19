@@ -73,4 +73,4 @@ pagination_label: '07 · 다중 소스와 @join'
 - 데이터 블록당 `@source` 와 `@join` 은 각각 하나씩만 허용됩니다. 중복은 ADR-0029 에 따라 `xl3/directive/invalid-syntax` 를 발생시킵니다.
 - 다중 조인(`@join` 의 체인)은 ADR-0014 에 따라 일단 보류되어 있습니다.
 - 함수 이름 매칭은 대소문자를 구분하지 않습니다 — `if`, `If`, `IF` 모두 같습니다.
-- 스펙 참조: [`spec/evaluation.md`](/ko/spec/evaluation) 의 "External Data Sources"; ADR-0012, ADR-0014.
+- 스펙 참조: [`spec/evaluation.md`](https://xl3.io/spec/evaluation) 의 "External Data Sources"; ADR-0012, ADR-0014.

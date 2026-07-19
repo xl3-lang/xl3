@@ -73,7 +73,7 @@ Excel native 정답입니다. 수식마다 한 줄, 익히는 데 몇 초.
 
 렌더 전 템플릿 뷰: 깔끔 (`—`, `0`).
 렌더 후 출력: 실제 값 (xl3는 수식 텍스트를 건드리지 않습니다 —
-[ADR-0046](/ko/spec/decisions/cell-formula-preservation) 참조; Excel이
+[ADR-0046](https://xl3.io/spec/decisions/cell-formula-preservation) 참조; Excel이
 열 때 재계산하고 wrapper가 자연스럽게 사라집니다).
 
 ### 어떤 수식을 감싸야 하나
@@ -155,7 +155,7 @@ import('@xl3-lang/xl3').then(async ({ convert }) => {
 
 ## xl3가 의도적으로 *하지 않는* 것
 
-[ADR-0049](/ko/spec/decisions/template-display-vs-render-output) 의
+[ADR-0049](https://xl3.io/spec/decisions/template-display-vs-render-output) 의
 contract:
 
 1. xl3는 템플릿 뷰를 위해 플레이스홀더를 샘플 값으로 미리 치환하지 **않습니다**.
@@ -171,7 +171,7 @@ contract:
 
 ## 참고
 
-- [ADR-0049 — Template-display vs render-output: intentional asymmetry](/ko/spec/decisions/template-display-vs-render-output)
-- [ADR-0046 — Cell formula preservation contract](/ko/spec/decisions/cell-formula-preservation)
+- [ADR-0049 — Template-display vs render-output: intentional asymmetry](https://xl3.io/spec/decisions/template-display-vs-render-output)
+- [ADR-0046 — Cell formula preservation contract](https://xl3.io/spec/decisions/cell-formula-preservation)
 - [Cookbook 16 — XTL 함수 vs Excel 수식](/guides/xtl-vs-excel-formula)
-- [`preview()` API 문서](/ko/api/functions/preview)
+- [`preview()` API 문서](https://xl3.io/api/functions/preview)

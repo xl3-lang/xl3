@@ -161,11 +161,11 @@ XTL 函数面通过构造保持小（ADR-0043），让 porter 有清晰的目录
 
 ## 另见
 
-- [ADR-0043 — Excel-native preference principle](/zh-CN/spec/decisions/excel-native-preference)
-- [ADR-0044 — Function batch accepted](/zh-CN/spec/decisions/function-batch-accepted)
-- [ADR-0045 — Function batch rejected](/zh-CN/spec/decisions/function-batch-rejected)
-- [ADR-0046 — Cell formula preservation contract](/zh-CN/spec/decisions/cell-formula-preservation)
-- [ADR-0047 — ISBLANK as IFEMPTY alias](/zh-CN/spec/decisions/isblank-as-ifempty-alias)
+- [ADR-0043 — Excel-native preference principle](https://xl3.io/spec/decisions/excel-native-preference)
+- [ADR-0044 — Function batch accepted](https://xl3.io/spec/decisions/function-batch-accepted)
+- [ADR-0045 — Function batch rejected](https://xl3.io/spec/decisions/function-batch-rejected)
+- [ADR-0046 — Cell formula preservation contract](https://xl3.io/spec/decisions/cell-formula-preservation)
+- [ADR-0047 — ISBLANK as IFEMPTY alias](https://xl3.io/spec/decisions/isblank-as-ifempty-alias)
 - [Cookbook 10 — 样式与品牌化](/guides/styling-and-branding) ——`numFmt` 才是答案的时候
 - [Cookbook 11 — TEXT() 格式化](/guides/text-formatting) ——`TEXT()` *正是* 答案的时候
 - [Cookbook 12 — 空值进阶](/guides/empty-values) ——IFEMPTY / ISBLANK 搭档

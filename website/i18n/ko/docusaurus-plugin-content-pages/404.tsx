@@ -20,7 +20,7 @@ export default function NotFoundKo() {
           </p>
 
           <div className={styles.cards}>
-            <Link className={styles.card} to="/ko/">
+            <Link className={styles.card} to="/">
               <strong>홈</strong>
               <span>xl3 한국어 랜딩 페이지</span>
             </Link>
@@ -32,7 +32,7 @@ export default function NotFoundKo() {
               <strong>명세</strong>
               <span>XTL 0.1 언어 레퍼런스 (영문)</span>
             </Link>
-            <Link className={styles.card} to="/ko/try">
+            <Link className={styles.card} to="/try">
               <strong>변환기</strong>
               <span>브라우저에서 xl3 바로 실행</span>
             </Link>

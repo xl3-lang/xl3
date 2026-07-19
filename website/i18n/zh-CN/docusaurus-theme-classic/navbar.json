@@ -1,8 +1,4 @@
 {
-  "title": {
-    "message": "xl3",
-    "description": "The title in the navbar"
-  },
   "logo.alt": {
     "message": "xl3",
     "description": "The alt text of navbar logo"

@@ -64,4 +64,4 @@ xl3 는 템플릿의 병합을 보존합니다.
 ## 메모
 
 - 엑셀 파일 속성 (테마, 정의된 이름, 인쇄 영역) 은 모두 그대로 보존됩니다. 템플릿에 한 번만 설정해 두면 모든 결과물이 이를 상속합니다.
-- 스펙 참고: ADR-0032 "Niche limits and workbook pass-through behaviors"; 셀 단위 스타일링은 [`spec/evaluation.md`](/ko/spec/evaluation) "Cell Evaluation" 참고.
+- 스펙 참고: ADR-0032 "Niche limits and workbook pass-through behaviors"; 셀 단위 스타일링은 [`spec/evaluation.md`](https://xl3.io/spec/evaluation) "Cell Evaluation" 참고.

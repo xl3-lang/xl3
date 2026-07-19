@@ -190,11 +190,11 @@ XTL에 없는 함수가 필요하다고 느낄 때:
 
 ## 참고
 
-- [ADR-0043 — Excel-native preference principle](/ko/spec/decisions/excel-native-preference)
-- [ADR-0044 — Function batch accepted](/ko/spec/decisions/function-batch-accepted)
-- [ADR-0045 — Function batch rejected](/ko/spec/decisions/function-batch-rejected)
-- [ADR-0046 — Cell formula preservation contract](/ko/spec/decisions/cell-formula-preservation)
-- [ADR-0047 — ISBLANK as IFEMPTY alias](/ko/spec/decisions/isblank-as-ifempty-alias)
+- [ADR-0043 — Excel-native preference principle](https://xl3.io/spec/decisions/excel-native-preference)
+- [ADR-0044 — Function batch accepted](https://xl3.io/spec/decisions/function-batch-accepted)
+- [ADR-0045 — Function batch rejected](https://xl3.io/spec/decisions/function-batch-rejected)
+- [ADR-0046 — Cell formula preservation contract](https://xl3.io/spec/decisions/cell-formula-preservation)
+- [ADR-0047 — ISBLANK as IFEMPTY alias](https://xl3.io/spec/decisions/isblank-as-ifempty-alias)
 - [Cookbook 10 — 스타일과 브랜딩](/guides/styling-and-branding) — `numFmt`이 정답일 때
 - [Cookbook 11 — TEXT() 포맷팅](/guides/text-formatting) — `TEXT()`가 정답일 때
 - [Cookbook 12 — 빈 값 다루기](/guides/empty-values) — IFEMPTY / ISBLANK 동반자

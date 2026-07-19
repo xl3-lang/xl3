@@ -53,4 +53,4 @@ pagination_label: '01 · 快速上手'
 - `{{ ... }}` 是一个**模板块**——大括号里的内容会被当作 XTL 表达式求值。大括号内的空白不影响结果。
 - 数据块会在第一行非空且不包含模板块的行处停止。加一行页脚（例如包含"合计"的单元格），数据块就只在它上方展开，而页脚行保持原位不动。
 
-另见：[`spec/language.md`](/zh-CN/spec/language) 中的 "Template Blocks" 与 "Source Columns"。
+另见：[`spec/language.md`](/spec/language) 中的 "Template Blocks" 与 "Source Columns"。

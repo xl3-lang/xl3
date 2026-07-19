@@ -81,5 +81,5 @@ __config__[start_date] = TODAY()           ← 日期比较
 ## 规范参考
 
 - ADR-0011 ——保留工作表命名。
-- [`spec/evaluation.md`](/zh-CN/spec/evaluation) "Template Configuration"。
+- [`spec/evaluation.md`](/spec/evaluation) "Template Configuration"。
 - [Cookbook 06](/guides/runtime-inputs) ——`__inputs__`（按次运行的替代方案）。

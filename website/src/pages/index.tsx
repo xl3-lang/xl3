@@ -33,29 +33,30 @@ function Hero() {
     <header className={clsx('hero', styles.heroBanner)}>
       <div className={clsx('container', styles.heroLayout)}>
         <div className={styles.heroCopy}>
+          <img className={styles.heroLogo} src="/img/xl3-logo-dark.png" alt="" aria-hidden="true" />
           <p className={styles.kicker}>
             <Translate id="homepage.hero.kicker" description="Hero section eyebrow / kicker line">
-              Declarative Excel templates · deterministic execution
+              Declarative Excel templates
             </Translate>
           </p>
           <h1 className={styles.heroTitle}>
-            <Translate id="homepage.hero.title" description="Hero section H1">
-              Make Excel an executable template.
+            <Translate
+              id="homepage.hero.title"
+              description="Hero section H1"
+              values={{
+                lineBreak: <br />,
+                dot: <span className={styles.blueDot}>.</span>,
+              }}
+            >
+              {'Execute Excel.{lineBreak}Deterministically{dot}'}
             </Translate>
           </h1>
           <p className={styles.heroLead}>
             <Translate
               id="homepage.hero.lead"
-              description="Hero section lead paragraph; {template}, {raw}, {result} are inline code refs"
-              values={{
-                template: <code>template.xlsx</code>,
-                raw: <code>raw.xlsx</code>,
-                result: <code>result.xlsx</code>,
-              }}
+              description="Hero section lead paragraph"
             >
-              {
-                'xl3 is an open standard, not a workbook API: put the transformation rules inside {template}, provide {raw}, and a conforming engine returns {result} — same inputs, same workbook, every time.'
-              }
+              The runtime for Excel templates. From spreadsheet to reliable applications.
             </Translate>
           </p>
           <div className={styles.heroLinks}>
@@ -82,6 +83,24 @@ function Hero() {
               npm
             </Link>
           </div>
+          <div className={styles.heroPillars} aria-label="XL3 brand attributes">
+            <div className={styles.pillar}>
+              <span className={styles.pillarIcon} aria-hidden="true">↯</span>
+              <strong>Fast</strong>
+            </div>
+            <div className={styles.pillar}>
+              <span className={styles.pillarIcon} aria-hidden="true">◇</span>
+              <strong>Reliable</strong>
+            </div>
+            <div className={styles.pillar}>
+              <span className={styles.pillarIcon} aria-hidden="true">▣</span>
+              <strong>Scalable</strong>
+            </div>
+            <div className={styles.pillar}>
+              <span className={styles.pillarIcon} aria-hidden="true">&lt;/&gt;</span>
+              <strong>Developer First</strong>
+            </div>
+          </div>
         </div>
         <aside
           className={styles.flowPanel}
@@ -91,6 +110,13 @@ function Hero() {
             description: 'Aria label for the workflow diagram aside',
           })}
         >
+          <div className={styles.visualHeader}>
+            <span>Runtime system</span>
+            <strong>Same input. Same workbook.</strong>
+          </div>
+          <div className={styles.visualLogoCard}>
+            <img src="/img/xl3-logo-dark.png" alt="XL3" />
+          </div>
           <div className={styles.flowRole}>
             <span>
               <Translate id="homepage.hero.flow.role.developer" description="Workflow diagram — actor label">
@@ -142,7 +168,12 @@ function Hero() {
               </small>
             </div>
           </div>
-          <code>convert(template, raw)</code>
+          <code className={styles.heroCode}>
+            <span>$ xl3 render invoice.xlsx \</span>
+            <span>&nbsp;&nbsp;--data invoice.json \</span>
+            <span>&nbsp;&nbsp;--out invoice.output.xlsx</span>
+            <span className={styles.successLine}>✓ Rendered successfully</span>
+          </code>
         </aside>
       </div>
     </header>

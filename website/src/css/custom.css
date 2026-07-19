@@ -1,120 +1,294 @@
-/* Brand color matches the hand-written site (xl3 Excel-green). */
+/* XL3 brand system */
+
 :root {
-  --ifm-color-primary: #185c37;
-  --ifm-color-primary-dark: #154f30;
-  --ifm-color-primary-darker: #14492d;
-  --ifm-color-primary-darkest: #103c25;
-  --ifm-color-primary-light: #1b693e;
-  --ifm-color-primary-lighter: #1c6f41;
-  --ifm-color-primary-lightest: #207e4a;
+  --ifm-color-primary: #2563eb;
+  --ifm-color-primary-dark: #1d4ed8;
+  --ifm-color-primary-darker: #1e40af;
+  --ifm-color-primary-darkest: #1e3a8a;
+  --ifm-color-primary-light: #3b82f6;
+  --ifm-color-primary-lighter: #60a5fa;
+  --ifm-color-primary-lightest: #bfdbfe;
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #ffffff;
+  --ifm-font-color-base: #0f172a;
+  --ifm-heading-color: #0f172a;
+  --ifm-link-color: #2563eb;
+  --ifm-navbar-height: 68px;
+  --ifm-navbar-background-color: rgba(255, 255, 255, 0.58);
+  --ifm-footer-background-color: #091426;
+  --ifm-footer-color: rgba(226, 232, 240, 0.76);
+  --ifm-footer-link-color: rgba(226, 232, 240, 0.9);
+  --ifm-footer-title-color: #ffffff;
   --ifm-code-font-size: 92%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.08);
+  --docusaurus-highlighted-code-line-bg: rgba(37, 99, 235, 0.1);
+  --xl3-graphite: #0f172a;
+  --xl3-navy: #07111f;
+  --xl3-slate: #475569;
+  --xl3-line: #d8dee8;
+  --xl3-panel: #f8fafc;
+  --xl3-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
 }
 
 [data-theme='dark'] {
-  --ifm-color-primary: #4eb37a;
-  --ifm-color-primary-dark: #3da668;
-  --ifm-color-primary-darker: #389d62;
-  --ifm-color-primary-darkest: #2d8150;
-  --ifm-color-primary-light: #62bd8a;
-  --ifm-color-primary-lighter: #6dc290;
-  --ifm-color-primary-lightest: #8dcfa6;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary: #60a5fa;
+  --ifm-color-primary-dark: #3b82f6;
+  --ifm-color-primary-darker: #2563eb;
+  --ifm-color-primary-darkest: #1d4ed8;
+  --ifm-color-primary-light: #93c5fd;
+  --ifm-color-primary-lighter: #bfdbfe;
+  --ifm-color-primary-lightest: #dbeafe;
+  --ifm-background-color: #07111f;
+  --ifm-background-surface-color: #0f172a;
+  --ifm-font-color-base: #e5e7eb;
+  --ifm-heading-color: #ffffff;
+  --ifm-navbar-background-color: rgba(7, 17, 31, 0.58);
+  --docusaurus-highlighted-code-line-bg: rgba(96, 165, 250, 0.16);
 }
 
-/* Dark mode polish: the ExcelPreview is a hand-built component whose
-   inline styles assume a light "real Excel" palette. Keep that palette
-   in dark mode too — the workbook chrome reads as a screenshot, so
-   forcing it to white surface keeps the visual metaphor intact and
-   stops it from looking like a broken white box on a dark page. */
-[data-theme='dark'] {
-  /* Hero gradient on dark uses a darker tint than the default. */
-  --xl3-hero-gradient-from: #1a2620;
-  --xl3-hero-gradient-to: #131a16;
+html,
+body {
+  background: var(--ifm-background-color);
 }
 
-/* Footer dark theme: make column titles legible and links match
-   primary-lighter so they pop against the darker surface. */
-[data-theme='dark'] .footer {
-  --ifm-footer-background-color: #161b22;
-  --ifm-footer-link-color: var(--ifm-color-primary-lighter);
-  --ifm-footer-title-color: var(--ifm-color-emphasis-700);
+body {
+  color: var(--ifm-font-color-base);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* Cookbook / spec tables in dark mode: keep stripe contrast readable. */
+a {
+  text-underline-offset: 0.18em;
+}
+
+.navbar {
+  background: var(--ifm-navbar-background-color);
+  border-bottom: 1px solid rgba(216, 222, 232, 0.42);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.025);
+}
+
+[data-theme='dark'] .navbar {
+  border-bottom-color: rgba(148, 163, 184, 0.18);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
+}
+
+.navbar__brand {
+  margin-right: 1.35rem;
+}
+
+.navbar__logo {
+  display: flex;
+  align-items: center;
+}
+
+.navbar__item,
+.navbar__link {
+  font-weight: 650;
+}
+
+.navbar__link {
+  color: #0f172a;
+}
+
+.navbar__link:hover,
+.navbar__link--active {
+  color: #2563eb;
+}
+
+[data-theme='dark'] .navbar__link {
+  color: rgba(226, 232, 240, 0.84);
+}
+
+[data-theme='dark'] .navbar__link:hover,
+[data-theme='dark'] .navbar__link--active {
+  color: #60a5fa;
+}
+
+.dropdown__menu {
+  border: 1px solid var(--xl3-line);
+  border-radius: 8px;
+  box-shadow: var(--xl3-shadow);
+}
+
+[data-theme='dark'] .dropdown__menu {
+  border-color: rgba(148, 163, 184, 0.2);
+  background: #0f172a;
+}
+
+.button {
+  border-radius: 6px;
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+.button--primary {
+  border-color: #2563eb;
+  background: linear-gradient(135deg, #2563eb, #0057ff);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+}
+
+.button--primary:hover {
+  border-color: #1d4ed8;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: #ffffff;
+}
+
+.button--primary:active,
+.button--primary:focus,
+.button--primary:focus-visible,
+.button--primary:disabled,
+.button--primary.button--disabled {
+  color: #ffffff;
+}
+
+.button--secondary {
+  border-color: rgba(37, 99, 235, 0.22);
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.button--secondary:hover {
+  border-color: rgba(37, 99, 235, 0.5);
+  color: #2563eb;
+  background: #ffffff;
+}
+
+[data-theme='dark'] .button--secondary {
+  border-color: rgba(148, 163, 184, 0.24);
+  color: #ffffff;
+  background: rgba(15, 23, 42, 0.66);
+}
+
+[data-theme='dark'] .button--secondary:hover {
+  border-color: rgba(96, 165, 250, 0.6);
+  color: #bfdbfe;
+  background: rgba(15, 23, 42, 0.94);
+}
+
+.main-wrapper {
+  background:
+    radial-gradient(circle at 95% 0, rgba(37, 99, 235, 0.05), transparent 30%),
+    var(--ifm-background-color);
+}
+
+[data-theme='dark'] .main-wrapper {
+  background:
+    radial-gradient(circle at 92% 0, rgba(37, 99, 235, 0.16), transparent 30%),
+    #07111f;
+}
+
+.theme-doc-markdown {
+  color: #334155;
+}
+
+.theme-doc-markdown h1,
+.theme-doc-markdown h2,
+.theme-doc-markdown h3 {
+  color: #0f172a;
+  letter-spacing: 0;
+}
+
+.theme-doc-markdown h1 {
+  font-size: 2.6rem;
+}
+
+.theme-doc-markdown h2 {
+  border-bottom: 1px solid #d8dee8;
+  padding-bottom: 0.55rem;
+}
+
+.theme-doc-markdown p,
+.theme-doc-markdown li {
+  line-height: 1.72;
+}
+
+.theme-doc-markdown table {
+  overflow: hidden;
+  border: 1px solid #d8dee8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04);
+}
+
+.theme-doc-markdown table th {
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+.theme-doc-markdown table th,
+.theme-doc-markdown table td {
+  border-color: #e5e7eb;
+}
+
+[data-theme='dark'] .theme-doc-markdown {
+  color: rgba(226, 232, 240, 0.78);
+}
+
+[data-theme='dark'] .theme-doc-markdown h1,
+[data-theme='dark'] .theme-doc-markdown h2,
+[data-theme='dark'] .theme-doc-markdown h3 {
+  color: #ffffff;
+}
+
+[data-theme='dark'] .theme-doc-markdown h2 {
+  border-bottom-color: rgba(148, 163, 184, 0.2);
+}
+
 [data-theme='dark'] .theme-doc-markdown table {
-  background: var(--ifm-background-surface-color);
+  border-color: rgba(148, 163, 184, 0.2);
+  background: #0f172a;
 }
 
-[data-theme='dark'] .theme-doc-markdown table thead {
-  background: var(--ifm-color-emphasis-200);
+[data-theme='dark'] .theme-doc-markdown table th {
+  color: #ffffff;
+  background: rgba(15, 23, 42, 0.82);
 }
 
-/* Inline code in body text: dark mode bg + slight border for legibility. */
+[data-theme='dark'] .theme-doc-markdown table th,
+[data-theme='dark'] .theme-doc-markdown table td {
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+code {
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  border-radius: 4px;
+  background: rgba(37, 99, 235, 0.07);
+  color: #1e40af;
+}
+
 [data-theme='dark'] code {
-  background: var(--ifm-color-emphasis-200);
-  border: 1px solid var(--ifm-color-emphasis-300);
+  border-color: rgba(96, 165, 250, 0.2);
+  background: rgba(37, 99, 235, 0.14);
+  color: #bfdbfe;
 }
 
-[data-theme='dark'] pre code {
+pre code {
   border: 0;
   background: transparent;
+  color: inherit;
 }
 
-/* Hero subtitle on dark: stronger contrast than default emphasis-700. */
-[data-theme='dark'] .hero__subtitle {
-  color: var(--ifm-color-emphasis-800);
-}
-
-/* Navbar dark variant: subtle bottom border so it separates from the
-   hero gradient. */
-[data-theme='dark'] .navbar {
-  border-bottom: 1px solid var(--ifm-color-emphasis-200);
-}
-
-/* ---------------------------------------------------------------------
-   Unified dark "code-card" style for every Docusaurus fenced code block.
-   Matches the hand-written site's `.code-card` (GitHub-dark palette,
-   traffic-light dots, monospace filename label).
-
-   Applies in BOTH light and dark site themes — the code-card is a
-   screenshot-like chrome that reads as "code shown on its own dark
-   surface" regardless of page background.
-
-   Targets Docusaurus's emitted markup:
-     .theme-code-block                — outer container
-       .codeBlockTitle_xxx             — filename strip (when ```ts title=…)
-       .codeBlockContent_xxx           — body wrapper
-         .prism-code                    — <pre>
-           .token.keyword/string/…      — Prism tokens
-   --------------------------------------------------------------------- */
 .theme-code-block {
-  /* Docusaurus exposes the configured Prism theme's plain color and
-     background as these vars; `<pre>` uses `color: var(--prism-color)`.
-     The default (light theme `github`) value is too dark on our dark
-     code-card — re-point the vars to GitHub Dark's `fg.default` /
-     canvas tones for both site themes. */
   --prism-color: #e6edf3;
   --prism-background-color: #0d1117;
-  background: #0d1117 !important;
-  border: 1px solid #1f2630;
-  border-radius: 12px;
-  box-shadow: 0 18px 50px rgba(13, 17, 23, 0.18);
   overflow: hidden;
   margin: 1rem 0;
+  border: 1px solid #1f2630;
+  border-radius: 8px;
+  background: #0d1117 !important;
+  box-shadow: 0 18px 50px rgba(13, 17, 23, 0.18);
 }
 
-/* Filename strip: where Docusaurus puts the ```ts title="…" label.
-   Add the traffic-light dots as a ::before pseudo-element. */
 .theme-code-block [class*='codeBlockTitle_'] {
+  position: relative;
+  padding: 10px 14px 10px 64px;
+  border-bottom: 1px solid #1f2630 !important;
   background: #161b22 !important;
   color: #8b949e !important;
-  border-bottom: 1px solid #1f2630 !important;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
-  letter-spacing: 0.02em;
-  padding: 10px 14px 10px 64px;
-  position: relative;
+  letter-spacing: 0;
 }
 
 .theme-code-block [class*='codeBlockTitle_']::before {
@@ -122,40 +296,38 @@
   position: absolute;
   left: 14px;
   top: 50%;
-  transform: translateY(-50%);
   width: 41px;
   height: 11px;
+  transform: translateY(-50%);
   background:
     radial-gradient(circle 5.5px at 5.5px 50%, #ff5f57 99%, transparent 100%) 0 0 / 15px 11px no-repeat,
     radial-gradient(circle 5.5px at 5.5px 50%, #febc2e 99%, transparent 100%) 15px 0 / 15px 11px no-repeat,
     radial-gradient(circle 5.5px at 5.5px 50%, #28c840 99%, transparent 100%) 30px 0 / 15px 11px no-repeat;
 }
 
-/* Code body: dark surface, light text. */
 .theme-code-block .prism-code,
 .theme-code-block pre {
+  margin: 0;
+  padding: 18px 20px;
   background: #0d1117 !important;
   color: #e6edf3 !important;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 13.5px;
   line-height: 1.7;
-  padding: 18px 20px;
-  margin: 0;
 }
 
 .theme-code-block code {
-  background: transparent !important;
-  border: 0 !important;
-  color: inherit;
   padding: 0;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit;
 }
 
-/* Buttons (copy / collapse) keep contrast on dark. */
 .theme-code-block [class*='copyButton_'],
 .theme-code-block [class*='wordWrapButton_'] {
+  border-color: #2a313a !important;
   background: rgba(255, 255, 255, 0.06) !important;
   color: #e6edf3 !important;
-  border-color: #2a313a !important;
 }
 
 .theme-code-block [class*='copyButton_']:hover,
@@ -163,24 +335,63 @@
   background: rgba(255, 255, 255, 0.12) !important;
 }
 
-/* Token colors are inlined by prism-react-renderer from the
-   `xl3GithubDark` theme in docusaurus.config.ts — no CSS overrides
-   needed for `.token.*` here. */
-
-/* Highlighted-line indicator (when ``` // highlight-next-line). */
 .theme-code-block [class*='codeLineHighlight'] {
-  background-color: rgba(255, 255, 255, 0.06) !important;
-  border-left: 3px solid #4eb37a !important;
+  border-left: 3px solid #2563eb !important;
+  background-color: rgba(37, 99, 235, 0.14) !important;
 }
 
-/* Inline `code` in body text keeps the light treatment in light mode
-   (it's a noun inside a sentence — different role than a code block).
-   Only fenced blocks get the dark code-card treatment above. */
+.pagination-nav__link,
+.card {
+  border-radius: 8px;
+}
 
-/* CJK text wrapping: break at spaces/punctuation only (don't split
-   mid-word the way Latin word-break does). Combined with break-word as
-   a safety net for very long unbroken tokens (URLs, code). Scoped to
-   the CJK locales so Latin-script content is unaffected. */
+.pagination-nav__link {
+  border-color: #d8dee8;
+}
+
+[data-theme='dark'] .pagination-nav__link {
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+.theme-doc-sidebar-container {
+  border-right-color: #d8dee8 !important;
+}
+
+[data-theme='dark'] .theme-doc-sidebar-container {
+  border-right-color: rgba(148, 163, 184, 0.18) !important;
+}
+
+.menu__link {
+  border-radius: 6px;
+}
+
+.menu__link--active {
+  font-weight: 760;
+}
+
+.footer {
+  border-top: 1px solid rgba(96, 165, 250, 0.18);
+  background:
+    linear-gradient(135deg, #07111f 0%, #0b1728 52%, #0d2143 100%);
+  color: var(--ifm-footer-color);
+}
+
+.footer.footer--dark {
+  --ifm-footer-background-color: #091426;
+}
+
+.footer__link-item {
+  color: var(--ifm-footer-link-color);
+}
+
+.footer__link-item:hover {
+  color: #ffffff;
+}
+
+.footer__title {
+  letter-spacing: 0;
+}
+
 :lang(ko),
 :lang(ja),
 :lang(zh-CN) {
@@ -188,9 +399,6 @@
   overflow-wrap: break-word;
 }
 
-/* Inline code in CJK prose still needs to break — long identifiers
-   like `customer-renewal-report.xlsx` would otherwise overflow narrow
-   containers. */
 :lang(ko) code,
 :lang(ja) code,
 :lang(zh-CN) code,
@@ -201,21 +409,7 @@
   overflow-wrap: anywhere;
 }
 
-/* LocaleDropdownNavbarItem ships a small globe/language SVG before
-   the locale label ("文A 한국어"). We surface the label only; the
-   icon is redundant once "English" / "한국어" is the visible cue.
-   The class on the SVG is a CSS-modules hash whose stable substring
-   is `iconLanguage`. */
-.navbar [class*="iconLanguage"] {
-  display: none;
-}
-
-/* External-link arrows that Docusaurus appends to navbar items
-   pointing at external hosts (GitHub, npm). Body and footer external
-   links keep the arrow because the "this leaves the site" signal is
-   useful there; in the navbar the destination is obvious from the
-   short label so the icon is just noise. Scoped to `.navbar` so
-   in-content external links are unaffected. */
+.navbar [class*="iconLanguage"],
 .navbar [class*="iconExternalLink"] {
   display: none;
 }

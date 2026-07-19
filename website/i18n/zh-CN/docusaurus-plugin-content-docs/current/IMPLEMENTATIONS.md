@@ -13,12 +13,12 @@ slug: /implementations
 
 ## 新增一个实现
 
-先阅读 [`PORTERS_GUIDE.md`](/zh-CN/porters-guide)——它区分了规范性的硬性要求与 TS 实现的偶然细节，并给出了与一致性语料挂钩的推荐开发顺序。
+先阅读 [`PORTERS_GUIDE.md`](https://xl3.io/porters-guide)——它区分了规范性的硬性要求与 TS 实现的偶然细节，并给出了与一致性语料挂钩的推荐开发顺序。
 
 要把一个移植列在这里：
 
 1. 实现 XTL 0.1 中你打算覆盖的[一致性测试用例](https://github.com/xl3-lang/xl3/tree/main/conformance/fixtures)的足够子集。
-2. 按 [`conformance/runner-protocol.md`](/zh-CN/conformance/runner-protocol) 在 [`conformance/`](./conformance/) 上跑你的实现。
+2. 按 [`conformance/runner-protocol.md`](/conformance/runner-protocol) 在 [`conformance/`](./conformance/) 上跑你的实现。
 3. 提一个 PR，在上面的表格中加一行：语言、包 URL、目标规范版本、一致性状态（full / partial / N of M fixtures）。
 
 正在开发中的移植同样欢迎——即便一致性还是部分通过，也欢迎链接你的进行中仓库。

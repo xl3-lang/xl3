@@ -17,6 +17,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const WEBSITE = join(HERE, '..');
 const REPO = join(WEBSITE, '..');
 const TARGET = join(WEBSITE, 'docs');
+const COPY_OPTIONS = { recursive: true, dereference: true };
 
 const COPIES = [
   // [src absolute, dest relative to TARGET]
@@ -54,14 +55,14 @@ async function main() {
       for (const e of entries) {
         if (CONFORMANCE_EXCLUDE.has(e.name)) continue;
         if (e.isDirectory()) {
-          await cp(join(absSrc, e.name), join(absDest, e.name), { recursive: true });
+          await cp(join(absSrc, e.name), join(absDest, e.name), COPY_OPTIONS);
         } else if (e.name.endsWith('.md')) {
           await cp(join(absSrc, e.name), join(absDest, e.name));
         }
       }
       continue;
     }
-    await cp(absSrc, absDest, { recursive: true });
+    await cp(absSrc, absDest, COPY_OPTIONS);
   }
 
   // The spec/ tree has a `decisions/` subfolder with 32 ADRs. They use

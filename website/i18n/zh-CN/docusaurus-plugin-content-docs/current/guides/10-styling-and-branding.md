@@ -64,4 +64,4 @@ xl3 会保留模板中的合并：
 ## 备注
 
 - 工作簿属性（主题、定义的名称、打印区域）也是原样保留。在模板里设置一次，每份输出都会继承。
-- 规范参考：ADR-0032 "Niche limits and workbook pass-through behaviors"；[`spec/evaluation.md`](/zh-CN/spec/evaluation) "Cell Evaluation" 中关于单元格级样式的部分。
+- 规范参考：ADR-0032 "Niche limits and workbook pass-through behaviors"；[`spec/evaluation.md`](/spec/evaluation) "Cell Evaluation" 中关于单元格级样式的部分。

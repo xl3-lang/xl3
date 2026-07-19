@@ -81,5 +81,5 @@ ADR-0011 에 따라, 다음 `__config__` 키들은 스펙에서 정의되고 엔
 ## 스펙 포인터
 
 - ADR-0011 — 예약 시트 명명 규칙.
-- [`spec/evaluation.md`](/ko/spec/evaluation) "Template Configuration".
+- [`spec/evaluation.md`](https://xl3.io/spec/evaluation) "Template Configuration".
 - 실행 단위 대안인 `__inputs__` 는 [Cookbook 06](/guides/runtime-inputs) 참고.

@@ -97,7 +97,7 @@ XTL 0.6 提供了两个指令，可以在同一个数据块内完成这件事，
 
 ## 另见
 
-- [ADR-0038 — `@group` 与 `@subtotal` 指令](/zh-CN/spec/decisions/group-and-subtotal)
-- [`spec/language.md` § "Group + Subtotal"](/zh-CN/spec/language)
+- [ADR-0038 — `@group` 与 `@subtotal` 指令](https://xl3.io/spec/decisions/group-and-subtotal)
+- [`spec/language.md` § "Group + Subtotal"](/spec/language)
 - [Cookbook 03 — 聚合](/guides/aggregates) ——不分组的块级 `SUM` / `COUNT` / `AVERAGE`
 - [Cookbook 15 — 指令组合](/guides/directive-composition) ——完整的指令顺序规则

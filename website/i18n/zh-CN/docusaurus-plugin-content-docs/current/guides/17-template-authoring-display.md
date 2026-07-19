@@ -61,7 +61,7 @@ Excel 原生答案。每个公式只多一行，几秒钟就能学会。
 ```
 
 渲染前模板视图：干净（`—`、`0`）。
-渲染后输出：真实的值（xl3 按 [ADR-0046](/zh-CN/spec/decisions/cell-formula-preservation) 不改动公式文本；Excel 在打开时重算，外层包装隐于无形）。
+渲染后输出：真实的值（xl3 按 [ADR-0046](https://xl3.io/spec/decisions/cell-formula-preservation) 不改动公式文本；Excel 在打开时重算，外层包装隐于无形）。
 
 ### 哪些公式需要包裹
 
@@ -134,7 +134,7 @@ import('@xl3-lang/xl3').then(async ({ convert }) => {
 
 ## xl3 故意**不**做的事
 
-来自 [ADR-0049](/zh-CN/spec/decisions/template-display-vs-render-output) 的契约：
+来自 [ADR-0049](https://xl3.io/spec/decisions/template-display-vs-render-output) 的契约：
 
 1. xl3 **不**为模板视图预先替换占位符为示例值。（那样会丢掉可视化的占位符信号。）
 2. xl3 **不**维护每个单元格的两份 `numFmt`（"模板视图格式" vs "渲染格式"）。（额外的规范面，收益微薄。）
@@ -144,7 +144,7 @@ import('@xl3-lang/xl3').then(async ({ convert }) => {
 
 ## 另见
 
-- [ADR-0049 — Template-display vs render-output: intentional asymmetry](/zh-CN/spec/decisions/template-display-vs-render-output)
-- [ADR-0046 — Cell formula preservation contract](/zh-CN/spec/decisions/cell-formula-preservation)
+- [ADR-0049 — Template-display vs render-output: intentional asymmetry](https://xl3.io/spec/decisions/template-display-vs-render-output)
+- [ADR-0046 — Cell formula preservation contract](https://xl3.io/spec/decisions/cell-formula-preservation)
 - [Cookbook 16 — XTL 函数与 Excel 公式对比](/guides/xtl-vs-excel-formula)
-- [`preview()` API 文档](/zh-CN/api/functions/preview)
+- [`preview()` API 文档](https://xl3.io/api/functions/preview)

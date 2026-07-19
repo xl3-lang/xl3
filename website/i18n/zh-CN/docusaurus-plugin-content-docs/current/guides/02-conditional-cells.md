@@ -41,7 +41,7 @@ pagination_label: '02 · 条件单元格'
 {{ "等级-" & IF([续约金额] > 10000, "A", "B") & "-" & [区域] }}
 ```
 
-`&` 是字符串拼接运算符。操作数会按标准字符串形式转换（参考 [`spec/language.md`](/zh-CN/spec/language) "Canonical String Form"）。
+`&` 是字符串拼接运算符。操作数会按标准字符串形式转换（参考 [`spec/language.md`](/spec/language) "Canonical String Form"）。
 
 ## 备注
 

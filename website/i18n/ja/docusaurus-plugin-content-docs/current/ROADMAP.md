@@ -137,17 +137,17 @@ G23 が始まると、G24 の四半期クロックがカウント開始します
 
 これらは意図的に先送りしています。それぞれ理由を説明する ADR があります。
 
-- **Y/M/D/EOMONTH/EDATE/DATEDIF を超える日付演算** — その他のファミリーは [ADR-0019 改訂](/ja/spec/decisions/deferred-date-arithmetic) により先送り。
-- **ロケール対応の文字列照合** — [ADR-0020](/ja/spec/decisions/deferred-locale-collation)。
-- **マルチ結合、左結合、複数行マッチ** — [ADR-0014](/ja/spec/decisions/source-joins) のスコープ外セクション。
-- **XLOOKUP のワイルドカード / 近似 / 逆方向検索** — [ADR-0013](/ja/spec/decisions/xlookup-cross-source-lookup) のスコープ外セクション。
-- **動的画像挿入** — [ADR-0037](/ja/spec/decisions/rejected-dynamic-image-insertion)。
-- **実行時のセル変更** — [ADR-0042](/ja/spec/decisions/rejected-runtime-cell-mutation)。
-- **ADR-0043 ゲートにより却下された関数群** — 数学関数の拡張、型テスト(`ISBLANK` は ADR-0047 で例外的に採用)、NOW / WEEKDAY 等、条件付き集計、TEXT() 書式トークンの拡張。[ADR-0045](/ja/spec/decisions/function-batch-rejected) を参照。
+- **Y/M/D/EOMONTH/EDATE/DATEDIF を超える日付演算** — その他のファミリーは [ADR-0019 改訂](https://xl3.io/spec/decisions/deferred-date-arithmetic) により先送り。
+- **ロケール対応の文字列照合** — [ADR-0020](https://xl3.io/spec/decisions/deferred-locale-collation)。
+- **マルチ結合、左結合、複数行マッチ** — [ADR-0014](https://xl3.io/spec/decisions/source-joins) のスコープ外セクション。
+- **XLOOKUP のワイルドカード / 近似 / 逆方向検索** — [ADR-0013](https://xl3.io/spec/decisions/xlookup-cross-source-lookup) のスコープ外セクション。
+- **動的画像挿入** — [ADR-0037](https://xl3.io/spec/decisions/rejected-dynamic-image-insertion)。
+- **実行時のセル変更** — [ADR-0042](https://xl3.io/spec/decisions/rejected-runtime-cell-mutation)。
+- **ADR-0043 ゲートにより却下された関数群** — 数学関数の拡張、型テスト(`ISBLANK` は ADR-0047 で例外的に採用)、NOW / WEEKDAY 等、条件付き集計、TEXT() 書式トークンの拡張。[ADR-0045](https://xl3.io/spec/decisions/function-batch-rejected) を参照。
 - **ストリーミング出力 / SXSSF 相当機能。** 1.1+ に先送り。**1.0 では代わりに、メモリ/行数のハードリミットを文書化(G21)します。**
 - **テンプレートコンパイルキャッシュ API。** 1.1+ に先送り。
 - **PDF / HTML 出力。** スコープ外。xl3 は xlsx 入力 - xlsx 出力に特化します。
-- **`093` を超えるクロスライター Stage 2 フィクスチャ** — [ADR-0006](/ja/spec/decisions/stage-2-ooxml-conformance) 改訂。
+- **`093` を超えるクロスライター Stage 2 フィクスチャ** — [ADR-0006](https://xl3.io/spec/decisions/stage-2-ooxml-conformance) 改訂。
 
 これらは需要に応じて **XTL 1.1、1.2、1.x** の候補として残ります。
 
@@ -155,9 +155,9 @@ G23 が始まると、G24 の四半期クロックがカウント開始します
 
 | 項目 | 貢献の仕方 |
 |---|---|
-| G13 第二実装 ≥ 80% | [xl3-py](https://github.com/jinyoung4478/xl3-py) に貢献するか、新たな移植(Rust、Java、Go)を始める。[PORTERS_GUIDE.md](/ja/porters-guide) を参照。 |
-| G14 外部 ADR | 先送り項目(ピボットテーブル保持、改ページ、ADR-0045 で除外された関数)を一つ選び、`spec/decisions/` に ADR を起草する。[GOVERNANCE.md](/ja/governance) の「How changes enter the project」を参照。いくつかの「スターター ADR スタブ」が GitHub の `good-first-ADR` イシューとして用意されています。 |
-| G15 本番事例 | xl3 を内部で利用し、うまくいったこと/いかなかったことを共有する。適切であれば [IMPLEMENTATIONS.md](/ja/implementations) に行を追加する。メンテナ自身の雇用主(Snack24h)も、公開ケーススタディを出せば対象となります。 |
+| G13 第二実装 ≥ 80% | [xl3-py](https://github.com/jinyoung4478/xl3-py) に貢献するか、新たな移植(Rust、Java、Go)を始める。[PORTERS_GUIDE.md](https://xl3.io/porters-guide) を参照。 |
+| G14 外部 ADR | 先送り項目(ピボットテーブル保持、改ページ、ADR-0045 で除外された関数)を一つ選び、`spec/decisions/` に ADR を起草する。[GOVERNANCE.md](/governance) の「How changes enter the project」を参照。いくつかの「スターター ADR スタブ」が GitHub の `good-first-ADR` イシューとして用意されています。 |
+| G15 本番事例 | xl3 を内部で利用し、うまくいったこと/いかなかったことを共有する。適切であれば [IMPLEMENTATIONS.md](/implementations) に行を追加する。メンテナ自身の雇用主(Snack24h)も、公開ケーススタディを出せば対象となります。 |
 | G17 韓国語クックブック 16+17 i18n | 新しめの 2 レシピを翻訳する(他は完了済み)。 |
 | G8 ベンチマーク | 代表的なテンプレートで `npm run bench` を回し、結果を共有する。 |
 | G10 クロスブラウザ | Safari + Firefox をバンドルスモークテストに追加する。 |

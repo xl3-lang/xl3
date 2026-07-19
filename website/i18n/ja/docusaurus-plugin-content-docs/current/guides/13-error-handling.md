@@ -91,5 +91,5 @@ const preview = await xl3.preview(template, data, options);
 ## スペックポインタ
 
 - ADR-0015 ― 構造化エラーレポート。
-- [`spec/evaluation.md`](/ja/spec/evaluation) の「Errors」。
+- [`spec/evaluation.md`](/spec/evaluation) の「Errors」。
 - 入力関連のエラーは [Cookbook 06](/guides/runtime-inputs) を参照。

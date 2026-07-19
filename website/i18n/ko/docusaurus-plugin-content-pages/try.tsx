@@ -317,7 +317,7 @@ export default function ConverterPageKo() {
               파일은 어디에도 업로드되지 않습니다.
             </p>
             <p className={styles.crosslinks}>
-              <Link to="/ko/">홈</Link>
+              <Link to="/">홈</Link>
               {' · '}
               <Link to="/guides/getting-started">레시피 01</Link>
               {' · '}

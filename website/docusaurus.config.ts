@@ -13,11 +13,11 @@ const xl3GithubDark: PrismTheme = {
   styles: [
     { types: ['comment', 'prolog', 'doctype', 'cdata'], style: { color: '#8b949e', fontStyle: 'italic' } },
     { types: ['punctuation'], style: { color: '#e6edf3' } },
-    // class-name / JSX-tag in green distinguishes type identifiers
-    // (`Promise`, `InputSpec`) from function-call identifiers below.
-    { types: ['tag', 'class-name'], style: { color: '#7ee787' } },
+    // Blue class/type identifiers distinguish (`Promise`, `InputSpec`)
+    // from function-call identifiers below while staying on-brand.
+    { types: ['tag', 'class-name'], style: { color: '#60a5fa' } },
     { types: ['boolean', 'number', 'constant', 'symbol', 'deleted', 'attr-name', 'property'], style: { color: '#79c0ff' } },
-    { types: ['selector', 'string', 'char', 'builtin', 'inserted', 'url', 'attr-value'], style: { color: '#a5d6ff' } },
+    { types: ['selector', 'string', 'char', 'builtin', 'inserted', 'url', 'attr-value'], style: { color: '#fde68a' } },
     { types: ['operator', 'entity', 'keyword', 'atrule', 'important'], style: { color: '#ff7b72' } },
     { types: ['function'], style: { color: '#d2a8ff' } },
     { types: ['regex', 'variable', 'parameter'], style: { color: '#ffa657' } },
@@ -73,12 +73,17 @@ const config: Config = {
   // Non-default locales route under `/<locale>/...` (e.g. `/ko/`).
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'ko', 'ja', 'zh-CN'],
+    locales: ['en', 'ko', 'ja', 'zh-cn'],
     localeConfigs: {
       en: { label: 'English', htmlLang: 'en-US' },
       ko: { label: '한국어', htmlLang: 'ko-KR' },
       ja: { label: '日本語', htmlLang: 'ja-JP' },
-      'zh-CN': { label: '简体中文', htmlLang: 'zh-CN' },
+      'zh-cn': {
+        label: '简体中文',
+        htmlLang: 'zh-CN',
+        path: 'zh-CN',
+        baseUrl: '/zh-CN/',
+      },
     },
   },
 
@@ -354,7 +359,7 @@ const config: Config = {
       ],
     },
     footer: {
-      style: 'light',
+      style: 'dark',
       links: [
         {
           title: 'Docs',

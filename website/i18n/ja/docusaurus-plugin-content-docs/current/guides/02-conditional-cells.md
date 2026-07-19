@@ -41,7 +41,7 @@ pagination_label: '02 · 条件付きセル'
 {{ "ランク-" & IF([更新金額] > 10000, "A", "B") & "-" & [地域] }}
 ```
 
-`&` は文字列連結演算子です。オペランドは標準文字列形式に変換されます([`spec/language.md`](/ja/spec/language) の「Canonical String Form」参照)。
+`&` は文字列連結演算子です。オペランドは標準文字列形式に変換されます([`spec/language.md`](/spec/language) の「Canonical String Form」参照)。
 
 ## メモ
 

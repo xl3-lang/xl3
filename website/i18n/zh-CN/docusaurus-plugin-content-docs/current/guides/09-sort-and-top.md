@@ -66,4 +66,4 @@ pagination_label: '09 · 排序与 Top-N'
 
 - 稳定排序意味着键相同的行保持插入顺序——这在多个 `@sort` 作为 tiebreaker 时至关重要。
 - "`@sort` 之后跟 `@top`" 是标准的"Top-N"模式。单独的 `@top`（不带 sort）会按源顺序返回前 N 行。
-- 规范参考：[`spec/language.md`](/zh-CN/spec/language) "Sort" 与 "Top"；ADR-0016。
+- 规范参考：[`spec/language.md`](/spec/language) "Sort" 与 "Top"；ADR-0016。

@@ -90,7 +90,7 @@ ADR-0029 기준:
 ## 스펙 포인터
 
 - ADR-0029 — 디렉티브 조합 + 소스 엣지 시맨틱.
-- [`spec/language.md`](/ko/spec/language) "Filter", "Sort", "Top", "Source", "Join".
+- [`spec/language.md`](https://xl3.io/spec/language) "Filter", "Sort", "Top", "Source", "Join".
 - `@filter in __lists__[…]` 는 [Cookbook 05](/guides/sheet-per-group) 참고.
 - `@source` + `@join` 기본은 [Cookbook 07](/guides/multi-source-join) 참고.
 - `@sort` + `@top` 기본은 [Cookbook 09](/guides/sort-and-top) 참고.

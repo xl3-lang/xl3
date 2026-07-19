@@ -64,4 +64,4 @@ xl3 はテンプレートの結合を保存します。
 ## メモ
 
 - ワークブックプロパティ(テーマ、定義された名前、印刷範囲)はすべてそのまま保存されます。テンプレートに一度設定しておけば、すべての結果物がこれを継承します。
-- スペック参照: ADR-0032「Niche limits and workbook pass-through behaviors」、セル単位スタイリングは [`spec/evaluation.md`](/ja/spec/evaluation) の「Cell Evaluation」を参照。
+- スペック参照: ADR-0032「Niche limits and workbook pass-through behaviors」、セル単位スタイリングは [`spec/evaluation.md`](/spec/evaluation) の「Cell Evaluation」を参照。
