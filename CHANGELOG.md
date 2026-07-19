@@ -6,6 +6,8 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-07-19
+
 ### Added
 
 - **JSON source input (`xl3-source-json/0.1`)** — new `convertJson` and

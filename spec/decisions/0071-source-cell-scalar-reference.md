@@ -1,10 +1,28 @@
 # ADR 0071 — Source cell scalar reference (`SOURCECELL` — read a fixed cell from the dynamic source)
 
-- **Status:** proposed
+- **Status:** rejected (2026-07-19 — see "Rejection" below)
 - **Date:** 2026-06-19
 - **Spec target:** XTL 1.x (additive; backward-compatible, deferred from the 0.1 → 1.0 freeze per STABILITY.md "intentionally deferred")
 - **Affects:** language.md (function table + new "SOURCECELL" subsection); ADR-0024 arity table (new row); evaluation.md (Source Data Model, render phases); impl (normalizer, template-eval, reader, types); new error codes
 - **Issue:** #57
+
+## Rejection (2026-07-19)
+
+**Not adopted.** After ADR-0075 introduced the language-neutral JSON source
+format (`xl3-source-json`), reading arbitrary Excel cells (`sheet!cell`,
+merged cells, cached formulas) from the **expression language** was judged
+the wrong direction: it does not work with JSON sources, raises the
+conformance bar for other-language ports, and enlarges the core surface
+right before the 1.0 freeze (against ADR-0043's small-surface thesis).
+
+For the actual target — host-driven (dev-owned engine) conversions — source
+metadata is already covered by `__inputs__`: the host lifts the value and
+passes it via `options.inputs`, referenced as `{{ __inputs__[name] }}` (see
+#57). If an "operator attaches an Excel workbook with banner metadata, no
+per-file host step" workflow becomes a real requirement, it should be
+revisited as an **Excel-ingestion-profile** feature (a reader-resolved
+declaration), not a core expression-language function. The design below is
+retained as a record.
 
 ## Context
 
