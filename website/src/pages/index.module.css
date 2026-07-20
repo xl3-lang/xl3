@@ -3,8 +3,7 @@
 .heroBanner {
   position: relative;
   overflow: hidden;
-  min-height: calc(100vh - var(--ifm-navbar-height));
-  padding: 7rem 0 5rem;
+  padding: 5rem 0 4.5rem;
   color: #ffffff;
   text-align: left;
   background:
@@ -42,8 +41,11 @@
   z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 0.96fr) minmax(380px, 0.86fr);
-  gap: 4rem;
-  align-items: center;
+  column-gap: 4rem;
+  row-gap: 3rem;
+  /* top-align the copy and the card so the kicker lines up with the card
+     header; the pillars form a full-width band on the row below */
+  align-items: start;
 }
 
 .heroCopy {
@@ -88,11 +90,12 @@
 }
 
 .heroPillars {
+  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 4.5rem;
-  border-left: 1px solid rgba(148, 163, 184, 0.18);
-  border-right: 1px solid rgba(148, 163, 184, 0.18);
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
 }
 
 .pillar {

@@ -206,24 +206,6 @@ function Hero() {
               npm
             </Link>
           </div>
-          <div className={styles.heroPillars} aria-label="XL3 brand attributes">
-            <div className={styles.pillar}>
-              <span className={styles.pillarIcon} aria-hidden="true">↯</span>
-              <strong>Fast</strong>
-            </div>
-            <div className={styles.pillar}>
-              <span className={styles.pillarIcon} aria-hidden="true">◇</span>
-              <strong>Deterministic</strong>
-            </div>
-            <div className={styles.pillar}>
-              <span className={styles.pillarIcon} aria-hidden="true">▣</span>
-              <strong>Portable</strong>
-            </div>
-            <div className={styles.pillar}>
-              <span className={styles.pillarIcon} aria-hidden="true">&lt;/&gt;</span>
-              <strong>Spec-first</strong>
-            </div>
-          </div>
         </div>
         <aside
           className={styles.flowPanel}
@@ -292,6 +274,24 @@ function Hero() {
             </div>
           </div>
         </aside>
+        <div className={styles.heroPillars} aria-label="XL3 brand attributes">
+          <div className={styles.pillar}>
+            <span className={styles.pillarIcon} aria-hidden="true">↯</span>
+            <strong>Fast</strong>
+          </div>
+          <div className={styles.pillar}>
+            <span className={styles.pillarIcon} aria-hidden="true">◇</span>
+            <strong>Deterministic</strong>
+          </div>
+          <div className={styles.pillar}>
+            <span className={styles.pillarIcon} aria-hidden="true">▣</span>
+            <strong>Portable</strong>
+          </div>
+          <div className={styles.pillar}>
+            <span className={styles.pillarIcon} aria-hidden="true">&lt;/&gt;</span>
+            <strong>Spec-first</strong>
+          </div>
+        </div>
       </div>
     </header>
   );
