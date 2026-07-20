@@ -22,6 +22,10 @@
 .caption {
   display: grid;
   gap: 0.3rem;
+  align-content: start;
+  /* reserve space for a 1–2 line title so the preview height is stable
+     across steps (and locales) */
+  min-height: 2.9rem;
 }
 
 .caption span {
@@ -46,6 +50,9 @@
 
 .notes {
   margin: 0;
+  /* reserve ~3 lines so switching steps (with different note lengths) keeps
+     the viewer height constant */
+  min-height: 4.3rem;
   color: var(--xl3-preview-muted);
   font-size: 0.86rem;
   line-height: 1.58;
@@ -133,63 +140,11 @@
   background: #22c55e;
 }
 
-.formulaBar {
-  display: grid;
-  grid-template-columns: 4.6rem 2.25rem minmax(0, 1fr);
-  gap: 0.5rem;
-  align-items: center;
-  min-height: 44px;
-  padding: 0.5rem 0.65rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: #ffffff;
-}
-
-[data-theme='dark'] .formulaBar {
-  border-bottom-color: rgba(148, 163, 184, 0.16);
-  background: #0f172a;
-}
-
-.nameBox,
-.fx,
-.formulaText {
-  min-height: 28px;
-  display: flex;
-  align-items: center;
-  border: 1px solid #d8dee8;
-  border-radius: 6px;
-  background: #f8fafc;
-  color: #334155;
-  font-size: 0.76rem;
-}
-
-[data-theme='dark'] .nameBox,
-[data-theme='dark'] .fx,
-[data-theme='dark'] .formulaText {
-  border-color: rgba(148, 163, 184, 0.2);
-  background: #07111f;
-  color: rgba(226, 232, 240, 0.78);
-}
-
-.nameBox,
-.fx {
-  justify-content: center;
-  color: var(--xl3-preview-blue);
-  font-weight: 800;
-}
-
-.formulaText {
-  overflow: hidden;
-  padding: 0 0.65rem;
-  color: #0f172a;
-  white-space: nowrap;
-}
-
-[data-theme='dark'] .formulaText {
-  color: #e5e7eb;
-}
-
 .sheetWrap {
-  overflow-x: auto;
+  /* Fixed height so switching sheets never changes the window height;
+     content scrolls inside like a real Excel worksheet. */
+  height: 360px;
+  overflow: auto;
   background: #ffffff;
 }
 
@@ -198,8 +153,9 @@
 }
 
 .sheetGrid {
-  width: 100%;
-  min-width: 680px;
+  /* size to the (fixed-width) columns so widths are identical across steps;
+     the wrapper scrolls horizontally when the grid is wider than the window */
+  width: max-content;
   margin: 0;
   border-collapse: separate;
   border-spacing: 0;
@@ -237,8 +193,29 @@
   color: rgba(226, 232, 240, 0.58);
 }
 
+/* Uniform fixed data-column width (identical across every sheet/step); the
+   row-number column keeps its 42px. */
 .sheetGrid thead th:not(:first-child) {
-  width: 210px;
+  width: 150px;
+}
+
+/* Freeze the column-label row and the row-number column while scrolling,
+   so it reads like a real Excel worksheet. */
+.sheetGrid thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.sheetGrid tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.sheetGrid thead th:first-child {
+  left: 0;
+  z-index: 3;
 }
 
 .sheetGrid td {
@@ -301,6 +278,7 @@
 
 .sheetTabs {
   display: flex;
+  gap: 0.35rem;
   min-height: 40px;
   align-items: end;
   padding: 0.45rem 0.6rem 0;
@@ -330,5 +308,42 @@
 
 [data-theme='dark'] .sheetTab {
   background: #0f172a;
+  color: #bfdbfe;
+}
+
+/* Clickable sheet tabs (multi-sheet previews). */
+.sheetTabButton {
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 820;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.sheetTabButton:focus-visible {
+  outline: 2px solid var(--xl3-preview-blue);
+  outline-offset: 2px;
+}
+
+.sheetTabInactive {
+  border-color: #d8dee8;
+  background: #eef2f7;
+  color: #64748b;
+}
+
+.sheetTabInactive:hover {
+  color: #2563eb;
+  border-color: rgba(37, 99, 235, 0.28);
+}
+
+[data-theme='dark'] .sheetTabInactive {
+  border-color: rgba(148, 163, 184, 0.2);
+  background: rgba(148, 163, 184, 0.08);
+  color: rgba(226, 232, 240, 0.6);
+}
+
+[data-theme='dark'] .sheetTabInactive:hover {
   color: #bfdbfe;
 }

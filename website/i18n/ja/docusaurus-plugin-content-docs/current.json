@@ -166,5 +166,9 @@
   "sidebar.docsSidebar.doc.Releasing": {
     "message": "リリース手順(英語)",
     "description": "The label for the doc item 'Releasing' in sidebar 'docsSidebar', linking to the doc RELEASING"
+  },
+  "sidebar.guidesSidebar.doc.19 · JXLS to xl3": {
+    "message": "19 · JXLS to xl3",
+    "description": "The label for the doc item '19 · JXLS to xl3' in sidebar 'guidesSidebar', linking to the doc guides/jxls-to-xl3"
   }
 }

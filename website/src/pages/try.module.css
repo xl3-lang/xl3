@@ -68,6 +68,23 @@
   color: rgba(226, 232, 240, 0.58);
 }
 
+/* The links inherit the default (dark) primary blue, which is low-contrast on
+   the dark intro background — use white in dark mode. */
+[data-theme='dark'] .crosslinks a {
+  color: #ffffff;
+}
+
+[data-theme='dark'] .crosslinks a:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Inline code tokens (__config__, source_table, A1:D, …) are white in dark
+   mode for readability; the chip background/border stays. The page has no
+   code blocks, so this only affects the inline tokens. */
+[data-theme='dark'] .pageMain code {
+  color: #ffffff;
+}
+
 .converterWrap {
   display: grid;
   grid-template-columns: minmax(0, 1.04fr) minmax(300px, 0.96fr);
