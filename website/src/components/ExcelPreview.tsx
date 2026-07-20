@@ -1,4 +1,5 @@
 import React from 'react';
+import clsx from 'clsx';
 import styles from './ExcelPreview.module.css';
 
 export type CellClass =
@@ -14,17 +15,29 @@ export type CellClass =
 
 export type Merge = { row: number; col: number; span: number };
 
+// A single worksheet inside the preview window.
+export type SheetTab = {
+  name: string;          // tab label + sheet name
+  formula: string;       // formula-bar content for this sheet
+  rows: string[][];
+  classes?: CellClass[][];
+  merges?: Merge[];
+};
+
 export type Workbook = {
   kind: string;          // "data.xlsx" / "__config__" / etc. — small label above the title
   title: string;         // headline shown to the right of the kicker
   note?: string;         // body sentence below the workbook
   workbookTitle: string; // file name (e.g., template.xlsx)
   workbookSubtitle: string;
-  formula: string;       // formula bar content
-  sheetName: string;     // tab label
-  rows: string[][];
+  // Single-sheet form (kept for back-compat). Ignored when `sheets` is set.
+  formula?: string;      // formula bar content
+  sheetName?: string;    // tab label
+  rows?: string[][];
   classes?: CellClass[][];
   merges?: Merge[];
+  // Multi-sheet form: renders clickable sheet tabs that swap the grid.
+  sheets?: SheetTab[];
 };
 
 function columnLabel(index: number): string {
@@ -50,8 +63,25 @@ const CELL_CLASS_MAP: Partial<Record<CellClass, string>> = {
 };
 
 export function ExcelPreview({ workbook }: { workbook: Workbook }) {
-  const maxCols = Math.max(...workbook.rows.map((r) => r.length));
-  const merges = workbook.merges ?? [];
+  const sheets: SheetTab[] = workbook.sheets ?? [
+    {
+      name: workbook.sheetName ?? 'Sheet1',
+      formula: workbook.formula ?? '',
+      rows: workbook.rows ?? [],
+      classes: workbook.classes,
+      merges: workbook.merges,
+    },
+  ];
+  const [activeSheet, setActiveSheet] = React.useState(0);
+  const idx = Math.min(activeSheet, sheets.length - 1);
+  const sheet = sheets[idx];
+
+  // Always render at least this many columns so every sheet shows a few
+  // trailing empty columns — a natural Excel look, and it keeps the column
+  // widths (and the row-number column) identical across steps.
+  const MIN_COLS = 7;
+  const maxCols = Math.max(MIN_COLS, ...sheet.rows.map((r) => r.length));
+  const merges = sheet.merges ?? [];
   const mergeAt = (r: number, c: number) =>
     merges.find((m) => m.row === r && m.col === c);
   const hiddenByMerge = (r: number, c: number) =>
@@ -68,11 +98,6 @@ export function ExcelPreview({ workbook }: { workbook: Workbook }) {
           <small>{workbook.workbookSubtitle}</small>
         </div>
       </div>
-      <div className={styles.formulaBar}>
-        <span className={styles.nameBox}>B2</span>
-        <span className={styles.fx}>fx</span>
-        <span className={styles.formulaText}>{workbook.formula}</span>
-      </div>
       <div className={styles.sheetWrap}>
         <table className={styles.sheetGrid}>
           <thead>
@@ -84,14 +109,14 @@ export function ExcelPreview({ workbook }: { workbook: Workbook }) {
             </tr>
           </thead>
           <tbody>
-            {workbook.rows.map((row, rowIndex) => (
+            {sheet.rows.map((row, rowIndex) => (
               <tr key={rowIndex}>
                 <th>{rowIndex + 1}</th>
                 {Array.from({ length: maxCols }, (_, colIndex) => {
                   if (hiddenByMerge(rowIndex, colIndex)) return null;
                   const merge = mergeAt(rowIndex, colIndex);
                   const className =
-                    CELL_CLASS_MAP[workbook.classes?.[rowIndex]?.[colIndex] as CellClass] ?? '';
+                    CELL_CLASS_MAP[sheet.classes?.[rowIndex]?.[colIndex] as CellClass] ?? '';
                   return (
                     <td
                       key={colIndex}
@@ -108,7 +133,25 @@ export function ExcelPreview({ workbook }: { workbook: Workbook }) {
         </table>
       </div>
       <div className={styles.sheetTabs}>
-        <span className={styles.sheetTab}>{workbook.sheetName}</span>
+        {sheets.length > 1 ? (
+          sheets.map((s, i) => (
+            <button
+              key={s.name}
+              type="button"
+              className={clsx(
+                styles.sheetTab,
+                styles.sheetTabButton,
+                i !== idx && styles.sheetTabInactive,
+              )}
+              aria-pressed={i === idx}
+              onClick={() => setActiveSheet(i)}
+            >
+              {s.name}
+            </button>
+          ))
+        ) : (
+          <span className={styles.sheetTab}>{sheet.name}</span>
+        )}
       </div>
     </div>
   );

@@ -50,15 +50,6 @@
   min-width: 0;
 }
 
-.heroLogo {
-  width: 310px;
-  max-width: 78%;
-  height: auto;
-  display: block;
-  margin-bottom: 5.5rem;
-  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.44));
-}
-
 .kicker {
   margin: 0 0 0.85rem;
   color: #2563eb;
@@ -244,23 +235,6 @@
   font-weight: 800;
 }
 
-.heroCode {
-  display: grid;
-  gap: 0.35rem;
-  padding: 1rem 1.1rem;
-  border: 1px solid rgba(37, 99, 235, 0.22);
-  border-radius: 8px;
-  background: #0d1117;
-  color: #e6edf3;
-  font-size: 0.82rem;
-  line-height: 1.5;
-}
-
-.successLine {
-  margin-top: 0.45rem;
-  color: #4ade80;
-}
-
 .sectionIntro {
   max-width: 50rem;
   margin: 0 0 2.4rem;
@@ -295,7 +269,9 @@
   display: grid;
   grid-template-columns: minmax(260px, 0.86fr) minmax(0, 1.14fr);
   gap: 1.5rem;
-  align-items: start;
+  /* stretch both columns to the same height so the steps line up with the
+     Excel viewer (symmetric top and bottom edges) */
+  align-items: stretch;
 }
 
 .previewColumn {
@@ -304,19 +280,53 @@
 }
 
 .stepsGrid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.85rem;
+  height: 100%;
 }
 
 .stepCard {
   display: grid;
   grid-template-columns: 3.1rem minmax(0, 1fr);
   gap: 1rem;
-  padding: 1.2rem;
+  width: 100%;
+  /* grow equally so the three cards fill the viewer height in step; content
+     stays vertically centered in the taller card */
+  flex: 1;
+  align-items: center;
+  padding: 1.2rem 1.2rem;
   border: 1px solid #d8dee8;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.82);
   box-shadow: 0 16px 34px rgba(15, 23, 42, 0.05);
+  /* rendered as a <button> — reset native styling and align content left */
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.stepCard:hover {
+  border-color: #93b4f5;
+}
+
+.stepCard:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.stepCardActive {
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 18px 38px rgba(37, 99, 235, 0.16);
+}
+
+.stepCardActive .stepIndex {
+  color: #1d4ed8;
 }
 
 .stepIndex {
@@ -532,10 +542,6 @@
   .narrativeGrid {
     grid-template-columns: 1fr;
     gap: 2rem;
-  }
-
-  .heroLogo {
-    margin-bottom: 3.5rem;
   }
 
   .heroTitle {
