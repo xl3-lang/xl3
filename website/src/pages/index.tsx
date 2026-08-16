@@ -235,8 +235,45 @@ function Hero() {
             <span>Runtime system</span>
             <strong>Execute Excel. Deterministically.</strong>
           </div>
-          <div className={styles.visualLogoCard}>
-            <img src="/img/xl3-logo-dark.png" alt="XL3" />
+          {/* The template cell from the walkthrough's own Report sheet (E3),
+              with the row it produces. The logo used to sit here; the navbar
+              already carries it, so this shows what the hero actually claims:
+              the rule lives in the sheet, in a cell the operator can read.
+              Values track useStepPreviews() above — keep them in sync.
+              Specimen text stays untranslated, like raw.xlsx below. */}
+          <div className={styles.ruleCard}>
+            <div className={styles.ruleBar}>
+              <span>template.xlsx</span>
+              <span className={styles.ruleRef}>E3</span>
+            </div>
+            <code className={styles.ruleExpr}>
+              <span className={styles.ruleFx} aria-hidden="true">
+                ƒx
+              </span>
+              <span>
+                <span className={styles.ruleBrace}>{'{{'}</span>{' '}
+                <span className={styles.ruleFn}>IF</span>
+                {/* NBSP before the closing braces: when the panel is narrow
+                    enough to wrap, the formula should break at a comma, not
+                    orphan `}}` on its own line. */}
+                {'([Renewal] > 10000, "Priority", "Standard")\u00a0'}
+                <span className={styles.ruleBrace}>{'}}'}</span>
+              </span>
+            </code>
+            <div className={styles.ruleRow}>
+              <div>
+                <span>Account</span>
+                <strong>Acme Logistics</strong>
+              </div>
+              <div>
+                <span>Renewal</span>
+                <strong>18,400</strong>
+              </div>
+              <div className={styles.ruleOut}>
+                <span>Tier</span>
+                <strong>Priority</strong>
+              </div>
+            </div>
           </div>
           <div className={styles.flowRole}>
             <span>
