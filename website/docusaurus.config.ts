@@ -344,7 +344,10 @@ const config: Config = {
         alt: 'XL3',
         src: 'img/xl3-logo.png',
         srcDark: 'img/xl3-logo-dark.png',
-        width: 105,
+        // Aspect ratio follows the lockup itself (484.14 x 140 viewBox).
+        // Both attributes are emitted on the <img>, so they must stay in sync
+        // with the asset or the navbar logo renders stretched.
+        width: 111,
         height: 32,
       },
       // Navbar item labels translate via i18n/<locale>/docusaurus-theme-classic/navbar.json.

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="36 58 484.14 140" role="img" aria-labelledby="xl3-title">
+  <title id="xl3-title">XL3</title>
+  <defs>
+    <linearGradient id="xl3Blue" gradientUnits="userSpaceOnUse" x1="42" y1="64" x2="214" y2="192">
+      <stop offset="0" stop-color="#60A5FA"/>
+      <stop offset="0.45" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#0057FF"/>
+    </linearGradient>
+  </defs>
+  <g fill-rule="evenodd" shape-rendering="geometricPrecision">
+    <path fill="url(#xl3Blue)" d="M168 64h46l-61 61-23-23z"/>
+    <path fill="#0F172A" d="M42 192h46l38-38-23-23z"/>
+    <path fill="#0F172A" d="M42 64h44l64 64h-44z"/>
+    <path fill="url(#xl3Blue)" d="M106 128h44l64 64h-44z"/>
+  </g>
+  <g fill="#0F172A" shape-rendering="geometricPrecision">
+    <path transform="translate(232 64)" d="M0 0 H29.54 V91.42 A9.85 9.85 0 0 0 39.39 101.27 H124 A4 4 0 0 1 128 105.27 V128 H28.13 A28.13 28.13 0 0 1 0 99.87 Z"/>
+    <path transform="translate(377 64)" d="M0 0 H109.01 A28.13 28.13 0 0 1 137.14 28.13 V46 C137.14 55 124.48 55 124.48 63.5 C124.48 72 137.14 72 137.14 81 V99.87 A28.13 28.13 0 0 1 109.01 128 H0 V101.27 H97.75 A9.85 9.85 0 0 0 107.6 91.42 V87.21 A9.85 9.85 0 0 0 97.75 77.36 H14.07 V50.64 H97.75 A9.85 9.85 0 0 0 107.6 40.79 V36.58 A9.85 9.85 0 0 0 97.75 26.73 H0 Z"/>
+  </g>
+</svg>
