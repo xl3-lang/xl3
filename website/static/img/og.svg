@@ -31,11 +31,14 @@
   <path d="M-68 612 232 312M-28 664 272 364" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.08"/>
   <rect x="0" y="0" width="1200" height="630" fill="none" stroke="#1F2937" stroke-width="1"/>
 
-  <g transform="translate(76 54)">
-    <use href="#symbolLight" transform="scale(0.46)"/>
-    <text x="138" y="73"
-          font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif"
-          font-size="58" font-weight="800" fill="#FFFFFF" letter-spacing="2">XL3</text>
+  <!-- Lockup: the symbol IS the letter X, so only L3 follows it, drawn at the
+       symbol's own cap height (64..192). Same paths as img/xl3-logo-dark.svg. -->
+  <g transform="translate(76 54) scale(0.46)">
+    <use href="#symbolLight"/>
+    <g fill="#FFFFFF" shape-rendering="geometricPrecision">
+      <path transform="translate(232 64)" d="M0 0 H29.54 V91.42 A9.85 9.85 0 0 0 39.39 101.27 H124 A4 4 0 0 1 128 105.27 V128 H28.13 A28.13 28.13 0 0 1 0 99.87 Z"/>
+      <path transform="translate(377 64)" d="M0 0 H109.01 A28.13 28.13 0 0 1 137.14 28.13 V46 C137.14 55 124.48 55 124.48 63.5 C124.48 72 137.14 72 137.14 81 V99.87 A28.13 28.13 0 0 1 109.01 128 H0 V101.27 H97.75 A9.85 9.85 0 0 0 107.6 91.42 V87.21 A9.85 9.85 0 0 0 97.75 77.36 H14.07 V50.64 H97.75 A9.85 9.85 0 0 0 107.6 40.79 V36.58 A9.85 9.85 0 0 0 97.75 26.73 H0 Z"/>
+    </g>
   </g>
 
   <g transform="translate(76 288)">
