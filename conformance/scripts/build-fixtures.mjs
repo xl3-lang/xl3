@@ -7757,6 +7757,189 @@ async function build140() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 171 - cf-dv-range-extension
+//
+// Concept: ADR-0040 § "Extension rule for CF and DV `sqref` ranges". When
+// `@repeat` grows a data block from N template rows to M output rows, a CF or
+// DV range is stretched by `delta = M - N` **if and only if** it is fully
+// contained in the block's template row span. Everything else is left exactly
+// as authored.
+//
+// The block here is the single template row 2, and three source records make
+// it three output rows, so delta = 2. Each range below picks out one clause of
+// the rule, and the expected refs are written from those clauses — not from a
+// rendered workbook.
+//
+// Spec section: ADR-0040 (rules 1.1, 1.2, 2, 3, 4); ADR-0036 rows 2 and 8.
+// ROADMAP gate G5.
+// ---------------------------------------------------------------------------
+async function build171() {
+  const dir = join(FIXTURES, '171-cf-dv-range-extension');
+
+  // A CF rule's body is irrelevant to the rule under test — only `ref` moves.
+  // Keeping every rule identical except its priority makes a diff in the
+  // canonicalized XML unambiguously about the ranges.
+  const rule = (priority) => ({
+    type: 'cellIs',
+    operator: 'greaterThan',
+    formulae: ['0'],
+    priority,
+    style: {},
+  });
+  const listValidation = { type: 'list', allowBlank: true, formulae: ['"1,2,3"'] };
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'cf-dv-range-extension'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('B1').value = 'Qty';
+    sh.getCell('A2').value = '{{ [Item] }}'; // the one-row data block
+    sh.getCell('B2').value = '{{ [Qty] }}';
+    sh.getCell('A3').value = 'Total'; // trailer, below the block
+
+    sh.addConditionalFormatting({ ref: 'B2:B2', rules: [rule(1)] });
+    sh.addConditionalFormatting({ ref: 'A1:A2', rules: [rule(2)] });
+    sh.addConditionalFormatting({ ref: 'A1:A1', rules: [rule(3)] });
+    sh.addConditionalFormatting({ ref: 'D:D', rules: [rule(4)] });
+    sh.addConditionalFormatting({ ref: 'E2:E2 F2:F2', rules: [rule(5)] });
+
+    sh.getCell('B2').dataValidation = { ...listValidation };
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('B1').value = 'Qty';
+    [['Acme', 1], ['Beta', 2], ['Gamma', 3]].forEach(([item, qty], i) => {
+      sh.getCell(`A${i + 2}`).value = item;
+      sh.getCell(`B${i + 2}`).value = qty;
+    });
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx (authored from ADR-0040, clause by clause)
+  //
+  // Block = template row 2 only. Three records => rows 2-4, delta = 2, and the
+  // trailer that was row 3 lands on row 5.
+  //
+  //   B2:B2       -> B2:B4   rule 1.1 contained, rule 2 end-row += delta
+  //   A1:A2       -> A1:A2   rule 1.2 partial overlap (starts above the block)
+  //   A1:A1       -> A1:A1   rule 1.2 entirely above the block
+  //   D:D         -> D:D     rule 3 whole-column reference
+  //   E2:E2 F2:F2 -> E2:E4 F2:F4   rule 4 per sub-range, both contained
+  //
+  // The data validation authored on B2 covers the block, so it applies to
+  // every row the block expanded into (B2:B4). It is written here as three
+  // per-cell validations because that is ExcelJS's model; the serializer
+  // coalesces the run into one `sqref="B2:B4"`, which is what the canonicalized
+  // XML compares.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('B1').value = 'Qty';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 1;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 2;
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('B4').value = 3;
+    sh.getCell('A5').value = 'Total';
+
+    sh.addConditionalFormatting({ ref: 'B2:B4', rules: [rule(1)] });
+    sh.addConditionalFormatting({ ref: 'A1:A2', rules: [rule(2)] });
+    sh.addConditionalFormatting({ ref: 'A1:A1', rules: [rule(3)] });
+    sh.addConditionalFormatting({ ref: 'D:D', rules: [rule(4)] });
+    sh.addConditionalFormatting({ ref: 'E2:E4 F2:F4', rules: [rule(5)] });
+
+    for (const address of ['B2', 'B3', 'B4']) {
+      sh.getCell(address).dataValidation = { ...listValidation };
+    }
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 172 - outline-level-preservation
+//
+// Concept: ADR-0040 § "Outline level (normative)". `outlineLevel` is a per-row
+// property, so it is *replicated*, never extended: every row a `@repeat` block
+// produces carries the template row's level, and rows above and below the
+// block keep theirs.
+//
+// This half of ADR-0040 shipped in 0.6.0 but had no fixture — the ADR claimed
+// one that was never written, and the number it named went to an unrelated
+// fixture. ROADMAP gate G5.
+//
+// Spec section: ADR-0040 "Outline level"; ADR-0036 row 12.
+// ---------------------------------------------------------------------------
+async function build172() {
+  const dir = join(FIXTURES, '172-outline-level-preservation');
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'outline-level-preservation'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('A2').value = '{{ [Item] }}'; // one-row data block
+    sh.getCell('A3').value = 'Total';
+    sh.getRow(1).outlineLevel = 0; // header, explicit for contrast
+    sh.getRow(2).outlineLevel = 1; // the block row
+    sh.getRow(3).outlineLevel = 2; // trailer, a level the block does not use
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Item';
+    ['Acme', 'Beta', 'Gamma'].forEach((v, i) => {
+      sh.getCell(`A${i + 2}`).value = v;
+    });
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx (authored from ADR-0040 § "Outline level")
+  //
+  //   row 1  level 0  header above the block, unchanged
+  //   rows 2-4 level 1  every row the block produced takes the template row's
+  //                     level — replicated, not incremented or extended
+  //   row 5  level 2  trailer keeps its own level after shifting down
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Item';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('A4').value = 'Gamma';
+    sh.getCell('A5').value = 'Total';
+    sh.getRow(1).outlineLevel = 0;
+    sh.getRow(2).outlineLevel = 1;
+    sh.getRow(3).outlineLevel = 1;
+    sh.getRow(4).outlineLevel = 1;
+    sh.getRow(5).outlineLevel = 2;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -7897,6 +8080,8 @@ const builders = [
   ['138', build138],
   ['139', build139],
   ['140', build140],
+  ['171', build171],
+  ['172', build172],
 ];
 
 const selected = new Set(process.argv.slice(2));

@@ -62,7 +62,7 @@
 Excel がレイアウトと業務ルールを持つ形にします。
 
 この役割分担こそが、[`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md)、
-169 件の conformance fixture コーパス、そして意図的に小さく保たれた
+171 件の conformance fixture コーパス、そして意図的に小さく保たれた
 XTL の表面が想定している対象です。
 
 ## 簡単な例
@@ -124,7 +124,7 @@ Excel に残し、ワークブックを実行可能にします。アプリケ�
   AI も下書きしやすくなります。並べて見たい場合は
   [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md) を参照して
   ください。
-- **Conformance コーパス。** 169 件の fixture、すべて green、77 件の
+- **Conformance コーパス。** 171 件の fixture、すべて green、77 件の
   ADR を網羅。変換契約を実行可能な形で検証するテストベッドです。
 - **実装は 1 つ、仕様は 1 つ。** [`spec/`](./spec) ディレクトリは XTL を
   この TypeScript リファレンス実装から独立に定義しています。他ランタイム

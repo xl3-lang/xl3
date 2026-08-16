@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs';
 import JSZip from 'jszip';
 import { xtlError } from './error-codes.js';
+import { extendSqref, replicatedRowsFor } from './range-extension.js';
 import type { XtlWarning } from './types.js';
 
 /**
@@ -364,5 +365,94 @@ function copyWorksheet(src: ExcelJS.Worksheet, dst: ExcelJS.Worksheet) {
     const imageId = Number(img.imageId);
     if (Number.isNaN(imageId)) continue;
     dst.addImage(imageId, img.range);
+  }
+}
+
+/**
+ * ADR-0040 § "Extension rule for CF and DV `sqref` ranges" — the
+ * post-expansion sweep the rule calls for. ROADMAP gate G5.
+ *
+ * Call this **after** a data block has been expanded, with the block's
+ * span in *template* coordinates (that is what the author's ranges were
+ * written against) and the number of rows the expansion added.
+ *
+ * Why a sweep rather than adjusting ranges inside the splice: measured
+ * behavior is that `spliceRowsPreservingMerges` moves cells but leaves
+ * both `conditionalFormattings[].ref` and the data-validation model keys
+ * exactly where they were. So the sweep sees pristine template
+ * coordinates and applies the rule once, with no risk of compounding a
+ * shift the splice already made.
+ *
+ * The two collections need different handling because ExcelJS models
+ * them differently:
+ *
+ * - **CF** is an `sqref` string per rule group, so the rule applies
+ *   directly — rewrite `ref` and ExcelJS serializes it verbatim.
+ * - **DV** is stored per cell address and coalesced into `sqref` ranges
+ *   only at write time. "Extending" one therefore means *replicating* it
+ *   onto the rows the expansion added; ExcelJS then merges the run back
+ *   into a single `sqref` on its own.
+ *
+ * Per ADR-0040 § "Error catalog", a range that does not satisfy the
+ * containment rule is a silent no-op, never an error.
+ *
+ * No warning is emitted for a partial overlap, even though
+ * `extendSqref` reports one. The ADR makes that warning explicitly
+ * optional and non-normative, and the only way to emit it would be a new
+ * `XtlWarningCode` member — a change to a type `spec/STABILITY.md`
+ * freezes at 1.0. Adding it later is additive; removing it would not be,
+ * so the asymmetry says wait until a real template asks for it.
+ */
+/**
+ * The parts of a worksheet this sweep touches. ExcelJS exposes both at
+ * runtime — `conditionalFormattings` as an array of `{ ref, rules }` and
+ * `dataValidations.model` as an address-keyed map — but its published
+ * `.d.ts` declares neither, so they are reached through one narrow cast
+ * rather than sprinkling `any` at each use. Both shapes are pinned by
+ * `excel-document.test.ts`, which fails if a dependency bump changes
+ * them; without that, a silent shape change would turn this sweep into a
+ * no-op and only a Stage 2 fixture diff would notice.
+ */
+interface RangeCollections {
+  conditionalFormattings?: { ref?: string }[];
+  dataValidations?: { model?: Record<string, unknown> };
+}
+
+export function extendRangesForExpansion(
+  sheet: ExcelJS.Worksheet,
+  blockStartRow: number,
+  blockEndRow: number,
+  delta: number,
+): void {
+  if (delta <= 0) return;
+  const collections = sheet as unknown as RangeCollections;
+
+  // --- Conditional formatting: rewrite `sqref` in place. ---
+  const cfs = collections.conditionalFormattings;
+  if (Array.isArray(cfs)) {
+    for (const cf of cfs) {
+      if (!cf || typeof cf.ref !== 'string') continue;
+      const { ref, changed } = extendSqref(cf.ref, blockStartRow, blockEndRow, delta);
+      if (changed) cf.ref = ref;
+    }
+  }
+
+  // --- Data validation: replicate onto the added rows. ---
+  const dvModel = collections.dataValidations?.model;
+  if (dvModel) {
+    // Snapshot first: the loop writes new addresses into the same object.
+    for (const [address, validation] of Object.entries({ ...dvModel })) {
+      const m = /^\$?([A-Z]{1,3})\$?(\d+)$/i.exec(address);
+      if (!m) continue; // range-keyed or unparseable — leave it alone
+      const col = m[1]!.toUpperCase();
+      const row = Number(m[2]);
+      for (const target of replicatedRowsFor(row, blockStartRow, blockEndRow, delta)) {
+        const key = `${col}${target}`;
+        // Never overwrite a validation the template already put there.
+        if (dvModel[key] === undefined) {
+          dvModel[key] = JSON.parse(JSON.stringify(validation));
+        }
+      }
+    }
   }
 }

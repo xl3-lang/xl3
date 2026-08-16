@@ -1,10 +1,10 @@
 # Conformance dashboard
 
-_Generated 2026-07-28T09:44:39.166Z by `conformance/scripts/dashboard.mjs`. Do not hand-edit; regenerate with `node conformance/scripts/dashboard.mjs`._
+_Generated 2026-08-16T13:30:09.435Z by `conformance/scripts/dashboard.mjs`. Do not hand-edit; regenerate with `node conformance/scripts/dashboard.mjs`._
 
 ## Reference implementation
 
-**xl3-js** 0.1.0-alpha.0 — 169/169 pass (100.0%); 0 fail, 0 error, 0 skip
+**xl3-js** 0.1.0-alpha.0 — 171/171 pass (100.0%); 0 fail, 0 error, 0 skip
 
 ## External implementations
 
@@ -19,7 +19,7 @@ _Generated 2026-07-28T09:44:39.166Z by `conformance/scripts/dashboard.mjs`. Do n
 | ADR-0002 | 2 | 2 | 0 | 0 | 0 |
 | ADR-0003 | 3 | 3 | 0 | 0 | 0 |
 | ADR-0005 | 1 | 1 | 0 | 0 | 0 |
-| ADR-0006 | 6 | 6 | 0 | 0 | 0 |
+| ADR-0006 | 8 | 8 | 0 | 0 | 0 |
 | ADR-0007 | 6 | 6 | 0 | 0 | 0 |
 | ADR-0008 | 4 | 4 | 0 | 0 | 0 |
 | ADR-0009 | 8 | 8 | 0 | 0 | 0 |
@@ -44,9 +44,10 @@ _Generated 2026-07-28T09:44:39.166Z by `conformance/scripts/dashboard.mjs`. Do n
 | ADR-0032 | 1 | 1 | 0 | 0 | 0 |
 | ADR-0033 | 2 | 2 | 0 | 0 | 0 |
 | ADR-0035 | 1 | 1 | 0 | 0 | 0 |
-| ADR-0036 | 2 | 2 | 0 | 0 | 0 |
+| ADR-0036 | 4 | 4 | 0 | 0 | 0 |
 | ADR-0038 | 11 | 11 | 0 | 0 | 0 |
 | ADR-0039 | 1 | 1 | 0 | 0 | 0 |
+| ADR-0040 | 2 | 2 | 0 | 0 | 0 |
 | ADR-0041 | 1 | 1 | 0 | 0 | 0 |
 | ADR-0043 | 2 | 2 | 0 | 0 | 0 |
 | ADR-0044 | 1 | 1 | 0 | 0 | 0 |
@@ -235,6 +236,8 @@ _Generated 2026-07-28T09:44:39.166Z by `conformance/scripts/dashboard.mjs`. Do n
 | 168-data-loss-date-time-component-round-trip | pass | — | — |
 | 169-data-loss-formula-cached-result-kind | pass | — | — |
 | 170-data-loss-numfmt-preserved-across-expansion | pass | — | — |
+| 171-cf-dv-range-extension | pass | — | — |
+| 172-outline-level-preservation | pass | — | — |
 
 ## How to add a port
 

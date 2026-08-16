@@ -1,0 +1,6 @@
+description: "Per-row outlineLevel survives @repeat expansion: every produced row takes the template row's level, and rows above and below keep theirs."
+spec_section: ADR-0040 "Outline level (normative)"; ADR-0036 row 12; ADR-0006
+spec_version: "0.1"
+tags: [preservation, outline-level, stage2, adr-0040]
+comparison_stage: 2
+verified_by: [spec-derivation, manual-script]

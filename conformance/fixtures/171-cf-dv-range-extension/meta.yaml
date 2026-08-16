@@ -1,0 +1,6 @@
+description: "CF and DV sqref ranges stretch by the expansion delta if and only if they are fully contained in the data block's template rows."
+spec_section: ADR-0040 "Extension rule for CF and DV `sqref` ranges"; ADR-0036 rows 2 and 8; ADR-0006
+spec_version: "0.1"
+tags: [preservation, conditional-formatting, data-validation, stage2, adr-0040]
+comparison_stage: 2
+verified_by: [spec-derivation, manual-script]

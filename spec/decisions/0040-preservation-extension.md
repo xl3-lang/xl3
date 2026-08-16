@@ -1,7 +1,8 @@
 # ADR 0040 - Preservation matrix amendment: CF / DV range extension + outline level
 
-- **Status:** accepted (outline-level impl shipped 0.6.0; CF/DV
-  `sqref` range extension impl pending 0.6.1)
+- **Status:** accepted (fully implemented; CF/DV `sqref` extension
+  landed with fixture `171-cf-dv-range-extension`, outline level with
+  `172-outline-level-preservation`)
 - **Date:** 2026-05-18
 - **Spec target:** XTL 0.1
 - **Affects:** ADR-0036 (template feature preservation matrix),
@@ -147,20 +148,43 @@ existing warning channel; this is not normative.
 
 ## Consequences
 
-- Conformance fixture 125 (`125-cf-dv-range-extension`) pins the
+- Conformance fixture `171-cf-dv-range-extension` pins the
   containment rule across:
   - CF range fully inside the `@repeat` block (extended).
   - CF range partially overlapping (not extended).
   - CF range entirely above the block (not extended).
-  - DV range with multi-range `sqref` (per-sub-range behavior).
+  - CF range with multi-range `sqref` (per-sub-range behavior).
   - Whole-column reference (unchanged).
-- Conformance fixture 126 (`126-outline-level-preservation`)
-  pins per-row `outlineLevel` survival through `@repeat`.
+  - DV authored on the block row (replicated across the expanded rows,
+    which the writer coalesces back into one `sqref`).
+- Conformance fixture `172-outline-level-preservation` pins per-row
+  `outlineLevel` survival through `@repeat`.
+
+  *Numbering note.* This section previously named fixtures `125` and
+  `126`. Neither was ever written, and both numbers were later taken by
+  unrelated fixtures (`125-hyperlink-function`,
+  `126-date-arithmetic-functions`), so the citation pointed at real
+  fixtures that verify nothing about this ADR. Same defect as the one
+  corrected in ADR-0036 (xl3#108). The names above are the fixtures that
+  exist.
+
+  Writing `172` is also what surfaced the gap in the outline-level half.
+  It was recorded as shipped in 0.6.0, and the `cloneWorksheet` /
+  `spliceRowsPreservingMerges` copies named below were indeed in place —
+  but the path that writes `@repeat`-expanded rows copied row height and
+  cell styles without the level, so produced rows kept whatever the
+  splice left behind. The normative sentence "each takes the template
+  row's outline level" was unimplemented for the exact case it is about.
+  A claimed-but-absent fixture is how that survived two minor releases.
 - The reference impl gains two code paths:
   1. A post-expansion sweep over the sheet's CF and DV rule
      collections that rewrites contained `sqref` ranges.
-  2. An `outlineLevel` copy on every row write in
-     `cloneWorksheet` and `spliceRowsPreservingMerges`.
+  2. An `outlineLevel` copy on every row write — in
+     `cloneWorksheet`, in `spliceRowsPreservingMerges`, and in the
+     `@repeat` expansion write loops (both the plain and the grouped
+     path). The level is assigned unconditionally rather than only when
+     truthy, so a level-0 template row clears a residue the splice left
+     on a reused row object.
 - Ports based on libraries other than ExcelJS MUST replicate
   both paths. Range encoding varies: ports SHOULD reuse their
   library's `sqref` parser/serializer rather than rolling their

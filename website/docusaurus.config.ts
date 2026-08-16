@@ -305,7 +305,7 @@ const config: Config = {
               // section — refresh both on every release cut. ADR count excludes
               // ADR-0018 (a reserved gap placeholder); the live fixture count
               // is in conformance/DASHBOARD.md.
-              '77 Architecture Decision Records and 169 conformance fixtures',
+              '77 Architecture Decision Records and 171 conformance fixtures',
               "Porter's Guide enables second-language implementations",
             ],
             screenshot: 'https://xl3.io/img/og.png',

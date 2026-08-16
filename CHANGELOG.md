@@ -6,6 +6,46 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- **`@repeat`-expanded rows lost their outline level** (ROADMAP G5,
+  ADR-0040). Grouping an outlined template row and expanding it left the
+  produced rows carrying whatever the row splice happened to leave behind
+  — in a three-row expansion of a level-1 template row between a level-0
+  header and a level-2 trailer, the output came out `0, 1, 2, 0, 2`
+  instead of `0, 1, 1, 1, 2`. The `cloneWorksheet` and
+  `spliceRowsPreservingMerges` copies ADR-0040 asked for were in place;
+  the path that actually writes expanded rows copied row height and cell
+  styles but not the level, which is the one case the ADR's normative
+  sentence is about. Now assigned on every produced row, on both the
+  plain and grouped paths. Pinned by fixture
+  `172-outline-level-preservation`.
+
+  This had been recorded as shipped since 0.6.0. It survived because
+  ADR-0040 cited a fixture that was never written, and the number it
+  named was later taken by an unrelated fixture — so the corpus looked
+  like it covered this and did not.
+
+### Added
+
+- **Conditional-formatting and data-validation ranges now stretch with a
+  data block** (ROADMAP G5, ADR-0040). A CF or DV range authored against
+  the template's block rows is extended by the expansion delta if and
+  only if it is fully contained in that span; partial overlaps,
+  whole-column references, and ranges outside the block are left exactly
+  as authored, per ADR-0040 rules 1.2, 3 and 4. Multi-range `sqref`
+  values are handled per sub-range.
+
+  The rule module had shipped as pure, unit-tested code without a caller
+  since 0.6.0. It is now applied as the post-expansion sweep the ADR
+  specifies, and pinned by Stage 2 fixture `171-cf-dv-range-extension`.
+
+  No new error or warning code: ADR-0040 makes an unapplied extension a
+  silent no-op, and the partial-overlap diagnostic it permits would have
+  meant adding an `XtlWarningCode` member — a type `spec/STABILITY.md`
+  freezes at 1.0. Additive later, breaking to remove, so it waits for a
+  template that asks for it.
+
 ## [0.13.0] - 2026-08-12
 
 A host can now ask which engine is loaded. `VERSION` and

@@ -57,7 +57,7 @@ Excel 编辑,同时执行过程又必须确定、可审查、可验证时,xl3 �
 继续拥有布局和面向业务的规则。
 
 这种分工正是 [`docs/llm-template-authoring.md`](./docs/llm-template-authoring.md)、
-169 条 fixture 组成的 conformance 语料库、以及刻意保持精简的 XTL
+171 条 fixture 组成的 conformance 语料库、以及刻意保持精简的 XTL
 表面所共同服务的目标。
 
 ## 一个简单的例子
@@ -116,7 +116,7 @@ xl3 把布局留在 Excel 中，并让工作簿可执行。应用负责数据与
   表面越小,人类越容易审查,AI 也越容易起草。
   并列对照参见
   [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md)。
-- **Conformance 语料库。** 77 个 ADR 下共 169 条 fixture,全部通
+- **Conformance 语料库。** 77 个 ADR 下共 171 条 fixture,全部通
   过。这是把转换契约变成可执行验证的测试床。
 - **一份实现,一份规范。** [`spec/`](./spec) 目录独立于这份
   TypeScript 参考实现定义了 XTL。欢迎向其他运行时移植 —— 语料库

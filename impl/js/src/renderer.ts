@@ -17,7 +17,7 @@ import { xtlError } from './error-codes.js';
 import type { FileGroup } from './grouper.js';
 import { partitionByGroupKeys, planEmissionEvents } from './grouper.js';
 import type { SourceData } from './reader.js';
-import { ExcelJsWorkbookDocument, sanitizeFilename, sanitizeSheetName, type WorkbookDocument } from './excel-document.js';
+import { ExcelJsWorkbookDocument, extendRangesForExpansion, sanitizeFilename, sanitizeSheetName, type WorkbookDocument } from './excel-document.js';
 
 const VAR_PATTERN = /\{\{.*?\}\}/;
 
@@ -432,6 +432,10 @@ export class Renderer {
     // turn `{ formula: 'B2*2' }` into the literal `"[object Object]"`).
     const templateRows: {
       height: number;
+      // ADR-0040: outline level is a per-row property, replicated onto every
+      // row the block produces. Captured here because the write loop below is
+      // the only place those rows get their properties.
+      outlineLevel?: number;
       cells: Map<number, { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }>
     }[] = [];
 
@@ -454,7 +458,7 @@ export class Renderer {
           cells.set(colNumber, { template: val, rawValue, style: style || {} });
         }
       });
-      templateRows.push({ height: row.height, cells });
+      templateRows.push({ height: row.height, outlineLevel: row.outlineLevel, cells });
     }
 
     // 2. Snapshot outside-block cells from rows AT OR BELOW the block's
@@ -540,6 +544,10 @@ export class Renderer {
         if (templateRowInfo.height) {
           targetRow.height = templateRowInfo.height;
         }
+        // ADR-0040 § "Outline level": each produced row takes the template
+        // row's level. Assigned unconditionally so a level-0 template row
+        // clears whatever the splice left on a reused row object.
+        targetRow.outlineLevel = templateRowInfo.outlineLevel ?? 0;
 
         for (const [colNumber, { template, rawValue, style }] of templateRowInfo.cells) {
           const cell = targetRow.getCell(colNumber);
@@ -568,6 +576,7 @@ export class Renderer {
     // 5. ADR-0066: restore outside-block cells to their ORIGINAL row
     // positions. The splice shifted them down by `insertCount`; clear
     // the shifted cells and rewrite them at the snapshot's original row.
+    // (Step 6 — the ADR-0040 range sweep — runs after this block.)
     if (outsideSnapshots.length > 0) {
       for (const snap of outsideSnapshots) {
         // Clear the shifted position so the cell doesn't appear twice.
@@ -585,6 +594,13 @@ export class Renderer {
         }
       }
     }
+
+    // 6. ADR-0040 (ROADMAP G5): stretch conditional-formatting and
+    // data-validation ranges authored against the block's template rows.
+    // Runs last, and reads template coordinates directly: the splice
+    // moves cells but leaves both collections addressed as authored, so
+    // there is no shift to compensate for here.
+    extendRangesForExpansion(sheet, st.dataStartRow, st.dataEndRow, insertCount);
   }
 
   /**
@@ -624,6 +640,10 @@ export class Renderer {
     //    rows retain their formatting / merges / static text).
     const templateRows: {
       height: number;
+      // ADR-0040: outline level is a per-row property, replicated onto every
+      // row the block produces. Captured here because the write loop below is
+      // the only place those rows get their properties.
+      outlineLevel?: number;
       cells: Map<number, { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }>
     }[] = [];
     for (let i = 0; i < templateRowCount; i++) {
@@ -641,7 +661,7 @@ export class Renderer {
           cells.set(colNumber, { template: val, rawValue, style: style || {} });
         }
       });
-      templateRows.push({ height: row.height, cells });
+      templateRows.push({ height: row.height, outlineLevel: row.outlineLevel, cells });
     }
 
     // 2. Split template-row indices into data rows vs subtotal rows.
@@ -732,6 +752,8 @@ export class Renderer {
     ) => {
       const targetRow = sheet.getRow(targetRowNum);
       if (tmpl.height) targetRow.height = tmpl.height;
+      // ADR-0040 § "Outline level" — same replication on the grouped path.
+      targetRow.outlineLevel = tmpl.outlineLevel ?? 0;
       for (const [colNumber, { template, rawValue, style }] of tmpl.cells) {
         const cell = targetRow.getCell(colNumber);
         if (style && Object.keys(style).length > 0) cell.style = { ...style };
@@ -792,6 +814,11 @@ export class Renderer {
         }
       }
     }
+
+    // ADR-0040 (ROADMAP G5), grouped path. The delta here counts the
+    // subtotal and repeated group rows too, which is correct: the rule is
+    // stated over rows the block grew by, not over data records.
+    extendRangesForExpansion(sheet, st.dataStartRow, st.dataEndRow, insertDelta);
   }
 
   private renderDataCols(
