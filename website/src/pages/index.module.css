@@ -376,6 +376,12 @@
 .previewColumn {
   position: sticky;
   top: calc(var(--ifm-navbar-height) + 1.3rem);
+  /* A grid item's automatic minimum is its content size, and this column holds
+     the Excel viewer, whose sheet is deliberately `width: max-content`. Without
+     this the item sizes to the whole sheet and drags the page into horizontal
+     scroll on narrow viewports — the sheet is meant to scroll inside
+     `.sheetWrap`, not to widen the document. */
+  min-width: 0;
 }
 
 .stepsGrid {
@@ -383,6 +389,10 @@
   flex-direction: column;
   gap: 0.85rem;
   height: 100%;
+  /* Same reason as .previewColumn: this is the other track of
+     .walkthroughLayout, and a long unbroken token in a step card would
+     otherwise push the grid wider than the viewport. */
+  min-width: 0;
 }
 
 .stepCard {
@@ -639,7 +649,10 @@
   .heroLayout,
   .walkthroughLayout,
   .narrativeGrid {
-    grid-template-columns: 1fr;
+    /* NOT `1fr`: a flexible track's implicit minimum is `auto`, so it grows to
+       fit its widest content instead of the container. `minmax(0, 1fr)` caps it
+       at the container width and lets inner scroll containers do their job. */
+    grid-template-columns: minmax(0, 1fr);
     gap: 2rem;
   }
 
@@ -653,7 +666,7 @@
 
   .stageGrid,
   .codePair {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

@@ -169,8 +169,13 @@ describe('extendRangesForExpansion (ADR-0040)', () => {
   });
 
   it('survives the splice: cells move, ranges stay in template coordinates', async () => {
-    const { wb, sheet } = sheetWithRanges();
-    const doc = new ExcelJsWorkbookDocument(wb);
+    // Through `fromTemplate` rather than the constructor: it is the public
+    // entry point, and it round-trips the workbook through the xlsx
+    // serializer the way the real pipeline does — so this also confirms both
+    // collections survive a load, not just an in-memory build.
+    const { wb } = sheetWithRanges();
+    const doc = await ExcelJsWorkbookDocument.fromTemplate(wb);
+    const sheet = doc.getWorksheet('S')!;
     doc.spliceRowsPreservingMerges(sheet, 3, 0, [[], []]);
 
     // The footer moved down two rows...

@@ -204,7 +204,13 @@ a {
 }
 
 .theme-doc-markdown table {
-  overflow: hidden;
+  /* `auto`, not `hidden`. Docusaurus renders markdown tables as
+     `display: block`, so this element is the scroll container for its own
+     rows. `hidden` still clips to the rounded corners — but it also makes
+     every column past the viewport edge unreachable, which on a phone turned
+     wide tables (the 16-column gate table in ROADMAP.md) into silently
+     truncated content rather than something you can scroll. */
+  overflow: auto;
   border: 1px solid #d8dee8;
   border-radius: 8px;
   background: #ffffff;
