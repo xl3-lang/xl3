@@ -1,4 +1,5 @@
 import type ExcelJS from 'exceljs';
+import type { XtlErrorCode } from './error-codes.js';
 
 export interface TemplateMeta {
   name: string;
@@ -56,6 +57,47 @@ export interface ConvertOptions {
    *   callers that omit it are unaffected.
    */
   signal?: AbortSignal;
+}
+
+/** @experimental Options for source/template compatibility validation. */
+export interface ValidateOptions {
+  /**
+   * `'schema'` validates declarations and headers without scanning source rows.
+   * `'full'` is reserved for future row-level checks; it currently includes the
+   * same schema checks.
+   */
+  depth?: 'schema' | 'full';
+}
+
+/** @experimental Machine-readable description of the source shape a template requires. */
+export interface InputContract {
+  sources: Array<{
+    /** Source name from `__sources__`, or `"default"` for the implicit source. */
+    name: string;
+    sheet: string;
+    headerRow: number;
+    requiredColumns: string[];
+    optionalColumns: string[];
+  }>;
+}
+
+/** @experimental One compatibility finding emitted by `validateSource*`. */
+export interface ValidationDiagnostic {
+  code: XtlErrorCode;
+  severity: 'error' | 'warning';
+  source?: string;
+  sheet?: string;
+  column?: string;
+  location?: string;
+  detail: string;
+  candidates?: string[];
+}
+
+/** @experimental Structured source/template compatibility report. */
+export interface ValidationReport {
+  ok: boolean;
+  contract: InputContract;
+  diagnostics: ValidationDiagnostic[];
 }
 
 /**

@@ -38,6 +38,8 @@ const EXPECTED_RUNTIME_EXPORTS = [
   'preview',
   'convertJson',
   'previewJson',
+  'validateSource',
+  'validateSourceJson',
   'readTemplateInputs',
   'analyze',
   'analyzeModel',

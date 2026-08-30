@@ -44,8 +44,12 @@ export type {
   SourceDirective,
   JoinDirective,
   ConvertOptions,
+  ValidateOptions,
   EngineInfo,
   InputSpec,
+  InputContract,
+  ValidationDiagnostic,
+  ValidationReport,
   InputType,
   SourceSpec,
   XtlWarning,
@@ -60,6 +64,7 @@ export type { ConfigResult } from './parser.js';
 export { batchMatch } from './matcher.js';
 export type { MatchResult } from './matcher.js';
 export { toTemplateModel } from './template-model.js';
+export { validateSource, validateSourceJson } from './validator.js';
 export { xtlError, isXtlError } from './error-codes.js';
 export type { XtlError, XtlErrorCode } from './error-codes.js';
 import { xtlError } from './error-codes.js';

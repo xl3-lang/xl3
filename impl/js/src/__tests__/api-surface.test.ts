@@ -11,10 +11,11 @@ import * as api from '../index.js';
 // dependents that import them by name will fail to compile if a
 // type export disappears.
 //
-// ROADMAP gate G22: the runtime exports listed below are 1.0-stable.
-// `ParsedTemplate` and the directive / data-block types in
-// `src/types.ts` are exported but tagged `@experimental` — they
-// remain importable for tooling without entering the 1.0 freeze.
+// ROADMAP gate G22: keep runtime exports intentional. Stability
+// classes for type shapes live in `spec/STABILITY.md` and JSDoc.
+// `ParsedTemplate`, directive / data-block types, and the validation
+// report types are exported but tagged `@experimental` — they remain
+// importable for tooling without silently entering the stable type set.
 // See `spec/STABILITY.md` "Stable type re-exports" vs "Experimental
 // type re-exports" for the formal split.
 const EXPECTED_RUNTIME_EXPORTS = [
@@ -24,6 +25,9 @@ const EXPECTED_RUNTIME_EXPORTS = [
   // JSON source entry points (ADR-0075)
   'convertJson',
   'previewJson',
+  // Source compatibility validation (xl3#109)
+  'validateSource',
+  'validateSourceJson',
   'readTemplateInputs',
   'analyze',
   'analyzeModel',

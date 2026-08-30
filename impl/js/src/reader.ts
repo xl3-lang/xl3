@@ -1,7 +1,7 @@
 import ExcelJS from 'exceljs';
-import type { Row, SourceSpec } from './types.js';
+import type { Row, SourceSpec, ValidationDiagnostic } from './types.js';
 import { isEmpty } from './functions.js';
-import { xtlError } from './error-codes.js';
+import { isXtlError, xtlError } from './error-codes.js';
 
 export interface SourceData {
   sheetName: string;
@@ -11,6 +11,17 @@ export interface SourceData {
 
 export interface SourceReadOptions {
   sourceTable?: string;
+}
+
+export interface SourceSchema {
+  sheetName: string;
+  headerRow: number;
+  headers: string[];
+}
+
+export interface SourceSchemaReadResult {
+  schemas: Map<string, SourceSchema>;
+  diagnostics: ValidationDiagnostic[];
 }
 
 export async function readSource(
@@ -41,6 +52,63 @@ export async function readAllSources(
     out[spec.name] = readSourceFromWorkbook(workbook, spec.sheet, { sourceTable: spec.table });
   }
   return out;
+}
+
+// Validation needs only source schemas, not the full row payload. This mirrors
+// `readAllSources` but stops after resolving the source sheet/table headers and
+// accumulates source diagnostics instead of throwing on the first header issue.
+export async function readAllSourceSchemas(
+  buffer: ArrayBuffer,
+  defaultSheetPattern: string,
+  defaultOptions: SourceReadOptions,
+  sources: SourceSpec[],
+): Promise<SourceSchemaReadResult> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+
+  const diagnostics: ValidationDiagnostic[] = [];
+  const schemas = new Map<string, SourceSchema>();
+  const defaultSchema = readSourceSchemaFromWorkbook(
+    workbook,
+    'default',
+    defaultSheetPattern,
+    defaultOptions,
+    diagnostics,
+  );
+  if (defaultSchema) schemas.set('default', defaultSchema);
+
+  for (const spec of sources) {
+    const schema = readSourceSchemaFromWorkbook(
+      workbook,
+      spec.name,
+      spec.sheet,
+      { sourceTable: spec.table },
+      diagnostics,
+    );
+    if (schema) schemas.set(spec.name, schema);
+  }
+  return { schemas, diagnostics };
+}
+
+export function sourceTableHeaderRow(sourceTable?: string): number {
+  if (!sourceTable) return 1;
+  const raw = sourceTable.trim();
+  const rowOnly = raw.match(/^\d+$/);
+  if (rowOnly) {
+    const headerRow = Number(rowOnly[0]);
+    assertPositiveRow(headerRow, 'source_table', sourceTable);
+    return headerRow;
+  }
+  const range = raw.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)?$/i);
+  if (!range) {
+    throw xtlError(
+      'xl3/config/invalid-source-table',
+      `source_table must be a row number or a table range such as "1", "A1:D", or "A1:D200": ${sourceTable}`,
+    );
+  }
+  const headerRow = Number(range[2]);
+  assertPositiveRow(headerRow, 'source_table', sourceTable);
+  return headerRow;
 }
 
 function readSourceFromWorkbook(
@@ -80,6 +148,33 @@ function readSourceFromWorkbook(
   return { sheetName: sheet.name, headers: columns.map((c) => c.header), rows };
 }
 
+function readSourceSchemaFromWorkbook(
+  workbook: ExcelJS.Workbook,
+  sourceName: string,
+  sheetPattern: string,
+  options: SourceReadOptions,
+  diagnostics: ValidationDiagnostic[],
+): SourceSchema | undefined {
+  const sheet = resolveSheet(workbook, sheetPattern);
+  if (!sheet) {
+    diagnostics.push({
+      code: 'xl3/source/sheet-missing',
+      severity: 'error',
+      source: sourceName,
+      detail: `Source sheet "${sheetPattern}" was not found (available sheets: ${workbook.worksheets.map((s) => s.name).join(', ')})`,
+    });
+    return undefined;
+  }
+
+  const table = resolveSourceTableForSchema(sheet, options, sourceName, diagnostics);
+  const headers = table ? readHeadersCollecting(sheet, table, sourceName, diagnostics) : [];
+  return {
+    sheetName: sheet.name,
+    headerRow: table?.headerRow ?? sourceTableHeaderRow(options.sourceTable),
+    headers: headers.map((c) => c.header),
+  };
+}
+
 interface SourceTable {
   headerRow: number;
   leftCol: number;
@@ -90,6 +185,49 @@ interface SourceTable {
 function resolveSourceTable(sheet: ExcelJS.Worksheet, options: SourceReadOptions): SourceTable {
   if (options.sourceTable) return parseSourceTable(sheet, options.sourceTable, 'source_table');
   return inferTableFromHeaderRow(sheet, 1);
+}
+
+function resolveSourceTableForSchema(
+  sheet: ExcelJS.Worksheet,
+  options: SourceReadOptions,
+  sourceName: string,
+  diagnostics: ValidationDiagnostic[],
+): SourceTable | undefined {
+  if (!options.sourceTable) return inferTableFromHeaderRowCollecting(sheet, 1, sourceName, diagnostics);
+
+  const value = options.sourceTable;
+  const raw = value.trim();
+  const rowOnly = raw.match(/^\d+$/);
+  if (rowOnly) {
+    const headerRow = Number(rowOnly[0]);
+    assertPositiveRow(headerRow, 'source_table', value);
+    return inferTableFromHeaderRowCollecting(sheet, headerRow, sourceName, diagnostics);
+  }
+
+  const range = raw.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)?$/i);
+  if (!range) {
+    throw xtlError(
+      'xl3/config/invalid-source-table',
+      `source_table must be a row number or a table range such as "1", "A1:D", or "A1:D200": ${value}`,
+    );
+  }
+
+  const leftCol = decodeColumn(range[1]!);
+  const headerRow = Number(range[2]);
+  const rightCol = decodeColumn(range[3]!);
+  const bottomRow = range[4] ? Number(range[4]) : undefined;
+  assertPositiveRow(headerRow, 'source_table', value);
+  if (bottomRow !== undefined) assertPositiveRow(bottomRow, 'source_table', value);
+  if (leftCol > rightCol) {
+    throw xtlError('xl3/config/invalid-source-table', `source_table has an invalid column range: ${value}`);
+  }
+  if (bottomRow !== undefined && bottomRow < headerRow) {
+    throw xtlError(
+      'xl3/config/invalid-source-table',
+      `source_table bottom row cannot be above the first selected row: ${value}`,
+    );
+  }
+  return { headerRow, leftCol, rightCol, bottomRow };
 }
 
 function parseSourceTable(
@@ -152,6 +290,45 @@ function inferTableFromHeaderRow(sheet: ExcelJS.Worksheet, headerRow: number): S
   });
   if (headerCols.length === 0) {
     throw xtlError('xl3/source/missing-header', `source_table row ${headerRow} has no headers`);
+  }
+  return {
+    headerRow,
+    leftCol: Math.min(...headerCols),
+    rightCol: Math.max(...headerCols),
+  };
+}
+
+function inferTableFromHeaderRowCollecting(
+  sheet: ExcelJS.Worksheet,
+  headerRow: number,
+  sourceName: string,
+  diagnostics: ValidationDiagnostic[],
+): SourceTable | undefined {
+  const row = sheet.getRow(headerRow);
+  const headerCols: number[] = [];
+  let hadHeaderError = false;
+  row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+    if (isHorizontalMergeSlave(cell)) return;
+    const header = headerTextCollecting(cell, sourceName, sheet.name, diagnostics);
+    if (header === undefined) {
+      hadHeaderError = true;
+      return;
+    }
+    if (header) {
+      headerCols.push(colNumber);
+    }
+  });
+  if (headerCols.length === 0) {
+    if (!hadHeaderError) {
+      diagnostics.push({
+        code: 'xl3/source/missing-header',
+        severity: 'error',
+        source: sourceName,
+        sheet: sheet.name,
+        detail: `source_table row ${headerRow} has no headers`,
+      });
+    }
+    return undefined;
   }
   return {
     headerRow,
@@ -235,6 +412,93 @@ function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): HeaderColumn
   }
 
   return columns;
+}
+
+function readHeadersCollecting(
+  sheet: ExcelJS.Worksheet,
+  table: SourceTable,
+  sourceName: string,
+  diagnostics: ValidationDiagnostic[],
+): HeaderColumn[] {
+  const row = sheet.getRow(table.headerRow);
+  const columns: HeaderColumn[] = [];
+  const seen = new Set<string>();
+
+  for (let colNumber = table.leftCol; colNumber <= table.rightCol; colNumber++) {
+    const cell = row.getCell(colNumber);
+    if (isHorizontalMergeSlave(cell)) continue;
+    const header = headerTextCollecting(cell, sourceName, sheet.name, diagnostics);
+    if (header === undefined) continue;
+    if (!header) {
+      const detail = cell.isMerged
+        ? `source_table header cell ${cell.address} is in a merged region whose master is empty`
+        : `source_table header cell ${cell.address} is empty`;
+      diagnostics.push({
+        code: 'xl3/source/missing-header',
+        severity: 'error',
+        source: sourceName,
+        sheet: sheet.name,
+        detail,
+      });
+      continue;
+    }
+    if (seen.has(header)) {
+      diagnostics.push({
+        code: 'xl3/source/duplicate-name',
+        severity: 'error',
+        source: sourceName,
+        sheet: sheet.name,
+        column: header,
+        detail: `source_table has duplicate header "${header}"`,
+      });
+      continue;
+    }
+    if (RESERVED_COLUMN_NAMES.has(header) || DUNDER_NAME_RE.test(header)) {
+      diagnostics.push({
+        code: 'xl3/source/reserved-column-name',
+        severity: 'error',
+        source: sourceName,
+        sheet: sheet.name,
+        column: header,
+        detail: `source_table column "${header}" uses a reserved internal name; rename it (reserved: Rows, __rownum, __activeSource__, __joinedRow__, anything matching __<lowercase>__)`,
+      });
+    }
+    seen.add(header);
+    columns.push({ header, col: colNumber });
+  }
+
+  if (columns.length === 0) {
+    diagnostics.push({
+      code: 'xl3/source/missing-header',
+      severity: 'error',
+      source: sourceName,
+      sheet: sheet.name,
+      detail: `source_table row ${table.headerRow} resolves to no headers (range may be entirely inside a merged header band)`,
+    });
+  }
+
+  return columns;
+}
+
+function headerTextCollecting(
+  cell: ExcelJS.Cell,
+  sourceName: string,
+  sheetName: string,
+  diagnostics: ValidationDiagnostic[],
+): string | undefined {
+  try {
+    return headerText(cell);
+  } catch (error) {
+    if (!isXtlError(error)) throw error;
+    diagnostics.push({
+      code: error.code,
+      severity: 'error',
+      source: sourceName,
+      sheet: sheetName,
+      detail: error.message,
+    });
+    return undefined;
+  }
 }
 
 function headerText(cell: ExcelJS.Cell): string {

@@ -37,10 +37,11 @@ corpus, on any host timezone, locale, or byte order.
 
 ### Public API surface (xl3 reference impl)
 
-The TypeScript reference impl freezes the following 17 runtime
+The TypeScript reference impl freezes the following 19 runtime
 exports at 1.0 (13 through 0.10.0, plus `convertJson` / `previewJson`
 added in 0.11.0 per ADR-0075, plus `VERSION` / `getEngineInfo` added in
-0.13.0 per xl3#103). Adding a new export is backwards-compatible;
+0.13.0 per xl3#103, plus `validateSource` / `validateSourceJson` added in
+0.14.0 per ADR-0078). Adding a new export is backwards-compatible;
 removing or renaming any of them is a 2.0-only change.
 
 **Conversion entry points**
@@ -49,6 +50,8 @@ removing or renaming any of them is a 2.0-only change.
 - `preview(template, source, options?) → Promise<PreviewResult>`
 - `convertJson(template, sourceJson, options?) → Promise<OutputFile[]>` (ADR-0075)
 - `previewJson(template, sourceJson, options?) → Promise<PreviewResult>` (ADR-0075)
+- `validateSource(template, source, options?) → Promise<ValidationReport>` (ADR-0078)
+- `validateSourceJson(template, sourceJson, options?) → Promise<ValidationReport>` (ADR-0078)
 - `readTemplateInputs(template) → Promise<InputSpec[]>`
 - `analyze(template) → Promise<ParsedTemplate>`
 - `analyzeModel(template) → Promise<TemplateModel>`
@@ -106,10 +109,11 @@ one is 2.0-only and resets both gates.
 | 0.12.0 | `ConvertOptions.signal` (`AbortSignal`) | ROADMAP G21, `spec/evaluation.md` "AbortSignal" |
 | 0.12.0 | `xl3/abort/cancelled` error code | ROADMAP G21 |
 | 0.13.0 | `VERSION`, `getEngineInfo` exports + `EngineInfo` type | xl3#103 |
+| 0.14.0 | `validateSource`, `validateSourceJson` exports + validation report types | ADR-0078 |
 
 The export count is unchanged by the G21 work — `signal` is a property on
 the already-frozen `ConvertOptions`, not a new export. It goes 15 → 17
-with xl3#103. Both changes are additive under the breaking-change
+with xl3#103 and 17 → 19 with ADR-0078. These changes are additive under the breaking-change
 definition in ROADMAP.md, so G3, G6, and the G24 quarter clock are
 undisturbed: nothing existing was removed, renamed, or re-signed, and no
 error code changed.
@@ -119,7 +123,8 @@ tooling, but their shape MAY change between minor versions:
 `ParsedTemplate`, `SheetTemplate`, `TemplateVariable`, `DataBlock`,
 `Directive`, `FilterDirective`, `FilterOp`, `SortDirective`,
 `TopDirective`, `RepeatDirective`, `SourceDirective`,
-`JoinDirective`.
+`JoinDirective`, `ValidateOptions`, `InputContract`,
+`ValidationDiagnostic`, `ValidationReport`.
 
 Each experimental type carries an `@experimental` JSDoc tag. Hosts
 that hold one of these objects SHOULD dispatch on `kind` (for

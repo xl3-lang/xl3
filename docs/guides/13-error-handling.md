@@ -61,7 +61,7 @@ current set:
 - **`xl3/block/*`** — data-block layout (`overlap`, `empty-table`)
 - **`xl3/group/*`** — `@group` issues (`missing-key`)
 - **`xl3/subtotal/*`** — `@subtotal` issues (`outside-group`, `bad-aggregate`, `mixed-row`, `explicit-block-unsupported`)
-- **`xl3/source-json/*`** — JSON source input (`invalid`) — only reachable via `convertJson` / `previewJson`
+- **`xl3/source-json/*`** — JSON source input (`invalid`) — reachable via `convertJson`, `previewJson`, and `validateSourceJson`
 
 Full list in [`impl/js/src/error-codes.ts`](https://github.com/xl3-lang/xl3/blob/main/impl/js/src/error-codes.ts).
 
@@ -92,22 +92,47 @@ your host and provide your own messages — do NOT translate the
 engine's English strings. The English text is part of the conformance
 contract (fixtures match on substrings of it).
 
-## Preview before convert
+## Validate before convert
 
-`preview(template, data, options)` runs the same parse + dispatch as
-`convert` but doesn't render the workbooks. If your host has a "Validate"
-button before "Convert", call `preview` — fast, catches the same errors,
-no wasted xlsx generation.
+For a compatibility gate, call `validateSource(template, data)` or
+`validateSourceJson(template, sourceJson)` first. Validation returns every
+source/schema problem it can name, instead of throwing on the first one, and it
+does not render workbooks.
 
 ```ts
-const preview = await xl3.preview(template, data, options);
+import { validateSource } from '@xl3-lang/xl3';
+
+const report = await validateSource(templateBuffer, dataBuffer);
+if (!report.ok) {
+  return showOperator(
+    'Your data file does not match this template.',
+    report.diagnostics,
+  );
+}
+```
+
+`validateSource*()` is stricter than the legacy preview warning path: if the
+template reads `{{ [Amount] }}` and the source has no `Amount` header, the
+validator reports `xl3/source/unknown-column` as an error. That makes
+`report.ok === true` mean the template's required source columns are present.
+
+After validation, use `preview(template, data, options)` when the host needs
+planned filenames, sheet names, row counts, resolved inputs, or non-fatal
+warnings:
+
+```ts
+const preview = await xl3.preview(templateBuffer, dataBuffer, options);
 // preview.warnings: non-fatal issues
 // preview.inputs: resolved input values (after defaults + coercion)
 // preview.files / preview.sources: what convert() would produce
 ```
 
+`preview()` keeps `xl3w/parser/missing-column` warnings for backwards
+compatibility. New "Validate" buttons should prefer `validateSource*()`.
+
 ## Spec pointers
 
 - ADR-0015 — Structured error reporting.
+- ADR-0078 — Source compatibility validation API.
 - [`spec/evaluation.md`](../../spec/evaluation.md) "Errors".
 - [Cookbook 06](./06-runtime-inputs.md) for input-related errors.

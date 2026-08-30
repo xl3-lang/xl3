@@ -346,6 +346,79 @@ output.
 The wire format is normative and portable; see ADR-0075 and
 PORTERS_GUIDE.md.
 
+### Source compatibility validation
+
+Implementations MAY expose a read-only source validation API that answers
+whether a source satisfies a template's input contract without rendering output
+workbooks (ADR-0078). The TypeScript reference implementation exposes:
+
+```ts
+validateSource(templateBuffer, sourceBuffer, options?)
+validateSourceJson(templateBuffer, sourceJson, options?)
+```
+
+Validation returns a report, not the first thrown source error:
+
+```ts
+interface ValidationReport {
+  ok: boolean;
+  contract: InputContract;
+  diagnostics: ValidationDiagnostic[];
+}
+```
+
+`ok` is true only when no diagnostic has severity `error`.
+
+The input contract is source-scoped:
+
+```ts
+interface InputContract {
+  sources: Array<{
+    name: string;          // "default" or a __sources__ name
+    sheet: string;
+    headerRow: number;
+    requiredColumns: string[];
+    optionalColumns: string[];
+  }>;
+}
+```
+
+For JSON input, workbook selectors are ignored: each contract source uses its
+source name as `sheet` and `1` as `headerRow`, corresponding to its explicit
+`headers` array.
+
+Required columns MUST be collected with source context. Reading
+`variables[].columns` alone is insufficient because it loses directive,
+grouping, source, and join scoping. The contract includes:
+
+- `output_file_pattern` and sheet-name group keys from the `default` source.
+- `@filter`, `@sort`, and `@group` fields from the active source of their data
+  block.
+- `@join` keys from both the primary and joined source.
+- Bare `[Column]` references from the active source of the enclosing row/static
+  evaluation context.
+- `Source[Column]` references from their named source.
+
+Validation is intentionally strict for bare source columns: if a template reads
+`{{ [Amount] }}` and the active source has no `Amount` header, the validator
+reports `xl3/source/unknown-column` with severity `error`. This differs from
+the legacy `preview()` warning path (`xl3w/parser/missing-column`), which is
+kept for backwards compatibility. Hosts that need a compatibility gate SHOULD
+call validation before preview/conversion.
+
+Diagnostics reuse existing `XtlErrorCode` values. No new error vocabulary is
+introduced by validation. A diagnostic MAY include structured context:
+`source`, `sheet`, `column`, `location`, human-readable `detail`, and optional
+non-normative `candidates` for fuzzy-match UI hints. Implementations MUST NOT
+require hosts or conformance tests to depend on `candidates`.
+
+For `validateSourceJson()`, schema-depth validation checks the JSON envelope,
+declared-source presence, headers, and that each source has a `rows` array. It
+returns malformed envelope/source-shape findings as
+`xl3/source-json/invalid` diagnostics when a report can be constructed. It
+does not scan row values, row lengths, or per-cell tagged values; those remain
+the responsibility of `convertJson()` / `previewJson()` (ADR-0075).
+
 ## Empty Values
 
 A value is **empty** if it is missing — the source column does not exist

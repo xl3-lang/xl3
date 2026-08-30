@@ -89,6 +89,10 @@ const INFORMATIONAL_ADRS = new Set([
   // .xlsx-driven conformance corpus (template.xlsx + data.xlsx). Covered
   // by focused unit tests (json-source.test.ts) instead of a fixture.
   '0075', // xl3-source-json — covered by unit tests, not the xlsx corpus
+  // ADR-0078 — validation returns a report instead of an output workbook, so
+  // the output-oriented conformance corpus is the wrong harness. Covered by
+  // focused unit tests (validator.test.ts).
+  '0078', // source compatibility validation API — unit-test covered
 ]);
 
 // Tests used by ADR-0005 dynamic assertion. Counted as covering 0005.
