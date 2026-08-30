@@ -150,7 +150,9 @@ describe('#66 — formula-cached-result self-corruption path', () => {
       const a = row.getCell(1).value;
       aIsFormula.push(!!(a && typeof a === 'object' && 'formula' in a));
       const c = row.getCell(3).value;
-      cValues.push(c && typeof c === 'object' && 'result' in c ? (c as { result: unknown }).result : c);
+      cValues.push(
+        c && typeof c === 'object' && 'result' in c ? (c as { result: unknown }).result : c,
+      );
     });
 
     // Correct render: data, data, Acme-subtotal(150), data, Beta-subtotal(200).

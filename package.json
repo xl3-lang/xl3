@@ -21,7 +21,11 @@
     "sync:version": "npm -w @xl3-lang/xl3 run sync:version",
     "build:bundle": "npm -w @xl3-lang/xl3 run build:bundle",
     "typecheck": "npm -w @xl3-lang/xl3 run typecheck",
+    "lint": "eslint impl/js/src website/src website/docusaurus.config.ts website/sidebars.ts scripts conformance/scripts examples/scripts --max-warnings=0",
+    "format": "prettier --write \"impl/js/src/**/*.ts\" \"website/src/**/*.{ts,tsx}\" website/docusaurus.config.ts website/sidebars.ts \"scripts/**/*.mjs\" \"conformance/scripts/**/*.mjs\" \"examples/scripts/**/*.mjs\" eslint.config.js package.json impl/js/package.json impl/js/public-runtime-exports.json examples/expected-output.json",
+    "format:check": "prettier --check \"impl/js/src/**/*.ts\" \"website/src/**/*.{ts,tsx}\" website/docusaurus.config.ts website/sidebars.ts \"scripts/**/*.mjs\" \"conformance/scripts/**/*.mjs\" \"examples/scripts/**/*.mjs\" eslint.config.js package.json impl/js/package.json impl/js/public-runtime-exports.json examples/expected-output.json",
     "test": "npm -w @xl3-lang/xl3 run test",
+    "test:coverage": "npm -w @xl3-lang/xl3 run test:coverage",
     "test:watch": "npm -w @xl3-lang/xl3 run test:watch",
     "conformance": "npm -w @xl3-lang/xl3 run conformance",
     "conformance:stage2": "npm -w @xl3-lang/xl3 run conformance:stage2",
@@ -34,9 +38,11 @@
     "docs:preview": "cd website && docusaurus serve",
     "examples:build": "node examples/scripts/build.mjs",
     "examples:run": "node examples/scripts/run-all.mjs",
+    "operational:regression": "npm run examples:build && npm run examples:run",
     "bench": "node scripts/bench.mjs",
     "bench:matrix": "node scripts/bench-matrix.mjs",
-    "browser:smoke": "node scripts/browser-smoke.mjs"
+    "browser:smoke": "node scripts/browser-smoke.mjs",
+    "browser:e2e": "node scripts/browser-try-e2e.mjs"
   },
   "devDependencies": {
     "@docusaurus/core": "^3.10.1",
@@ -44,20 +50,27 @@
     "@docusaurus/preset-classic": "^3.10.1",
     "@docusaurus/tsconfig": "^3.10.1",
     "@docusaurus/types": "^3.10.1",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.0.0",
+    "@vitest/coverage-v8": "^4.1.5",
     "clsx": "^2.1.1",
+    "eslint": "^10.9.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "exceljs": "^4.4.0",
+    "globals": "^16.5.0",
     "playwright": "^1.62.0",
     "posthog-js": "^1.407.3",
     "pptxgenjs": "^4.0.1",
+    "prettier": "^3.9.6",
     "prism-react-renderer": "^2.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.6.0",
     "sharp": "^0.34.5",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.68.0"
   },
   "engines": {
-    "node": ">=20.12"
+    "node": ">=20.19"
   }
 }

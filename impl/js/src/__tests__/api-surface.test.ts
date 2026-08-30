@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import * as api from '../index.js';
 
 // 1.0 readiness: pin the public surface exported from `xl3` so a
@@ -18,33 +19,9 @@ import * as api from '../index.js';
 // importable for tooling without silently entering the stable type set.
 // See `spec/STABILITY.md` "Stable type re-exports" vs "Experimental
 // type re-exports" for the formal split.
-const EXPECTED_RUNTIME_EXPORTS = [
-  // Conversion entry points
-  'convert',
-  'preview',
-  // JSON source entry points (ADR-0075)
-  'convertJson',
-  'previewJson',
-  // Source compatibility validation (xl3#109)
-  'validateSource',
-  'validateSourceJson',
-  'readTemplateInputs',
-  'analyze',
-  'analyzeModel',
-  'packageZip',
-  // Lower-level helpers
-  'readConfigSheet',
-  'writeConfigSheet',
-  'readInputsSheet',
-  'batchMatch',
-  'toTemplateModel',
-  // Error helpers (ADR-0015)
-  'xtlError',
-  'isXtlError',
-  // Runtime metadata (xl3#103)
-  'VERSION',
-  'getEngineInfo',
-] as const;
+const EXPECTED_RUNTIME_EXPORTS = JSON.parse(
+  readFileSync(new URL('../../public-runtime-exports.json', import.meta.url), 'utf8'),
+) as string[];
 
 describe('public API surface', () => {
   it('pins the runtime exports of `xl3`', () => {

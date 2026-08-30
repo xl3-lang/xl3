@@ -1,0 +1,21 @@
+[
+  "convert",
+  "preview",
+  "convertJson",
+  "previewJson",
+  "validateSource",
+  "validateSourceJson",
+  "readTemplateInputs",
+  "analyze",
+  "analyzeModel",
+  "packageZip",
+  "readConfigSheet",
+  "writeConfigSheet",
+  "readInputsSheet",
+  "batchMatch",
+  "toTemplateModel",
+  "xtlError",
+  "isXtlError",
+  "VERSION",
+  "getEngineInfo"
+]

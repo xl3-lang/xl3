@@ -32,13 +32,13 @@ JXLS — what matters is that XTL stops being silent.
 |---|---|---|---|---|
 | A1 | Data-row merged cells (vertical/horizontal) | ✅ **ADR-0035 landed** + fixture 122 | **ADR-0035** | HIGH — done |
 | A2 | Image anchor behavior across `@repeat` row expansion | ✅ pinned by ADR-0036 (P) | ADR-0036 row | HIGH — done |
-| A3 | Conditional formatting preservation + range extension | ⏳ ADR-0036 (P) for preservation; **ADR-0040 promotes to PE** (impl pending) | ADR-0036 + ADR-0040 | HIGH — spec done, impl pending |
+| A3 | Conditional formatting preservation + range extension | ✅ ADR-0036 (P) + ADR-0040 (PE), Stage 2 fixture 171 | ADR-0036 + ADR-0040 | HIGH — done |
 | A4 | Chart data range expansion across `@repeat` | ⏸️ ADR-0036 marks D (deferred). Revisit when Stage 2 conformance reaches charts | ADR-0036 row | LOW — deferred |
 | A5 | Named range / defined names | ✅ ADR-0036 (P) + fixture 123 | ADR-0036 row | MEDIUM — done |
 | A6 | Print area + repeating header rows | ✅ ADR-0036 (P) | ADR-0036 row | MEDIUM — done |
 | A7 | Freeze pane / split | ✅ ADR-0036 (P) | ADR-0036 row | LOW — done |
 | A8 | Sheet protection / cell locking | ✅ ADR-0036 (P) | ADR-0036 row | LOW — done |
-| A9 | Data validation (dropdowns, ranges) | ⏳ ADR-0036 (P); **ADR-0040 promotes to PE** (impl pending) | ADR-0036 + ADR-0040 | MEDIUM — spec done, impl pending |
+| A9 | Data validation (dropdowns, ranges) | ✅ ADR-0036 (P) + ADR-0040 (PE), Stage 2 fixture 171 | ADR-0036 + ADR-0040 | MEDIUM — done |
 | A10 | Cell comments (notes) | ✅ ADR-0036 (P) + fixture 123 | ADR-0036 row | LOW — done |
 
 **Strategy:** consolidate A2–A10 into one matrix ADR (ADR-0036)
@@ -84,17 +84,17 @@ Named here so the question stays settled. Each becomes a
 3. ✅ ADR-0035 accepted — data-row merge cells + impl + fixture 122
 4. ✅ ADR-0036 mixed — template feature preservation matrix + fixtures 123/124
 5. ✅ ADR-0037 rejected — dynamic image insertion
-6. ✅ **ADR-0038 accepted** — `@group` + `@subtotal` (spec only; impl pending)
+6. ✅ **ADR-0038 accepted and implemented** — `@group` + `@subtotal`, fixtures 132-135
 7. ✅ **ADR-0019 amendment** — promote 6 date arithmetic functions; impl + fixture 126
 8. ✅ **ADR-0039 accepted** — `HYPERLINK(url, label)` function; impl + fixture 125
-9. ✅ **ADR-0040 accepted** — CF/DV range PE extension + outline level preservation (CF/DV impl pending; outline impl landed)
+9. ✅ **ADR-0040 accepted and implemented** — CF/DV range PE extension + outline level preservation, fixtures 171-172
 10. ✅ **ADR-0041 accepted** — multi-line cell text; pin + fixture 127
 11. ✅ **ADR-0042 rejected** — runtime cell mutation
 12. ✅ **ADR-0043 informational** — Excel-native preference principle (the gate)
 13. ✅ **ADR-0044 accepted** — UPPER/LOWER/TRIM/IFERROR/IFS/DATE + impl + fixture 128
 14. ✅ **ADR-0045 rejected** — math/type-test/NOW/conditional-aggregate/TEXT-token-expansion bundle
 15. ✅ **Cookbook 16** — "XTL function vs Excel formula" recipe
-16. **Next:** ADR-0038 impl (parser + renderer for `@group`/`@subtotal`); ADR-0040 impl (CF/DV `sqref` extension at `spliceRowsPreservingMerges` time).
+16. ✅ **Implementation follow-through complete:** ADR-0038 parser/renderer and ADR-0040 CF/DV `sqref` extension are both covered by conformance fixtures.
 
 ## How this doc evolves
 

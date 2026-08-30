@@ -8,11 +8,12 @@ Everything below is a spec decision, not a quirk of one implementation.
 The rows marked *deferred* are deferred on purpose, with an ADR saying
 so — that is different from "nobody checked."
 
-## The three verdicts
+## The four verdicts
 
 | Verdict | What it means |
 |---|---|
 | **Preserved** | Comes out identical to the template. Every conforming implementation must do this. |
+| **Preserved and extended** | The rule survives and a range fully contained in an `@repeat` block grows with the emitted rows. Partial overlaps are left unchanged so the engine never guesses beyond the authored block. |
 | **Preserved, range not extended** | The feature survives, but its range keeps the coordinates the template gave it. If `@repeat` grows the sheet from 1 row to 50, the range still covers the 1 row. There is an author-side fix for each — see the notes. |
 | **Deferred** | XTL 0.1 asserts nothing. It may survive, it may be dropped, and two conforming implementations may disagree. Don't build on it before 1.1. |
 
@@ -33,15 +34,16 @@ so — that is different from "nobody checked."
 
 ## Rules with ranges
 
-These survive, but their ranges stay where the template put them. The
-engine does not silently widen a rule to cover rows it never mentioned —
-a conditional-format rule that auto-extended could bleed into a footer
-row the author meant to exclude.
+Range-bearing features follow one of two contracts. Conditional formatting
+and data validation grow only when their authored range is fully contained in
+an `@repeat` block. A partial overlap is left untouched, so a rule cannot bleed
+into a footer the author meant to exclude. Named ranges and print settings are
+preserved without coordinate changes.
 
 | Feature | Verdict | Author-side fix |
 |---|---|---|
-| Conditional formatting | **Preserved, range not extended** | Anchor the rule to a whole column (`$A:$A`) in the template. Measured today: a 1-row block that expands to 3 rows leaves the rule on `A2:A2`. |
-| Data validation (dropdowns, constraints) | **Preserved, range not extended** | Same fix. Measured today: validation authored on `B2` stays on `B2` alone after expansion. |
+| Conditional formatting | **Preserved and extended** | A rule on `A2:A2` inside a 1-row block expands to `A2:A4` when the block emits 3 rows. Whole-column ranges already cover the output and remain unchanged; partial overlaps are preserved as authored. |
+| Data validation (dropdowns, constraints) | **Preserved and extended** | Validation on a cell inside the repeated template rows is copied to the corresponding emitted rows. Validation outside the block is untouched. |
 | Named ranges / defined names | **Preserved, range not extended** | Workbook-scope and sheet-scope both survive; references into a repeat-expanded area are not re-pointed. |
 | Print area, print titles | **Preserved, range not extended** | Set the print area to a full column span (`$A:$Z`) or repeating header rows (`$1:$1`). |
 
@@ -68,15 +70,13 @@ is what deferred means.
 
 ## Formatting inside a repeat block
 
-Ranges and per-cell formatting behave in opposite directions, and the
-difference catches people out.
+Range rules and per-cell formatting grow under different contracts, and the
+difference is worth knowing. Conditional formatting and data validation fully
+contained in the repeated block extend with it; named ranges and print settings
+do not. Independently, all emitted rows carry the template cell's number format
+and style — not only the first row.
 
-A range anchored at `A2:A2` in the template is still `A2:A2` after ten
-rows are emitted. But all ten of those rows carry `A2`'s number format
-and cell style — engine-written cells take the template cell's
-formatting, every row, not only the first.
-
-That second half matters more than it sounds. Losing the format on rows
+That last guarantee matters more than it sounds. Losing the format on rows
 2..N is silent data loss: a column whose first row reads `1,234.50` and
 whose remainder reads `1234.5` looks like a styling slip and is
 indistinguishable from one. Nine fixtures tagged `data-loss` exist to
@@ -103,6 +103,9 @@ Partly, and it is worth knowing which parts.
 - `170-data-loss-numfmt-preserved-across-expansion` checks, in Stage 2,
   that number formats survive `@repeat` expansion — the trap described
   above.
+- `171-cf-dv-range-extension` checks, in Stage 2, that contained
+  conditional-formatting and data-validation ranges extend while partial
+  overlaps remain unchanged.
 - A full Stage 2 canonical comparison of *every* row in the tables above
   is still pending canonicalizer work under ADR-0006.
 

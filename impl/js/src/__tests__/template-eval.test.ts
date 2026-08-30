@@ -10,23 +10,18 @@ describe('ROW()', () => {
 
   it('throws outside a repeat block', () => {
     const normalized = normalizeTemplate('{{ ROW() }}', new Set());
-    expect(() => evalCell(normalized, {})).toThrow(
-      'ROW() called outside a repeat block',
-    );
+    expect(() => evalCell(normalized, {})).toThrow('ROW() called outside a repeat block');
   });
 });
 
 describe('COUNT([field])', () => {
   it('counts non-empty values from the current row set', () => {
     const normalized = normalizeTemplate('{{ COUNT([Memo]) }}', new Set(['Memo']));
-    expect(evalCell(normalized, {
-      Rows: [
-        { Memo: 'hello' },
-        { Memo: '' },
-        { Memo: null },
-        { Memo: 'world' },
-      ],
-    })).toBe(2);
+    expect(
+      evalCell(normalized, {
+        Rows: [{ Memo: 'hello' }, { Memo: '' }, { Memo: null }, { Memo: 'world' }],
+      }),
+    ).toBe(2);
   });
 });
 

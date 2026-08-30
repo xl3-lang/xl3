@@ -89,7 +89,10 @@ function parseBlock(body: string): Directive {
     const cs = colLettersToNumber(colRangeMatch[1]!);
     const ce = colLettersToNumber(colRangeMatch[2]!);
     if (cs > ce) {
-      throw xtlError('xl3/directive/invalid-syntax', `@block col-range "${trimmed}" — start column ${colRangeMatch[1]} must be ≤ end column ${colRangeMatch[2]}`);
+      throw xtlError(
+        'xl3/directive/invalid-syntax',
+        `@block col-range "${trimmed}" — start column ${colRangeMatch[1]} must be ≤ end column ${colRangeMatch[2]}`,
+      );
     }
     return { kind: 'block', colStart: cs, colEnd: ce, rowStart: 0, rowEnd: 0 };
   }
@@ -101,13 +104,22 @@ function parseBlock(body: string): Directive {
     const ce = colLettersToNumber(fullRectMatch[3]!);
     const re = Number(fullRectMatch[4]);
     if (cs > ce) {
-      throw xtlError('xl3/directive/invalid-syntax', `@block range "${trimmed}" — start column must be ≤ end column`);
+      throw xtlError(
+        'xl3/directive/invalid-syntax',
+        `@block range "${trimmed}" — start column must be ≤ end column`,
+      );
     }
     if (rs > re) {
-      throw xtlError('xl3/directive/invalid-syntax', `@block range "${trimmed}" — start row ${rs} must be ≤ end row ${re}`);
+      throw xtlError(
+        'xl3/directive/invalid-syntax',
+        `@block range "${trimmed}" — start row ${rs} must be ≤ end row ${re}`,
+      );
     }
     if (rs < 1) {
-      throw xtlError('xl3/directive/invalid-syntax', `@block range "${trimmed}" — row numbers must be ≥ 1`);
+      throw xtlError(
+        'xl3/directive/invalid-syntax',
+        `@block range "${trimmed}" — row numbers must be ≥ 1`,
+      );
     }
     return { kind: 'block', colStart: cs, colEnd: ce, rowStart: rs, rowEnd: re };
   }
@@ -131,7 +143,10 @@ function parseGroup(body: string): Directive {
   }
   // Split on `,` while respecting bracket pairs (keys are always
   // [Col] forms, no nesting). Lightweight split is safe here.
-  const parts = body.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+  const parts = body
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
   if (parts.length === 0) {
     throw xtlError('xl3/group/missing-key', '@group requires at least one column key');
   }
@@ -156,7 +171,8 @@ function parseSource(body: string): Directive | null {
   return { kind: 'source', name };
 }
 
-const JOIN_RE = /^([A-Za-z0-9_]+)\s+on\s+([A-Za-z0-9_]+)\[([^\]]+)\]\s*=\s*([A-Za-z0-9_]+)\[([^\]]+)\]$/i;
+const JOIN_RE =
+  /^([A-Za-z0-9_]+)\s+on\s+([A-Za-z0-9_]+)\[([^\]]+)\]\s*=\s*([A-Za-z0-9_]+)\[([^\]]+)\]$/i;
 
 function parseJoin(body: string): Directive | null {
   const m = body.match(JOIN_RE);

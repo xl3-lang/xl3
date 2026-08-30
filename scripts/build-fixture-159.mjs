@@ -26,10 +26,14 @@ async function save(wb, path) {
 
 function configSheet(wb, sourceSheet = 'Data') {
   const cfg = wb.addWorksheet('__config__');
-  cfg.getCell('A1').value = 'name';             cfg.getCell('B1').value = 'subtotal-mixed-row';
-  cfg.getCell('A2').value = 'source_sheet';     cfg.getCell('B2').value = sourceSheet;
-  cfg.getCell('A3').value = 'source_table';     cfg.getCell('B3').value = '1';
-  cfg.getCell('A4').value = 'output_file_pattern'; cfg.getCell('B4').value = 'output.xlsx';
+  cfg.getCell('A1').value = 'name';
+  cfg.getCell('B1').value = 'subtotal-mixed-row';
+  cfg.getCell('A2').value = 'source_sheet';
+  cfg.getCell('B2').value = sourceSheet;
+  cfg.getCell('A3').value = 'source_table';
+  cfg.getCell('B3').value = '1';
+  cfg.getCell('A4').value = 'output_file_pattern';
+  cfg.getCell('B4').value = 'output.xlsx';
   return cfg;
 }
 
@@ -54,21 +58,31 @@ function configSheet(wb, sourceSheet = 'Data') {
   // Data.
   const data = new ExcelJS.Workbook();
   const dws = data.addWorksheet('Data');
-  dws.getCell('A1').value = 'Region';  dws.getCell('B1').value = 'Customer'; dws.getCell('C1').value = 'Amount';
-  dws.getCell('A2').value = 'East';    dws.getCell('B2').value = 'Acme';     dws.getCell('C2').value = 100;
-  dws.getCell('A3').value = 'East';    dws.getCell('B3').value = 'Acme';     dws.getCell('C3').value = 50;
-  dws.getCell('A4').value = 'West';    dws.getCell('B4').value = 'Beta';     dws.getCell('C4').value = 200;
+  dws.getCell('A1').value = 'Region';
+  dws.getCell('B1').value = 'Customer';
+  dws.getCell('C1').value = 'Amount';
+  dws.getCell('A2').value = 'East';
+  dws.getCell('B2').value = 'Acme';
+  dws.getCell('C2').value = 100;
+  dws.getCell('A3').value = 'East';
+  dws.getCell('B3').value = 'Acme';
+  dws.getCell('C3').value = 50;
+  dws.getCell('A4').value = 'West';
+  dws.getCell('B4').value = 'Beta';
+  dws.getCell('C4').value = 200;
   await save(data, join(dir, 'data.xlsx'));
 
-  writeFileSync(join(dir, 'meta.yaml'),
-`description: 'A @subtotal row that also carries a current-row [Column] reference outside an aggregate raises xl3/subtotal/mixed-row (language.md "Group + Subtotal", ADR-0038/ADR-0058). The pre-fix impl silently demoted the row to a second data-row template and emitted grand-total values after every data row. Diagnostic substring: "may not carry per-row [Column] references".'
+  writeFileSync(
+    join(dir, 'meta.yaml'),
+    `description: 'A @subtotal row that also carries a current-row [Column] reference outside an aggregate raises xl3/subtotal/mixed-row (language.md "Group + Subtotal", ADR-0038/ADR-0058). The pre-fix impl silently demoted the row to a second data-row template and emitted grand-total values after every data row. Diagnostic substring: "may not carry per-row [Column] references".'
 spec_section: language.md#group--subtotal / ADR-0073 / ADR-0038 / ADR-0058
 spec_version: "0.1"
 tags: [adr-0038, adr-0058, subtotal, error, negative-path, issue-66]
 verified_by: [manual-script]
 expected_error: 'may not carry per-row [Column] references'
 expected_error_code: 'xl3/subtotal/mixed-row'
-`);
+`,
+  );
 }
 
 console.log('Fixture 159 written.');

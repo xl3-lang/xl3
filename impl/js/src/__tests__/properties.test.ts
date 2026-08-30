@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  canonicalString,
-  compareValues,
-  isEmpty,
-  isTruthy,
-} from '../functions.js';
+import { canonicalString, compareValues, isEmpty, isTruthy } from '../functions.js';
 
 // Property-based smoke tests. We do not pull in fast-check / hedgehog
 // to avoid a new devDep; the generator below is deterministic via a
@@ -31,28 +26,56 @@ function pick<T>(rng: () => number, arr: T[]): T {
 }
 
 function randomValue(rng: () => number): unknown {
-  const kind = pick(rng, ['null', 'undef', 'empty-str', 'ws-str', 'str', 'int', 'float', 'zero', 'neg', 'true', 'false', 'date']);
+  const kind = pick(rng, [
+    'null',
+    'undef',
+    'empty-str',
+    'ws-str',
+    'str',
+    'int',
+    'float',
+    'zero',
+    'neg',
+    'true',
+    'false',
+    'date',
+  ]);
   switch (kind) {
-    case 'null': return null;
-    case 'undef': return undefined;
-    case 'empty-str': return '';
-    case 'ws-str': return pick(rng, [' ', '\t', '   ', '\n']);
-    case 'str': return pick(rng, ['hello', 'a', '123abc', 'TRUE', '0', 'false', 'café', '한글']);
-    case 'int': return Math.floor(rng() * 1000);
-    case 'float': return rng() * 100 - 50;
-    case 'zero': return 0;
-    case 'neg': return -Math.floor(rng() * 1000);
-    case 'true': return true;
-    case 'false': return false;
-    case 'date': return new Date(Date.UTC(2020 + Math.floor(rng() * 10), Math.floor(rng() * 12), 1 + Math.floor(rng() * 28)));
-    default: return null;
+    case 'null':
+      return null;
+    case 'undef':
+      return undefined;
+    case 'empty-str':
+      return '';
+    case 'ws-str':
+      return pick(rng, [' ', '\t', '   ', '\n']);
+    case 'str':
+      return pick(rng, ['hello', 'a', '123abc', 'TRUE', '0', 'false', 'café', '한글']);
+    case 'int':
+      return Math.floor(rng() * 1000);
+    case 'float':
+      return rng() * 100 - 50;
+    case 'zero':
+      return 0;
+    case 'neg':
+      return -Math.floor(rng() * 1000);
+    case 'true':
+      return true;
+    case 'false':
+      return false;
+    case 'date':
+      return new Date(
+        Date.UTC(2020 + Math.floor(rng() * 10), Math.floor(rng() * 12), 1 + Math.floor(rng() * 28)),
+      );
+    default:
+      return null;
   }
 }
 
 function fuzz(label: string, fn: (v: unknown, w: unknown, rng: () => number) => void): void {
   it(label, () => {
     for (let i = 0; i < ITERATIONS; i++) {
-      const rng = makeRng(i * 0x9E3779B1);
+      const rng = makeRng(i * 0x9e3779b1);
       const a = randomValue(rng);
       const b = randomValue(rng);
       try {
@@ -60,7 +83,10 @@ function fuzz(label: string, fn: (v: unknown, w: unknown, rng: () => number) => 
       } catch (e) {
         const aDesc = JSON.stringify(a) ?? String(a);
         const bDesc = JSON.stringify(b) ?? String(b);
-        throw new Error(`property failed at iter=${i} a=${aDesc} b=${bDesc}: ${(e as Error).message}`);
+        throw new Error(
+          `property failed at iter=${i} a=${aDesc} b=${bDesc}: ${(e as Error).message}`,
+          { cause: e },
+        );
       }
     }
   });
@@ -125,7 +151,7 @@ describe('properties — comparison transitivity (sampled)', () => {
   // of bugs without exploding the runtime.
   it('compareValues is transitive across triples', () => {
     for (let i = 0; i < ITERATIONS; i++) {
-      const rng = makeRng(i * 0xDEADBEEF);
+      const rng = makeRng(i * 0xdeadbeef);
       const a = randomValue(rng);
       const b = randomValue(rng);
       const c = randomValue(rng);

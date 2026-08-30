@@ -231,7 +231,8 @@ async function buildMultiSourceJoin() {
     sh.getCell('D9').font = { bold: true };
 
     sh.getCell('A11').value = 'XLOOKUP demo: Coreon owner →';
-    sh.getCell('B11').value = '{{ XLOOKUP("Coreon", Customers[Account], Customers[Owner], "(unknown)") }}';
+    sh.getCell('B11').value =
+      '{{ XLOOKUP("Coreon", Customers[Account], Customers[Owner], "(unknown)") }}';
 
     await writeBook(wb, join(dir, 'template.xlsx'));
   }
@@ -376,15 +377,15 @@ async function buildCafeWeeklyReport() {
 
     const menu = [
       // [카테고리, 메뉴, 단가]
-      ['커피',     '아메리카노',   4500],
-      ['커피',     '카페라떼',     5500],
-      ['커피',     '카푸치노',     5500],
-      ['커피',     '바닐라라떼',   6000],
-      ['커피',     '카라멜마끼아또', 6000],
-      ['논커피',   '녹차라떼',     5500],
-      ['논커피',   '초콜릿',       5500],
-      ['베이커리', '크루아상',     4500],
-      ['베이커리', '치즈케이크',   6500],
+      ['커피', '아메리카노', 4500],
+      ['커피', '카페라떼', 5500],
+      ['커피', '카푸치노', 5500],
+      ['커피', '바닐라라떼', 6000],
+      ['커피', '카라멜마끼아또', 6000],
+      ['논커피', '녹차라떼', 5500],
+      ['논커피', '초콜릿', 5500],
+      ['베이커리', '크루아상', 4500],
+      ['베이커리', '치즈케이크', 6500],
     ];
     const days = [
       ['2026-05-11', '월', 1.0],
@@ -397,7 +398,9 @@ async function buildCafeWeeklyReport() {
     ];
     // Per-menu base quantity tuned so categories differ visibly.
     const baseQty = {
-      '커피': 13, '논커피': 6, '베이커리': 9,
+      커피: 13,
+      논커피: 6,
+      베이커리: 9,
     };
 
     let r = 2;
@@ -431,9 +434,7 @@ const examples = [
 ];
 
 const selected = new Set(process.argv.slice(2));
-const active = selected.size > 0
-  ? examples.filter(([id]) => selected.has(id))
-  : examples;
+const active = selected.size > 0 ? examples.filter(([id]) => selected.has(id)) : examples;
 
 const built = [];
 for (const [id, fn] of active) {

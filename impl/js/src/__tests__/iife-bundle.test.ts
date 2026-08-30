@@ -30,30 +30,9 @@ const REPO_ROOT = resolve(fileURLToPath(new URL('../../../..', import.meta.url))
 const BUNDLE_PATH = resolve(PKG_ROOT, 'dist/xl3.bundle.iife.min.js');
 const BUNDLE_SIZE_LIMIT_BYTES = 1.5 * 1024 * 1024;
 
-// Same list as api-surface.test.ts. Kept duplicated rather than
-// imported to keep this test independent (it could run against a
-// bundle built from a different commit).
-const EXPECTED_RUNTIME_EXPORTS = [
-  'convert',
-  'preview',
-  'convertJson',
-  'previewJson',
-  'validateSource',
-  'validateSourceJson',
-  'readTemplateInputs',
-  'analyze',
-  'analyzeModel',
-  'packageZip',
-  'readConfigSheet',
-  'writeConfigSheet',
-  'readInputsSheet',
-  'batchMatch',
-  'toTemplateModel',
-  'xtlError',
-  'isXtlError',
-  'VERSION',
-  'getEngineInfo',
-] as const;
+const EXPECTED_RUNTIME_EXPORTS = JSON.parse(
+  readFileSync(resolve(PKG_ROOT, 'public-runtime-exports.json'), 'utf8'),
+) as string[];
 
 function loadBundleContext(): { ctx: vm.Context; xl3: Record<string, unknown> } {
   const code = readFileSync(BUNDLE_PATH, 'utf8');
@@ -133,10 +112,7 @@ describeIfBuilt('IIFE bundle smoke', () => {
       source: ArrayBuffer,
     ) => Promise<Array<{ filename: string; data: Uint8Array }>>;
 
-    const fixtureDir = resolve(
-      REPO_ROOT,
-      'conformance/fixtures/001-bracket-substitution',
-    );
+    const fixtureDir = resolve(REPO_ROOT, 'conformance/fixtures/001-bracket-substitution');
     const templateBuf = readFileSync(resolve(fixtureDir, 'template.xlsx'));
     const dataBuf = readFileSync(resolve(fixtureDir, 'data.xlsx'));
 

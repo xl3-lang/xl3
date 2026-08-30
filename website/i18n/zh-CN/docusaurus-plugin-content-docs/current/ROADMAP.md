@@ -28,12 +28,12 @@ slug: /roadmap
 | G2 | Stage 2 OOXML 规范化完成 | 维护者 | ADR-0006 + src/ 中的 canonicalizer | 由测试用例 024-027、093 + ADR-0006 修订覆盖 | — | DONE |
 | G3 | 错误码目录冻结 | 维护者 | `impl/js/src/__tests__/error-codes.test.ts` 快照 | 目录快照 30 天保持不变 | — | ✅ 已于 2026-06-23 勾选（最后一次目录变更为 2026-05-24 `a8f7ad3` 新增 3 个错误码 `xl3/block/overlap`、`xl3/block/empty-table`、`xl3/directive/orphan`；`89bee51` 于 2026-05-23 新增 `xl3/expression/bracket-outside-block`。30 天冻结期已过——05-24 之后触及该文件的提交仅涉及注释/JSDoc，`EXPECTED_CODES` 未变） |
 | G4 | 发布 JXLS 边界 | 维护者 | ADR-0048 | 文件存在并引用 PORTERS_GUIDE | — | DONE |
-| G5 | 延期实现的 ADR 落地 | 维护者 | ADR-0038 实现 ✅（2026-05-18）+ ADR-0040 PE 实现 | ADR-0038 部分已发布（测试用例 132-135）；ADR-0040 CF/DV 区间扩展仍在进行中 | — | 0.6（部分）/ 0.7.1 |
+| G5 | 延期实现的 ADR 落地 | 维护者 | ADR-0038 实现 ✅（2026-05-18）+ ADR-0040 PE 实现 | ✅ 已完成——ADR-0038 由测试用例 132-135 覆盖；ADR-0040 的 CF/DV 范围扩展和大纲级别由测试用例 171、172 覆盖 | — | 已于 2026-08-16 完成 |
 | G6 | 公开 API 表面冻结 | 维护者 | `impl/js/src/__tests__/api-surface.test.ts` 快照 | 快照 30 天保持不变 | — | ✅ 已于 2026-06-17 勾选（快照自 2026-05-18 `16f0608` 起未变） |
 | G7 | @stable 导出项的 JSDoc 示例 | 维护者 | TypeDoc 输出 | 每一个 `@stable` 符号都附带 `@example` 区块 | — | ✅ 已于 2026-06-21 完成——13/13 个 `@stable` 可调用项均带 `@example`（PR #59）；0.11.0 新增 `convertJson` / `previewJson` 后以 **15/15** 复核（`previewJson` 发布时缺 `@example`，已于 2026-07-27 修复） |
 | G8 | 性能特性描述 | 维护者 | `scripts/BENCH.md` | 发布 1k/10k/100k 行 × 5/10/20 列矩阵 + 内存上限 + parse/eval/write 分项数据 | — | 0.7.1 |
 | G9 | 性能回归测试用例 | 维护者 | 一致性语料 | ≥ 2 个大体量 fixture，使用基于比率的断言 | — | 0.7.1 |
-| G10 | 跨浏览器冒烟测试 | 维护者 | `ci.yml` | Safari + Firefox bundle 加载 + 每次运行至少一次 convert() | — | 0.7.1 |
+| G10 | 跨浏览器冒烟测试 | 维护者 | `ci.yml` | Safari + Firefox 校验共享清单中的 19 个 runtime export，并各运行一次 convert() | — | ✅ 已完成 |
 | G11 | Stage 2 接入 CI | 维护者 | `ci.yml` | 每个 PR 都运行 `npm run conformance:stage2` | — | 0.7.1 |
 | G12 | 未定行为定锚（pivot/sparkline/ListObject/分页） | 维护者 | 一致性测试用例 + 每项一份 ADR | 每项：要么有 fixture 锚定当前行为，要么有 ADR 显式延期到 1.x | 配 ADR 推迟到 1.1 | 0.7.1 / 0.8 |
 | G13 | 第二语言实现验证 | 外部（xl3-py） | `conformance/reports/*.json` | xl3-py 通过 Stage 1 ≥ 80% 或 Stage 2 ≥ 80%；或在其他所有关卡关闭后的 12 个月内，某个其他语言（Rust/Go/Java）有文档化的 50% 骨架实现 | 通过公开 ADR 修订 GOVERNANCE，接受单实现 1.0 | 0.7.x–0.8.x |

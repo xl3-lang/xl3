@@ -11,8 +11,9 @@ describe('readConfigSheet', () => {
       sheet.getCell('A1').value = key;
       sheet.getCell('B1').value = '1';
 
-      expect(() => readConfigSheet(workbook))
-        .toThrow(`Config key "${key}" was removed. Use "source_table" instead.`);
+      expect(() => readConfigSheet(workbook)).toThrow(
+        `Config key "${key}" was removed. Use "source_table" instead.`,
+      );
     },
   );
 });

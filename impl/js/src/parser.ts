@@ -12,7 +12,12 @@ import type {
   SourceSpec,
   JoinDirective,
 } from './types.js';
-import { isDataExpression, isAggregateExpression, extractColumnRefs, normalizeTemplate } from './normalizer.js';
+import {
+  isDataExpression,
+  isAggregateExpression,
+  extractColumnRefs,
+  normalizeTemplate,
+} from './normalizer.js';
 import {
   isDirectiveExpression,
   parseDirective,
@@ -34,11 +39,7 @@ const RESERVED_SHEETS: ReadonlySet<string> = new Set([
   SOURCES_SHEET,
 ]);
 const RESERVED_SHEET_RE = /^__[a-z]+__$/;
-const REMOVED_SOURCE_CONFIG_KEYS = new Set([
-  'header_row',
-  'source_range',
-  'source_header_range',
-]);
+const REMOVED_SOURCE_CONFIG_KEYS = new Set(['header_row', 'source_range', 'source_header_range']);
 const VAR_PATTERN = /\{\{\s*(.+?)\s*\}\}/g;
 
 /** Flatten any ExcelJS cell value to a plain string. Rich text cells (mixed
@@ -48,9 +49,7 @@ const VAR_PATTERN = /\{\{\s*(.+?)\s*\}\}/g;
 function cellString(value: ExcelJS.CellValue): string {
   if (value === null || value === undefined) return '';
   if (typeof value === 'object' && 'richText' in value) {
-    return (value as { richText: { text: string }[] }).richText
-      .map((r) => r.text)
-      .join('');
+    return (value as { richText: { text: string }[] }).richText.map((r) => r.text).join('');
   }
   // ADR-0046 / issue #66: a formula cell is preserved verbatim and
   // re-evaluated by Excel at open time; its cached `<v>` result is NOT
@@ -165,10 +164,7 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
             // ADR-0027: a recognized directive prefix (`@source`,
             // `@filter`, `@sort`, `@top`, `@repeat`, `@join`) that
             // fails to fully parse is an error, not a silent no-op.
-            throw xtlError(
-              'xl3/directive/invalid-syntax',
-              `Invalid directive: ${expr.trim()}`,
-            );
+            throw xtlError('xl3/directive/invalid-syntax', `Invalid directive: ${expr.trim()}`);
           }
         }
       });
@@ -193,7 +189,10 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
 
         if (directive.kind === 'repeat') {
           // Close previous block
-          if (currentBlock) { blocks.push(currentBlock); currentBlock = null; }
+          if (currentBlock) {
+            blocks.push(currentBlock);
+            currentBlock = null;
+          }
           // Start new horizontal block
           const repeatDirectives = [...pendingDirectives, directive];
           currentBlock = {
@@ -216,7 +215,10 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
             // data block. Repeats indicate either a typo or a request
             // for a feature that is intentionally out of scope (per
             // ADR-0014 multi-join is deferred to 1.x).
-            if (directive.kind === 'source' && currentBlock.directives.some((d) => d.kind === 'source')) {
+            if (
+              directive.kind === 'source' &&
+              currentBlock.directives.some((d) => d.kind === 'source')
+            ) {
               throw xtlError(
                 'xl3/directive/invalid-syntax',
                 `Duplicate @source directive in the same data block. Each block may declare at most one active source.`,
@@ -412,12 +414,18 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
         legacyDataEndRow = rowNumber;
       } else {
         // Non-data row: close current block
-        if (currentBlock) { blocks.push(currentBlock); currentBlock = null; }
+        if (currentBlock) {
+          blocks.push(currentBlock);
+          currentBlock = null;
+        }
       }
     });
 
     // Close final block
-    if (currentBlock) { blocks.push(currentBlock); currentBlock = null; }
+    if (currentBlock) {
+      blocks.push(currentBlock);
+      currentBlock = null;
+    }
 
     // (ADR-0067: removed the legacy "push pendingDirectives back into
     // allDirectives" step — every directive parsed in the row loop is
@@ -431,7 +439,10 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
     const blockDirectives = allDirectives
       .map((d, idx) => ({ dir: d, row: allDirectiveRows[idx]! }))
       .filter((entry) => entry.dir.kind === 'block')
-      .map((entry) => ({ dir: entry.dir as Extract<Directive, { kind: 'block' }>, row: entry.row }));
+      .map((entry) => ({
+        dir: entry.dir as Extract<Directive, { kind: 'block' }>,
+        row: entry.row,
+      }));
     const explicitMode = blockDirectives.length > 0;
 
     if (explicitMode) {
@@ -568,7 +579,9 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
           const a = explicitBlocks[i]!;
           const b = explicitBlocks[j]!;
           const rowOverlap = !(a.endRow < b.startRow || b.endRow < a.startRow);
-          const colOverlap = !(a.templateColEnd < b.templateColStart || b.templateColEnd < a.templateColStart);
+          const colOverlap = !(
+            a.templateColEnd < b.templateColStart || b.templateColEnd < a.templateColStart
+          );
           if (rowOverlap && colOverlap) {
             throw xtlError(
               'xl3/block/overlap',
@@ -580,9 +593,9 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
 
       // Orphan-marker check: every [col] cell must be inside some block.
       const isInsideAnyBlock = (r: number, c: number) =>
-        explicitBlocks.some((b) =>
-          r >= b.startRow && r <= b.endRow &&
-          c >= b.templateColStart && c <= b.templateColEnd,
+        explicitBlocks.some(
+          (b) =>
+            r >= b.startRow && r <= b.endRow && c >= b.templateColStart && c <= b.templateColEnd,
         );
       type OrphanInfo = { addr: string; row: number; col: number };
       let orphanFound: OrphanInfo | null = null;
@@ -624,8 +637,8 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
         .filter((entry) => entry.dir.kind !== 'block');
 
       for (const { dir, row: dirRow, col: dirCol } of nonBlockDirectives) {
-        const candidates = explicitBlocks.filter((b) =>
-          dirRow < b.startRow && dirCol >= b.templateColStart && dirCol <= b.templateColEnd,
+        const candidates = explicitBlocks.filter(
+          (b) => dirRow < b.startRow && dirCol >= b.templateColStart && dirCol <= b.templateColEnd,
         );
         if (candidates.length === 0) {
           throw xtlError(
@@ -633,7 +646,7 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
             `Directive @${dir.kind} at row ${dirRow}, col ${dirCol} on sheet "${worksheet.name}" is not above any @block whose col-range overlaps col ${dirCol}`,
           );
         }
-        candidates.sort((a, b) => (a.startRow - dirRow) - (b.startRow - dirRow));
+        candidates.sort((a, b) => a.startRow - dirRow - (b.startRow - dirRow));
         const target = candidates[0]!;
         target.directives.push(dir);
         target.directiveRows.push(dirRow);
@@ -755,12 +768,7 @@ function extractJoinFromDirectives(directives: Directive[]): JoinDirective | und
   return undefined;
 }
 
-const VALID_INPUT_TYPES: ReadonlySet<InputType> = new Set([
-  'text',
-  'number',
-  'date',
-  'select',
-]);
+const VALID_INPUT_TYPES: ReadonlySet<InputType> = new Set(['text', 'number', 'date', 'select']);
 
 const NAME_RE = /^[A-Za-z0-9_]+$/;
 
@@ -775,13 +783,31 @@ const NAME_RE = /^[A-Za-z0-9_]+$/;
 //   - `xl3/inputs/runtime-only-fn` for functions whose semantics only
 //     make sense during render (ROW() inside a repeat block; aggregates
 //     and lookups that operate on source rows).
-const INPUT_FORBIDDEN_PATTERNS: Array<[RegExp, 'xl3/inputs/forward-reference' | 'xl3/inputs/runtime-only-fn', string]> = [
-  [/(?<!\w)\[[^\]\r\n]+\]/, 'xl3/inputs/forward-reference', 'bare [Column] references (no source row context at input-read time)'],
-  [/(?<!\w)[A-Za-z]\w*\[[^\]\r\n]+\]/, 'xl3/inputs/forward-reference', 'Source[Column] references (sources are not loaded yet)'],
+const INPUT_FORBIDDEN_PATTERNS: Array<
+  [RegExp, 'xl3/inputs/forward-reference' | 'xl3/inputs/runtime-only-fn', string]
+> = [
+  [
+    /(?<!\w)\[[^\]\r\n]+\]/,
+    'xl3/inputs/forward-reference',
+    'bare [Column] references (no source row context at input-read time)',
+  ],
+  [
+    /(?<!\w)[A-Za-z]\w*\[[^\]\r\n]+\]/,
+    'xl3/inputs/forward-reference',
+    'Source[Column] references (sources are not loaded yet)',
+  ],
   [/__sources__\[/, 'xl3/inputs/forward-reference', '__sources__ lookups'],
-  [/__inputs__\[/, 'xl3/inputs/forward-reference', '__inputs__ forward references (input rows are independent)'],
+  [
+    /__inputs__\[/,
+    'xl3/inputs/forward-reference',
+    '__inputs__ forward references (input rows are independent)',
+  ],
   [/\bROW\s*\(/, 'xl3/inputs/runtime-only-fn', 'ROW() (no repeat block at input-read time)'],
-  [/\b(?:SUM|COUNT|AVERAGE|AVG|MIN|MAX|XLOOKUP)\s*\(/, 'xl3/inputs/runtime-only-fn', 'aggregate / lookup functions over source data'],
+  [
+    /\b(?:SUM|COUNT|AVERAGE|AVG|MIN|MAX|XLOOKUP)\s*\(/,
+    'xl3/inputs/runtime-only-fn',
+    'aggregate / lookup functions over source data',
+  ],
 ];
 
 function assertInputExpressionAllowed(
@@ -858,7 +884,9 @@ export function readInputsSheet(
   const header = sheet.getRow(1);
   const headerMap: Record<string, number> = {};
   header.eachCell({ includeEmpty: false }, (cell, colNumber) => {
-    const key = String(cell.value ?? '').trim().toLowerCase();
+    const key = String(cell.value ?? '')
+      .trim()
+      .toLowerCase();
     if (key) headerMap[key] = colNumber;
   });
 
@@ -894,7 +922,9 @@ export function readInputsSheet(
     }
     seen.add(name);
 
-    const typeRaw = String(row.getCell(typeCol).value ?? '').trim().toLowerCase();
+    const typeRaw = String(row.getCell(typeCol).value ?? '')
+      .trim()
+      .toLowerCase();
     if (!VALID_INPUT_TYPES.has(typeRaw as InputType)) {
       throw xtlError(
         'xl3/inputs/invalid-type',
@@ -924,7 +954,10 @@ export function readInputsSheet(
           `__inputs__ row ${r} (name "${name}", type select) requires an options column with pipe-separated values`,
         );
       }
-      options = optionsRaw.split('|').map((s) => s.trim()).filter((s) => s.length > 0);
+      options = optionsRaw
+        .split('|')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
       if (options.length === 0) {
         throw xtlError(
           'xl3/inputs/missing-options',
@@ -974,8 +1007,11 @@ export interface ConfigResult {
  */
 export function readConfigSheet(workbook: ExcelJS.Workbook): ConfigResult {
   const meta: TemplateMeta = {
-    name: '', description: '', source_sheet: '',
-    output_file_pattern: '', match_pattern: '',
+    name: '',
+    description: '',
+    source_sheet: '',
+    output_file_pattern: '',
+    match_pattern: '',
   };
   const configVars: Record<string, string> = {};
 
@@ -987,12 +1023,24 @@ export function readConfigSheet(workbook: ExcelJS.Workbook): ConfigResult {
     const val = String(row.getCell(2).value ?? '').trim();
     if (!key) return;
     switch (key) {
-      case 'name': meta.name = val; break;
-      case 'description': meta.description = val; break;
-      case 'source_sheet': meta.source_sheet = val; break;
-      case 'source_table': meta.source_table = val; break;
-      case 'output_file_pattern': meta.output_file_pattern = val; break;
-      case 'match_pattern': meta.match_pattern = val; break;
+      case 'name':
+        meta.name = val;
+        break;
+      case 'description':
+        meta.description = val;
+        break;
+      case 'source_sheet':
+        meta.source_sheet = val;
+        break;
+      case 'source_table':
+        meta.source_table = val;
+        break;
+      case 'output_file_pattern':
+        meta.output_file_pattern = val;
+        break;
+      case 'match_pattern':
+        meta.match_pattern = val;
+        break;
       default:
         if (REMOVED_SOURCE_CONFIG_KEYS.has(key)) {
           throw xtlError(
@@ -1019,7 +1067,9 @@ export function readSourcesSheet(workbook: ExcelJS.Workbook): SourceSpec[] {
   const header = sheet.getRow(1);
   const headerMap: Record<string, number> = {};
   header.eachCell({ includeEmpty: false }, (cell, colNumber) => {
-    const key = String(cell.value ?? '').trim().toLowerCase();
+    const key = String(cell.value ?? '')
+      .trim()
+      .toLowerCase();
     if (key) headerMap[key] = colNumber;
   });
   const nameCol = headerMap['name'];
@@ -1177,7 +1227,8 @@ function extractGroupKeys(pattern: string): string[] {
       return bracket ? bracket[1].trim() : expr;
     })
     .filter(
-      (expr) => !expr.startsWith('.') && !expr.startsWith('_') && !/[ |+*/\-><=!&()[\],]/.test(expr),
+      (expr) =>
+        !expr.startsWith('.') && !expr.startsWith('_') && !/[ |+*/\-><=!&()[\],]/.test(expr),
     );
 }
 

@@ -4,15 +4,15 @@
  * active baseUrl can be `/`, so paths like `/ko/guides` keep their locale
  * prefix and repeated language clicks become `/ko//ko/guides`.
  */
-import React, {type ReactNode} from 'react';
-import {translate} from '@docusaurus/Translate';
-import {useLocation} from '@docusaurus/router';
-import {mergeSearchStrings, useHistorySelector} from '@docusaurus/theme-common';
+import React, { type ReactNode } from 'react';
+import { translate } from '@docusaurus/Translate';
+import { useLocation } from '@docusaurus/router';
+import { mergeSearchStrings, useHistorySelector } from '@docusaurus/theme-common';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import DropdownNavbarItem from '@theme/NavbarItem/DropdownNavbarItem';
 import IconLanguage from '@theme/Icon/Language';
-import type {LinkLikeNavbarItemProps} from '@theme/NavbarItem';
-import type {Props} from '@theme/NavbarItem/LocaleDropdownNavbarItem';
+import type { LinkLikeNavbarItemProps } from '@theme/NavbarItem';
+import type { Props } from '@theme/NavbarItem/LocaleDropdownNavbarItem';
 
 import styles from './styles.module.css';
 
@@ -59,17 +59,15 @@ function localizePathname(baseUrl: string, suffix: string): string {
     return normalizedSuffix;
   }
 
-  return normalizedSuffix === '/'
-    ? `${normalizedBase}/`
-    : `${normalizedBase}${normalizedSuffix}`;
+  return normalizedSuffix === '/' ? `${normalizedBase}/` : `${normalizedBase}${normalizedSuffix}`;
 }
 
 function useLocaleDropdownUtils() {
   const {
     siteConfig,
-    i18n: {localeConfigs},
+    i18n: { localeConfigs },
   } = useDocusaurusContext();
-  const {pathname} = useLocation();
+  const { pathname } = useLocation();
   const search = useHistorySelector((history) => history.location.search);
   const hash = useHistorySelector((history) => history.location.hash);
 
@@ -81,19 +79,14 @@ function useLocaleDropdownUtils() {
   const getLocaleConfig = (locale: string) => {
     const localeConfig = localeConfigs[locale];
     if (!localeConfig) {
-      throw new Error(
-        `Docusaurus bug, no locale config found for locale=${locale}`,
-      );
+      throw new Error(`Docusaurus bug, no locale config found for locale=${locale}`);
     }
     return localeConfig;
   };
 
   const getBaseURLForLocale = (locale: string) => {
     const localeConfig = getLocaleConfig(locale);
-    const localizedPath = localizePathname(
-      localeConfig.baseUrl ?? '/',
-      pathnameSuffix,
-    );
+    const localizedPath = localizePathname(localeConfig.baseUrl ?? '/', pathnameSuffix);
 
     if (localeConfig.url === siteConfig.url) {
       return `pathname://${localizedPath}`;
@@ -103,11 +96,8 @@ function useLocaleDropdownUtils() {
   };
 
   return {
-    getURL: (locale: string, options: {queryString: string | undefined}) => {
-      const finalSearch = mergeSearchStrings(
-        [search, options.queryString],
-        'append',
-      );
+    getURL: (locale: string, options: { queryString: string | undefined }) => {
+      const finalSearch = mergeSearchStrings([search, options.queryString], 'append');
       return `${getBaseURLForLocale(locale)}${finalSearch}${hash}`;
     },
     getLabel: (locale: string) => getLocaleConfig(locale).label,
@@ -124,21 +114,17 @@ export default function LocaleDropdownNavbarItem({
 }: Props): ReactNode {
   const utils = useLocaleDropdownUtils();
   const {
-    i18n: {currentLocale, locales},
+    i18n: { currentLocale, locales },
   } = useDocusaurusContext();
 
   const localeItems = locales.map((locale): LinkLikeNavbarItemProps => ({
     label: utils.getLabel(locale),
     lang: utils.getLang(locale),
-    to: utils.getURL(locale, {queryString}),
+    to: utils.getURL(locale, { queryString }),
     target: '_self',
     autoAddBaseUrl: false,
     className:
-      locale === currentLocale
-        ? mobile
-          ? 'menu__link--active'
-          : 'dropdown__link--active'
-        : '',
+      locale === currentLocale ? (mobile ? 'menu__link--active' : 'dropdown__link--active') : '',
   }));
 
   const dropdownLabel = mobile

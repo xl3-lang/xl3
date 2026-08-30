@@ -10,8 +10,7 @@ import styles from './index.module.css';
 
 // Trailing blank rows so every sheet has breathing room below the data
 // and the fixed-height viewer scrolls like a real Excel worksheet.
-const blankRows = (count: number): string[][] =>
-  Array.from({ length: count }, () => []);
+const blankRows = (count: number): string[][] => Array.from({ length: count }, () => []);
 
 // One preview per walkthrough step. Clicking a step (01–03) swaps the
 // Excel view on the right to the artifact for that stage: raw data →
@@ -23,137 +22,137 @@ const blankRows = (count: number): string[][] =>
 // formulas stay literal across locales.
 function useStepPreviews(): Workbook[] {
   return [
-  // 01 — Raw data the application supplies
-  {
-    kind: 'data.xlsx',
-    title: translate({
-      id: 'homepage.preview.raw.title',
-      message: 'Start with the raw data.',
-      description: 'Excel preview caption — raw data step',
-    }),
-    note: translate({
-      id: 'homepage.preview.raw.note',
-      message:
-        'The application hands xl3 a data table — an .xlsx sheet or a language-neutral JSON source — plus any per-run inputs. Nothing about layout lives in code.',
-      description: 'Excel preview note — raw data step',
-    }),
-    workbookTitle: 'data.xlsx',
-    workbookSubtitle: translate({
-      id: 'homepage.preview.raw.subtitle',
-      message: 'raw operator data',
-      description: 'Excel preview window subtitle — raw data step',
-    }),
-    formula: 'Acme Logistics',
-    sheetName: 'Sheet1',
-    rows: [
-      ['Account', 'Region', 'Renewal', 'Owner'],
-      ['Acme Logistics', 'Seoul', '18400', 'Mina'],
-      ['Beta Works', 'Busan', '7200', 'Joon'],
-      ...blankRows(5),
-    ],
-    classes: [
-      ['header', 'header', 'header', 'header'],
-      ['selected', '', 'currency', ''],
-      ['', '', 'currency', ''],
-    ],
-  },
-  // 02 — Template: the executable workbook (two switchable sheets)
-  {
-    kind: 'template.xlsx',
-    title: translate({
-      id: 'homepage.preview.template.title',
-      message: 'The template is the executable workbook.',
-      description: 'Excel preview caption — template step',
-    }),
-    note: translate({
-      id: 'homepage.preview.template.note',
-      message:
-        'The visible layout carries XTL {{ … }} cells; the hidden __config__ sheet declares the rules. Click the sheet tabs to switch between them.',
-      description: 'Excel preview note — template step',
-    }),
-    workbookTitle: 'template.xlsx',
-    workbookSubtitle: translate({
-      id: 'homepage.preview.template.subtitle',
-      message: 'executable Excel template',
-      description: 'Excel preview window subtitle — template step',
-    }),
-    sheets: [
-      {
-        name: '__config__',
-        formula: 'source_table = 1',
-        rows: [
-          ['key', 'value', 'notes'],
-          ['source_sheet', 'Sheet1', 'worksheet to read'],
-          ['source_table', '1', 'column names and data rows'],
-          ...blankRows(5),
-        ],
-        classes: [
-          ['header', 'header', 'header'],
-          ['', '', ''],
-          ['', 'selected', ''],
-        ],
-      },
-      {
-        name: 'Report',
-        formula: '{{ IF([Renewal] > 10000, "Priority", "Standard") }}',
-        rows: [
-          ['Customer Renewal Report', '', '', '', ''],
-          ['Account', 'Region', 'Renewal', 'Owner', 'Tier'],
-          [
-            '{{ [Account] }}',
-            '{{ [Region] }}',
-            '{{ [Renewal] }}',
-            '{{ [Owner] }}',
-            '{{ IF([Renewal] > 10000, "Priority", "Standard") }}',
+    // 01 — Raw data the application supplies
+    {
+      kind: 'data.xlsx',
+      title: translate({
+        id: 'homepage.preview.raw.title',
+        message: 'Start with the raw data.',
+        description: 'Excel preview caption — raw data step',
+      }),
+      note: translate({
+        id: 'homepage.preview.raw.note',
+        message:
+          'The application hands xl3 a data table — an .xlsx sheet or a language-neutral JSON source — plus any per-run inputs. Nothing about layout lives in code.',
+        description: 'Excel preview note — raw data step',
+      }),
+      workbookTitle: 'data.xlsx',
+      workbookSubtitle: translate({
+        id: 'homepage.preview.raw.subtitle',
+        message: 'raw operator data',
+        description: 'Excel preview window subtitle — raw data step',
+      }),
+      formula: 'Acme Logistics',
+      sheetName: 'Sheet1',
+      rows: [
+        ['Account', 'Region', 'Renewal', 'Owner'],
+        ['Acme Logistics', 'Seoul', '18400', 'Mina'],
+        ['Beta Works', 'Busan', '7200', 'Joon'],
+        ...blankRows(5),
+      ],
+      classes: [
+        ['header', 'header', 'header', 'header'],
+        ['selected', '', 'currency', ''],
+        ['', '', 'currency', ''],
+      ],
+    },
+    // 02 — Template: the executable workbook (two switchable sheets)
+    {
+      kind: 'template.xlsx',
+      title: translate({
+        id: 'homepage.preview.template.title',
+        message: 'The template is the executable workbook.',
+        description: 'Excel preview caption — template step',
+      }),
+      note: translate({
+        id: 'homepage.preview.template.note',
+        message:
+          'The visible layout carries XTL {{ … }} cells; the hidden __config__ sheet declares the rules. Click the sheet tabs to switch between them.',
+        description: 'Excel preview note — template step',
+      }),
+      workbookTitle: 'template.xlsx',
+      workbookSubtitle: translate({
+        id: 'homepage.preview.template.subtitle',
+        message: 'executable Excel template',
+        description: 'Excel preview window subtitle — template step',
+      }),
+      sheets: [
+        {
+          name: '__config__',
+          formula: 'source_table = 1',
+          rows: [
+            ['key', 'value', 'notes'],
+            ['source_sheet', 'Sheet1', 'worksheet to read'],
+            ['source_table', '1', 'column names and data rows'],
+            ...blankRows(5),
           ],
-          ...blankRows(5),
-        ],
-        classes: [
-          ['header', 'header', 'header', 'header', 'header'],
-          ['header', 'header', 'header', 'header', 'header'],
-          ['template', 'template', 'template', 'template', 'selected template'],
-        ],
-        merges: [{ row: 0, col: 0, span: 5 }],
-      },
-    ],
-  },
-  // 03 — Result: the rendered output workbook
-  {
-    kind: 'result.xlsx',
-    title: translate({
-      id: 'homepage.preview.result.title',
-      message: 'Same inputs, same workbook — every run.',
-      description: 'Excel preview caption — result step',
-    }),
-    note: translate({
-      id: 'homepage.preview.result.note',
-      message:
-        "The template's number formats, fills, borders, and merged headers are preserved verbatim; only the values change.",
-      description: 'Excel preview note — result step',
-    }),
-    workbookTitle: 'result.xlsx',
-    workbookSubtitle: translate({
-      id: 'homepage.preview.result.subtitle',
-      message: 'rendered workbook, formatting preserved',
-      description: 'Excel preview window subtitle — result step',
-    }),
-    formula: 'Priority',
-    sheetName: 'Report',
-    rows: [
-      ['Customer Renewal Report', '', '', '', ''],
-      ['Account', 'Region', 'Renewal', 'Owner', 'Tier'],
-      ['Acme Logistics', 'Seoul', '18,400', 'Mina', 'Priority'],
-      ['Beta Works', 'Busan', '7,200', 'Joon', 'Standard'],
-      ...blankRows(4),
-    ],
-    classes: [
-      ['header', 'header', 'header', 'header', 'header'],
-      ['header', 'header', 'header', 'header', 'header'],
-      ['', '', 'currency', '', 'status'],
-      ['', '', 'currency', '', 'status'],
-    ],
-    merges: [{ row: 0, col: 0, span: 5 }],
-  },
+          classes: [
+            ['header', 'header', 'header'],
+            ['', '', ''],
+            ['', 'selected', ''],
+          ],
+        },
+        {
+          name: 'Report',
+          formula: '{{ IF([Renewal] > 10000, "Priority", "Standard") }}',
+          rows: [
+            ['Customer Renewal Report', '', '', '', ''],
+            ['Account', 'Region', 'Renewal', 'Owner', 'Tier'],
+            [
+              '{{ [Account] }}',
+              '{{ [Region] }}',
+              '{{ [Renewal] }}',
+              '{{ [Owner] }}',
+              '{{ IF([Renewal] > 10000, "Priority", "Standard") }}',
+            ],
+            ...blankRows(5),
+          ],
+          classes: [
+            ['header', 'header', 'header', 'header', 'header'],
+            ['header', 'header', 'header', 'header', 'header'],
+            ['template', 'template', 'template', 'template', 'selected template'],
+          ],
+          merges: [{ row: 0, col: 0, span: 5 }],
+        },
+      ],
+    },
+    // 03 — Result: the rendered output workbook
+    {
+      kind: 'result.xlsx',
+      title: translate({
+        id: 'homepage.preview.result.title',
+        message: 'Same inputs, same workbook — every run.',
+        description: 'Excel preview caption — result step',
+      }),
+      note: translate({
+        id: 'homepage.preview.result.note',
+        message:
+          "The template's number formats, fills, borders, and merged headers are preserved verbatim; only the values change.",
+        description: 'Excel preview note — result step',
+      }),
+      workbookTitle: 'result.xlsx',
+      workbookSubtitle: translate({
+        id: 'homepage.preview.result.subtitle',
+        message: 'rendered workbook, formatting preserved',
+        description: 'Excel preview window subtitle — result step',
+      }),
+      formula: 'Priority',
+      sheetName: 'Report',
+      rows: [
+        ['Customer Renewal Report', '', '', '', ''],
+        ['Account', 'Region', 'Renewal', 'Owner', 'Tier'],
+        ['Acme Logistics', 'Seoul', '18,400', 'Mina', 'Priority'],
+        ['Beta Works', 'Busan', '7,200', 'Joon', 'Standard'],
+        ...blankRows(4),
+      ],
+      classes: [
+        ['header', 'header', 'header', 'header', 'header'],
+        ['header', 'header', 'header', 'header', 'header'],
+        ['', '', 'currency', '', 'status'],
+        ['', '', 'currency', '', 'status'],
+      ],
+      merges: [{ row: 0, col: 0, span: 5 }],
+    },
   ];
 }
 
@@ -193,11 +192,9 @@ function Hero() {
             </Translate>
           </h1>
           <p className={styles.heroLead}>
-            <Translate
-              id="homepage.hero.lead"
-              description="Hero section lead paragraph"
-            >
-              Edit the transformation logic inside the Excel file — no developer ticket. Supply the data and xl3 executes it: styles preserved, same result every time.
+            <Translate id="homepage.hero.lead" description="Hero section lead paragraph">
+              Edit the transformation logic inside the Excel file — no developer ticket. Supply the
+              data and xl3 executes it: styles preserved, same result every time.
             </Translate>
           </p>
           <div className={styles.heroLinks}>
@@ -277,12 +274,18 @@ function Hero() {
           </div>
           <div className={styles.flowRole}>
             <span>
-              <Translate id="homepage.hero.flow.role.developer" description="Workflow diagram — actor label">
+              <Translate
+                id="homepage.hero.flow.role.developer"
+                description="Workflow diagram — actor label"
+              >
                 Developer
               </Translate>
             </span>
             <strong>
-              <Translate id="homepage.hero.flow.role.developerRole" description="What the developer does in the workflow">
+              <Translate
+                id="homepage.hero.flow.role.developerRole"
+                description="What the developer does in the workflow"
+              >
                 owns data and deployment
               </Translate>
             </strong>
@@ -298,7 +301,10 @@ function Hero() {
             <div className={styles.flowFile}>
               <span>raw.xlsx</span>
               <small>
-                <Translate id="homepage.hero.flow.raw.label" description="Workflow diagram — what raw.xlsx is">
+                <Translate
+                  id="homepage.hero.flow.raw.label"
+                  description="Workflow diagram — what raw.xlsx is"
+                >
                   operator data
                 </Translate>
               </small>
@@ -307,7 +313,10 @@ function Hero() {
             <div className={styles.flowFile}>
               <span>template.xlsx</span>
               <small>
-                <Translate id="homepage.hero.flow.template.label" description="Workflow diagram — what template.xlsx is">
+                <Translate
+                  id="homepage.hero.flow.template.label"
+                  description="Workflow diagram — what template.xlsx is"
+                >
                   executable rules
                 </Translate>
               </small>
@@ -315,12 +324,18 @@ function Hero() {
             <div className={styles.flowArrow}>↓</div>
             <div className={styles.flowResult}>
               <span>
-                <Translate id="homepage.hero.flow.result.label" description="Workflow diagram — output label">
+                <Translate
+                  id="homepage.hero.flow.result.label"
+                  description="Workflow diagram — output label"
+                >
                   finished workbook
                 </Translate>
               </span>
               <small>
-                <Translate id="homepage.hero.flow.result.sublabel" description="Workflow diagram — output sublabel">
+                <Translate
+                  id="homepage.hero.flow.result.sublabel"
+                  description="Workflow diagram — output sublabel"
+                >
                   for the operator
                 </Translate>
               </small>
@@ -329,19 +344,27 @@ function Hero() {
         </aside>
         <div className={styles.heroPillars} aria-label="XL3 brand attributes">
           <div className={styles.pillar}>
-            <span className={styles.pillarIcon} aria-hidden="true">↯</span>
+            <span className={styles.pillarIcon} aria-hidden="true">
+              ↯
+            </span>
             <strong>Fast</strong>
           </div>
           <div className={styles.pillar}>
-            <span className={styles.pillarIcon} aria-hidden="true">◇</span>
+            <span className={styles.pillarIcon} aria-hidden="true">
+              ◇
+            </span>
             <strong>Deterministic</strong>
           </div>
           <div className={styles.pillar}>
-            <span className={styles.pillarIcon} aria-hidden="true">▣</span>
+            <span className={styles.pillarIcon} aria-hidden="true">
+              ▣
+            </span>
             <strong>Portable</strong>
           </div>
           <div className={styles.pillar}>
-            <span className={styles.pillarIcon} aria-hidden="true">&lt;/&gt;</span>
+            <span className={styles.pillarIcon} aria-hidden="true">
+              &lt;/&gt;
+            </span>
             <strong>Spec-first</strong>
           </div>
         </div>
@@ -417,8 +440,13 @@ function Walkthrough() {
             </Translate>
           </h2>
           <p>
-            <Translate id="homepage.walkthrough.lead" description="Walkthrough section lead paragraph">
-              The business user edits layout in Excel; the application supplies data and inputs; xl3 executes the workbook deterministically. Click through the three stages to follow one report from raw data to finished output.
+            <Translate
+              id="homepage.walkthrough.lead"
+              description="Walkthrough section lead paragraph"
+            >
+              The business user edits layout in Excel; the application supplies data and inputs; xl3
+              executes the workbook deterministically. Click through the three stages to follow one
+              report from raw data to finished output.
             </Translate>
           </p>
         </div>
@@ -450,11 +478,7 @@ function Walkthrough() {
             ))}
           </div>
           <div className={styles.previewColumn}>
-            <ExcelPreviewFrame
-              kind={preview.kind}
-              title={preview.title}
-              note={preview.note}
-            >
+            <ExcelPreviewFrame kind={preview.kind} title={preview.title} note={preview.note}>
               {/* key on active step so the sheet-tab state resets when the step changes */}
               <ExcelPreview key={active} workbook={preview} />
             </ExcelPreviewFrame>
@@ -485,12 +509,19 @@ function Handoff() {
           <div className={styles.prose}>
             <p>
               <Translate id="homepage.handoff.body.p1" description="Handoff body paragraph 1">
-                ExcelJS, SheetJS, openpyxl, and Apache POI are the DOM APIs of spreadsheets: powerful, but verbose. When report layout, styles, merged cells, and loops live in code, every design change — a new column, a moved subtotal, a reformatted header — becomes a deployment.
+                ExcelJS, SheetJS, openpyxl, and Apache POI are the DOM APIs of spreadsheets:
+                powerful, but verbose. When report layout, styles, merged cells, and loops live in
+                code, every design change — a new column, a moved subtotal, a reformatted header —
+                becomes a deployment.
               </Translate>
             </p>
             <p>
               <Translate id="homepage.handoff.body.p2" description="Handoff body paragraph 2">
-                xl3 moves the recurring contract back into Excel. The workbook is already the view; XTL makes it executable, while the application only supplies data and runs the engine. A template is an ordinary .xlsx — no macros, no vendor cloud — so you can diff it, review it in a pull request, and hand it to someone who has never heard of xl3.
+                xl3 moves the recurring contract back into Excel. The workbook is already the view;
+                XTL makes it executable, while the application only supplies data and runs the
+                engine. A template is an ordinary .xlsx — no macros, no vendor cloud — so you can
+                diff it, review it in a pull request, and hand it to someone who has never heard of
+                xl3.
               </Translate>
             </p>
           </div>
@@ -555,7 +586,10 @@ function Responsibility() {
         <div className={styles.narrativeGrid}>
           <div>
             <p className={styles.kicker}>
-              <Translate id="homepage.responsibility.kicker" description="Responsibility section kicker">
+              <Translate
+                id="homepage.responsibility.kicker"
+                description="Responsibility section kicker"
+              >
                 Responsibility-driven automation
               </Translate>
             </p>
@@ -567,13 +601,26 @@ function Responsibility() {
           </div>
           <div className={styles.prose}>
             <p>
-              <Translate id="homepage.responsibility.body.p1" description="Responsibility section body paragraph 1">
-                Most Excel automation tools make developers faster. xl3 aims at a different outcome: letting operators take over the document changes that used to require a developer. When every business partner needs its own format, having one engineer implement each one — and re-edit it on every change — is the bottleneck.
+              <Translate
+                id="homepage.responsibility.body.p1"
+                description="Responsibility section body paragraph 1"
+              >
+                Most Excel automation tools make developers faster. xl3 aims at a different outcome:
+                letting operators take over the document changes that used to require a developer.
+                When every business partner needs its own format, having one engineer implement each
+                one — and re-edit it on every change — is the bottleneck.
               </Translate>
             </p>
             <p>
-              <Translate id="homepage.responsibility.body.p2" description="Responsibility section body paragraph 2">
-                xl3 was shaped by an internal service where, over months of operation, non-developers maintained templates and conversion rules directly in Excel while developers focused almost entirely on the runtime. The important reduction was not just lines of code — it was the amount of work that had to be done by developers at all.
+              <Translate
+                id="homepage.responsibility.body.p2"
+                description="Responsibility section body paragraph 2"
+              >
+                xl3 was shaped by an internal service where, over months of operation,
+                non-developers maintained templates and conversion rules directly in Excel while
+                developers focused almost entirely on the runtime. The important reduction was not
+                just lines of code — it was the amount of work that had to be done by developers at
+                all.
               </Translate>
             </p>
           </div>
@@ -588,8 +635,13 @@ function Responsibility() {
           ))}
         </div>
         <p className={styles.conformanceFact}>
-          <Translate id="homepage.responsibility.fact" description="Responsibility section closing fact">
-            xl3 is not trying to replace developers. Developers own the runtime; operators own the templates; document automation becomes an organizational capability instead of a developer-only task.
+          <Translate
+            id="homepage.responsibility.fact"
+            description="Responsibility section closing fact"
+          >
+            xl3 is not trying to replace developers. Developers own the runtime; operators own the
+            templates; document automation becomes an organizational capability instead of a
+            developer-only task.
           </Translate>
         </p>
       </div>
@@ -662,7 +714,9 @@ function Standard() {
           </h2>
           <p>
             <Translate id="homepage.standard.lead" description="Standard section lead paragraph">
-              xl3 is defined as an open, implementation-independent standard in three parts. The XTL surface stays small on purpose, so templates remain readable by humans and easy for AI systems to draft.
+              xl3 is defined as an open, implementation-independent standard in three parts. The XTL
+              surface stays small on purpose, so templates remain readable by humans and easy for AI
+              systems to draft.
             </Translate>
           </p>
         </div>
@@ -688,9 +742,7 @@ function Standard() {
               // on every release cut.
               adrCount: <strong>78 ADRs</strong>,
               fixtureCount: <strong>171 conformance fixtures</strong>,
-              npmLink: (
-                <a href="https://www.npmjs.com/package/@xl3-lang/xl3">@xl3-lang/xl3</a>
-              ),
+              npmLink: <a href="https://www.npmjs.com/package/@xl3-lang/xl3">@xl3-lang/xl3</a>,
               portersGuideLink: (
                 <Link to="/porters-guide">
                   <Translate
@@ -719,12 +771,14 @@ function useComparisons() {
       tool: 'xl3',
       bestAt: translate({
         id: 'homepage.comparison.xl3.bestAt',
-        message: 'Declarative Excel template execution. The workbook already exists; xl3 runs it with data.',
+        message:
+          'Declarative Excel template execution. The workbook already exists; xl3 runs it with data.',
         description: 'Comparison row xl3 — best at',
       }),
       tradeoff: translate({
         id: 'homepage.comparison.xl3.tradeoff',
-        message: 'Alpha; one maintainer; the XTL surface is intentionally small and still evolving until 1.0.',
+        message:
+          'Alpha; one maintainer; the XTL surface is intentionally small and still evolving until 1.0.',
         description: 'Comparison row xl3 — tradeoff',
       }),
     },
@@ -737,7 +791,8 @@ function useComparisons() {
       }),
       tradeoff: translate({
         id: 'homepage.comparison.sdk.tradeoff',
-        message: 'Layout, styles, merges, loops, and business rules become code. Non-developers cannot safely edit the template.',
+        message:
+          'Layout, styles, merges, loops, and business rules become code. Non-developers cannot safely edit the template.',
         description: 'Comparison row spreadsheet SDKs — tradeoff',
       }),
     },
@@ -750,7 +805,8 @@ function useComparisons() {
       }),
       tradeoff: translate({
         id: 'homepage.comparison.scripts.tradeoff',
-        message: "Rules live in code or one maintainer's memory; layout changes still need code changes.",
+        message:
+          "Rules live in code or one maintainer's memory; layout changes still need code changes.",
         description: 'Comparison row Python/VBA — tradeoff',
       }),
     },
@@ -763,8 +819,7 @@ function useComparisons() {
       }),
       tradeoff: translate({
         id: 'homepage.comparison.powerQuery.tradeoff',
-        message:
-          'Tenant-bound; the workflow rules do not travel with the workbook.',
+        message: 'Tenant-bound; the workflow rules do not travel with the workbook.',
         description: 'Comparison row Power Query — tradeoff',
       }),
     },
@@ -777,7 +832,8 @@ function useComparisons() {
       }),
       tradeoff: translate({
         id: 'homepage.comparison.templateEngines.tradeoff',
-        message: 'Useful prior art, but often tied to one runtime and not positioned as a small, portable Excel rule format.',
+        message:
+          'Useful prior art, but often tied to one runtime and not positioned as a small, portable Excel rule format.',
         description: 'Comparison row template engines — tradeoff',
       }),
     },
@@ -790,7 +846,8 @@ function useComparisons() {
       }),
       tradeoff: translate({
         id: 'homepage.comparison.docgen.tradeoff',
-        message: 'Rules live in a vendor service, not in a portable workbook template you can review and run yourself.',
+        message:
+          'Rules live in a vendor service, not in a portable workbook template you can review and run yourself.',
         description: 'Comparison row doc-gen SaaS — tradeoff',
       }),
     },
@@ -803,7 +860,8 @@ function useComparisons() {
       }),
       tradeoff: translate({
         id: 'homepage.comparison.llmDirect.tradeoff',
-        message: 'Not a deterministic transformation contract for recurring operations; styles and totals drift between runs.',
+        message:
+          'Not a deterministic transformation contract for recurring operations; styles and totals drift between runs.',
         description: 'Comparison row direct LLM xlsx — tradeoff',
       }),
     },
@@ -832,17 +890,26 @@ function Comparison() {
             <thead>
               <tr>
                 <th>
-                  <Translate id="homepage.comparison.col.approach" description="Comparison table column header — tool/approach name">
+                  <Translate
+                    id="homepage.comparison.col.approach"
+                    description="Comparison table column header — tool/approach name"
+                  >
                     Approach
                   </Translate>
                 </th>
                 <th>
-                  <Translate id="homepage.comparison.col.bestAt" description="Comparison table column header — best at">
+                  <Translate
+                    id="homepage.comparison.col.bestAt"
+                    description="Comparison table column header — best at"
+                  >
                     Best at
                   </Translate>
                 </th>
                 <th>
-                  <Translate id="homepage.comparison.col.tradeoff" description="Comparison table column header — tradeoff">
+                  <Translate
+                    id="homepage.comparison.col.tradeoff"
+                    description="Comparison table column header — tradeoff"
+                  >
                     Tradeoff
                   </Translate>
                 </th>
@@ -851,7 +918,9 @@ function Comparison() {
             <tbody>
               {rows.map((c) => (
                 <tr key={c.tool}>
-                  <td><strong>{c.tool}</strong></td>
+                  <td>
+                    <strong>{c.tool}</strong>
+                  </td>
                   <td>{c.bestAt}</td>
                   <td>{c.tradeoff}</td>
                 </tr>
@@ -881,7 +950,10 @@ function DeveloperApi() {
           </h2>
           <p>
             <Translate id="homepage.api.lead" description="Developer API section lead paragraph">
-              Install the reference implementation and run a template with a buffer of data. The operator experience can stay file-based while your app owns deployment and validation — and convertJson() takes a language-neutral JSON source when the host has no .xlsx to hand over.
+              Install the reference implementation and run a template with a buffer of data. The
+              operator experience can stay file-based while your app owns deployment and validation
+              — and convertJson() takes a language-neutral JSON source when the host has no .xlsx to
+              hand over.
             </Translate>
           </p>
         </div>

@@ -36,11 +36,20 @@ type Xl3Module = {
     options?: { inputs?: Record<string, string | number | boolean> },
   ): Promise<{
     files: Array<{ filename: string; sheets: Array<{ name: string; rowCount: number }> }>;
-    inputs: Array<{ name: string; type: string; required?: boolean; default?: unknown; label?: string; description?: string }>;
+    inputs: Array<{
+      name: string;
+      type: string;
+      required?: boolean;
+      default?: unknown;
+      label?: string;
+      description?: string;
+    }>;
     sources: Array<{ name: string; rowCount: number; headers: string[] }>;
     warnings: Array<{ message: string }>;
   }>;
-  readTemplateInputs(template: ArrayBuffer): Promise<
+  readTemplateInputs(
+    template: ArrayBuffer,
+  ): Promise<
     Array<{ name: string; type: string; required?: boolean; default?: unknown; label?: string }>
   >;
   isXtlError(e: unknown): e is Error & { code: string };
@@ -75,23 +84,31 @@ function downloadBlob(blob: Blob, filename: string) {
 }
 
 function outputBlob(output: OutputFile): Blob {
-  return new Blob(
-    [output.data],
-    { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
-  );
+  return new Blob([output.data], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
 }
 
 function Converter() {
   const { i18n } = useDocusaurusContext();
   const samples = SAMPLES[i18n.currentLocale] ?? SAMPLES.default;
+  const sampleRawUrl = samples.raw;
+  const sampleTemplateUrl = samples.template;
   const [rawFile, setRawFile] = useState<File | null>(null);
   const [templateFile, setTemplateFile] = useState<File | null>(null);
-  const [inputDecls, setInputDecls] = useState<Xl3Module extends never ? never : Awaited<ReturnType<Xl3Module['readTemplateInputs']>>>([]);
+  const [inputDecls, setInputDecls] = useState<
+    Xl3Module extends never ? never : Awaited<ReturnType<Xl3Module['readTemplateInputs']>>
+  >([]);
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState<{ message: string; tone: 'muted' | 'error' | 'success'; code?: string }>({
+  const [status, setStatus] = useState<{
+    message: string;
+    tone: 'muted' | 'error' | 'success';
+    code?: string;
+  }>({
     message: translate({
       id: 'try.status.idle',
-      message: 'Sample files are pre-loaded. Press the button to convert as-is, or replace either file first.',
+      message:
+        'Sample files are pre-loaded. Press the button to convert as-is, or replace either file first.',
       description: 'Status line shown before the user has run a conversion',
     }),
     tone: 'muted',
@@ -102,15 +119,19 @@ function Converter() {
     files: Array<{ filename: string; sheets: Array<{ name: string; rowCount: number }> }>;
     warnings: Array<{ message: string }>;
   } | null>(null);
-  const inputDeclsLoadedFor = useRef<File | null>(null);
+  // A string identifies the locale sample; a File identifies an upload.
+  // `undefined` is the only "never loaded" sentinel — using null here made
+  // the initial null templateFile look cached and skipped the sample entirely.
+  const inputDeclsLoadedFor = useRef<File | string | undefined>(undefined);
 
   // Re-read declared inputs whenever a new template file is supplied.
   useEffect(() => {
     let cancelled = false;
     async function refreshDecls() {
-      if (inputDeclsLoadedFor.current === templateFile) return;
+      const templateIdentity = templateFile ?? sampleTemplateUrl;
+      if (inputDeclsLoadedFor.current === templateIdentity) return;
       try {
-        const buf = await fileOrUrlBuffer(templateFile, samples.template);
+        const buf = await fileOrUrlBuffer(templateFile, sampleTemplateUrl);
         const xl3 = await loadXl3();
         const decls = await xl3.readTemplateInputs(buf);
         if (cancelled) return;
@@ -120,122 +141,129 @@ function Converter() {
         for (const d of decls) {
           if (d.default != null) seed[d.name] = String(d.default);
         }
-        setInputValues((prev) => ({ ...seed, ...prev }));
-        inputDeclsLoadedFor.current = templateFile;
+        setInputValues(seed);
+        inputDeclsLoadedFor.current = templateIdentity;
       } catch {
-        // Silent — template might fail to parse during file picking.
+        if (cancelled) return;
+        // A newly picked template may be incomplete or invalid. Do not leave
+        // the previous template's input controls visible in that state.
+        setInputDecls([]);
+        setInputValues({});
       }
     }
     refreshDecls();
-    return () => { cancelled = true; };
-  }, [templateFile, samples.template]);
+    return () => {
+      cancelled = true;
+    };
+  }, [templateFile, sampleTemplateUrl]);
 
-  const onSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    setStatus({
-      message: translate({
-        id: 'try.status.running',
-        message: 'Converting workbook…',
-        description: 'Status line shown while the converter is running',
-      }),
-      tone: 'muted',
-    });
-    setPreviewInfo(null);
-    try {
-      const templateBuf = await fileOrUrlBuffer(templateFile, samples.template);
-      const dataBuf = await fileOrUrlBuffer(rawFile, samples.raw);
-      const xl3 = await loadXl3();
-
-      // Preview first to populate the side panel.
-      const previewResult = await xl3.preview(
-        templateBuf.slice(0),
-        dataBuf.slice(0),
-        Object.keys(inputValues).length ? { inputs: inputValues } : undefined,
-      );
-      setPreviewInfo({
-        sources: previewResult.sources,
-        files: previewResult.files,
-        warnings: previewResult.warnings,
+  const onSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setBusy(true);
+      setStatus({
+        message: translate({
+          id: 'try.status.running',
+          message: 'Converting workbook…',
+          description: 'Status line shown while the converter is running',
+        }),
+        tone: 'muted',
       });
+      setPreviewInfo(null);
+      try {
+        const [templateBuf, dataBuf, xl3] = await Promise.all([
+          fileOrUrlBuffer(templateFile, sampleTemplateUrl),
+          fileOrUrlBuffer(rawFile, sampleRawUrl),
+          loadXl3(),
+        ]);
+        const options = Object.keys(inputValues).length ? { inputs: inputValues } : undefined;
 
-      const outputs = await xl3.convert(
-        templateBuf,
-        dataBuf,
-        Object.keys(inputValues).length ? { inputs: inputValues } : undefined,
-      );
-      if (outputs.length === 0) {
-        setStatus({
-          message: translate({
-            id: 'try.status.noOutputs',
-            message: 'Conversion succeeded but produced no output files.',
-            description: 'Status line when convert() returns an empty array',
-          }),
-          tone: 'error',
+        // Preview and conversion consume independent buffer copies. Starting
+        // both together removes the converter page's largest async waterfall.
+        const [previewResult, outputs] = await Promise.all([
+          xl3.preview(templateBuf.slice(0), dataBuf.slice(0), options),
+          xl3.convert(templateBuf, dataBuf, options),
+        ]);
+        setPreviewInfo({
+          sources: previewResult.sources,
+          files: previewResult.files,
+          warnings: previewResult.warnings,
         });
-        return;
+        if (outputs.length === 0) {
+          setStatus({
+            message: translate({
+              id: 'try.status.noOutputs',
+              message: 'Conversion succeeded but produced no output files.',
+              description: 'Status line when convert() returns an empty array',
+            }),
+            tone: 'error',
+          });
+          return;
+        }
+        if (outputs.length === 1) {
+          downloadBlob(outputBlob(outputs[0]), outputs[0].filename);
+          setStatus({
+            message: translate(
+              {
+                id: 'try.status.downloadedOne',
+                message: 'Downloaded {filename}.',
+                description: 'Status line after a single output file is downloaded',
+              },
+              { filename: outputs[0].filename },
+            ),
+            tone: 'success',
+          });
+        } else {
+          const zip = await xl3.packageZip(outputs);
+          downloadBlob(zip, 'xl3-outputs.zip');
+          setStatus({
+            message: translate(
+              {
+                id: 'try.status.downloadedMany',
+                message: 'Downloaded {count} files as xl3-outputs.zip.',
+                description:
+                  'Status line after multiple output files are bundled into a zip and downloaded',
+              },
+              { count: String(outputs.length) },
+            ),
+            tone: 'success',
+          });
+        }
+      } catch (err) {
+        const xl3 = await loadXl3().catch(() => undefined);
+        if (xl3 && xl3.isXtlError(err)) {
+          setStatus({
+            message: translate(
+              {
+                id: 'try.status.failedXtl',
+                message: 'Conversion failed: {detail}',
+                description: 'Status line on a typed xl3/XTL failure',
+              },
+              { detail: err.message },
+            ),
+            tone: 'error',
+            code: err.code,
+          });
+        } else {
+          const message = err instanceof Error ? err.message : String(err);
+          setStatus({
+            message: translate(
+              {
+                id: 'try.status.failedGeneric',
+                message: 'Conversion failed: {detail}',
+                description: 'Status line on a generic (non-xl3) runtime failure',
+              },
+              { detail: message },
+            ),
+            tone: 'error',
+          });
+        }
+      } finally {
+        setBusy(false);
       }
-      if (outputs.length === 1) {
-        downloadBlob(outputBlob(outputs[0]), outputs[0].filename);
-        setStatus({
-          message: translate(
-            {
-              id: 'try.status.downloadedOne',
-              message: 'Downloaded {filename}.',
-              description: 'Status line after a single output file is downloaded',
-            },
-            { filename: outputs[0].filename },
-          ),
-          tone: 'success',
-        });
-      } else {
-        const zip = await xl3.packageZip(outputs);
-        downloadBlob(zip, 'xl3-outputs.zip');
-        setStatus({
-          message: translate(
-            {
-              id: 'try.status.downloadedMany',
-              message: 'Downloaded {count} files as xl3-outputs.zip.',
-              description: 'Status line after multiple output files are bundled into a zip and downloaded',
-            },
-            { count: String(outputs.length) },
-          ),
-          tone: 'success',
-        });
-      }
-    } catch (err) {
-      const xl3 = await loadXl3().catch(() => undefined);
-      if (xl3 && xl3.isXtlError(err)) {
-        setStatus({
-          message: translate(
-            {
-              id: 'try.status.failedXtl',
-              message: 'Conversion failed: {detail}',
-              description: 'Status line on a typed xl3/XTL failure',
-            },
-            { detail: err.message },
-          ),
-          tone: 'error',
-          code: err.code,
-        });
-      } else {
-        const message = err instanceof Error ? err.message : String(err);
-        setStatus({
-          message: translate(
-            {
-              id: 'try.status.failedGeneric',
-              message: 'Conversion failed: {detail}',
-              description: 'Status line on a generic (non-xl3) runtime failure',
-            },
-            { detail: message },
-          ),
-          tone: 'error',
-        });
-      }
-    } finally {
-      setBusy(false);
-    }
-  }, [rawFile, templateFile, inputValues]);
+    },
+    [rawFile, sampleRawUrl, sampleTemplateUrl, templateFile, inputValues],
+  );
 
   return (
     <div className={styles.converterWrap}>
@@ -283,8 +311,11 @@ function Converter() {
                 Raw Excel file
               </Translate>
             </span>
-            <a href={samples.raw} download>
-              <Translate id="try.form.downloadSample" description="Link label to download the sample file (used twice)">
+            <a href={sampleRawUrl} download>
+              <Translate
+                id="try.form.downloadSample"
+                description="Link label to download the sample file (used twice)"
+              >
                 Download sample
               </Translate>
             </a>
@@ -308,8 +339,11 @@ function Converter() {
                 Template Excel file
               </Translate>
             </span>
-            <a href={samples.template} download>
-              <Translate id="try.form.downloadSample" description="Link label to download the sample file (used twice)">
+            <a href={sampleTemplateUrl} download>
+              <Translate
+                id="try.form.downloadSample"
+                description="Link label to download the sample file (used twice)"
+              >
                 Download sample
               </Translate>
             </a>
@@ -333,7 +367,10 @@ function Converter() {
         {inputDecls.length > 0 && (
           <fieldset className={styles.inputsBlock}>
             <legend>
-              <Translate id="try.form.inputs.legend" description="Legend for the dynamic inputs block">
+              <Translate
+                id="try.form.inputs.legend"
+                description="Legend for the dynamic inputs block"
+              >
                 Template inputs
               </Translate>
             </legend>
@@ -363,7 +400,10 @@ function Converter() {
           disabled={busy}
         >
           {busy ? (
-            <Translate id="try.form.submit.busy" description="Submit button label while a conversion is running">
+            <Translate
+              id="try.form.submit.busy"
+              description="Submit button label while a conversion is running"
+            >
               Converting…
             </Translate>
           ) : (
@@ -405,7 +445,10 @@ function Converter() {
         </h3>
         {!previewInfo && (
           <p className={styles.previewEmpty}>
-            <Translate id="try.preview.empty" description="Placeholder text when no conversion has run yet">
+            <Translate
+              id="try.preview.empty"
+              description="Placeholder text when no conversion has run yet"
+            >
               Run the converter to see source counts, output filenames, and any warnings.
             </Translate>
           </p>
@@ -414,13 +457,19 @@ function Converter() {
           <>
             <section>
               <h4>
-                <Translate id="try.preview.sources.heading" description="Preview subsection — sources">
+                <Translate
+                  id="try.preview.sources.heading"
+                  description="Preview subsection — sources"
+                >
                   Sources detected
                 </Translate>
               </h4>
               {previewInfo.sources.length === 0 && (
                 <p>
-                  <Translate id="try.preview.none" description="Placeholder when a list is empty (used in multiple sections)">
+                  <Translate
+                    id="try.preview.none"
+                    description="Placeholder when a list is empty (used in multiple sections)"
+                  >
                     None.
                   </Translate>
                 </p>
@@ -445,13 +494,19 @@ function Converter() {
             </section>
             <section>
               <h4>
-                <Translate id="try.preview.outputs.heading" description="Preview subsection — output files">
+                <Translate
+                  id="try.preview.outputs.heading"
+                  description="Preview subsection — output files"
+                >
                   Output files
                 </Translate>
               </h4>
               {previewInfo.files.length === 0 && (
                 <p>
-                  <Translate id="try.preview.none" description="Placeholder when a list is empty (used in multiple sections)">
+                  <Translate
+                    id="try.preview.none"
+                    description="Placeholder when a list is empty (used in multiple sections)"
+                  >
                     None.
                   </Translate>
                 </p>
@@ -484,7 +539,10 @@ function Converter() {
             {previewInfo.warnings.length > 0 && (
               <section>
                 <h4>
-                  <Translate id="try.preview.warnings.heading" description="Preview subsection — warnings">
+                  <Translate
+                    id="try.preview.warnings.heading"
+                    description="Preview subsection — warnings"
+                  >
                     Warnings
                   </Translate>
                 </h4>
@@ -532,7 +590,8 @@ export default function ConverterPage() {
             </h1>
             <p className={styles.lead}>
               <Translate id="try.intro.lead" description="Intro section lead paragraph">
-                Both files are pre-loaded with sample data. Press the button to convert as-is, or replace either file. Conversion runs entirely in your browser — nothing is uploaded.
+                Both files are pre-loaded with sample data. Press the button to convert as-is, or
+                replace either file. Conversion runs entirely in your browser — nothing is uploaded.
               </Translate>
             </p>
             <p className={styles.crosslinks}>
@@ -564,7 +623,10 @@ export default function ConverterPage() {
           <BrowserOnly
             fallback={
               <div className={styles.previewEmpty}>
-                <Translate id="try.fallback.loading" description="BrowserOnly fallback while xl3 engine loads">
+                <Translate
+                  id="try.fallback.loading"
+                  description="BrowserOnly fallback while xl3 engine loads"
+                >
                   Loading converter…
                 </Translate>
               </div>

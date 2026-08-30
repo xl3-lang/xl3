@@ -17,7 +17,13 @@ import { xtlError } from './error-codes.js';
 import type { FileGroup } from './grouper.js';
 import { partitionByGroupKeys, planEmissionEvents } from './grouper.js';
 import type { SourceData } from './reader.js';
-import { ExcelJsWorkbookDocument, extendRangesForExpansion, sanitizeFilename, sanitizeSheetName, type WorkbookDocument } from './excel-document.js';
+import {
+  ExcelJsWorkbookDocument,
+  extendRangesForExpansion,
+  sanitizeFilename,
+  sanitizeSheetName,
+  type WorkbookDocument,
+} from './excel-document.js';
 
 const VAR_PATTERN = /\{\{.*?\}\}/;
 
@@ -34,9 +40,7 @@ function letterToCol(letters: string): number {
 function cellString(value: ExcelJS.CellValue): string {
   if (value === null || value === undefined) return '';
   if (typeof value === 'object' && 'richText' in value) {
-    return (value as { richText: { text: string }[] }).richText
-      .map((r) => r.text)
-      .join('');
+    return (value as { richText: { text: string }[] }).richText.map((r) => r.text).join('');
   }
   return String(value);
 }
@@ -66,10 +70,7 @@ function cellString(value: ExcelJS.CellValue): string {
  * formula spanning the whole expanded range should put the formula in a
  * footer cell below the data block, not inside it.
  */
-function unshareFormula(
-  value: ExcelJS.CellValue,
-  sheet: ExcelJS.Worksheet,
-): ExcelJS.CellValue {
+function unshareFormula(value: ExcelJS.CellValue, sheet: ExcelJS.Worksheet): ExcelJS.CellValue {
   if (value === null || value === undefined || typeof value !== 'object') return value;
   const v = value as unknown as Record<string, unknown>;
   if (v.shareType === 'shared' && typeof v.formula === 'string') {
@@ -98,7 +99,11 @@ export class Renderer {
   private listSheets: Record<string, string[]>;
   private sources: Record<string, SourceData>;
 
-  constructor(parsed: ParsedTemplate, columns: Set<string>, sources: Record<string, SourceData> = {}) {
+  constructor(
+    parsed: ParsedTemplate,
+    columns: Set<string>,
+    sources: Record<string, SourceData> = {},
+  ) {
     this.parsed = parsed;
     this.columns = columns;
     this.listSheets = parsed.listSheets;
@@ -150,7 +155,11 @@ export class Renderer {
         if (matchingGroups.length >= 1) {
           // Skip sheet if filtered data count is 0 (single-block path only)
           if (!isMultiBlockSheet) {
-            const filteredRows = applyDirectives(matchingGroups[0].rows, st.directives, this.listSheets);
+            const filteredRows = applyDirectives(
+              matchingGroups[0].rows,
+              st.directives,
+              this.listSheets,
+            );
             if (filteredRows.length === 0) {
               document.removeWorksheet(st.originalName);
               continue;
@@ -256,7 +265,7 @@ export class Renderer {
       // render at their original adjusted positions.
       type ColRange = { start: number; end: number };
       const expansionShifts: { range: ColRange; delta: number }[] = [];
-      const shiftForBlock = (b: typeof adjustedBlocks[number]) => {
+      const shiftForBlock = (b: (typeof adjustedBlocks)[number]) => {
         let acc = 0;
         for (const s of expansionShifts) {
           // Overlap: rangeA.end >= rangeB.start AND rangeB.end >= rangeA.start
@@ -273,21 +282,28 @@ export class Renderer {
         );
         // ADR-0012: a block scoped to a non-default source iterates that
         // source's full row set rather than the file/sheet group rows.
-        const blockRows = block.source === 'default'
-          ? sg.rows
-          : (this.sources[block.source]?.rows ?? []);
+        const blockRows =
+          block.source === 'default' ? sg.rows : (this.sources[block.source]?.rows ?? []);
         const directiveFiltered = applyDirectives(blockRows, blockDirectives, this.listSheets);
         // ADR-0014: apply inner join — keep only primary rows with a
         // matching joined row, and stash the paired row for ctx assembly.
         const filteredRows = this.applyJoin(directiveFiltered, block);
-        const staticCtx = this.buildStaticContext(fileKey, { ...sg, rows: filteredRows }, block.source);
+        const staticCtx = this.buildStaticContext(
+          fileKey,
+          { ...sg, rows: filteredRows },
+          block.source,
+        );
 
         const blockShift = shiftForBlock(block);
 
         if (block.direction === 'right') {
           this.renderDataCols(sheet, block, filteredRows, staticCtx, blockShift);
         } else {
-          const shiftedBlock = { ...block, startRow: block.startRow + blockShift, endRow: block.endRow + blockShift };
+          const shiftedBlock = {
+            ...block,
+            startRow: block.startRow + blockShift,
+            endRow: block.endRow + blockShift,
+          };
           if (filteredRows.length === 0) {
             if (shiftedBlock.startRow > 0) {
               document.spliceRowsPreservingMerges(sheet, shiftedBlock.startRow, 1);
@@ -309,7 +325,7 @@ export class Renderer {
             const templateRowCount = shiftedBlock.endRow - shiftedBlock.startRow + 1;
             const groupDir = block.directives.find((d) => d.kind === 'group');
             const delta = groupDir
-              ? (after - before) - templateRowCount
+              ? after - before - templateRowCount
               : filteredRows.length - templateRowCount;
             expansionShifts.push({
               range: { start: block.templateColStart, end: block.templateColEnd },
@@ -321,20 +337,31 @@ export class Renderer {
 
       // Render static rows (those not in any block)
       // Static rendering needs final context
-      const allFilteredRows = applyDirectives(sg.rows, st.directives.filter((d) => d.kind !== 'repeat'), this.listSheets);
+      const allFilteredRows = applyDirectives(
+        sg.rows,
+        st.directives.filter((d) => d.kind !== 'repeat'),
+        this.listSheets,
+      );
       const finalStaticCtx = this.buildStaticContext(fileKey, { ...sg, rows: allFilteredRows });
       sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
         // Skip rows that belong to data blocks (approximate — blocks may have shifted)
         let inBlock = false;
         for (const b of adjustedBlocks) {
-          if (rowNumber >= b.startRow && rowNumber <= b.endRow) { inBlock = true; break; }
+          if (rowNumber >= b.startRow && rowNumber <= b.endRow) {
+            inBlock = true;
+            break;
+          }
         }
         if (inBlock) return;
         row.eachCell({ includeEmpty: false }, (cell) => {
           const val = cellString(cell.value);
           if (VAR_PATTERN.test(val)) {
             const normalized = normalizeTemplate(val, this.columns);
-            cell.value = renderCellValue(normalized, evalCellAt(sheet.name, cell.address, normalized, finalStaticCtx), cell.style);
+            cell.value = renderCellValue(
+              normalized,
+              evalCellAt(sheet.name, cell.address, normalized, finalStaticCtx),
+              cell.style,
+            );
           }
         });
       });
@@ -354,22 +381,35 @@ export class Renderer {
       // legacy templates default to `default`.
       const downBlock = st.blocks.find((b) => b.direction === 'down');
       const activeSource = downBlock?.source ?? 'default';
-      const blockRows = activeSource === 'default' ? sg.rows : (this.sources[activeSource]?.rows ?? []);
+      const blockRows =
+        activeSource === 'default' ? sg.rows : (this.sources[activeSource]?.rows ?? []);
       const directiveFiltered = applyDirectives(blockRows, st.directives, this.listSheets);
       // ADR-0014: apply inner join when the block has one.
       const filteredRows = this.applyJoin(directiveFiltered, downBlock);
-      const staticCtx = this.buildStaticContext(fileKey, { ...sg, rows: filteredRows }, activeSource);
+      const staticCtx = this.buildStaticContext(
+        fileKey,
+        { ...sg, rows: filteredRows },
+        activeSource,
+      );
 
       // Render static rows
       sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-        if (adjustedSt.dataStartRow > 0 && rowNumber >= adjustedSt.dataStartRow && rowNumber <= adjustedSt.dataEndRow) {
+        if (
+          adjustedSt.dataStartRow > 0 &&
+          rowNumber >= adjustedSt.dataStartRow &&
+          rowNumber <= adjustedSt.dataEndRow
+        ) {
           return;
         }
         row.eachCell({ includeEmpty: false }, (cell) => {
           const val = cellString(cell.value);
           if (VAR_PATTERN.test(val)) {
             const normalized = normalizeTemplate(val, this.columns);
-            cell.value = renderCellValue(normalized, evalCellAt(sheet.name, cell.address, normalized, staticCtx), cell.style);
+            cell.value = renderCellValue(
+              normalized,
+              evalCellAt(sheet.name, cell.address, normalized, staticCtx),
+              cell.style,
+            );
           }
         });
       });
@@ -400,16 +440,19 @@ export class Renderer {
     const subtotalOffsets = block?.subtotalRowOffsets ?? [];
     if (groupDir && groupDir.kind === 'group') {
       this.renderGroupedDataRows(
-        document, sheet, st, dataRows, activeSource,
-        groupDir.keys, subtotalOffsets, block,
+        document,
+        sheet,
+        st,
+        dataRows,
+        activeSource,
+        groupDir.keys,
+        subtotalOffsets,
+        block,
       );
       return;
     }
     if (subtotalOffsets.length > 0) {
-      throw xtlError(
-        'xl3/subtotal/outside-group',
-        '@subtotal requires an active @group directive',
-      );
+      throw xtlError('xl3/subtotal/outside-group', '@subtotal requires an active @group directive');
     }
     const templateRowCount = st.dataEndRow - st.dataStartRow + 1;
 
@@ -422,8 +465,7 @@ export class Renderer {
     const colStart = block?.templateColStart ?? 0;
     const colEnd = block?.templateColEnd ?? 0;
     const hasColScope = colStart > 0 && colEnd > 0;
-    const isInsideCol = (c: number) =>
-      !hasColScope || (c >= colStart && c <= colEnd);
+    const isInsideCol = (c: number) => !hasColScope || (c >= colStart && c <= colEnd);
 
     // 1. Read all template rows in the block (including empty styled cells and heights)
     // ADR-0046: keep `rawValue` alongside the stringified `template` so non-{{
@@ -436,12 +478,18 @@ export class Renderer {
       // row the block produces. Captured here because the write loop below is
       // the only place those rows get their properties.
       outlineLevel?: number;
-      cells: Map<number, { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }>
+      cells: Map<
+        number,
+        { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }
+      >;
     }[] = [];
 
     for (let i = 0; i < templateRowCount; i++) {
       const row = sheet.getRow(st.dataStartRow + i);
-      const cells = new Map<number, { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }>();
+      const cells = new Map<
+        number,
+        { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }
+      >();
 
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
         // ADR-0066: only capture cells inside the block's col-range.
@@ -536,7 +584,7 @@ export class Renderer {
 
       // A data record might span multiple template rows
       for (let j = 0; j < templateRowCount; j++) {
-        const targetRowNum = st.dataStartRow + (i * templateRowCount) + j;
+        const targetRowNum = st.dataStartRow + i * templateRowCount + j;
         const targetRow = sheet.getRow(targetRowNum);
         const templateRowInfo = templateRows[j];
 
@@ -560,7 +608,11 @@ export class Renderer {
 
           if (VAR_PATTERN.test(template)) {
             const normalized = normalizeTemplate(template, this.columns);
-            cell.value = renderCellValue(normalized, evalCellAt(sheet.name, cell.address, normalized, rowData), style);
+            cell.value = renderCellValue(
+              normalized,
+              evalCellAt(sheet.name, cell.address, normalized, rowData),
+              style,
+            );
           } else if (template) {
             // ADR-0046: re-emit the ORIGINAL CellValue (preserves
             // `{ formula, result }` shape, rich-text, Date objects) so
@@ -633,8 +685,7 @@ export class Renderer {
     const colStart = block?.templateColStart ?? 0;
     const colEnd = block?.templateColEnd ?? 0;
     const hasColScope = colStart > 0 && colEnd > 0;
-    const isInsideCol = (c: number) =>
-      !hasColScope || (c >= colStart && c <= colEnd);
+    const isInsideCol = (c: number) => !hasColScope || (c >= colStart && c <= colEnd);
 
     // 1. Read template rows (same shape as renderDataRows so subtotal
     //    rows retain their formatting / merges / static text).
@@ -644,11 +695,17 @@ export class Renderer {
       // row the block produces. Captured here because the write loop below is
       // the only place those rows get their properties.
       outlineLevel?: number;
-      cells: Map<number, { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }>
+      cells: Map<
+        number,
+        { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }
+      >;
     }[] = [];
     for (let i = 0; i < templateRowCount; i++) {
       const row = sheet.getRow(st.dataStartRow + i);
-      const cells = new Map<number, { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }>();
+      const cells = new Map<
+        number,
+        { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }
+      >();
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
         if (!isInsideCol(colNumber)) return;
         const val = cellString(cell.value);
@@ -707,9 +764,10 @@ export class Renderer {
     const insertDelta = totalOutputRows - templateRowCount; // can be ±
 
     if (hasColScope && insertDelta !== 0) {
-      const firstShiftRow = totalOutputRows > templateRowCount
-        ? st.dataStartRow + templateRowCount     // splice insert
-        : st.dataStartRow + totalOutputRows;     // splice delete
+      const firstShiftRow =
+        totalOutputRows > templateRowCount
+          ? st.dataStartRow + templateRowCount // splice insert
+          : st.dataStartRow + totalOutputRows; // splice delete
       // See renderDataRows for why eachRow + row-number gate is used
       // instead of `actualRowCount` (sparse-row coverage).
       sheet.eachRow({ includeEmpty: false }, (row, r) => {
@@ -730,14 +788,14 @@ export class Renderer {
     if (totalOutputRows > templateRowCount) {
       const insertCount = totalOutputRows - templateRowCount;
       document.spliceRowsPreservingMerges(
-        sheet, st.dataStartRow + templateRowCount, 0,
+        sheet,
+        st.dataStartRow + templateRowCount,
+        0,
         Array(insertCount).fill([]),
       );
     } else if (totalOutputRows < templateRowCount) {
       const deleteCount = templateRowCount - totalOutputRows;
-      document.spliceRowsPreservingMerges(
-        sheet, st.dataStartRow + totalOutputRows, deleteCount,
-      );
+      document.spliceRowsPreservingMerges(sheet, st.dataStartRow + totalOutputRows, deleteCount);
     }
 
     // 6. Walk events, writing one output Excel row per event.
@@ -747,7 +805,7 @@ export class Renderer {
 
     const writeRow = (
       targetRowNum: number,
-      tmpl: typeof templateRows[number],
+      tmpl: (typeof templateRows)[number],
       ctx: Record<string, unknown>,
     ) => {
       const targetRow = sheet.getRow(targetRowNum);
@@ -828,9 +886,10 @@ export class Renderer {
     staticCtx: Record<string, unknown>,
     rowShift: number,
   ) {
-    const colSpan = block.directives.find((d) => d.kind === 'repeat')?.kind === 'repeat'
-      ? (block.directives.find((d) => d.kind === 'repeat') as { colSpan: number }).colSpan
-      : 1;
+    const colSpan =
+      block.directives.find((d) => d.kind === 'repeat')?.kind === 'repeat'
+        ? (block.directives.find((d) => d.kind === 'repeat') as { colSpan: number }).colSpan
+        : 1;
     const startRow = block.startRow + rowShift;
     const endRow = block.endRow + rowShift;
     const tColStart = block.templateColStart;
@@ -839,7 +898,10 @@ export class Renderer {
     if (tColStart === 0 || dataRows.length === 0) return;
 
     // Read template cells: for each row in block, read the template column range
-    const templateData: Map<number, Map<number, { template: string; style: Partial<ExcelJS.Style> }>> = new Map();
+    const templateData: Map<
+      number,
+      Map<number, { template: string; style: Partial<ExcelJS.Style> }>
+    > = new Map();
     const colWidths: Map<number, number | undefined> = new Map();
 
     for (let r = startRow; r <= endRow; r++) {
@@ -877,7 +939,11 @@ export class Renderer {
             const normalized = normalizeTemplate(tmpl.template, this.columns);
             // Use row data for [field], static context for aggregates.
             const ctx = { ...staticCtx, ...rowData };
-            cell.value = renderCellValue(normalized, evalCellAt(sheet.name, cell.address, normalized, ctx), tmpl.style);
+            cell.value = renderCellValue(
+              normalized,
+              evalCellAt(sheet.name, cell.address, normalized, ctx),
+              tmpl.style,
+            );
           } else if (tmpl.template) {
             cell.value = tmpl.template as ExcelJS.CellValue;
           }
@@ -965,7 +1031,10 @@ export class Renderer {
     return canonicalString(evalCell(normalized, ctx));
   }
 
-  private renderFilenameDetail(key: GroupKey, fileGroup: FileGroup): { filename: string; warnings: XtlWarning[] } {
+  private renderFilenameDetail(
+    key: GroupKey,
+    fileGroup: FileGroup,
+  ): { filename: string; warnings: XtlWarning[] } {
     const pattern = this.parsed.meta.output_file_pattern;
     const rendered = this.renderRawFilename(pattern, key, fileGroup);
     // ADR-0002: Output filenames MUST be sanitized.
@@ -1095,7 +1164,9 @@ function parseStrictDate(s: string): Date | null {
   const compact = s.match(/^(\d{4})(\d{2})(\d{2})$/);
   if (compact) return buildDate(compact[1]!, compact[2]!, compact[3]!);
 
-  const dateTime = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  const dateTime = s.match(
+    /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/,
+  );
   if (!dateTime) return null;
   return buildDate(
     dateTime[1]!,
@@ -1149,14 +1220,16 @@ function excelSerialToDate(serial: number): Date {
   const minutes = Math.floor(totalSeconds / 60) % 60;
   // ADR-0017: build in UTC so the day/time round-trips identically
   // regardless of host timezone.
-  return new Date(Date.UTC(
-    dateInfo.getUTCFullYear(),
-    dateInfo.getUTCMonth(),
-    dateInfo.getUTCDate(),
-    hours,
-    minutes,
-    seconds,
-  ));
+  return new Date(
+    Date.UTC(
+      dateInfo.getUTCFullYear(),
+      dateInfo.getUTCMonth(),
+      dateInfo.getUTCDate(),
+      hours,
+      minutes,
+      seconds,
+    ),
+  );
 }
 
 function isDateNumFmt(numFmt: string | undefined): boolean {

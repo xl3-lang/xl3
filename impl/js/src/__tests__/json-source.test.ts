@@ -64,7 +64,10 @@ async function snapshot(buf: ArrayBuffer): Promise<string> {
   return JSON.stringify(sheets, (_k, v) => (v instanceof Date ? v.toISOString() : v));
 }
 
-async function jsonFromFixtureData(templateBuf: ArrayBuffer, dataBuf: ArrayBuffer): Promise<Xl3SourceJson> {
+async function jsonFromFixtureData(
+  templateBuf: ArrayBuffer,
+  dataBuf: ArrayBuffer,
+): Promise<Xl3SourceJson> {
   const parsed = await analyze(templateBuf);
   const sources = await readAllSources(
     dataBuf,
@@ -98,7 +101,10 @@ describe('convertJson == convert(equivalent data.xlsx) [ADR-0075]', () => {
 // ---- value model (unit-level, TZ-safe) ----
 
 function readDefault(rows: unknown[][], headers = ['A']): Record<string, unknown>[] {
-  const json: Xl3SourceJson = { version: 'xl3-source-json/0.1', sources: { default: { headers, rows: rows as never } } };
+  const json: Xl3SourceJson = {
+    version: 'xl3-source-json/0.1',
+    sources: { default: { headers, rows: rows as never } },
+  };
   return readJsonSources(json, []).default!.rows;
 }
 
@@ -110,7 +116,13 @@ describe('value model [ADR-0075]', () => {
   });
 
   it('empty rows are skipped but partial rows kept', () => {
-    const rows = readDefault([[null, 'x'], [null, null]], ['A', 'B']);
+    const rows = readDefault(
+      [
+        [null, 'x'],
+        [null, null],
+      ],
+      ['A', 'B'],
+    );
     expect(rows).toEqual([{ A: '', B: 'x' }]);
   });
 
@@ -169,7 +181,10 @@ describe('declared-source semantics [ADR-0075]', () => {
   });
 
   it('rejects a missing declared source', () => {
-    const missing = { version: 'xl3-source-json/0.1', sources: { default: { headers: ['A'], rows: [['x']] } } };
+    const missing = {
+      version: 'xl3-source-json/0.1',
+      sources: { default: { headers: ['A'], rows: [['x']] } },
+    };
     expectInvalid(() => readJsonSources(missing, decl));
   });
 
@@ -206,28 +221,86 @@ describe('validation [ADR-0075]', () => {
     expectInvalid(() => readJsonSources({ version: 'xl3-source-json/0.1', sources: {} }, []));
   });
   it('rejects non-array rows', () => {
-    expectInvalid(() => readJsonSources({ version: 'xl3-source-json/0.1', sources: { default: { headers: ['A'], rows: {} } } }, []));
+    expectInvalid(() =>
+      readJsonSources(
+        { version: 'xl3-source-json/0.1', sources: { default: { headers: ['A'], rows: {} } } },
+        [],
+      ),
+    );
   });
   it('rejects a row length mismatch', () => {
-    expectInvalid(() => readJsonSources({ version: 'xl3-source-json/0.1', sources: { default: { headers: ['A', 'B'], rows: [['x']] } } }, []));
+    expectInvalid(() =>
+      readJsonSources(
+        {
+          version: 'xl3-source-json/0.1',
+          sources: { default: { headers: ['A', 'B'], rows: [['x']] } },
+        },
+        [],
+      ),
+    );
   });
   it('rejects a non-finite number', () => {
-    expectInvalid(() => readJsonSources({ version: 'xl3-source-json/0.1', sources: { default: { headers: ['A'], rows: [[Infinity]] } } }, []));
+    expectInvalid(() =>
+      readJsonSources(
+        {
+          version: 'xl3-source-json/0.1',
+          sources: { default: { headers: ['A'], rows: [[Infinity]] } },
+        },
+        [],
+      ),
+    );
   });
   it('rejects a malformed date', () => {
-    expectInvalid(() => readJsonSources({ version: 'xl3-source-json/0.1', sources: { default: { headers: ['A'], rows: [[{ type: 'date', value: '2026-13-40' }]] } } }, []));
+    expectInvalid(() =>
+      readJsonSources(
+        {
+          version: 'xl3-source-json/0.1',
+          sources: { default: { headers: ['A'], rows: [[{ type: 'date', value: '2026-13-40' }]] } },
+        },
+        [],
+      ),
+    );
   });
   it('rejects an unknown tagged value', () => {
-    expectInvalid(() => readJsonSources({ version: 'xl3-source-json/0.1', sources: { default: { headers: ['A'], rows: [[{ type: 'money', value: 1 }]] } } }, []));
+    expectInvalid(() =>
+      readJsonSources(
+        {
+          version: 'xl3-source-json/0.1',
+          sources: { default: { headers: ['A'], rows: [[{ type: 'money', value: 1 }]] } },
+        },
+        [],
+      ),
+    );
   });
   it('rejects a reserved header', () => {
-    expectInvalid(() => readJsonSources({ version: 'xl3-source-json/0.1', sources: { default: { headers: ['__rownum'], rows: [[1]] } } }, []));
+    expectInvalid(() =>
+      readJsonSources(
+        {
+          version: 'xl3-source-json/0.1',
+          sources: { default: { headers: ['__rownum'], rows: [[1]] } },
+        },
+        [],
+      ),
+    );
   });
   it('rejects a duplicate header', () => {
-    expectInvalid(() => readJsonSources({ version: 'xl3-source-json/0.1', sources: { default: { headers: ['A', 'A'], rows: [[1, 2]] } } }, []));
+    expectInvalid(() =>
+      readJsonSources(
+        {
+          version: 'xl3-source-json/0.1',
+          sources: { default: { headers: ['A', 'A'], rows: [[1, 2]] } },
+        },
+        [],
+      ),
+    );
   });
   it('rejects an empty header', () => {
-    expectInvalid(() => readJsonSources({ version: 'xl3-source-json/0.1', sources: { default: { headers: [''], rows: [[1]] } } }, []));
+    expectInvalid(() =>
+      readJsonSources(
+        { version: 'xl3-source-json/0.1', sources: { default: { headers: [''], rows: [[1]] } } },
+        [],
+      ),
+    );
   });
 });
 
@@ -248,7 +321,10 @@ describe('convertJson / previewJson API [ADR-0075]', () => {
   });
 
   it('rejects engine: "wasm" for JSON input (convertJson and previewJson)', async () => {
-    const json: Xl3SourceJson = { version: 'xl3-source-json/0.1', sources: { default: { headers: ['A'], rows: [['x']] } } };
+    const json: Xl3SourceJson = {
+      version: 'xl3-source-json/0.1',
+      sources: { default: { headers: ['A'], rows: [['x']] } },
+    };
     await expect(convertJson(templateBuf(), json, { engine: 'wasm' })).rejects.toThrow(/wasm/i);
     await expect(previewJson(templateBuf(), json, { engine: 'wasm' })).rejects.toThrow(/wasm/i);
   });
@@ -263,7 +339,10 @@ describe('convertJson / previewJson API [ADR-0075]', () => {
 // ---- header normalization + hardening (Codex review of #80) ----
 
 const WIRE = 'xl3-source-json/0.1';
-const src = (headers: unknown, rows: unknown) => ({ version: WIRE, sources: { default: { headers, rows } } });
+const src = (headers: unknown, rows: unknown) => ({
+  version: WIRE,
+  sources: { default: { headers, rows } },
+});
 
 describe('header normalization [ADR-0075]', () => {
   it('trims headers like the .xlsx reader', () => {
@@ -282,7 +361,10 @@ describe('header normalization [ADR-0075]', () => {
 describe('input hardening [ADR-0075]', () => {
   it('ignores prototype-inherited schema fields (object input)', () => {
     // version/sources live only on the prototype, not as own properties.
-    const polluted = Object.create({ version: WIRE, sources: { default: { headers: ['A'], rows: [['x']] } } });
+    const polluted = Object.create({
+      version: WIRE,
+      sources: { default: { headers: ['A'], rows: [['x']] } },
+    });
     expectInvalid(() => readJsonSources(polluted, []));
   });
   it('treats an inherited-only tag as an unknown value, not a date', () => {

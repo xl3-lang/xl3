@@ -31,10 +31,14 @@ async function save(wb, path) {
 
 function configSheet(wb, sourceSheet = 'Data') {
   const cfg = wb.addWorksheet('__config__');
-  cfg.getCell('A1').value = 'name';             cfg.getCell('B1').value = 'subtotal-formula-cache-not-marker';
-  cfg.getCell('A2').value = 'source_sheet';     cfg.getCell('B2').value = sourceSheet;
-  cfg.getCell('A3').value = 'source_table';     cfg.getCell('B3').value = '1';
-  cfg.getCell('A4').value = 'output_file_pattern'; cfg.getCell('B4').value = 'output.xlsx';
+  cfg.getCell('A1').value = 'name';
+  cfg.getCell('B1').value = 'subtotal-formula-cache-not-marker';
+  cfg.getCell('A2').value = 'source_sheet';
+  cfg.getCell('B2').value = sourceSheet;
+  cfg.getCell('A3').value = 'source_table';
+  cfg.getCell('B3').value = '1';
+  cfg.getCell('A4').value = 'output_file_pattern';
+  cfg.getCell('B4').value = 'output.xlsx';
   return cfg;
 }
 
@@ -63,10 +67,18 @@ const LABEL_CACHE = '{{ [Customer] }} / Subtotal';
   // Data — Acme = 100 + 50 = 150, Beta = 200.
   const data = new ExcelJS.Workbook();
   const dws = data.addWorksheet('Data');
-  dws.getCell('A1').value = 'Region';  dws.getCell('B1').value = 'Customer'; dws.getCell('C1').value = 'Amount';
-  dws.getCell('A2').value = 'East';    dws.getCell('B2').value = 'Acme';     dws.getCell('C2').value = 100;
-  dws.getCell('A3').value = 'East';    dws.getCell('B3').value = 'Acme';     dws.getCell('C3').value = 50;
-  dws.getCell('A4').value = 'West';    dws.getCell('B4').value = 'Beta';     dws.getCell('C4').value = 200;
+  dws.getCell('A1').value = 'Region';
+  dws.getCell('B1').value = 'Customer';
+  dws.getCell('C1').value = 'Amount';
+  dws.getCell('A2').value = 'East';
+  dws.getCell('B2').value = 'Acme';
+  dws.getCell('C2').value = 100;
+  dws.getCell('A3').value = 'East';
+  dws.getCell('B3').value = 'Acme';
+  dws.getCell('C3').value = 50;
+  dws.getCell('A4').value = 'West';
+  dws.getCell('B4').value = 'Beta';
+  dws.getCell('C4').value = 200;
   await save(data, join(dir, 'data.xlsx'));
 
   // Expected — hand-computed. Data rows expand per record; the subtotal band
@@ -75,20 +87,30 @@ const LABEL_CACHE = '{{ [Customer] }} / Subtotal';
   // TEXT; the cached result is not part of the contract).
   const exp = new ExcelJS.Workbook();
   const ers = exp.addWorksheet('Report');
-  ers.getCell('A1').value = 'East'; ers.getCell('B1').value = 'Acme'; ers.getCell('C1').value = 100;
-  ers.getCell('A2').value = 'East'; ers.getCell('B2').value = 'Acme'; ers.getCell('C2').value = 50;
-  ers.getCell('A3').value = { formula: LABEL_FORMULA };            ers.getCell('C3').value = 150;
-  ers.getCell('A4').value = 'West'; ers.getCell('B4').value = 'Beta'; ers.getCell('C4').value = 200;
-  ers.getCell('A5').value = { formula: LABEL_FORMULA };            ers.getCell('C5').value = 200;
+  ers.getCell('A1').value = 'East';
+  ers.getCell('B1').value = 'Acme';
+  ers.getCell('C1').value = 100;
+  ers.getCell('A2').value = 'East';
+  ers.getCell('B2').value = 'Acme';
+  ers.getCell('C2').value = 50;
+  ers.getCell('A3').value = { formula: LABEL_FORMULA };
+  ers.getCell('C3').value = 150;
+  ers.getCell('A4').value = 'West';
+  ers.getCell('B4').value = 'Beta';
+  ers.getCell('C4').value = 200;
+  ers.getCell('A5').value = { formula: LABEL_FORMULA };
+  ers.getCell('C5').value = 200;
   await save(exp, join(dir, 'expected.xlsx'));
 
-  writeFileSync(join(dir, 'meta.yaml'),
-`description: A formula cell's cached <v> result is NOT template text — marker/directive recognition ignores formula cells (ADR-0046). A @subtotal row whose label is a native formula caching \`{{ [Customer] }} / Subtotal\` stays a proper subtotal row: the label formula is preserved verbatim and the band fires once per @group boundary with per-group SUM([Amount]) (150, 200), not the demoted grand-total-after-every-row symptom (issue #66 self-corruption path).
+  writeFileSync(
+    join(dir, 'meta.yaml'),
+    `description: A formula cell's cached <v> result is NOT template text — marker/directive recognition ignores formula cells (ADR-0046). A @subtotal row whose label is a native formula caching \`{{ [Customer] }} / Subtotal\` stays a proper subtotal row: the label formula is preserved verbatim and the band fires once per @group boundary with per-group SUM([Amount]) (150, 200), not the demoted grand-total-after-every-row symptom (issue #66 self-corruption path).
 spec_section: ADR-0073 / ADR-0046 / language.md#group--subtotal / ADR-0038
 spec_version: "0.1"
 tags: [adr-0046, adr-0038, subtotal, formula-preservation, issue-66]
 verified_by: [manual-script]
-`);
+`,
+  );
 }
 
 console.log('Fixture 160 written.');

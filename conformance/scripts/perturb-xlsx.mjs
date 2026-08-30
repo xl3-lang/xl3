@@ -41,7 +41,10 @@ const buf = await readFile(input);
 const zip = await JSZip.loadAsync(buf);
 
 // Reverse-sort file order (rule 1 says zip ordering is ignored).
-const names = Object.keys(zip.files).filter((n) => !zip.files[n].dir).sort().reverse();
+const names = Object.keys(zip.files)
+  .filter((n) => !zip.files[n].dir)
+  .sort()
+  .reverse();
 const out = new JSZip();
 
 for (const name of names) {

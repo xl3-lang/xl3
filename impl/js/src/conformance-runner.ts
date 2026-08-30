@@ -188,7 +188,10 @@ async function runOne(
     }
     if (meta.expected_error) {
       return await runExpectedErrorFixture(
-        name, start, tmpl, data,
+        name,
+        start,
+        tmpl,
+        data,
         meta.expected_error,
         meta.expected_error_code,
         meta.inputs,
@@ -334,7 +337,9 @@ async function runDynamicFixture(
       const actual = comparable(sheet.getCell(assertion.cell).value);
       const cellExpected = comparable(formatUtcToday(runnerStart, assertion.format));
       if (actual !== cellExpected) {
-        diffs.push(`${assertion.sheet}@${assertion.cell}: actual=${JSON.stringify(actual)}, expected=${JSON.stringify(cellExpected)}`);
+        diffs.push(
+          `${assertion.sheet}@${assertion.cell}: actual=${JSON.stringify(actual)}, expected=${JSON.stringify(cellExpected)}`,
+        );
       }
     }
 
@@ -413,23 +418,27 @@ async function loadExpected(dir: string): Promise<ExpectedFile[] | null> {
   try {
     const buf = await readFile(join(dir, 'expected.xlsx'));
     return [{ filename: 'expected.xlsx', buf }];
-  } catch { /* fallthrough */ }
+  } catch {
+    /* fallthrough */
+  }
 
   // Multi-output: expected/ directory
   const expDir = join(dir, 'expected');
   let isDir = false;
   try {
     isDir = (await stat(expDir)).isDirectory();
-  } catch { /* not present */ }
+  } catch {
+    /* not present */
+  }
   if (!isDir) return null;
 
-  const files = (await readdir(expDir))
-    .filter((f) => f.endsWith('.xlsx'))
-    .sort();
-  return Promise.all(files.map(async (f) => ({
-    filename: f,
-    buf: await readFile(join(expDir, f)),
-  })));
+  const files = (await readdir(expDir)).filter((f) => f.endsWith('.xlsx')).sort();
+  return Promise.all(
+    files.map(async (f) => ({
+      filename: f,
+      buf: await readFile(join(expDir, f)),
+    })),
+  );
 }
 
 async function diffOutput(
@@ -443,15 +452,18 @@ async function diffOutput(
   if (isMultiFile) {
     const actualByName = new Map(out.map((f) => [f.filename, f.data] as const));
     const expectedByName = new Map(expected.map((f) => [f.filename, f.buf] as const));
-    const allFilenames = new Set([
-      ...actualByName.keys(),
-      ...expectedByName.keys(),
-    ]);
+    const allFilenames = new Set([...actualByName.keys(), ...expectedByName.keys()]);
     for (const fn of allFilenames) {
       const a = actualByName.get(fn);
       const e = expectedByName.get(fn);
-      if (!a) { diffs.push(`missing output file: ${fn}`); continue; }
-      if (!e) { diffs.push(`unexpected output file: ${fn}`); continue; }
+      if (!a) {
+        diffs.push(`missing output file: ${fn}`);
+        continue;
+      }
+      if (!e) {
+        diffs.push(`unexpected output file: ${fn}`);
+        continue;
+      }
       if (comparisonStage === 2) {
         await diffCanonicalWorkbooks(a, toArrayBuffer(e), diffs, fn);
       } else {
@@ -490,8 +502,14 @@ async function diffCanonicalWorkbooks(
     const av = a.get(part);
     const ev = e.get(part);
     const where = fnPrefix ? `[${fnPrefix}] ${part}` : part;
-    if (av === undefined) { diffs.push(`missing package part: ${where}`); continue; }
-    if (ev === undefined) { diffs.push(`unexpected package part: ${where}`); continue; }
+    if (av === undefined) {
+      diffs.push(`missing package part: ${where}`);
+      continue;
+    }
+    if (ev === undefined) {
+      diffs.push(`unexpected package part: ${where}`);
+      continue;
+    }
     if (av !== ev) diffs.push(`${where}: canonical content differs (${diffSummary(part, av, ev)})`);
   }
 }
@@ -532,7 +550,9 @@ async function buildSheetPartNames(zip: JSZip): Promise<Map<string, string>> {
     const id = attrs.get('Id');
     const target = attrs.get('Target');
     if (!id || !target) continue;
-    const normalizedTarget = target.startsWith('/') ? target.slice(1) : `xl/${target.replace(/^\.\.\//, '')}`;
+    const normalizedTarget = target.startsWith('/')
+      ? target.slice(1)
+      : `xl/${target.replace(/^\.\.\//, '')}`;
     relTargets.set(id, normalizedTarget.replace(/\/\.\//g, '/'));
   }
 
@@ -557,7 +577,11 @@ function sanitizePartName(name: string): string {
   return encodeURIComponent(name).replace(/%/g, '_');
 }
 
-function canonicalizeXml(partName: string, xml: string, sheetPartNames: Map<string, string>): string {
+function canonicalizeXml(
+  partName: string,
+  xml: string,
+  sheetPartNames: Map<string, string>,
+): string {
   const normalized = xml
     .replace(/^\uFEFF/, '')
     .replace(/\r\n?/g, '\n')
@@ -716,7 +740,12 @@ function parseXmlAttrs(input: string): XmlAttr[] {
 function filterVolatileCoreProps(tokens: XmlToken[], partName: string): XmlToken[] {
   if (partName !== 'docProps/core.xml') return tokens;
 
-  const volatile = new Set(['dc:creator', 'cp:lastModifiedBy', 'dcterms:created', 'dcterms:modified']);
+  const volatile = new Set([
+    'dc:creator',
+    'cp:lastModifiedBy',
+    'dcterms:created',
+    'dcterms:modified',
+  ]);
   const out: XmlToken[] = [];
   let skipName: string | null = null;
   let skipDepth = 0;
@@ -768,16 +797,16 @@ function serializeXmlTokens(tokens: XmlToken[]): string {
 }
 
 function canonicalAttrs(attrs: XmlAttr[]): XmlAttr[] {
-  return attrs
-    .filter((attr) => !isVolatileAttr(attr))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  return attrs.filter((attr) => !isVolatileAttr(attr)).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function isVolatileAttr(attr: XmlAttr): boolean {
   if (attr.name === 'calcId') return true;
   if (attr.name === 'sheetId') return true;
   return (
-    (attr.name === 'copies' || attr.name === 'firstPageNumber' || attr.name === 'useFirstPageNumber') &&
+    (attr.name === 'copies' ||
+      attr.name === 'firstPageNumber' ||
+      attr.name === 'useFirstPageNumber') &&
     attr.value === '1'
   );
 }
@@ -795,10 +824,18 @@ function firstDiffSummary(actual: string, expected: string): string {
 }
 
 function diffSummary(part: string, actual: string, expected: string): string {
-  const mergeHint = firstRegexValueDiff(actual, expected, /<mergeCell\b[^>]*\bref=("[^"]*"|'[^']*')/g);
+  const mergeHint = firstRegexValueDiff(
+    actual,
+    expected,
+    /<mergeCell\b[^>]*\bref=("[^"]*"|'[^']*')/g,
+  );
   if (mergeHint) return `mergeCell ref differs: ${mergeHint}`;
 
-  const numFmtHint = firstRegexValueDiff(actual, expected, /<numFmt\b[^>]*\bformatCode=("[^"]*"|'[^']*')/g);
+  const numFmtHint = firstRegexValueDiff(
+    actual,
+    expected,
+    /<numFmt\b[^>]*\bformatCode=("[^"]*"|'[^']*')/g,
+  );
   if (numFmtHint) return `numFmt differs: ${numFmtHint}`;
 
   const styleHint = part.endsWith('styles.xml')
@@ -806,9 +843,8 @@ function diffSummary(part: string, actual: string, expected: string): string {
     : null;
   if (styleHint) return `style xf numFmtId differs: ${styleHint}`;
 
-  const xmlHint = part.endsWith('.xml') || part.endsWith('.rels')
-    ? xmlTokenDiffSummary(actual, expected)
-    : null;
+  const xmlHint =
+    part.endsWith('.xml') || part.endsWith('.rels') ? xmlTokenDiffSummary(actual, expected) : null;
   if (xmlHint) return xmlHint;
 
   return firstDiffSummary(actual, expected);
@@ -974,8 +1010,7 @@ export function comparable(v: ExcelJS.CellValue): unknown {
   if (typeof v === 'object') {
     if (v instanceof Date) return `date:${v.toISOString()}`;
     if ('richText' in v) {
-      return `text:${(v as { richText: { text: string }[] }).richText
-        .map((r) => r.text).join('')}`;
+      return `text:${(v as { richText: { text: string }[] }).richText.map((r) => r.text).join('')}`;
     }
     // ADR-0025: an Excel error cell ({ error: '#DIV/0!' } etc.) is
     // surfaced by its error code so output-side fixtures can pin the
@@ -1080,9 +1115,12 @@ export function parseMeta(text: string): FixtureMeta {
     if (key === 'tags' || key === 'verified_by' || key === 'expected_warnings') {
       meta[key] = parseInlineList(value);
     } else if (
-      key === 'description' || key === 'spec_section' ||
-      key === 'spec_version' || key === 'skip_reason' ||
-      key === 'expected_error' || key === 'expected_error_code' ||
+      key === 'description' ||
+      key === 'spec_section' ||
+      key === 'spec_version' ||
+      key === 'skip_reason' ||
+      key === 'expected_error' ||
+      key === 'expected_error_code' ||
       key === 'expected_dynamic'
     ) {
       meta[key] = stripQuotes(value);
@@ -1193,7 +1231,10 @@ function parseInlineList(v: string): string[] {
   if (!v.startsWith('[') || !v.endsWith(']')) return [];
   const inner = v.slice(1, -1).trim();
   if (!inner) return [];
-  return inner.split(',').map((s) => stripQuotes(s.trim())).filter(Boolean);
+  return inner
+    .split(',')
+    .map((s) => stripQuotes(s.trim()))
+    .filter(Boolean);
 }
 
 function stripQuotes(v: string): string {
@@ -1209,7 +1250,9 @@ function toArrayBuffer(buf: Buffer): ArrayBuffer {
 
 export function formatTextReport(report: ConformanceReport): string {
   const lines: string[] = [];
-  lines.push(`${report.implementation} ${report.version} — XTL ${report.spec_version} — Stage ${report.comparison_stage}`);
+  lines.push(
+    `${report.implementation} ${report.version} — XTL ${report.spec_version} — Stage ${report.comparison_stage}`,
+  );
   for (const r of report.results) {
     const status = r.status.toUpperCase().padEnd(5);
     const stage = r.comparison_stage ? ` [stage ${r.comparison_stage}]` : '';
@@ -1225,9 +1268,9 @@ export function formatTextReport(report: ConformanceReport): string {
   lines.push('');
   lines.push(
     `${s.passed}/${s.total} passed` +
-    (s.failed ? ` · ${s.failed} failed` : '') +
-    (s.errored ? ` · ${s.errored} errored` : '') +
-    (s.skipped ? ` · ${s.skipped} skipped` : ''),
+      (s.failed ? ` · ${s.failed} failed` : '') +
+      (s.errored ? ` · ${s.errored} errored` : '') +
+      (s.skipped ? ` · ${s.skipped} skipped` : ''),
   );
   return lines.join('\n');
 }

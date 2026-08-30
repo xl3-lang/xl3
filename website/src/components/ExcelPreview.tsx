@@ -17,22 +17,22 @@ export type Merge = { row: number; col: number; span: number };
 
 // A single worksheet inside the preview window.
 export type SheetTab = {
-  name: string;          // tab label + sheet name
-  formula: string;       // formula-bar content for this sheet
+  name: string; // tab label + sheet name
+  formula: string; // formula-bar content for this sheet
   rows: string[][];
   classes?: CellClass[][];
   merges?: Merge[];
 };
 
 export type Workbook = {
-  kind: string;          // "data.xlsx" / "__config__" / etc. — small label above the title
-  title: string;         // headline shown to the right of the kicker
-  note?: string;         // body sentence below the workbook
+  kind: string; // "data.xlsx" / "__config__" / etc. — small label above the title
+  title: string; // headline shown to the right of the kicker
+  note?: string; // body sentence below the workbook
   workbookTitle: string; // file name (e.g., template.xlsx)
   workbookSubtitle: string;
   // Single-sheet form (kept for back-compat). Ignored when `sheets` is set.
-  formula?: string;      // formula bar content
-  sheetName?: string;    // tab label
+  formula?: string; // formula bar content
+  sheetName?: string; // tab label
   rows?: string[][];
   classes?: CellClass[][];
   merges?: Merge[];
@@ -82,8 +82,7 @@ export function ExcelPreview({ workbook }: { workbook: Workbook }) {
   const MIN_COLS = 7;
   const maxCols = Math.max(MIN_COLS, ...sheet.rows.map((r) => r.length));
   const merges = sheet.merges ?? [];
-  const mergeAt = (r: number, c: number) =>
-    merges.find((m) => m.row === r && m.col === c);
+  const mergeAt = (r: number, c: number) => merges.find((m) => m.row === r && m.col === c);
   const hiddenByMerge = (r: number, c: number) =>
     merges.some((m) => m.row === r && c > m.col && c < m.col + m.span);
 
@@ -91,7 +90,9 @@ export function ExcelPreview({ workbook }: { workbook: Workbook }) {
     <div className={styles.window}>
       <div className={styles.titlebar}>
         <div className={styles.dots} aria-hidden="true">
-          <span /><span /><span />
+          <span />
+          <span />
+          <span />
         </div>
         <div>
           <strong>{workbook.workbookTitle}</strong>

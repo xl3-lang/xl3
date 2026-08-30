@@ -91,11 +91,12 @@ export async function tryLoadWasmEngine(): Promise<WasmExports | null> {
           // `node:` scheme when bundling for the browser even though
           // this branch is Node-only, so hide the specifiers behind a
           // runtime indirection it can't statically resolve.
-          const nodeImport = (specifier: string) => import(
-            /* webpackIgnore: true */
-            /* @vite-ignore */
-            specifier
-          );
+          const nodeImport = (specifier: string) =>
+            import(
+              /* webpackIgnore: true */
+              /* @vite-ignore */
+              specifier
+            );
           const [{ readFile }, { fileURLToPath }, { createRequire }] = (await Promise.all([
             nodeImport('node:fs/promises'),
             nodeImport('node:url'),
@@ -189,9 +190,7 @@ export function wasmReadTemplateInputs(
     // xl3-wasm uses `kind: 'other'` for unspecified inputs; xl3 (TS)
     // doesn't model that — fall back to 'text', which is the same
     // behavioural default the TS parser applies.
-    type: ((['text', 'number', 'date', 'select'] as const).includes(
-      spec.kind as InputSpec['type'],
-    )
+    type: ((['text', 'number', 'date', 'select'] as const).includes(spec.kind as InputSpec['type'])
       ? spec.kind
       : 'text') as InputSpec['type'],
     required: spec.required,

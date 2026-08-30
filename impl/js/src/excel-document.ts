@@ -138,7 +138,11 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
     const preserveFromRow = deleteCount > 0 ? start + deleteCount : start;
     const saved = saveMergesFromRow(sheet, preserveFromRow);
     for (const merge of saved) {
-      try { sheet.unMergeCells(merge.top, merge.left, merge.bottom, merge.right); } catch { /* ok */ }
+      try {
+        sheet.unMergeCells(merge.top, merge.left, merge.bottom, merge.right);
+      } catch {
+        /* ok */
+      }
     }
 
     // ADR-0040: outline-level is preservation matrix entry "P". ExcelJS
@@ -151,13 +155,10 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
 
     for (const merge of saved) {
       try {
-        sheet.mergeCells(
-          merge.top + rowDelta,
-          merge.left,
-          merge.bottom + rowDelta,
-          merge.right,
-        );
-      } catch { /* overlap guard */ }
+        sheet.mergeCells(merge.top + rowDelta, merge.left, merge.bottom + rowDelta, merge.right);
+      } catch {
+        /* overlap guard */
+      }
     }
 
     for (const [rowNum, level] of savedOutlineLevels) {
@@ -167,7 +168,7 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
   }
 
   async writeBuffer(): Promise<ArrayBuffer> {
-    const buf = await this.workbook.xlsx.writeBuffer() as ArrayBuffer;
+    const buf = (await this.workbook.xlsx.writeBuffer()) as ArrayBuffer;
     return pinZipEntryDates(buf);
   }
 }
@@ -196,7 +197,12 @@ function spliceRowsChunked(
   }
 }
 
-interface MergeRect { top: number; left: number; bottom: number; right: number }
+interface MergeRect {
+  top: number;
+  left: number;
+  bottom: number;
+  right: number;
+}
 
 function saveOutlineLevelsFromRow(
   sheet: ExcelJS.Worksheet,
@@ -252,11 +258,32 @@ function decodeCell(ref: string): { row: number; col: number } | null {
 // The rules are spec-normative (see spec/evaluation.md "Output Filenames" and
 // spec/decisions/0002-filename-sanitization.md). Steps 1-3 transform the
 // filename; steps 4-5 are error conditions.
+// The control-code range is the Excel/Windows filename contract, not user input.
+// eslint-disable-next-line no-control-regex
 const FORBIDDEN_FILENAME_CHARS = /[<>:"/\\|?*\x00-\x1f]/g;
 const RESERVED_DEVICE_NAMES = new Set([
-  'CON', 'PRN', 'AUX', 'NUL',
-  'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
-  'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9',
+  'CON',
+  'PRN',
+  'AUX',
+  'NUL',
+  'COM1',
+  'COM2',
+  'COM3',
+  'COM4',
+  'COM5',
+  'COM6',
+  'COM7',
+  'COM8',
+  'COM9',
+  'LPT1',
+  'LPT2',
+  'LPT3',
+  'LPT4',
+  'LPT5',
+  'LPT6',
+  'LPT7',
+  'LPT8',
+  'LPT9',
 ]);
 
 export interface SanitizedFilename {
@@ -305,13 +332,16 @@ export function sanitizeFilename(rendered: string): SanitizedFilename {
     );
   }
 
-  const warnings: XtlWarning[] = s !== rendered
-    ? [{
-        code: 'xl3w/filename/sanitized',
-        message: `Output filename "${rendered}" sanitized to "${s}"`,
-        location: s,
-      }]
-    : [];
+  const warnings: XtlWarning[] =
+    s !== rendered
+      ? [
+          {
+            code: 'xl3w/filename/sanitized',
+            message: `Output filename "${rendered}" sanitized to "${s}"`,
+            location: s,
+          },
+        ]
+      : [];
   return { filename: s, changed: s !== rendered, warnings };
 }
 

@@ -9,10 +9,13 @@ See [GOVERNANCE.md](./GOVERNANCE.md) for how decisions are made and
 
 ## Quick start
 
+Repository tooling requires Node.js 20.19 or newer. The published `xl3` package
+continues to support Node.js 20.12 or newer.
+
 ```bash
 git clone https://github.com/xl3-lang/xl3.git
 cd xl3
-npm install
+npm ci
 npm test
 ```
 
@@ -53,6 +56,12 @@ Other-language implementations are welcome and tracked in [IMPLEMENTATIONS.md](.
 
 - TypeScript strict mode is on; PRs must typecheck (`npm run typecheck`).
 - Tests are in `impl/js/src/__tests__/`. Run with `npm test`.
+- Run `npm run lint` and `npm run format:check` before submitting a PR.
+- Run `npm run test:coverage` when changing implementation code. CI enforces the
+  thresholds declared in `impl/js/vitest.config.ts`.
+- Run `npm run operational:regression` when changing rendering, parsing, or
+  example workbooks. It checks production-shaped outputs, not only isolated
+  conformance rules.
 - New features need tests. Bug fixes need regression tests.
 - Avoid adding runtime dependencies unless necessary. Current deps: `exceljs`, `jszip`.
 

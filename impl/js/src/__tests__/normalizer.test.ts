@@ -44,9 +44,7 @@ describe('isAggregateExpression', () => {
 describe('extractColumnRefs', () => {
   it('returns the bracketed columns in the order they appear', () => {
     expect(extractColumnRefs('[a] + [b]')).toEqual(['a', 'b']);
-    expect(extractColumnRefs('IF([qty] > 10, [a], [b])')).toEqual([
-      'qty', 'a', 'b',
-    ]);
+    expect(extractColumnRefs('IF([qty] > 10, [a], [b])')).toEqual(['qty', 'a', 'b']);
   });
 
   it('deduplicates repeated columns while preserving first-seen order', () => {
@@ -67,9 +65,7 @@ describe('normalizeTemplate', () => {
   const cols = new Set(['Customer', 'price', 'quantity', 'a', 'b', 'c', 'd', 'amount', 'Total']);
 
   it('rewrites a single bracket reference to an index call', () => {
-    expect(normalizeTemplate('{{ [Customer] }}', cols)).toBe(
-      '{{ index . "Customer" }}',
-    );
+    expect(normalizeTemplate('{{ [Customer] }}', cols)).toBe('{{ index . "Customer" }}');
   });
 
   it('rewrites simple arithmetic into prefix function form', () => {
@@ -129,9 +125,9 @@ describe('normalizeTemplate', () => {
     it('normalizes a chained arithmetic function argument', () => {
       // The originating VAT bug: TEXT([합계] / 1.1 * 0.1, ...) must be
       // ((합계 / 1.1) * 0.1), not (합계 / (1.1 * 0.1)).
-      expect(
-        normalizeTemplate('{{ TEXT([Total] / 1.1 * 0.1, "#,##0") }}', cols),
-      ).toBe('{{ TEXT (mul (div (index . "Total") 1.1) 0.1) "#,##0" }}');
+      expect(normalizeTemplate('{{ TEXT([Total] / 1.1 * 0.1, "#,##0") }}', cols)).toBe(
+        '{{ TEXT (mul (div (index . "Total") 1.1) 0.1) "#,##0" }}',
+      );
     });
 
     it('folds a longer mixed-precedence chain correctly', () => {
@@ -205,9 +201,7 @@ describe('normalizeTemplate', () => {
   });
 
   it('rewrites SUM aggregates to sumRows', () => {
-    expect(normalizeTemplate('{{ SUM([price]) }}', cols)).toBe(
-      '{{ sumRows .Rows "price" }}',
-    );
+    expect(normalizeTemplate('{{ SUM([price]) }}', cols)).toBe('{{ sumRows .Rows "price" }}');
   });
 
   it('rewrites COUNT() to len .Rows', () => {

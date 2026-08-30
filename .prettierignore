@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+docs/api
+site
+website/.docusaurus
+website/build
+website/docs
+website/i18n
+conformance/fixtures
+package-lock.json

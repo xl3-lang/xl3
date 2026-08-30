@@ -17,14 +17,8 @@
 // signal. A 2× degradation in any scenario should be investigated.
 
 import ExcelJS from 'exceljs';
-import { writeFile, mkdir } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { tmpdir } from 'node:os';
 import { performance } from 'node:perf_hooks';
 import { convert } from '@xl3-lang/xl3';
-
-const HERE = dirname(fileURLToPath(import.meta.url));
 
 async function buildWideFlat() {
   const tpl = new ExcelJS.Workbook();

@@ -50,7 +50,8 @@ const FIXTURES_SPEC = [
     // spec/evaluation.md "Source Value Model": Excel "Number" -> XTL Number.
     // Therefore 1234.5 in, numeric 1234.5 out. Stage 1 is type-aware, so a
     // regression that emitted "1234.5" as text fails here.
-    spec_section: 'evaluation.md "Cell Evaluation" (type preservation); evaluation.md "Source Value Model"',
+    spec_section:
+      'evaluation.md "Cell Evaluation" (type preservation); evaluation.md "Source Value Model"',
     tags: ['data-loss', 'value-model', 'coercion'],
     header: 'Amount',
     template: [['A2', '{{ [Amount] }}']],
@@ -63,13 +64,13 @@ const FIXTURES_SPEC = [
   },
   {
     dir: '163-data-loss-zero-is-not-empty',
-    description:
-      'The Number 0 is not empty and renders as numeric 0, not as a blank cell.',
+    description: 'The Number 0 is not empty and renders as numeric 0, not as a blank cell.',
     // spec/evaluation.md "Empty Values": "Numbers, including `0`, are
     // never empty." Combined with type preservation, 0 must appear as the
     // number 0. Silent loss here would be a blank cell, which reads as
     // "no data" to an operator rather than "zero".
-    spec_section: 'evaluation.md "Empty Values" (0 is never empty); evaluation.md "Cell Evaluation"',
+    spec_section:
+      'evaluation.md "Empty Values" (0 is never empty); evaluation.md "Cell Evaluation"',
     tags: ['data-loss', 'empty', 'value-model'],
     header: 'Balance',
     template: [['A2', '{{ [Balance] }}']],
@@ -91,7 +92,8 @@ const FIXTURES_SPEC = [
     // coercion rule is format-driven and this cell has no format.
     // "0001" must stay the four-character string. This is the classic
     // spreadsheet data loss: an account code silently becoming 1.
-    spec_section: 'evaluation.md "Source Value Model" (String kind); evaluation.md "Cell Evaluation"',
+    spec_section:
+      'evaluation.md "Source Value Model" (String kind); evaluation.md "Cell Evaluation"',
     tags: ['data-loss', 'value-model'],
     header: 'AccountCode',
     template: [['A2', '{{ [AccountCode] }}']],
@@ -104,8 +106,7 @@ const FIXTURES_SPEC = [
   },
   {
     dir: '165-data-loss-boolean-type-preserved',
-    description:
-      'A Boolean source value renders as a Boolean, and FALSE is not empty.',
+    description: 'A Boolean source value renders as a Boolean, and FALSE is not empty.',
     // spec/evaluation.md "Source Value Model": Excel "Boolean" -> XTL
     // Boolean. "Empty Values": "Booleans, including `false`, are never
     // empty." Stage 1 compares booleans as booleans and states that
@@ -133,7 +134,10 @@ const FIXTURES_SPEC = [
     tags: ['data-loss', 'value-model', 'numfmt'],
     header: 'Rate',
     template: [['A2', '{{ [Rate] }}']],
-    data: [[0.5, '0%'], [0.075, '0.0%']],
+    data: [
+      [0.5, '0%'],
+      [0.075, '0.0%'],
+    ],
     expected: [
       ['A2', 0.5],
       ['A3', 0.075],
@@ -268,4 +272,6 @@ async function build(spec) {
 
 console.log(`authoring ${FIXTURES_SPEC.length} data-loss fixtures`);
 for (const spec of FIXTURES_SPEC) await build(spec);
-console.log('done — now run `npm run conformance` and treat any failure as a finding, not a fixture bug');
+console.log(
+  'done — now run `npm run conformance` and treat any failure as a finding, not a fixture bug',
+);

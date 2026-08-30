@@ -1,7 +1,12 @@
 import ExcelJS from 'exceljs';
 import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
-import { ExcelJsWorkbookDocument, extendRangesForExpansion, sanitizeFilename, ZIP_ENTRY_DATE } from '../excel-document.js';
+import {
+  ExcelJsWorkbookDocument,
+  extendRangesForExpansion,
+  sanitizeFilename,
+  ZIP_ENTRY_DATE,
+} from '../excel-document.js';
 
 async function documentWithMergedSheet(mergeRef: string) {
   const wb = new ExcelJS.Workbook();
@@ -56,11 +61,13 @@ describe('sanitizeFilename', () => {
     expect(sanitizeFilename('Acme:North.xlsx')).toEqual({
       filename: 'Acme_North.xlsx',
       changed: true,
-      warnings: [{
-        code: 'xl3w/filename/sanitized',
-        message: 'Output filename "Acme:North.xlsx" sanitized to "Acme_North.xlsx"',
-        location: 'Acme_North.xlsx',
-      }],
+      warnings: [
+        {
+          code: 'xl3w/filename/sanitized',
+          message: 'Output filename "Acme:North.xlsx" sanitized to "Acme_North.xlsx"',
+          location: 'Acme_North.xlsx',
+        },
+      ],
     });
   });
 });

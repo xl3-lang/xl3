@@ -24,8 +24,13 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const DIR = join(HERE, '..', 'conformance', 'fixtures',
-  '170-data-loss-numfmt-preserved-across-expansion');
+const DIR = join(
+  HERE,
+  '..',
+  'conformance',
+  'fixtures',
+  '170-data-loss-numfmt-preserved-across-expansion',
+);
 
 const MONEY = '#,##0.00';
 const DATE = 'yyyy-mm-dd';
@@ -96,14 +101,17 @@ const exp = new ExcelJS.Workbook();
 }
 await writeFile(join(DIR, 'expected.xlsx'), Buffer.from(await exp.xlsx.writeBuffer()));
 
-await writeFile(join(DIR, 'meta.yaml'), [
-  'description: "Every @repeat-expanded row inherits its template cell\'s number format, not only the first row."',
-  'spec_section: evaluation.md "Styles and Workbook Structure"; ADR-0036; ADR-0006',
-  'spec_version: "0.1"',
-  'tags: [data-loss, numfmt, stage2, style]',
-  'comparison_stage: 2',
-  'verified_by: [spec-derivation, manual-script]',
-  '',
-].join('\n'));
+await writeFile(
+  join(DIR, 'meta.yaml'),
+  [
+    'description: "Every @repeat-expanded row inherits its template cell\'s number format, not only the first row."',
+    'spec_section: evaluation.md "Styles and Workbook Structure"; ADR-0036; ADR-0006',
+    'spec_version: "0.1"',
+    'tags: [data-loss, numfmt, stage2, style]',
+    'comparison_stage: 2',
+    'verified_by: [spec-derivation, manual-script]',
+    '',
+  ].join('\n'),
+);
 
 console.log('wrote 170-data-loss-numfmt-preserved-across-expansion');

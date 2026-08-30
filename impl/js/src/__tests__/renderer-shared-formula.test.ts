@@ -68,7 +68,9 @@ describe('issue #46 — shared-formula owners do not duplicate across expanded r
     // unshare fix. Without the pin, a locally installed `xl3-wasm`
     // would route engine:'auto' through the wasm core, whose
     // shared-formula handling is tracked separately (xl3-rs#1).
-    const outputs = await convert(tpl as unknown as ArrayBuffer, data as unknown as ArrayBuffer, { engine: 'js' });
+    const outputs = await convert(tpl as unknown as ArrayBuffer, data as unknown as ArrayBuffer, {
+      engine: 'js',
+    });
     expect(outputs).toHaveLength(1);
 
     const result = new ExcelJS.Workbook();
@@ -99,7 +101,9 @@ describe('issue #46 — shared-formula owners do not duplicate across expanded r
   it('resolves a sharedFormula slave to its owner formula when cloned', async () => {
     const tpl = await makeTemplate();
     const data = await makeData(5);
-    const outputs = await convert(tpl as unknown as ArrayBuffer, data as unknown as ArrayBuffer, { engine: 'js' });
+    const outputs = await convert(tpl as unknown as ArrayBuffer, data as unknown as ArrayBuffer, {
+      engine: 'js',
+    });
     const result = new ExcelJS.Workbook();
     await result.xlsx.load(new Uint8Array(outputs[0]!.data).buffer);
     const sheet = result.getWorksheet('Main')!;
@@ -115,7 +119,11 @@ describe('issue #46 — shared-formula owners do not duplicate across expanded r
         // a formula. We assert no dangling pointers to deleted rows.
         const ownerCell = sheet.getCell(v.sharedFormula as string);
         const ownerValue = ownerCell.value as Record<string, unknown> | null;
-        if (!ownerValue || typeof ownerValue !== 'object' || typeof ownerValue.formula !== 'string') {
+        if (
+          !ownerValue ||
+          typeof ownerValue !== 'object' ||
+          typeof ownerValue.formula !== 'string'
+        ) {
           dangling.push(`Q${r} → ${v.sharedFormula}`);
         }
       }

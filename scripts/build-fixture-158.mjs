@@ -27,10 +27,14 @@ async function save(wb, path) {
 
 function configSheet(wb, sourceSheet = 'Data') {
   const cfg = wb.addWorksheet('__config__');
-  cfg.getCell('A1').value = 'name';      cfg.getCell('B1').value = 'fixture';
-  cfg.getCell('A2').value = 'source_sheet'; cfg.getCell('B2').value = sourceSheet;
-  cfg.getCell('A3').value = 'source_table'; cfg.getCell('B3').value = '1';
-  cfg.getCell('A4').value = 'output_file_pattern'; cfg.getCell('B4').value = 'output.xlsx';
+  cfg.getCell('A1').value = 'name';
+  cfg.getCell('B1').value = 'fixture';
+  cfg.getCell('A2').value = 'source_sheet';
+  cfg.getCell('B2').value = sourceSheet;
+  cfg.getCell('A3').value = 'source_table';
+  cfg.getCell('B3').value = '1';
+  cfg.getCell('A4').value = 'output_file_pattern';
+  cfg.getCell('B4').value = 'output.xlsx';
   return cfg;
 }
 
@@ -64,9 +68,15 @@ function configSheet(wb, sourceSheet = 'Data') {
   // Data — two records.
   const data = new ExcelJS.Workbook();
   const dws = data.addWorksheet('Data');
-  dws.getCell('A1').value = 'a'; dws.getCell('B1').value = 'b'; dws.getCell('C1').value = 'c';
-  dws.getCell('A2').value = 12; dws.getCell('B2').value = 2; dws.getCell('C2').value = 3;
-  dws.getCell('A3').value = 20; dws.getCell('B3').value = 4; dws.getCell('C3').value = 5;
+  dws.getCell('A1').value = 'a';
+  dws.getCell('B1').value = 'b';
+  dws.getCell('C1').value = 'c';
+  dws.getCell('A2').value = 12;
+  dws.getCell('B2').value = 2;
+  dws.getCell('C2').value = 3;
+  dws.getCell('A3').value = 20;
+  dws.getCell('B3').value = 4;
+  dws.getCell('C3').value = 5;
   await save(data, join(dir, 'data.xlsx'));
 
   // Expected — hand-computed left-associative results:
@@ -79,19 +89,27 @@ function configSheet(wb, sourceSheet = 'Data') {
   ers.getCell('C1').value = 'c';
   ers.getCell('D1').value = 'a/b*c';
   ers.getCell('E1').value = 'a-b+c';
-  ers.getCell('A2').value = 12; ers.getCell('B2').value = 2; ers.getCell('C2').value = 3;
-  ers.getCell('D2').value = 18; ers.getCell('E2').value = 13;
-  ers.getCell('A3').value = 20; ers.getCell('B3').value = 4; ers.getCell('C3').value = 5;
-  ers.getCell('D3').value = 25; ers.getCell('E3').value = 21;
+  ers.getCell('A2').value = 12;
+  ers.getCell('B2').value = 2;
+  ers.getCell('C2').value = 3;
+  ers.getCell('D2').value = 18;
+  ers.getCell('E2').value = 13;
+  ers.getCell('A3').value = 20;
+  ers.getCell('B3').value = 4;
+  ers.getCell('C3').value = 5;
+  ers.getCell('D3').value = 25;
+  ers.getCell('E3').value = 21;
   await save(exp, join(dir, 'expected.xlsx'));
 
-  writeFileSync(join(dir, 'meta.yaml'),
-`description: Chained same-precedence arithmetic is LEFT-associative and \`*\`/\`/\` bind tighter than \`+\`/\`-\` (grammar.ebnf arith_expr/mul_expr). \`[a] / [b] * [c]\` evaluates as \`(a/b)*c\` and \`[a] - [b] + [c]\` as \`(a-b)+c\`, not the right-associative grouping. Regression guard for issue #52, where a VAT cell (\`[Total] / 1.1 * 0.1\`) was mis-scaled ~100x.
+  writeFileSync(
+    join(dir, 'meta.yaml'),
+    `description: Chained same-precedence arithmetic is LEFT-associative and \`*\`/\`/\` bind tighter than \`+\`/\`-\` (grammar.ebnf arith_expr/mul_expr). \`[a] / [b] * [c]\` evaluates as \`(a/b)*c\` and \`[a] - [b] + [c]\` as \`(a-b)+c\`, not the right-associative grouping. Regression guard for issue #52, where a VAT cell (\`[Total] / 1.1 * 0.1\`) was mis-scaled ~100x.
 spec_section: grammar.ebnf#arith_expr / language.md#arithmetic
 spec_version: "0.1"
 tags: [arithmetic, precedence, associativity, issue-52]
 verified_by: [hand]
-`);
+`,
+  );
 }
 
 console.log('Fixture 158 written.');

@@ -74,12 +74,12 @@ multi-source merge via `@join`.
 - Browser IIFE bundle (~1 MB minified, ~300 KB gzipped)
 - Node ≥ 20.12
 
-### DEFERRED (spec accepted, impl pending — to be closed in 0.6)
+### Original deferred inventory (current state annotated)
 
 | ADR | Item | Impact |
 |---|---|---|
-| 0038 | `@group` + `@subtotal` (multi-level grouping with interleaved subtotal rows) | **HIGH** — Korean B2B invoice / settlement workbooks need this. Currently the largest single user-visible gap. |
-| 0040 (PE part) | Conditional formatting + data validation `sqref` auto-extension across `@repeat` | MEDIUM — visual polish; current P-only preservation works without it. |
+| 0038 | `@group` + `@subtotal` (multi-level grouping with interleaved subtotal rows) | **DONE** — implemented and covered by fixtures 132-135. |
+| 0040 (PE part) | Conditional formatting + data validation `sqref` auto-extension across `@repeat` | **DONE** — implemented with outline-level preservation and covered by Stage 2 fixtures 171-172. |
 | 0036 (item 3, charts) | Chart data range expansion | LOW — deferred indefinitely per ADR-0036. |
 | (proposed 0050) | Cell formula reference adjustment (formula PE) | MEDIUM — natural follow-up to ADR-0046; defer to 1.1. |
 
@@ -155,14 +155,14 @@ classifies each item as MUST / SHOULD / MAY for xl3 1.0.
 
 | # | Item | Status | 1.0 priority |
 |---|---|---|---|
-| F1 | `@group` + `@subtotal` impl | spec accepted, impl pending (ADR-0038) | **MUST** |
-| F2 | CF/DV `sqref` PE | spec accepted, impl pending (ADR-0040) | SHOULD |
+| F1 | `@group` + `@subtotal` impl | implemented; fixtures 132-135 (ADR-0038) | **DONE** |
+| F2 | CF/DV `sqref` PE | implemented; Stage 2 fixture 171 (ADR-0040) | **DONE** |
 | F3 | Cell formula reference auto-adjustment | explicitly NOT done per ADR-0046 | DEFER to 1.1 |
 | F4 | Pivot table preservation | undefined | SHOULD — fixture only |
 | F5 | Sparkline preservation | undefined | DEFER to 1.1 |
 | F6 | Excel `ListObject` | undefined | DEFER to 1.1 |
 | F7 | Page break preservation | undefined | SHOULD — fixture only |
-| F8 | Dynamic outline level | static preservation only | DEFER |
+| F8 | Dynamic outline level | repeated-row preservation implemented; Stage 2 fixture 172 | **DONE** |
 
 ### B. Quality / engineering
 
@@ -200,7 +200,7 @@ classifies each item as MUST / SHOULD / MAY for xl3 1.0.
 | D4 | Interactive demo (xl3.io playground) | live | DONE |
 | D5 | Migration guide between 0.x versions | not written | SHOULD |
 | D6 | Production case study | not written | tied to P3 |
-| D7 | Examples gallery expansion (currently 3) | thin | SHOULD — 6-8 production-shaped |
+| D7 | Examples gallery expansion (currently 4, with output contracts) | thin | SHOULD — 6-8 production-shaped |
 | D8 | LLM-authoring guide | live (`docs/llm-template-authoring.md`) | DONE |
 
 ---

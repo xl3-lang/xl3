@@ -48,7 +48,7 @@ function evalFilter(
     // ADR-0007: an empty source-row value never matches `in` and always
     // matches `!in`, regardless of list contents.
     if (isEmpty(rawValue)) return filter.op === '!in';
-    const list = filter.listRef ? listSheets[filter.listRef] ?? [] : [];
+    const list = filter.listRef ? (listSheets[filter.listRef] ?? []) : [];
     const strValue = String(rawValue);
     const found = list.includes(strValue);
     return filter.op === 'in' ? found : !found;
@@ -58,12 +58,19 @@ function evalFilter(
   // both IF and @filter to the same rules.
   const cmp = compareValues(rawValue, filter.value);
   switch (filter.op) {
-    case '=': return cmp === 0;
-    case '!=': return cmp !== 0;
-    case '>': return cmp > 0;
-    case '<': return cmp < 0;
-    case '>=': return cmp >= 0;
-    case '<=': return cmp <= 0;
-    default: return true;
+    case '=':
+      return cmp === 0;
+    case '!=':
+      return cmp !== 0;
+    case '>':
+      return cmp > 0;
+    case '<':
+      return cmp < 0;
+    case '>=':
+      return cmp >= 0;
+    case '<=':
+      return cmp <= 0;
+    default:
+      return true;
   }
 }

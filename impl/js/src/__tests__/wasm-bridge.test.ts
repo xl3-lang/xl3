@@ -88,24 +88,18 @@ describe.skipIf(wasmAvailable)('wasm bridge (without xl3-wasm installed)', () =>
   it('convert with engine: "wasm" throws when the package is missing', async () => {
     const template = await buildMinimalTemplate();
     const data = await buildMinimalData();
-    await expect(convert(template, data, { engine: 'wasm' })).rejects.toThrow(
-      /xl3-wasm/,
-    );
+    await expect(convert(template, data, { engine: 'wasm' })).rejects.toThrow(/xl3-wasm/);
   });
 
   it('readTemplateInputs with engine: "wasm" throws when missing', async () => {
     const template = await buildMinimalTemplate();
-    await expect(readTemplateInputs(template, { engine: 'wasm' })).rejects.toThrow(
-      /xl3-wasm/,
-    );
+    await expect(readTemplateInputs(template, { engine: 'wasm' })).rejects.toThrow(/xl3-wasm/);
   });
 
   it('preview with engine: "wasm" throws when missing', async () => {
     const template = await buildMinimalTemplate();
     const data = await buildMinimalData();
-    await expect(preview(template, data, { engine: 'wasm' })).rejects.toThrow(
-      /xl3-wasm/,
-    );
+    await expect(preview(template, data, { engine: 'wasm' })).rejects.toThrow(/xl3-wasm/);
   });
 });
 

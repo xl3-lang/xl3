@@ -333,13 +333,7 @@ export async function convert(
         const manifest = extractManifest(parsed.workbook);
         // wasmConvert is synchronous, so a throw from it still lands in
         // the catch below and 'auto' still falls back to the JS path.
-        const out = wasmConvert(
-          engine,
-          templateBuffer,
-          sourceBuffer,
-          options?.inputs,
-          manifest,
-        );
+        const out = wasmConvert(engine, templateBuffer, sourceBuffer, options?.inputs, manifest);
         throwIfAborted(options?.signal);
         return out;
       } catch (e) {
@@ -544,9 +538,7 @@ export async function readTemplateInputs(
  * console.log(parsed.meta.name, parsed.sheetTemplates.length);
  * ```
  */
-export async function analyze(
-  templateBuffer: ArrayBuffer,
-): Promise<ParsedTemplate> {
+export async function analyze(templateBuffer: ArrayBuffer): Promise<ParsedTemplate> {
   return parseTemplate(templateBuffer);
 }
 
@@ -563,9 +555,7 @@ export async function analyze(
  * const json = JSON.stringify(model, null, 2);
  * ```
  */
-export async function analyzeModel(
-  templateBuffer: ArrayBuffer,
-): Promise<TemplateModel> {
+export async function analyzeModel(templateBuffer: ArrayBuffer): Promise<TemplateModel> {
   const parsed = await parseTemplate(templateBuffer);
   return toTemplateModel(parsed);
 }

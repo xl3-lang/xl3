@@ -1,10 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  getConsentStatus,
-  onPostHogReady,
-  subscribeConsent,
-  type ConsentStatus,
-} from './posthog';
+import { getConsentStatus, onPostHogReady, subscribeConsent, type ConsentStatus } from './posthog';
 
 /**
  * Current consent status, kept in sync across every component that reads it.

@@ -94,7 +94,7 @@ TypeScript リファレンス実装は、1.0 時点で次の 17 個のランタ�
 - ADR-0036 — テンプレート機能保存マトリクス
 - ADR-0038 — `@group` + `@subtotal` ディレクティブ（小計行のインターリーブ出力）
 - ADR-0039 — `HYPERLINK` セル出力
-- ADR-0040 — 保存マトリクス amendment（outline level は出荷済み；CF/DV 範囲の PE は 0.6.1 で保留）
+- ADR-0040 — 保存マトリクス amendment（outline level と CF/DV 範囲拡張は出荷済み；フィクスチャ 171・172）
 - ADR-0041 — 複数行セルテキスト契約
 - ADR-0044 — 関数バッチ（UPPER, LOWER, TRIM, IFERROR, IFS, DATE）
 - ADR-0046 — セル数式の保存（OOXML エレメント契約）

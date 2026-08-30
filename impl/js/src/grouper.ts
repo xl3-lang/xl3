@@ -23,10 +23,7 @@ export interface GroupNode {
  * empty (ADR-0007) at the innermost level are skipped — applied at
  * leaf-construction time so callers do not need a second pass.
  */
-export function partitionByGroupKeys(
-  rows: Row[],
-  keys: string[],
-): GroupNode[] {
+export function partitionByGroupKeys(rows: Row[], keys: string[]): GroupNode[] {
   if (keys.length === 0) return [];
 
   const top: GroupNode[] = [];
@@ -94,13 +91,9 @@ function pruneEmptyLeaves(nodes: GroupNode[]): void {
  * subtotal" pattern from the ADR.
  */
 export type EmitEvent =
-  | { kind: 'data'; row: Row }
-  | { kind: 'subtotal'; level: number; groupRows: Row[] };
+  { kind: 'data'; row: Row } | { kind: 'subtotal'; level: number; groupRows: Row[] };
 
-export function planEmissionEvents(
-  groupTree: GroupNode[],
-  keyCount: number,
-): EmitEvent[] {
+export function planEmissionEvents(groupTree: GroupNode[], keyCount: number): EmitEvent[] {
   const events: EmitEvent[] = [];
   walkAndEmit(groupTree, /*depth*/ 0, keyCount, events);
   return events;

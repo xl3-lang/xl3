@@ -166,8 +166,8 @@ contract. Breaking changes require an XTL 2.0 cut.
 - ADR-0038 — `@group` + `@subtotal` directives (interleaved
   subtotal emission)
 - ADR-0039 — `HYPERLINK` cell output
-- ADR-0040 — preservation matrix amendment (outline level shipped;
-  CF/DV range PE pending 0.6.1)
+- ADR-0040 — preservation matrix amendment (outline level and CF/DV
+  range extension shipped; fixtures 171 and 172)
 - ADR-0041 — multi-line cell text contract
 - ADR-0044 — function batch (UPPER, LOWER, TRIM, IFERROR, IFS, DATE)
 - ADR-0046 — cell formula preservation (OOXML element contract)

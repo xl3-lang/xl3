@@ -1,18 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import {
-  functions,
-  isEmpty,
-  isTruthy,
-  canonicalString,
-  compareValues,
-} from '../functions.js';
+import { functions, isEmpty, isTruthy, canonicalString, compareValues } from '../functions.js';
 
 describe('TEXT', () => {
   it('formats the XTL 0.1 date token subset', () => {
     // ADR-0017: dates are read in UTC (matching ExcelJS' timezone-naive
     // representation), so test inputs use Date.UTC(...) too.
-    expect(functions.TEXT(new Date(Date.UTC(2026, 4, 3, 9, 8, 7)), 'YYYY-MM-DD HH:mm:ss'))
-      .toBe('2026-05-03 09:08:07');
+    expect(functions.TEXT(new Date(Date.UTC(2026, 4, 3, 9, 8, 7)), 'YYYY-MM-DD HH:mm:ss')).toBe(
+      '2026-05-03 09:08:07',
+    );
     expect(functions.TEXT(new Date(Date.UTC(2026, 4, 3)), 'YY/MM/dd')).toBe('26/05/03');
   });
 
@@ -200,21 +195,26 @@ describe('concat uses canonical string form (ADR-0009)', () => {
 
 describe('COUNT([field])', () => {
   it('counts non-empty values in the provided row set per ADR-0007', () => {
-    expect(functions.countRows([
-      { Memo: 'hello' },
-      { Memo: '' },
-      { Memo: null },
-      { Memo: '   ' },
-      { Memo: 'world' },
-      { Memo: 0 },
-      { Memo: false },
-    ], 'Memo')).toBe(4);
+    expect(
+      functions.countRows(
+        [
+          { Memo: 'hello' },
+          { Memo: '' },
+          { Memo: null },
+          { Memo: '   ' },
+          { Memo: 'world' },
+          { Memo: 0 },
+          { Memo: false },
+        ],
+        'Memo',
+      ),
+    ).toBe(4);
   });
 });
 
 describe('date arithmetic (ADR-0019 amendment, 2026-05-18)', () => {
   it('YEAR/MONTH/DAY extract UTC components', () => {
-    const d = new Date(Date.UTC(2026, 4, 18, 9, 30, 0));  // 2026-05-18T09:30Z
+    const d = new Date(Date.UTC(2026, 4, 18, 9, 30, 0)); // 2026-05-18T09:30Z
     expect(functions.YEAR(d)).toBe(2026);
     expect(functions.MONTH(d)).toBe(5);
     expect(functions.DAY(d)).toBe(18);
@@ -231,10 +231,10 @@ describe('date arithmetic (ADR-0019 amendment, 2026-05-18)', () => {
   });
 
   it('EOMONTH returns the last day of the offset month at UTC midnight', () => {
-    const d = new Date(Date.UTC(2026, 4, 18));  // 2026-05-18
+    const d = new Date(Date.UTC(2026, 4, 18)); // 2026-05-18
     const eom = functions.EOMONTH(d, 0) as Date;
     expect(eom.getUTCFullYear()).toBe(2026);
-    expect(eom.getUTCMonth()).toBe(4);   // May
+    expect(eom.getUTCMonth()).toBe(4); // May
     expect(eom.getUTCDate()).toBe(31);
     expect(eom.getUTCHours()).toBe(0);
 
@@ -249,7 +249,7 @@ describe('date arithmetic (ADR-0019 amendment, 2026-05-18)', () => {
   });
 
   it('EDATE returns the same day-of-month, clamped at month length', () => {
-    const d = new Date(Date.UTC(2026, 0, 31));  // 2026-01-31
+    const d = new Date(Date.UTC(2026, 0, 31)); // 2026-01-31
     const e1 = functions.EDATE(d, 1) as Date;
     // Jan-31 + 1 month → Feb has only 28 days in 2026, clamp.
     expect(e1.getUTCMonth()).toBe(1);
@@ -297,8 +297,12 @@ describe('HYPERLINK (ADR-0039)', () => {
   });
 
   it('rejects an empty url with type-mismatch', () => {
-    expect(() => functions.HYPERLINK('', 'label')).toThrow(/url argument must be a non-empty string/);
-    expect(() => functions.HYPERLINK('   ', 'label')).toThrow(/url argument must be a non-empty string/);
+    expect(() => functions.HYPERLINK('', 'label')).toThrow(
+      /url argument must be a non-empty string/,
+    );
+    expect(() => functions.HYPERLINK('   ', 'label')).toThrow(
+      /url argument must be a non-empty string/,
+    );
   });
 });
 
@@ -316,16 +320,16 @@ describe('ISBLANK (ADR-0047)', () => {
   });
 
   it('zero-width characters are content, not blank (ADR-0007 carve-out)', () => {
-    expect(functions.ISBLANK('​')).toBe(false);   // U+200B
-    expect(functions.ISBLANK('﻿')).toBe(false);   // U+FEFF
+    expect(functions.ISBLANK('​')).toBe(false); // U+200B
+    expect(functions.ISBLANK('﻿')).toBe(false); // U+FEFF
   });
 });
 
 describe('string functions (ADR-0044)', () => {
   it('UPPER converts letters to uppercase; non-strings via canonicalString', () => {
     expect(functions.UPPER('acme')).toBe('ACME');
-    expect(functions.UPPER('서울')).toBe('서울');           // Korean has no case
-    expect(functions.UPPER(true)).toBe('TRUE');             // canonicalString first
+    expect(functions.UPPER('서울')).toBe('서울'); // Korean has no case
+    expect(functions.UPPER(true)).toBe('TRUE'); // canonicalString first
     expect(functions.UPPER(123)).toBe('123');
     expect(functions.UPPER(null)).toBe('');
     expect(functions.UPPER('')).toBe('');
@@ -333,12 +337,12 @@ describe('string functions (ADR-0044)', () => {
 
   it('LOWER mirrors UPPER', () => {
     expect(functions.LOWER('ACME')).toBe('acme');
-    expect(functions.LOWER(true)).toBe('true');             // canonicalString gives "TRUE", then lowercased
+    expect(functions.LOWER(true)).toBe('true'); // canonicalString gives "TRUE", then lowercased
   });
 
   it('TRIM strips leading and trailing whitespace; preserves internal', () => {
     expect(functions.TRIM('  acme  ')).toBe('acme');
-    expect(functions.TRIM('a  b\tc')).toBe('a  b\tc');      // internal preserved (XTL diverges from Excel TRIM here)
+    expect(functions.TRIM('a  b\tc')).toBe('a  b\tc'); // internal preserved (XTL diverges from Excel TRIM here)
     expect(functions.TRIM('\n   \t서울 강남구  \n')).toBe('서울 강남구');
     expect(functions.TRIM(null)).toBe('');
   });
@@ -376,7 +380,7 @@ describe('IFERROR (ADR-0044)', () => {
 describe('IFS (ADR-0044)', () => {
   it('returns the first truthy branch value', () => {
     expect(functions.IFS(false, 'a', true, 'b', true, 'c')).toBe('b');
-    expect(functions.IFS(0, 'a', 1, 'b')).toBe('b');                    // 0 is falsy
+    expect(functions.IFS(0, 'a', 1, 'b')).toBe('b'); // 0 is falsy
     expect(functions.IFS('non-empty', 'first')).toBe('first');
   });
 
@@ -412,7 +416,7 @@ describe('DATE (ADR-0044)', () => {
   it('composes a UTC-midnight date from 1-based month', () => {
     const d = functions.DATE(2026, 5, 18) as Date;
     expect(d.getUTCFullYear()).toBe(2026);
-    expect(d.getUTCMonth()).toBe(4);                   // May = 4 (0-indexed in JS)
+    expect(d.getUTCMonth()).toBe(4); // May = 4 (0-indexed in JS)
     expect(d.getUTCDate()).toBe(18);
     expect(d.getUTCHours()).toBe(0);
   });
@@ -422,7 +426,7 @@ describe('DATE (ADR-0044)', () => {
     expect(d.getUTCFullYear()).toBe(2027);
     expect(d.getUTCMonth()).toBe(0);
 
-    const e = functions.DATE(2026, 2, 30) as Date;     // 2026-02-30 → 2026-03-02
+    const e = functions.DATE(2026, 2, 30) as Date; // 2026-02-30 → 2026-03-02
     expect(e.getUTCMonth()).toBe(2);
     expect(e.getUTCDate()).toBe(2);
   });

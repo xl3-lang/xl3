@@ -1,15 +1,10 @@
 import ExcelJS from 'exceljs';
 import { describe, expect, it } from 'vitest';
-import {
-  convertJson,
-  validateSource,
-  validateSourceJson,
-  writeConfigSheet,
-} from '../index.js';
+import { convertJson, validateSource, validateSourceJson, writeConfigSheet } from '../index.js';
 import type { Xl3SourceJson } from '../types.js';
 
 async function toBuffer(workbook: ExcelJS.Workbook): Promise<ArrayBuffer> {
-  return await workbook.xlsx.writeBuffer() as ArrayBuffer;
+  return (await workbook.xlsx.writeBuffer()) as ArrayBuffer;
 }
 
 async function basicTemplate(sourceTable = '1'): Promise<ArrayBuffer> {
@@ -85,11 +80,13 @@ describe('validateSource', () => {
     const report = await validateSource(await basicTemplate(), await toBuffer(workbook));
 
     expect(report.ok).toBe(false);
-    expect(codes(report)).toEqual(expect.arrayContaining([
-      'xl3/source/missing-header',
-      'xl3/source/duplicate-name',
-      'xl3/source/reserved-column-name',
-    ]));
+    expect(codes(report)).toEqual(
+      expect.arrayContaining([
+        'xl3/source/missing-header',
+        'xl3/source/duplicate-name',
+        'xl3/source/reserved-column-name',
+      ]),
+    );
   });
 
   it('returns uncached header formula errors as diagnostics', async () => {
@@ -133,12 +130,30 @@ describe('validateSource', () => {
     );
 
     expect(validation.ok).toBe(false);
-    expect(validation.diagnostics).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'xl3/source/unknown-column', source: 'default', column: 'Region' }),
-      expect.objectContaining({ code: 'xl3/source/unknown-column', source: 'default', column: 'Branch' }),
-      expect.objectContaining({ code: 'xl3/source/unknown-column', source: 'default', column: 'SortKey' }),
-      expect.objectContaining({ code: 'xl3/source/unknown-column', source: 'default', column: 'GroupKey' }),
-    ]));
+    expect(validation.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'xl3/source/unknown-column',
+          source: 'default',
+          column: 'Region',
+        }),
+        expect.objectContaining({
+          code: 'xl3/source/unknown-column',
+          source: 'default',
+          column: 'Branch',
+        }),
+        expect.objectContaining({
+          code: 'xl3/source/unknown-column',
+          source: 'default',
+          column: 'SortKey',
+        }),
+        expect.objectContaining({
+          code: 'xl3/source/unknown-column',
+          source: 'default',
+          column: 'GroupKey',
+        }),
+      ]),
+    );
   });
 
   it('does not treat Object prototype keys as schemas for missing named sources', async () => {
@@ -238,23 +253,30 @@ describe('validateSourceJson', () => {
     );
 
     expect(validation.ok).toBe(false);
-    expect(validation.diagnostics).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'xl3/source/unknown-column', source: 'default', column: 'Sku' }),
-      expect.objectContaining({ code: 'xl3/source/unknown-column', source: 'Prices', column: 'Sku' }),
-    ]));
+    expect(validation.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'xl3/source/unknown-column',
+          source: 'default',
+          column: 'Sku',
+        }),
+        expect.objectContaining({
+          code: 'xl3/source/unknown-column',
+          source: 'Prices',
+          column: 'Sku',
+        }),
+      ]),
+    );
   });
 
   it('reports source-prefixed row references outside the active source or join as row-cross-block', async () => {
-    const validation = await validateSourceJson(
-      await multiSourceTemplate('{{ Prices[Price] }}'),
-      {
-        version: 'xl3-source-json/0.1',
-        sources: {
-          default: { headers: ['Customer'], rows: [['Acme']] },
-          Prices: { headers: ['Price'], rows: [[100]] },
-        },
+    const validation = await validateSourceJson(await multiSourceTemplate('{{ Prices[Price] }}'), {
+      version: 'xl3-source-json/0.1',
+      sources: {
+        default: { headers: ['Customer'], rows: [['Acme']] },
+        Prices: { headers: ['Price'], rows: [[100]] },
       },
-    );
+    });
 
     expect(validation.ok).toBe(false);
     expect(validation.diagnostics).toEqual([
@@ -277,12 +299,14 @@ describe('validateSourceJson', () => {
     });
 
     expect(invalid.ok).toBe(false);
-    expect(invalid.diagnostics).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'xl3/source-json/invalid', source: 'default' }),
-      expect.objectContaining({ code: 'xl3/source/missing-header', source: 'default' }),
-      expect.objectContaining({ code: 'xl3/source/unknown-column', column: 'Status' }),
-      expect.objectContaining({ code: 'xl3/source/unknown-column', column: 'Amount' }),
-    ]));
+    expect(invalid.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'xl3/source-json/invalid', source: 'default' }),
+        expect.objectContaining({ code: 'xl3/source/missing-header', source: 'default' }),
+        expect.objectContaining({ code: 'xl3/source/unknown-column', column: 'Status' }),
+        expect.objectContaining({ code: 'xl3/source/unknown-column', column: 'Amount' }),
+      ]),
+    );
   });
 
   it('does not scan JSON row values or row lengths at schema depth', async () => {
@@ -323,10 +347,12 @@ describe('validateSourceJson', () => {
     const validation = await validateSourceJson(template, sourceJson);
 
     expect(validation.ok).toBe(true);
-    expect(validation.contract.sources[0]).toEqual(expect.objectContaining({
-      name: 'default',
-      sheet: 'default',
-      headerRow: 1,
-    }));
+    expect(validation.contract.sources[0]).toEqual(
+      expect.objectContaining({
+        name: 'default',
+        sheet: 'default',
+        headerRow: 1,
+      }),
+    );
   });
 });

@@ -20,9 +20,7 @@ const EXCEL_AGGREGATE_NAMES = new Set(['SUM', 'AVERAGE', 'AVG', 'MIN', 'MAX']);
 // whose expression is exactly such a call are static (they do not
 // start a data block) even when their args contain `Source[Column]`
 // references.
-const STATIC_CONTEXT_CALLS = new Set([
-  'SUM', 'AVERAGE', 'AVG', 'MIN', 'MAX', 'COUNT', 'XLOOKUP',
-]);
+const STATIC_CONTEXT_CALLS = new Set(['SUM', 'AVERAGE', 'AVG', 'MIN', 'MAX', 'COUNT', 'XLOOKUP']);
 
 export function isDataExpression(expr: string): boolean {
   // ADR-0038: a `@subtotal <agg>` cell is row-set scoped at render
@@ -60,7 +58,10 @@ export function isDataExpression(expr: string): boolean {
 export function isAggregateExpression(expr: string): boolean {
   const e = expr.trim();
   const fn = parseFunctionCall(e);
-  if (fn && (EXCEL_AGGREGATE_NAMES.has(fn.name.toUpperCase()) || fn.name.toUpperCase() === 'COUNT')) {
+  if (
+    fn &&
+    (EXCEL_AGGREGATE_NAMES.has(fn.name.toUpperCase()) || fn.name.toUpperCase() === 'COUNT')
+  ) {
     return true;
   }
   return false;
@@ -72,17 +73,17 @@ function isGoKeyword(s: string): boolean {
 }
 
 /** Normalize a full template string (may contain multiple {{ }} blocks). */
-export function normalizeTemplate(
-  tmpl: string,
-  columns: Set<string>,
-): string {
+export function normalizeTemplate(tmpl: string, columns: Set<string>): string {
   return tmpl.replace(TEMPLATE_BLOCK_RE, (_, inner: string) => {
     const trimmed = inner.trim();
     // ADR-0021: an empty template block (`{{ }}` or whitespace-only
     // between the delimiters) is a parse error. Without this guard
     // downstream eval would crash on splitFunctionArgs("") + getFunction(undefined).
     if (trimmed === '') {
-      throw xtlError('xl3/parser/empty-block', 'Empty template block: {{ ... }} must contain an expression');
+      throw xtlError(
+        'xl3/parser/empty-block',
+        'Empty template block: {{ ... }} must contain an expression',
+      );
     }
     // ADR-0051: an expression body whose `"` count is odd usually
     // means the author embedded `}}` inside a string literal — the
@@ -98,7 +99,10 @@ export function normalizeTemplate(
     // the RHS of `@filter ... in` / `@filter ... !in`. Any other
     // shape (cell expression, function arg, non-filter directive)
     // is rejected.
-    if (/__lists__\[/.test(trimmed) && !/^@filter\b[\s\S]*\b!?in\b[\s\S]*__lists__\[/i.test(trimmed)) {
+    if (
+      /__lists__\[/.test(trimmed) &&
+      !/^@filter\b[\s\S]*\b!?in\b[\s\S]*__lists__\[/i.test(trimmed)
+    ) {
       throw xtlError(
         'xl3/lists/invalid-use',
         `__lists__[...] is a list array and may only be used as the RHS of \`@filter ... in\` or \`@filter ... !in\`. Got: {{ ${trimmed} }}`,
@@ -241,16 +245,15 @@ function normalizeXlookup(args: string[], columns: Set<string>): string {
   return head;
 }
 
-function normalizeConcatenation(
-  expr: string,
-  columns: Set<string>,
-): string {
-  const parts = expr.split('&').map((p) => p.trim()).filter(Boolean);
+function normalizeConcatenation(expr: string, columns: Set<string>): string {
+  const parts = expr
+    .split('&')
+    .map((p) => p.trim())
+    .filter(Boolean);
   const args = parts.map((p) => {
     const bracket = p.match(BRACKET_OPERAND_RE);
     if (bracket) return `(index . "${bracket[1].trim()}")`;
-    if ((p.startsWith('"') && p.endsWith('"')) || (p.startsWith("'") && p.endsWith("'")))
-      return p;
+    if ((p.startsWith('"') && p.endsWith('"')) || (p.startsWith("'") && p.endsWith("'"))) return p;
     if (columns.has(p)) return `(index . "${p}")`;
     return `"${p}"`;
   });
@@ -258,7 +261,10 @@ function normalizeConcatenation(
 }
 
 const OP_FUNCS: Record<string, string> = {
-  '*': 'mul', '/': 'div', '+': 'add', '-': 'sub',
+  '*': 'mul',
+  '/': 'div',
+  '+': 'add',
+  '-': 'sub',
 };
 
 const ARITH_OPS = new Set(['*', '/', '+', '-']);
@@ -280,17 +286,30 @@ function splitTopLevelTokens(expr: string): string[] {
   for (let i = 0; i < expr.length; i++) {
     const ch = expr[i];
     if ((ch === '"' || ch === "'") && expr[i - 1] !== '\\') {
-      quote = quote === ch ? null : quote ?? ch;
+      quote = quote === ch ? null : (quote ?? ch);
       current += ch;
     } else if (quote) {
       current += ch;
-    } else if (ch === '(') { parenDepth++; current += ch; }
-    else if (ch === ')') { parenDepth--; current += ch; }
-    else if (ch === '[') { bracketDepth++; current += ch; }
-    else if (ch === ']') { bracketDepth--; current += ch; }
-    else if (ch === ' ' && parenDepth === 0 && bracketDepth === 0) {
-      if (current) { tokens.push(current); current = ''; }
-    } else { current += ch; }
+    } else if (ch === '(') {
+      parenDepth++;
+      current += ch;
+    } else if (ch === ')') {
+      parenDepth--;
+      current += ch;
+    } else if (ch === '[') {
+      bracketDepth++;
+      current += ch;
+    } else if (ch === ']') {
+      bracketDepth--;
+      current += ch;
+    } else if (ch === ' ' && parenDepth === 0 && bracketDepth === 0) {
+      if (current) {
+        tokens.push(current);
+        current = '';
+      }
+    } else {
+      current += ch;
+    }
   }
   if (current) tokens.push(current);
   return tokens;
@@ -324,10 +343,13 @@ function isSingleWrapped(s: string): boolean {
   for (let i = 0; i < s.length; i++) {
     const ch = s[i];
     if ((ch === '"' || ch === "'") && s[i - 1] !== '\\') {
-      quote = quote === ch ? null : quote ?? ch;
+      quote = quote === ch ? null : (quote ?? ch);
     } else if (!quote) {
       if (ch === '(') depth++;
-      else if (ch === ')') { depth--; if (depth === 0 && i < s.length - 1) return false; }
+      else if (ch === ')') {
+        depth--;
+        if (depth === 0 && i < s.length - 1) return false;
+      }
     }
   }
   return depth === 0;
@@ -414,8 +436,12 @@ function normalizeCondition(cond: string, columns: Set<string>): string {
   // as an impl-only tolerance so existing TS-impl-flavored templates
   // continue working, but ports MAY accept `=` only.
   const ops: [string, string][] = [
-    ['!=', 'ne'], ['>=', 'ge'], ['<=', 'le'],
-    ['==', 'eq'], ['>', 'gt'], ['<', 'lt'],
+    ['!=', 'ne'],
+    ['>=', 'ge'],
+    ['<=', 'le'],
+    ['==', 'eq'],
+    ['>', 'gt'],
+    ['<', 'lt'],
     ['=', 'eq'],
   ];
   for (const [infix, fn] of ops) {
@@ -430,9 +456,7 @@ function normalizeCondition(cond: string, columns: Set<string>): string {
 }
 
 /** Extract column names referenced in an expression. */
-export function extractColumnRefs(
-  expr: string,
-): string[] {
+export function extractColumnRefs(expr: string): string[] {
   const refs: string[] = [];
   const seen = new Set<string>();
 
@@ -495,11 +519,12 @@ function checkArity(name: string, args: string[]): void {
   const arity = FUNCTION_ARITY[upper];
   if (!arity) return; // unknown function — passes through
   if (args.length < arity.min || args.length > arity.max) {
-    const expected = arity.min === arity.max
-      ? `${arity.min}`
-      : arity.max === Infinity
-        ? `${arity.min} or more`
-        : `${arity.min} or ${arity.max}`;
+    const expected =
+      arity.min === arity.max
+        ? `${arity.min}`
+        : arity.max === Infinity
+          ? `${arity.min} or more`
+          : `${arity.min} or ${arity.max}`;
     throw xtlError(
       'xl3/eval/arity-mismatch',
       `${upper}: expected ${expected} argument${arity.max === 1 ? '' : 's'}, got ${args.length}`,
@@ -507,11 +532,7 @@ function checkArity(name: string, args: string[]): void {
   }
 }
 
-function normalizeFunctionCall(
-  name: string,
-  args: string[],
-  columns: Set<string>,
-): string {
+function normalizeFunctionCall(name: string, args: string[], columns: Set<string>): string {
   checkArity(name, args);
   const upper = name.toUpperCase();
   if (upper === 'ROW' && args.length === 0) {
@@ -593,7 +614,7 @@ function splitCommaArgs(s: string): string[] {
   for (let i = 0; i < s.length; i++) {
     const ch = s[i];
     if ((ch === '"' || ch === "'") && s[i - 1] !== '\\') {
-      quote = quote === ch ? null : quote ?? ch;
+      quote = quote === ch ? null : (quote ?? ch);
       current += ch;
     } else if (!quote && ch === '(') {
       parenDepth++;

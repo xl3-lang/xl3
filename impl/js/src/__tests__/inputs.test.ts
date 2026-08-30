@@ -20,8 +20,7 @@ describe('resolveInputs (ADR-0010)', () => {
   });
 
   it('errors with stable substring when a required input is missing', () => {
-    expect(() => resolveInputs([text({ name: 'month' })], {}))
-      .toThrow(/Input "month" is required/);
+    expect(() => resolveInputs([text({ name: 'month' })], {})).toThrow(/Input "month" is required/);
   });
 
   it('falls back to default when host omits the input', () => {
@@ -36,18 +35,21 @@ describe('resolveInputs (ADR-0010)', () => {
     const spec = text({ name: 'threshold', type: 'number' });
     expect(resolveInputs([spec], { threshold: '10000' })).toEqual({ threshold: '10000' });
     expect(resolveInputs([spec], { threshold: 1234.5 })).toEqual({ threshold: '1234.5' });
-    expect(() => resolveInputs([spec], { threshold: 'not a number' }))
-      .toThrow(/Input "threshold" cannot be parsed as a number/);
+    expect(() => resolveInputs([spec], { threshold: 'not a number' })).toThrow(
+      /Input "threshold" cannot be parsed as a number/,
+    );
   });
 
   it('coerces date inputs and rejects malformed strings', () => {
     const spec = text({ name: 'when', type: 'date' });
     expect(resolveInputs([spec], { when: '2026-05-07' })).toEqual({ when: '2026-05-07' });
     expect(resolveInputs([spec], { when: '2026-05' })).toEqual({ when: '2026-05' });
-    expect(() => resolveInputs([spec], { when: 'last tuesday' }))
-      .toThrow(/Input "when" cannot be parsed as a date/);
-    expect(() => resolveInputs([spec], { when: '2026-13-01' }))
-      .toThrow(/Input "when" cannot be parsed as a date/);
+    expect(() => resolveInputs([spec], { when: 'last tuesday' })).toThrow(
+      /Input "when" cannot be parsed as a date/,
+    );
+    expect(() => resolveInputs([spec], { when: '2026-13-01' })).toThrow(
+      /Input "when" cannot be parsed as a date/,
+    );
   });
 
   it('validates select inputs against the declared options', () => {
@@ -58,8 +60,9 @@ describe('resolveInputs (ADR-0010)', () => {
       options: ['Seoul', 'Busan', 'Daegu'],
     };
     expect(resolveInputs([spec], { region: 'Busan' })).toEqual({ region: 'Busan' });
-    expect(() => resolveInputs([spec], { region: 'Tokyo' }))
-      .toThrow(/Input "region" value "Tokyo" is not in the declared options/);
+    expect(() => resolveInputs([spec], { region: 'Tokyo' })).toThrow(
+      /Input "region" value "Tokyo" is not in the declared options/,
+    );
   });
 
   it('canonicalString-stringifies non-string host inputs (Boolean → uppercase)', () => {

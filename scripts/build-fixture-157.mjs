@@ -41,10 +41,14 @@ async function save(wb, path) {
 
 function configSheet(wb, sourceSheet = 'Raw') {
   const cfg = wb.addWorksheet('__config__');
-  cfg.getCell('A1').value = 'name';      cfg.getCell('B1').value = 'fixture';
-  cfg.getCell('A2').value = 'source_sheet'; cfg.getCell('B2').value = sourceSheet;
-  cfg.getCell('A3').value = 'source_table'; cfg.getCell('B3').value = '1';
-  cfg.getCell('A4').value = 'output_file_pattern'; cfg.getCell('B4').value = 'output.xlsx';
+  cfg.getCell('A1').value = 'name';
+  cfg.getCell('B1').value = 'fixture';
+  cfg.getCell('A2').value = 'source_sheet';
+  cfg.getCell('B2').value = sourceSheet;
+  cfg.getCell('A3').value = 'source_table';
+  cfg.getCell('B3').value = '1';
+  cfg.getCell('A4').value = 'output_file_pattern';
+  cfg.getCell('B4').value = 'output.xlsx';
   return cfg;
 }
 
@@ -121,13 +125,15 @@ function configSheet(wb, sourceSheet = 'Raw') {
   ers.getCell('Q14').value = 9999;
   await save(exp, join(dir, 'expected.xlsx'));
 
-  writeFileSync(join(dir, 'meta.yaml'),
-`description: ADR-0066 outside-block cells next to a @group/@subtotal block are emitted exactly once at their original (post-directive-removal) row positions — never duplicated per group. Pins the grouped variant of the side-summary layout for compose-model engines.
+  writeFileSync(
+    join(dir, 'meta.yaml'),
+    `description: ADR-0066 outside-block cells next to a @group/@subtotal block are emitted exactly once at their original (post-directive-removal) row positions — never duplicated per group. Pins the grouped variant of the side-summary layout for compose-model engines.
 spec_section: evaluation.md Render Phases / ADR-0038 / ADR-0066
 spec_version: "0.1"
 tags: [adr-0066, adr-0038, group, subtotal, outside-cells]
 verified_by: [manual-script]
-`);
+`,
+  );
 }
 
 console.log('Fixture 157 written.');

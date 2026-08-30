@@ -76,9 +76,7 @@ dynamic_cells:
     format: YYYY-MM-DD
 `);
     expect(meta.expected_dynamic).toBe('utc_today');
-    expect(meta.dynamic_cells).toEqual([
-      { sheet: 'R', cell: 'A2', format: 'YYYY-MM-DD' },
-    ]);
+    expect(meta.dynamic_cells).toEqual([{ sheet: 'R', cell: 'A2', format: 'YYYY-MM-DD' }]);
   });
 
   it('parses comparison_stage with default 1', () => {
@@ -154,7 +152,10 @@ describe('canonicalizeXlsx', () => {
   });
 
   it('ignores XML declarations and prolog whitespace', async () => {
-    const a = await singleXmlZip('part.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<root><x a="1"/></root>`);
+    const a = await singleXmlZip(
+      'part.xml',
+      `<?xml version="1.0" encoding="UTF-8"?>\n<root><x a="1"/></root>`,
+    );
     const b = await singleXmlZip('part.xml', `<root><x a="1"/></root>`);
     expect(await canonicalizeXlsx(a)).toEqual(await canonicalizeXlsx(b));
   });
@@ -202,8 +203,14 @@ describe('canonicalizeXlsx', () => {
   });
 
   it('strips default page setup attributes regardless of writer quote style', async () => {
-    const dq = await singleXmlZip('part.xml', '<root><pageSetup fitToWidth="1" copies="1" firstPageNumber="1" useFirstPageNumber="1"/></root>');
-    const sq = await singleXmlZip('part.xml', `<root><pageSetup fitToWidth='1' copies='1' firstPageNumber='1' useFirstPageNumber='1'/></root>`);
+    const dq = await singleXmlZip(
+      'part.xml',
+      '<root><pageSetup fitToWidth="1" copies="1" firstPageNumber="1" useFirstPageNumber="1"/></root>',
+    );
+    const sq = await singleXmlZip(
+      'part.xml',
+      `<root><pageSetup fitToWidth='1' copies='1' firstPageNumber='1' useFirstPageNumber='1'/></root>`,
+    );
     expect(await canonicalizeXlsx(dq)).toEqual(await canonicalizeXlsx(sq));
   });
 
@@ -238,24 +245,36 @@ async function workbookZip(opts: {
   pageSetupAttrs: string;
 }): Promise<ArrayBuffer> {
   const zip = new JSZip();
-  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8"?>
+  zip.file(
+    '[Content_Types].xml',
+    `<?xml version="1.0" encoding="UTF-8"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
   <Override PartName="/xl/worksheets/${opts.sheetPart}" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
-</Types>`);
-  zip.file('xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8"?>
+</Types>`,
+  );
+  zip.file(
+    'xl/workbook.xml',
+    `<?xml version="1.0" encoding="UTF-8"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
   <sheets><sheet name="R" sheetId="${opts.sheetId}" r:id="rId1"/></sheets>
   <calcPr calcId="123"/>
-</workbook>`);
-  zip.file('xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8"?>
+</workbook>`,
+  );
+  zip.file(
+    'xl/_rels/workbook.xml.rels',
+    `<?xml version="1.0" encoding="UTF-8"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/${opts.sheetPart}"/>
-</Relationships>`);
-  zip.file(`xl/worksheets/${opts.sheetPart}`, `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+</Relationships>`,
+  );
+  zip.file(
+    `xl/worksheets/${opts.sheetPart}`,
+    `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <sheetData><row r="1"><c r="A1"><v>1</v></c></row></sheetData>
   <pageSetup fitToWidth="1"${opts.pageSetupAttrs}/>
-</worksheet>`);
+</worksheet>`,
+  );
   const data = await zip.generateAsync({ type: 'uint8array' });
   return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer;
 }

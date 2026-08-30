@@ -60,6 +60,7 @@
     "build:bundle": "tsup && MINIFY=1 tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "conformance": "node dist/bin/conformance.js --fixture-dir=../../conformance/fixtures",
     "conformance:stage2": "node dist/bin/conformance.js --fixture-dir=../../conformance/fixtures --comparison-stage=2",

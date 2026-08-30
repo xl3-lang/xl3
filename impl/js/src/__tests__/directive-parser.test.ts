@@ -24,25 +24,45 @@ describe('isDirectiveExpression', () => {
 describe('parseDirective: filter', () => {
   it('parses comparison filters with all operators', () => {
     expect(parseDirective('@filter [Status] = "Open"')).toEqual({
-      kind: 'filter', field: 'Status', op: '=', value: 'Open',
+      kind: 'filter',
+      field: 'Status',
+      op: '=',
+      value: 'Open',
     });
     expect(parseDirective('@filter [qty] > 10')).toEqual({
-      kind: 'filter', field: 'qty', op: '>', value: 10,
+      kind: 'filter',
+      field: 'qty',
+      op: '>',
+      value: 10,
     });
     expect(parseDirective('@filter [qty] >= 10')).toEqual({
-      kind: 'filter', field: 'qty', op: '>=', value: 10,
+      kind: 'filter',
+      field: 'qty',
+      op: '>=',
+      value: 10,
     });
     expect(parseDirective('@filter [qty] != 0')).toEqual({
-      kind: 'filter', field: 'qty', op: '!=', value: 0,
+      kind: 'filter',
+      field: 'qty',
+      op: '!=',
+      value: 0,
     });
   });
 
   it('parses in / !in with a __lists__ structured reference', () => {
     expect(parseDirective('@filter [Customer] in __lists__[Allowed]')).toEqual({
-      kind: 'filter', field: 'Customer', op: 'in', value: '', listRef: 'Allowed',
+      kind: 'filter',
+      field: 'Customer',
+      op: 'in',
+      value: '',
+      listRef: 'Allowed',
     });
     expect(parseDirective('@filter [Customer] !in __lists__[Excluded]')).toEqual({
-      kind: 'filter', field: 'Customer', op: '!in', value: '', listRef: 'Excluded',
+      kind: 'filter',
+      field: 'Customer',
+      op: '!in',
+      value: '',
+      listRef: 'Excluded',
     });
   });
 
@@ -55,16 +75,22 @@ describe('parseDirective: filter', () => {
 describe('parseDirective: sort', () => {
   it('defaults to asc when direction is omitted', () => {
     expect(parseDirective('@sort [total]')).toEqual({
-      kind: 'sort', field: 'total', order: 'asc',
+      kind: 'sort',
+      field: 'total',
+      order: 'asc',
     });
   });
 
   it('parses asc and desc explicitly, case-insensitive', () => {
     expect(parseDirective('@sort [total] desc')).toEqual({
-      kind: 'sort', field: 'total', order: 'desc',
+      kind: 'sort',
+      field: 'total',
+      order: 'desc',
     });
     expect(parseDirective('@sort [total] DESC')).toEqual({
-      kind: 'sort', field: 'total', order: 'desc',
+      kind: 'sort',
+      field: 'total',
+      order: 'desc',
     });
   });
 });
@@ -84,13 +110,17 @@ describe('parseDirective: top', () => {
 describe('parseDirective: repeat right', () => {
   it('defaults colSpan to 1 when number is omitted (XTL 0.1)', () => {
     expect(parseDirective('@repeat right')).toEqual({
-      kind: 'repeat', direction: 'right', colSpan: 1,
+      kind: 'repeat',
+      direction: 'right',
+      colSpan: 1,
     });
   });
 
   it('uses the explicit colSpan when provided', () => {
     expect(parseDirective('@repeat right 3')).toEqual({
-      kind: 'repeat', direction: 'right', colSpan: 3,
+      kind: 'repeat',
+      direction: 'right',
+      colSpan: 3,
     });
   });
 

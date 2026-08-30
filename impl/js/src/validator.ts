@@ -2,11 +2,7 @@ import type ExcelJS from 'exceljs';
 import { isDirectiveExpression } from './directive-parser.js';
 import { normalizeTemplate } from './normalizer.js';
 import { parseTemplate } from './parser.js';
-import {
-  readAllSourceSchemas,
-  sourceTableHeaderRow,
-  type SourceSchema,
-} from './reader.js';
+import { readAllSourceSchemas, sourceTableHeaderRow, type SourceSchema } from './reader.js';
 import type {
   DataBlock,
   InputContract,
@@ -145,11 +141,7 @@ function buildInputContract(
   addSource('default', parsed.meta.source_sheet, parsed.meta.source_table);
   for (const spec of parsed.sources) addSource(spec.name, spec.sheet, spec.table);
 
-  const requireColumn = (
-    source: string,
-    column: string,
-    location?: string,
-  ) => {
+  const requireColumn = (source: string, column: string, location?: string) => {
     const trimmed = column.trim();
     if (!trimmed) return;
     if (!contracts.has(source)) {
@@ -172,10 +164,15 @@ function buildInputContract(
 
   requireMany('default', parsed.fileGroupKeys);
   for (const expr of extractVarExpressions(parsed.meta.output_file_pattern)) {
-    collectExpressionRequirements(expr, {
-      activeSource: 'default',
-      location: 'filename',
-    }, requireColumn, diagnostics);
+    collectExpressionRequirements(
+      expr,
+      {
+        activeSource: 'default',
+        location: 'filename',
+      },
+      requireColumn,
+      diagnostics,
+    );
   }
 
   for (const st of parsed.sheetTemplates) {
@@ -268,11 +265,12 @@ function staticExpressionContext(st: SheetTemplate): ExpressionContext {
 }
 
 function containingBlock(st: SheetTemplate, row: number, col: number): DataBlock | undefined {
-  return st.blocks.find((block) =>
-    row >= block.startRow &&
-    row <= block.endRow &&
-    col >= block.templateColStart &&
-    col <= block.templateColEnd,
+  return st.blocks.find(
+    (block) =>
+      row >= block.startRow &&
+      row <= block.endRow &&
+      col >= block.templateColStart &&
+      col <= block.templateColEnd,
   );
 }
 
@@ -332,7 +330,10 @@ function compareContractToSchemas(
   return diagnostics;
 }
 
-function readJsonSourceSchemas(input: Xl3SourceJsonInput, declaredSources: SourceSpec[]): JsonSchemaReadResult {
+function readJsonSourceSchemas(
+  input: Xl3SourceJsonInput,
+  declaredSources: SourceSpec[],
+): JsonSchemaReadResult {
   const decoded = decodeJsonInput(input);
   if (decoded.error) return invalidJsonResult(decoded.error);
   const parsed = decoded.value;
@@ -402,7 +403,11 @@ function buildJsonSourceSchema(
   diagnostics: ValidationDiagnostic[],
 ): SourceSchema | undefined {
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
-    pushInvalidJson(diagnostics, `source "${name}" must be an object with "headers" and "rows"`, name);
+    pushInvalidJson(
+      diagnostics,
+      `source "${name}" must be an object with "headers" and "rows"`,
+      name,
+    );
     return undefined;
   }
 
@@ -485,7 +490,8 @@ function decodeJsonInput(input: Xl3SourceJsonInput): JsonDecodeResult {
       return { error: `source JSON is not valid JSON: ${(e as Error).message}` };
     }
   }
-  if (input instanceof ArrayBuffer) return decodeJsonInput(new TextDecoder().decode(new Uint8Array(input)));
+  if (input instanceof ArrayBuffer)
+    return decodeJsonInput(new TextDecoder().decode(new Uint8Array(input)));
   if (input instanceof Uint8Array) return decodeJsonInput(new TextDecoder().decode(input));
   if (input !== null && typeof input === 'object') return { value: input };
   return { error: 'source JSON must be a string, ArrayBuffer, Uint8Array, or object' };
@@ -494,11 +500,13 @@ function decodeJsonInput(input: Xl3SourceJsonInput): JsonDecodeResult {
 function invalidJsonResult(detail: string): JsonSchemaReadResult {
   return {
     schemas: new Map(),
-    diagnostics: [{
-      code: 'xl3/source-json/invalid',
-      severity: 'error',
-      detail,
-    }],
+    diagnostics: [
+      {
+        code: 'xl3/source-json/invalid',
+        severity: 'error',
+        detail,
+      },
+    ],
   };
 }
 

@@ -89,7 +89,7 @@ async function buildSource(rows, cols) {
   // addRow with an array is markedly cheaper than per-cell getCell()
   // at 100k × 20; the fixture build would otherwise dominate the run.
   for (let r = 0; r < rows; r++) {
-    sh.addRow(Array.from({ length: cols }, (_, c) => ((r * 7 + c * 13) % 1000)));
+    sh.addRow(Array.from({ length: cols }, (_, c) => (r * 7 + c * 13) % 1000));
   }
   return wb.xlsx.writeBuffer();
 }
@@ -200,9 +200,9 @@ console.log(`xl3 bench matrix — median of ${RUNS} runs per cell`);
 console.log(`heap cap ${HEAP_MB} MB, one child process per cell`);
 console.log('='.repeat(78));
 console.log(
-  ['rows', 'cols', 'parse', 'eval', 'write', 'total', 'peak RSS'].map((h, i) =>
-    i < 2 ? h.padStart(7) : h.padStart(11),
-  ).join(''),
+  ['rows', 'cols', 'parse', 'eval', 'write', 'total', 'peak RSS']
+    .map((h, i) => (i < 2 ? h.padStart(7) : h.padStart(11)))
+    .join(''),
 );
 console.log('-'.repeat(78));
 
@@ -213,10 +213,7 @@ for (const rows of ROW_TIERS) {
     const r = await runChild(rows, cols, HEAP_MB);
     results.push(r);
     if (r.failed) {
-      console.log(
-        `${String(rows).padStart(7)}${String(cols).padStart(7)}` +
-          `   ${r.failed}`,
-      );
+      console.log(`${String(rows).padStart(7)}${String(cols).padStart(7)}` + `   ${r.failed}`);
     } else {
       console.log(
         String(rows).padStart(7) +
@@ -242,7 +239,9 @@ if (ok.length) {
 }
 const failed = results.filter((r) => r.failed);
 if (failed.length) {
-  console.log(`cells that did not complete: ${failed.map((f) => `${f.rows}×${f.cols}`).join(', ')}`);
+  console.log(
+    `cells that did not complete: ${failed.map((f) => `${f.rows}×${f.cols}`).join(', ')}`,
+  );
 }
 console.log('\nJSON:');
 console.log(JSON.stringify(results, null, 2));

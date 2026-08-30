@@ -4,7 +4,12 @@
 
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { runConformance, formatTextReport, canonicalizeXlsx, type ComparisonStage } from '../conformance-runner.js';
+import {
+  runConformance,
+  formatTextReport,
+  canonicalizeXlsx,
+  type ComparisonStage,
+} from '../conformance-runner.js';
 
 type Cli = RunCli | CanonicalizeCli;
 
@@ -42,9 +47,15 @@ function parseArgs(argv: string[]): Cli {
     const key = arg.slice(0, eq);
     const value = arg.slice(eq + 1);
     switch (key) {
-      case '--fixture-dir': cli.fixtureDir = value; break;
-      case '--filter': cli.filter = value; break;
-      case '--spec-version': cli.specVersion = value; break;
+      case '--fixture-dir':
+        cli.fixtureDir = value;
+        break;
+      case '--filter':
+        cli.filter = value;
+        break;
+      case '--spec-version':
+        cli.specVersion = value;
+        break;
       case '--comparison-stage':
         if (value !== '1' && value !== '2') die(`--comparison-stage must be 1 or 2`);
         cli.comparisonStage = Number(value) as ComparisonStage;
@@ -59,7 +70,8 @@ function parseArgs(argv: string[]): Cli {
         }
         cli.engine = value;
         break;
-      default: die(`unknown flag: ${key}`);
+      default:
+        die(`unknown flag: ${key}`);
     }
   }
   return cli;
@@ -82,7 +94,9 @@ function parseCanonicalizeArgs(args: string[]): CanonicalizeCli {
 
 function die(msg: string): never {
   console.error(`xl3-conformance: ${msg}`);
-  console.error('usage: xl3-conformance [--fixture-dir=<path>] [--filter=<tag>] [--spec-version=<x.y>] [--comparison-stage=1|2] [--report=json|text] [--engine=auto|wasm|js]');
+  console.error(
+    'usage: xl3-conformance [--fixture-dir=<path>] [--filter=<tag>] [--spec-version=<x.y>] [--comparison-stage=1|2] [--report=json|text] [--engine=auto|wasm|js]',
+  );
   console.error('       xl3-conformance canonicalize <input.xlsx> [--part=<canonical-part-name>]');
   process.exit(2);
 }

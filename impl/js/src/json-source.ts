@@ -61,7 +61,8 @@ function decodeInput(input: Xl3SourceJsonInput): unknown {
       return fail(`source JSON is not valid JSON: ${(e as Error).message}`);
     }
   }
-  if (input instanceof ArrayBuffer) return decodeInput(new TextDecoder().decode(new Uint8Array(input)));
+  if (input instanceof ArrayBuffer)
+    return decodeInput(new TextDecoder().decode(new Uint8Array(input)));
   if (input instanceof Uint8Array) return decodeInput(new TextDecoder().decode(input));
   if (input !== null && typeof input === 'object') return input; // already-parsed object
   return fail('source JSON must be a string, ArrayBuffer, Uint8Array, or object');
@@ -93,7 +94,9 @@ function toUtcDate(value: string, ctx: string): Date {
     }
     return dt;
   }
-  return fail(`${ctx}: date value must be "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss", got ${describe(value)}`);
+  return fail(
+    `${ctx}: date value must be "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm:ss", got ${describe(value)}`,
+  );
 }
 
 function mapValue(v: Xl3SourceJsonValue, ctx: string): unknown {
@@ -144,7 +147,8 @@ function buildSource(name: string, raw: unknown): SourceData {
     // Own-index read: a sparse array (hole) with a polluted
     // Array.prototype would otherwise inject an inherited value.
     const h = Object.prototype.hasOwnProperty.call(headers, i) ? headers[i] : undefined;
-    if (typeof h !== 'string') return fail(`source "${name}" has a non-string header (${describe(h)})`);
+    if (typeof h !== 'string')
+      return fail(`source "${name}" has a non-string header (${describe(h)})`);
     const header = h.trim();
     if (header === '') return fail(`source "${name}" has an empty header`);
     if (seen.has(header)) return fail(`source "${name}" has duplicate header "${header}"`);
@@ -170,7 +174,9 @@ function buildSource(name: string, raw: unknown): SourceData {
     const row = rows[i];
     if (!Array.isArray(row)) return fail(`source "${name}" row ${i} must be an array`);
     if (row.length !== normHeaders.length) {
-      return fail(`source "${name}" row ${i} has ${row.length} value(s) but there are ${normHeaders.length} headers`);
+      return fail(
+        `source "${name}" row ${i} has ${row.length} value(s) but there are ${normHeaders.length} headers`,
+      );
     }
     const record: Row = {};
     let allEmpty = true;
@@ -179,7 +185,10 @@ function buildSource(name: string, raw: unknown): SourceData {
       // Own-index read (see header loop): guards sparse rows against a
       // polluted Array.prototype supplying inherited cell values.
       const cell = Object.prototype.hasOwnProperty.call(row, c) ? row[c] : undefined;
-      const val = mapValue(cell as Xl3SourceJsonValue, `source "${name}" row ${i} column "${header}"`);
+      const val = mapValue(
+        cell as Xl3SourceJsonValue,
+        `source "${name}" row ${i} column "${header}"`,
+      );
       if (!isEmpty(val)) allEmpty = false;
       record[header] = val;
     }
@@ -208,7 +217,9 @@ export function readJsonSources(
   const version = own(parsed, 'version');
   const sources = own(parsed, 'sources');
   if (version !== WIRE_VERSION) {
-    return fail(`unsupported source JSON version ${describe(version)} (expected "${WIRE_VERSION}")`);
+    return fail(
+      `unsupported source JSON version ${describe(version)} (expected "${WIRE_VERSION}")`,
+    );
   }
   if (sources === null || typeof sources !== 'object' || Array.isArray(sources)) {
     return fail('source JSON "sources" must be an object keyed by source name');
@@ -231,7 +242,9 @@ export function readJsonSources(
   }
   for (const spec of declaredSources) {
     if (!Object.prototype.hasOwnProperty.call(jsonSources, spec.name)) {
-      return fail(`template declares source "${spec.name}" but the source JSON does not provide it`);
+      return fail(
+        `template declares source "${spec.name}" but the source JSON does not provide it`,
+      );
     }
   }
 

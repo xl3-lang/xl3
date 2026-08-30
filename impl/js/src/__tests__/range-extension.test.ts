@@ -11,14 +11,11 @@ const BLOCK_START = 2;
 const BLOCK_END = 2;
 const DELTA = 2;
 
-const ext = (ref: string, s = BLOCK_START, e = BLOCK_END, d = DELTA) =>
-  extendSqref(ref, s, e, d);
+const ext = (ref: string, s = BLOCK_START, e = BLOCK_END, d = DELTA) => extendSqref(ref, s, e, d);
 
 describe('parseSqref', () => {
   it('reads a single cell as a one-row span', () => {
-    expect(parseSqref('A2')).toEqual([
-      { startRow: 2, endRow: 2, coversAllRows: false, raw: 'A2' },
-    ]);
+    expect(parseSqref('A2')).toEqual([{ startRow: 2, endRow: 2, coversAllRows: false, raw: 'A2' }]);
   });
 
   it('reads a range and ignores its columns', () => {

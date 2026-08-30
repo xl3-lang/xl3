@@ -99,8 +99,7 @@ async function buildJoinScaling(rows: number) {
   const ts = tpl.addWorksheet('Out');
   ts.getRow(1).values = ['Account', 'Region', 'Amount'];
   ts.getCell('A2').value = '{{ @source Renewals }}';
-  ts.getCell('A3').value =
-    '{{ @join Customers on Customers[Account] = Renewals[Account] }}';
+  ts.getCell('A3').value = '{{ @join Customers on Customers[Account] = Renewals[Account] }}';
   ts.getCell('A4').value = '{{ Renewals[Account] }}';
   ts.getCell('B4').value = '{{ Customers[Region] }}';
   ts.getCell('C4').value = '{{ Renewals[Amount] }}';

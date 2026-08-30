@@ -23,7 +23,7 @@ export function isErrorCellMarker(v: unknown): v is XtlErrorCell {
 // HYPERLINK through TEXT() or & still get a readable string.
 export interface XtlHyperlinkCell {
   __xl3_hyperlink__: string; // url
-  text: string;              // visible label
+  text: string; // visible label
 }
 
 export function isHyperlinkMarker(v: unknown): v is XtlHyperlinkCell {
@@ -49,7 +49,7 @@ const ZERO_WIDTH_RE = /[\u200B\uFEFF]/g;
 // string edges only; internal whitespace is preserved.
 const TRIM_ADR_0007_EDGES_RE = new RegExp(
   '^[\\t\\n\\v\\f\\r \\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]+' +
-  '|[\\t\\n\\v\\f\\r \\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]+$',
+    '|[\\t\\n\\v\\f\\r \\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]+$',
   'g',
 );
 
@@ -176,10 +176,7 @@ function assertField(rows: Row[], field: string, sourceHint?: string): void {
   if (rows.length === 0) return;
   if (field in rows[0]!) return;
   const where = sourceHint ? ` of source "${sourceHint}"` : '';
-  throw xtlError(
-    'xl3/source/unknown-column',
-    `Column "${field}"${where} does not exist`,
-  );
+  throw xtlError('xl3/source/unknown-column', `Column "${field}"${where} does not exist`);
 }
 
 function isNumberLike(v: unknown): boolean {
@@ -287,8 +284,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   },
   concat: (...parts) => parts.map((p) => canonicalString(p)).join(''),
 
-  IF: (condition, trueValue, falseValue) =>
-    isTruthy(condition) ? trueValue : falseValue,
+  IF: (condition, trueValue, falseValue) => (isTruthy(condition) ? trueValue : falseValue),
 
   IFEMPTY: (v, def) => (isEmpty(v) ? def : v),
 
@@ -322,10 +318,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     if (!Array.isArray(arr) || arr.length === 0) return 0;
     const f = field as string;
     assertField(arr, f);
-    return arr.reduce(
-      (min, row) => Math.min(min, toNumber(row[f])),
-      Infinity,
-    );
+    return arr.reduce((min, row) => Math.min(min, toNumber(row[f])), Infinity);
   },
 
   maxRows: (rows, field) => {
@@ -333,10 +326,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     if (!Array.isArray(arr) || arr.length === 0) return 0;
     const f = field as string;
     assertField(arr, f);
-    return arr.reduce(
-      (max, row) => Math.max(max, toNumber(row[f])),
-      -Infinity,
-    );
+    return arr.reduce((max, row) => Math.max(max, toNumber(row[f])), -Infinity);
   },
 
   countRows: (rows, field) => {
@@ -401,9 +391,7 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const n = toNumber(v);
     const p = Math.pow(10, toNumber(places));
     const scaled = n * p;
-    const rounded = scaled >= 0
-      ? Math.floor(scaled + 0.5)
-      : -Math.floor(-scaled + 0.5);
+    const rounded = scaled >= 0 ? Math.floor(scaled + 0.5) : -Math.floor(-scaled + 0.5);
     return rounded / p;
   },
 
@@ -424,32 +412,57 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   // All UTC per ADR-0017. Non-date inputs → xl3/eval/type-mismatch.
   YEAR: (v) => {
     const d = toDate(v);
-    if (!d) throw xtlError('xl3/eval/type-mismatch', `YEAR() expected a date, got: ${describeOperand(v)}`);
+    if (!d)
+      throw xtlError(
+        'xl3/eval/type-mismatch',
+        `YEAR() expected a date, got: ${describeOperand(v)}`,
+      );
     return d.getUTCFullYear();
   },
   MONTH: (v) => {
     const d = toDate(v);
-    if (!d) throw xtlError('xl3/eval/type-mismatch', `MONTH() expected a date, got: ${describeOperand(v)}`);
+    if (!d)
+      throw xtlError(
+        'xl3/eval/type-mismatch',
+        `MONTH() expected a date, got: ${describeOperand(v)}`,
+      );
     return d.getUTCMonth() + 1;
   },
   DAY: (v) => {
     const d = toDate(v);
-    if (!d) throw xtlError('xl3/eval/type-mismatch', `DAY() expected a date, got: ${describeOperand(v)}`);
+    if (!d)
+      throw xtlError('xl3/eval/type-mismatch', `DAY() expected a date, got: ${describeOperand(v)}`);
     return d.getUTCDate();
   },
   EOMONTH: (date, months) => {
     const d = toDate(date);
-    if (!d) throw xtlError('xl3/eval/type-mismatch', `EOMONTH() expected a date as the 1st argument, got: ${describeOperand(date)}`);
+    if (!d)
+      throw xtlError(
+        'xl3/eval/type-mismatch',
+        `EOMONTH() expected a date as the 1st argument, got: ${describeOperand(date)}`,
+      );
     const m = toNumber(months);
-    if (!Number.isInteger(m)) throw xtlError('xl3/eval/type-mismatch', `EOMONTH() expected an integer month offset, got: ${describeOperand(months)}`);
+    if (!Number.isInteger(m))
+      throw xtlError(
+        'xl3/eval/type-mismatch',
+        `EOMONTH() expected an integer month offset, got: ${describeOperand(months)}`,
+      );
     // Day 0 of (target month + 1) = last day of target month.
     return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + m + 1, 0));
   },
   EDATE: (date, months) => {
     const d = toDate(date);
-    if (!d) throw xtlError('xl3/eval/type-mismatch', `EDATE() expected a date as the 1st argument, got: ${describeOperand(date)}`);
+    if (!d)
+      throw xtlError(
+        'xl3/eval/type-mismatch',
+        `EDATE() expected a date as the 1st argument, got: ${describeOperand(date)}`,
+      );
     const m = toNumber(months);
-    if (!Number.isInteger(m)) throw xtlError('xl3/eval/type-mismatch', `EDATE() expected an integer month offset, got: ${describeOperand(months)}`);
+    if (!Number.isInteger(m))
+      throw xtlError(
+        'xl3/eval/type-mismatch',
+        `EDATE() expected an integer month offset, got: ${describeOperand(months)}`,
+      );
     const y = d.getUTCFullYear();
     const mm = d.getUTCMonth() + m;
     const dd = d.getUTCDate();
@@ -460,20 +473,34 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   DATEDIF: (start, end, unit) => {
     const s = toDate(start);
     const e = toDate(end);
-    if (!s) throw xtlError('xl3/eval/type-mismatch', `DATEDIF() expected a date as the 1st argument, got: ${describeOperand(start)}`);
-    if (!e) throw xtlError('xl3/eval/type-mismatch', `DATEDIF() expected a date as the 2nd argument, got: ${describeOperand(end)}`);
+    if (!s)
+      throw xtlError(
+        'xl3/eval/type-mismatch',
+        `DATEDIF() expected a date as the 1st argument, got: ${describeOperand(start)}`,
+      );
+    if (!e)
+      throw xtlError(
+        'xl3/eval/type-mismatch',
+        `DATEDIF() expected a date as the 2nd argument, got: ${describeOperand(end)}`,
+      );
     const u = String(unit ?? '').toUpperCase();
     if (u !== 'Y' && u !== 'M' && u !== 'D') {
-      throw xtlError('xl3/eval/type-mismatch', `DATEDIF() unit must be "Y", "M", or "D"; got: ${describeOperand(unit)}`);
+      throw xtlError(
+        'xl3/eval/type-mismatch',
+        `DATEDIF() unit must be "Y", "M", or "D"; got: ${describeOperand(unit)}`,
+      );
     }
     const sign = e.getTime() >= s.getTime() ? 1 : -1;
     const [a, b] = sign === 1 ? [s, e] : [e, s];
     if (u === 'D') return sign * Math.floor((b.getTime() - a.getTime()) / 86400000);
     let years = b.getUTCFullYear() - a.getUTCFullYear();
     let months = b.getUTCMonth() - a.getUTCMonth();
-    let days = b.getUTCDate() - a.getUTCDate();
+    const days = b.getUTCDate() - a.getUTCDate();
     if (days < 0) months -= 1;
-    if (months < 0) { years -= 1; months += 12; }
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
     return sign * (u === 'Y' ? years : years * 12 + months);
   },
 
@@ -503,7 +530,10 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   // provides a default).
   IFERROR: (...args) => {
     if (args.length !== 2) {
-      throw xtlError('xl3/eval/arity-mismatch', `IFERROR() takes exactly 2 arguments, got ${args.length}`);
+      throw xtlError(
+        'xl3/eval/arity-mismatch',
+        `IFERROR() takes exactly 2 arguments, got ${args.length}`,
+      );
     }
     const [value, fallback] = args;
     if (isErrorCellMarker(value)) return fallback;
@@ -511,12 +541,18 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
   },
   IFS: (...args) => {
     if (args.length === 0 || args.length % 2 !== 0) {
-      throw xtlError('xl3/eval/arity-mismatch', `IFS() requires an even number of arguments (condition, value pairs); got ${args.length}`);
+      throw xtlError(
+        'xl3/eval/arity-mismatch',
+        `IFS() requires an even number of arguments (condition, value pairs); got ${args.length}`,
+      );
     }
     for (let i = 0; i < args.length; i += 2) {
       if (isTruthy(args[i])) return args[i + 1];
     }
-    throw xtlError('xl3/eval/no-match', `IFS() no condition matched; pass a trailing "TRUE, default" pair for a fallback`);
+    throw xtlError(
+      'xl3/eval/no-match',
+      `IFS() no condition matched; pass a trailing "TRUE, default" pair for a fallback`,
+    );
   },
 
   // ADR-0044: DATE(year, month, day) composes a UTC-midnight date
@@ -528,12 +564,18 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
       if (typeof v === 'string') {
         const trimmed = v.trim();
         if (trimmed === '') {
-          throw xtlError('xl3/eval/type-mismatch', `DATE() ${name} must be a finite number; got empty string`);
+          throw xtlError(
+            'xl3/eval/type-mismatch',
+            `DATE() ${name} must be a finite number; got empty string`,
+          );
         }
         const n = Number(trimmed);
         if (Number.isFinite(n)) return n;
       }
-      throw xtlError('xl3/eval/type-mismatch', `DATE() ${name} must be a finite number; got ${describeOperand(v)}`);
+      throw xtlError(
+        'xl3/eval/type-mismatch',
+        `DATE() ${name} must be a finite number; got ${describeOperand(v)}`,
+      );
     };
     const yi = parse(y, 'year');
     const mi = parse(m, 'month');
@@ -546,7 +588,11 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
 
   HYPERLINK: (url, label) => {
     const u = String(url ?? '').trim();
-    if (u === '') throw xtlError('xl3/eval/type-mismatch', `HYPERLINK() url argument must be a non-empty string`);
+    if (u === '')
+      throw xtlError(
+        'xl3/eval/type-mismatch',
+        `HYPERLINK() url argument must be a non-empty string`,
+      );
     const text = label == null || label === '' ? u : String(label);
     const marker: XtlHyperlinkCell = { __xl3_hyperlink__: u, text };
     return marker;

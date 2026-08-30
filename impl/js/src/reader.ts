@@ -193,7 +193,8 @@ function resolveSourceTableForSchema(
   sourceName: string,
   diagnostics: ValidationDiagnostic[],
 ): SourceTable | undefined {
-  if (!options.sourceTable) return inferTableFromHeaderRowCollecting(sheet, 1, sourceName, diagnostics);
+  if (!options.sourceTable)
+    return inferTableFromHeaderRowCollecting(sheet, 1, sourceName, diagnostics);
 
   const value = options.sourceTable;
   const raw = value.trim();
@@ -219,7 +220,10 @@ function resolveSourceTableForSchema(
   assertPositiveRow(headerRow, 'source_table', value);
   if (bottomRow !== undefined) assertPositiveRow(bottomRow, 'source_table', value);
   if (leftCol > rightCol) {
-    throw xtlError('xl3/config/invalid-source-table', `source_table has an invalid column range: ${value}`);
+    throw xtlError(
+      'xl3/config/invalid-source-table',
+      `source_table has an invalid column range: ${value}`,
+    );
   }
   if (bottomRow !== undefined && bottomRow < headerRow) {
     throw xtlError(
@@ -230,11 +234,7 @@ function resolveSourceTableForSchema(
   return { headerRow, leftCol, rightCol, bottomRow };
 }
 
-function parseSourceTable(
-  sheet: ExcelJS.Worksheet,
-  value: string,
-  keyName: string,
-): SourceTable {
+function parseSourceTable(sheet: ExcelJS.Worksheet, value: string, keyName: string): SourceTable {
   const raw = value.trim();
   const rowOnly = raw.match(/^\d+$/);
   if (rowOnly) {
@@ -258,7 +258,10 @@ function parseSourceTable(
   assertPositiveRow(headerRow, keyName, value);
   if (bottomRow !== undefined) assertPositiveRow(bottomRow, keyName, value);
   if (leftCol > rightCol) {
-    throw xtlError('xl3/config/invalid-source-table', `${keyName} has an invalid column range: ${value}`);
+    throw xtlError(
+      'xl3/config/invalid-source-table',
+      `${keyName} has an invalid column range: ${value}`,
+    );
   }
   if (bottomRow !== undefined && bottomRow < headerRow) {
     throw xtlError(
@@ -342,12 +345,7 @@ function inferTableFromHeaderRowCollecting(
 // internal value at row-eval time. Reject at parse so authors see
 // the conflict immediately instead of debugging a `[object Object]`
 // cell value later.
-const RESERVED_COLUMN_NAMES = new Set([
-  'Rows',
-  '__rownum',
-  '__activeSource__',
-  '__joinedRow__',
-]);
+const RESERVED_COLUMN_NAMES = new Set(['Rows', '__rownum', '__activeSource__', '__joinedRow__']);
 const DUNDER_NAME_RE = /^__[a-z]+__$/;
 
 // ADR-0033: a horizontally-merged header cell occupies one logical column at
@@ -389,7 +387,10 @@ function readHeaders(sheet: ExcelJS.Worksheet, table: SourceTable): HeaderColumn
           `source_table header cell ${cell.address} is in a merged region whose master is empty`,
         );
       }
-      throw xtlError('xl3/source/missing-header', `source_table header cell ${cell.address} is empty`);
+      throw xtlError(
+        'xl3/source/missing-header',
+        `source_table header cell ${cell.address} is empty`,
+      );
     }
     if (seen.has(header)) {
       throw xtlError('xl3/source/duplicate-name', `source_table has duplicate header "${header}"`);
@@ -513,12 +514,18 @@ function headerText(cell: ExcelJS.Cell): string {
   if (typeof value === 'object' && 'result' in value) {
     const result = (value as { result: unknown }).result;
     if (result === undefined && isFormulaValue(value)) {
-      throw xtlError("xl3/cell/formula-no-cache", `Formula cell ${cell.address} has no cached result`);
+      throw xtlError(
+        'xl3/cell/formula-no-cache',
+        `Formula cell ${cell.address} has no cached result`,
+      );
     }
     return String(result ?? '').trim();
   }
   if (typeof value === 'object' && isFormulaValue(value)) {
-    throw xtlError("xl3/cell/formula-no-cache", `Formula cell ${cell.address} has no cached result`);
+    throw xtlError(
+      'xl3/cell/formula-no-cache',
+      `Formula cell ${cell.address} has no cached result`,
+    );
   }
   return String(value).trim();
 }
@@ -531,10 +538,7 @@ function decodeColumn(ref: string): number {
   return col;
 }
 
-function resolveSheet(
-  workbook: ExcelJS.Workbook,
-  pattern: string,
-): ExcelJS.Worksheet | undefined {
+function resolveSheet(workbook: ExcelJS.Workbook, pattern: string): ExcelJS.Worksheet | undefined {
   if (!pattern) return workbook.worksheets[0];
 
   // Exact match
@@ -556,9 +560,7 @@ function parseCellValue(cell: ExcelJS.Cell): unknown {
 
   // ExcelJS returns rich text as object
   if (typeof v === 'object' && 'richText' in v) {
-    return (v as { richText: { text: string }[] }).richText
-      .map((r) => r.text)
-      .join('');
+    return (v as { richText: { text: string }[] }).richText.map((r) => r.text).join('');
   }
 
   // ADR-0017: a static error cell (e.g. `=#N/A` typed by the author or
@@ -571,7 +573,10 @@ function parseCellValue(cell: ExcelJS.Cell): unknown {
   if (typeof v === 'object' && 'result' in v) {
     const result = (v as { result: unknown }).result;
     if (result === undefined && isFormulaValue(v)) {
-      throw xtlError("xl3/cell/formula-no-cache", `Formula cell ${cell.address} has no cached result`);
+      throw xtlError(
+        'xl3/cell/formula-no-cache',
+        `Formula cell ${cell.address} has no cached result`,
+      );
     }
     // ADR-0017: a formula cached result that is itself an error
     // sentinel reads as empty.
@@ -582,7 +587,10 @@ function parseCellValue(cell: ExcelJS.Cell): unknown {
   }
 
   if (typeof v === 'object' && isFormulaValue(v)) {
-    throw xtlError("xl3/cell/formula-no-cache", `Formula cell ${cell.address} has no cached result`);
+    throw xtlError(
+      'xl3/cell/formula-no-cache',
+      `Formula cell ${cell.address} has no cached result`,
+    );
   }
 
   return v;

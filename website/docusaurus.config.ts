@@ -1,6 +1,7 @@
 import type { PrismTheme } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import xl3Package from '../impl/js/package.json';
 
 // GitHub-dark palette as a prism-react-renderer theme. Passed as both
 // `theme` and `darkTheme` so code blocks read identically across site
@@ -11,14 +12,26 @@ import type * as Preset from '@docusaurus/preset-classic';
 const xl3GithubDark: PrismTheme = {
   plain: { color: '#e6edf3', backgroundColor: '#0d1117' },
   styles: [
-    { types: ['comment', 'prolog', 'doctype', 'cdata'], style: { color: '#8b949e', fontStyle: 'italic' } },
+    {
+      types: ['comment', 'prolog', 'doctype', 'cdata'],
+      style: { color: '#8b949e', fontStyle: 'italic' },
+    },
     { types: ['punctuation'], style: { color: '#e6edf3' } },
     // Blue class/type identifiers distinguish (`Promise`, `InputSpec`)
     // from function-call identifiers below while staying on-brand.
     { types: ['tag', 'class-name'], style: { color: '#60a5fa' } },
-    { types: ['boolean', 'number', 'constant', 'symbol', 'deleted', 'attr-name', 'property'], style: { color: '#79c0ff' } },
-    { types: ['selector', 'string', 'char', 'builtin', 'inserted', 'url', 'attr-value'], style: { color: '#fde68a' } },
-    { types: ['operator', 'entity', 'keyword', 'atrule', 'important'], style: { color: '#ff7b72' } },
+    {
+      types: ['boolean', 'number', 'constant', 'symbol', 'deleted', 'attr-name', 'property'],
+      style: { color: '#79c0ff' },
+    },
+    {
+      types: ['selector', 'string', 'char', 'builtin', 'inserted', 'url', 'attr-value'],
+      style: { color: '#fde68a' },
+    },
+    {
+      types: ['operator', 'entity', 'keyword', 'atrule', 'important'],
+      style: { color: '#ff7b72' },
+    },
     { types: ['function'], style: { color: '#d2a8ff' } },
     { types: ['regex', 'variable', 'parameter'], style: { color: '#ffa657' } },
     { types: ['bold'], style: { fontWeight: 'bold' } },
@@ -132,27 +145,29 @@ const config: Config = {
           createSitemapItems: async (params) => {
             const { defaultCreateSitemapItems, ...rest } = params;
             const items = await defaultCreateSitemapItems(rest);
-            return items
-              // Drop the 404 page — search engines should not index it.
-              .filter((item) => !/\/404\/?$/.test(item.url))
-              // Drop the trailing duplicate root entry the default
-              // sitemap generator emits.
-              .filter((item, idx, arr) => arr.findIndex((x) => x.url === item.url) === idx)
-              .map((item) => {
-                if (item.url === 'https://xl3.io/' || item.url === 'https://xl3.io') {
-                  return { ...item, priority: 1.0, changefreq: 'weekly' };
-                }
-                if (/\/(try|guides|api|spec|porters-guide)$/.test(item.url)) {
-                  return { ...item, priority: 0.9 };
-                }
-                if (/\/guides\//.test(item.url) || /\/spec\//.test(item.url)) {
-                  return { ...item, priority: 0.7 };
-                }
-                if (/\/spec\/decisions\//.test(item.url)) {
-                  return { ...item, priority: 0.4 };
-                }
-                return item;
-              });
+            return (
+              items
+                // Drop the 404 page — search engines should not index it.
+                .filter((item) => !/\/404\/?$/.test(item.url))
+                // Drop the trailing duplicate root entry the default
+                // sitemap generator emits.
+                .filter((item, idx, arr) => arr.findIndex((x) => x.url === item.url) === idx)
+                .map((item) => {
+                  if (item.url === 'https://xl3.io/' || item.url === 'https://xl3.io') {
+                    return { ...item, priority: 1.0, changefreq: 'weekly' };
+                  }
+                  if (/\/(try|guides|api|spec|porters-guide)$/.test(item.url)) {
+                    return { ...item, priority: 0.9 };
+                  }
+                  if (/\/guides\//.test(item.url) || /\/spec\//.test(item.url)) {
+                    return { ...item, priority: 0.7 };
+                  }
+                  if (/\/spec\/decisions\//.test(item.url)) {
+                    return { ...item, priority: 0.4 };
+                  }
+                  return item;
+                })
+            );
           },
         },
       } satisfies Preset.Options,
@@ -245,9 +260,7 @@ const config: Config = {
               'Open-source declarative template engine for Excel. xl3 turns ordinary workbooks into executable templates whose rules live in Excel itself.',
             foundingDate: '2024',
             founder: { '@id': 'https://xl3.io/#person-jinyoung' },
-            sameAs: [
-              'https://github.com/xl3-lang/xl3',
-            ],
+            sameAs: ['https://github.com/xl3-lang/xl3'],
             knowsAbout: [
               'Declarative Excel templates',
               'Excel template engines',
@@ -279,10 +292,10 @@ const config: Config = {
               'Declarative Excel template execution engine. xl3 runs template.xlsx with raw data to produce finished workbooks as a pure function — same inputs, same workbook, every time.',
             url: 'https://xl3.io',
             applicationCategory: 'DeveloperApplication',
-            operatingSystem: 'Node.js 18+, Browser (ESM)',
+            operatingSystem: `Node.js ${xl3Package.engines.node}, Browser (ESM)`,
             programmingLanguage: 'TypeScript',
             license: 'https://opensource.org/licenses/MIT',
-            softwareVersion: '0.9.0',
+            softwareVersion: xl3Package.version,
             releaseNotes: 'https://github.com/xl3-lang/xl3/blob/main/CHANGELOG.md',
             codeRepository: 'https://github.com/xl3-lang/xl3',
             creator: { '@id': 'https://xl3.io/#organization' },
@@ -327,7 +340,11 @@ const config: Config = {
     image: 'img/og.png',
     metadata: [
       { name: 'theme-color', content: '#0F172A' },
-      { name: 'keywords', content: 'xl3, XTL, Excel template engine, declarative Excel template, Excel-to-Excel, document automation runtime, OOXML, xlsx, workbook transformation, conformance, spec' },
+      {
+        name: 'keywords',
+        content:
+          'xl3, XTL, Excel template engine, declarative Excel template, Excel-to-Excel, document automation runtime, OOXML, xlsx, workbook transformation, conformance, spec',
+      },
       {
         name: 'description',
         content:
@@ -401,7 +418,10 @@ const config: Config = {
             // so these static-asset downloads under /static/ don't get
             // flagged as broken routes.
             { label: 'Sample raw.xlsx', href: 'pathname:///playground-samples/sample-raw.xlsx' },
-            { label: 'Sample template.xlsx', href: 'pathname:///playground-samples/sample-template.xlsx' },
+            {
+              label: 'Sample template.xlsx',
+              href: 'pathname:///playground-samples/sample-template.xlsx',
+            },
           ],
         },
         {

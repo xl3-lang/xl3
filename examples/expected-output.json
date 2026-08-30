@@ -1,0 +1,137 @@
+{
+  "version": "xl3-operational-regression/0.1",
+  "cases": {
+    "01-basic-renewal-report": {
+      "outputs": [
+        {
+          "filename": "renewal-report.xlsx",
+          "sheets": [
+            {
+              "name": "Renewals",
+              "rowCount": 8,
+              "merges": [],
+              "cells": {
+                "A1": "Account",
+                "A2": "Coreon",
+                "C2": 22500,
+                "D2": "Priority",
+                "A6": "Delta Press",
+                "C6": 4900,
+                "D6": "Standard",
+                "A8": "Total",
+                "C8": 65100
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "02-sheet-per-region": {
+      "outputs": [
+        {
+          "filenamePattern": "^regions-\\d{4}-\\d{2}-\\d{2}\\.xlsx$",
+          "sheets": [
+            {
+              "name": "Seoul",
+              "rowCount": 5,
+              "merges": [],
+              "cells": {
+                "A2": "Coreon",
+                "B2": 22500,
+                "A3": "Acme Logistics",
+                "B3": 18400,
+                "A5": "Region total",
+                "B5": 40900
+              }
+            },
+            {
+              "name": "Busan",
+              "rowCount": 5,
+              "merges": [],
+              "cells": {
+                "A2": "Echo Foods",
+                "B2": 12100,
+                "A3": "Beta Works",
+                "B3": 7200,
+                "A5": "Region total",
+                "B5": 19300
+              }
+            },
+            {
+              "name": "Daegu",
+              "rowCount": 4,
+              "merges": [],
+              "cells": {
+                "A2": "Delta Press",
+                "B2": 4900,
+                "A4": "Region total",
+                "B4": 4900
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "03-multi-source-join": {
+      "inputs": {
+        "month": "2026-05"
+      },
+      "outputs": [
+        {
+          "filename": "2026-05-renewals.xlsx",
+          "sheets": [
+            {
+              "name": "Report",
+              "rowCount": 12,
+              "merges": ["A1:E1"],
+              "cells": {
+                "A1": "Renewal report — 2026-05",
+                "A4": "Coreon",
+                "B4": "Hana",
+                "D4": 22500,
+                "A8": "Delta Press",
+                "D8": 4900,
+                "A10": "Total renewals (after join):",
+                "D10": 74100,
+                "A12": "XLOOKUP demo: Coreon owner →",
+                "B12": "Hana"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "04-cafe-weekly-report": {
+      "inputs": {
+        "period_label": "2026-05-17"
+      },
+      "outputs": [
+        {
+          "filename": "레인보우카페_주간리포트_2026-05-17.xlsx",
+          "sheets": [
+            {
+              "name": "주간 리포트",
+              "rowCount": 70,
+              "merges": ["A1:G1", "A2:G2"],
+              "cells": {
+                "A1": "레인보우 카페",
+                "A2": "2026-05-17 기준 주간 매출 리포트",
+                "A4": "일자",
+                "G4": "등급",
+                "A19": "카테고리 소계",
+                "E19": 96,
+                "F19": 528000,
+                "A34": "카테고리 소계",
+                "E34": 148,
+                "F34": 816000,
+                "A70": "카테고리 소계",
+                "E70": 539,
+                "F70": 2961000
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

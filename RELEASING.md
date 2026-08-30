@@ -36,8 +36,7 @@ a pure impl refactor can ship as `xl3` patch with no spec change.
    npm run build
    npm run conformance
    npm run conformance:tz
-   npm run examples:build
-   npm run examples:run
+   npm run operational:regression
    npm run bench
    ```
 

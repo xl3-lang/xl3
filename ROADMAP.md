@@ -45,7 +45,7 @@ milestone. Per-version step plan below references these gates by ID.
 | G7 | JSDoc examples on @stable exports | maintainer | TypeDoc output | every `@stable` symbol has `@example` block | — | ✅ **DONE** — re-verified 15/15 `@stable` declarations carry `@example` | ✅ DONE 2026-06-21 — 13/13 `@stable` callables carried `@example` (PR #59); re-verified at **15/15** after 0.11.0 added `convertJson` / `previewJson` (`previewJson` shipped without one and was fixed 2026-07-27) |
 | G8 | Performance characterized | maintainer | `scripts/BENCH.md` | 1k/10k/100k row × 5/10/20 col matrix + memory-ceiling + parse/eval/write split published | — | ✅ **DONE** 2026-07-28 — `npm run bench:matrix` sweeps 1k/10k/100k × 5/10/20 (9 cells, all completing), with a parse/eval/write split and per-cell peak RSS. Published in `scripts/BENCH.md`. Headline: write is 61–82% of wall clock, parse is data-independent (~3 ms), and memory is the binding constraint at ~2.2 KB/cell (2M cells → 4.2 GB) | 0.7.1 |
 | G9 | Perf regression guards | maintainer | `impl/js/src/__tests__/perf-regression.test.ts` | ≥ 2 large scenarios with a ratio-based assertion, running in CI | — | ✅ **DONE** 2026-07-28 — row scaling and `@join` scaling, each asserting 10× the rows costs < 20× the time. Observed 6.2× and 6.9×; a quadratic regression lands near 100× | 0.7.1 |
-| G10 | Cross-browser smoke | maintainer | `ci.yml` | Safari + Firefox bundle-load + 1 convert() per run | — | ✅ **DONE** 2026-07-28 — `cross-browser` job runs `npm run browser:smoke`, which loads the IIFE bundle in Playwright `webkit` (the engine Safari is built on) and `firefox`, checks all 15 exports, and runs one `convert()` per engine against fixture 001. Not Safari-the-application: engine coverage only | 0.7.1 |
+| G10 | Cross-browser smoke | maintainer | `ci.yml` | Safari + Firefox bundle-load + 1 convert() per run | — | ✅ **DONE** 2026-07-28 — `cross-browser` job runs `npm run browser:smoke`, which loads the IIFE bundle in Playwright `webkit` (the engine Safari is built on) and `firefox`, checks all 19 runtime exports from the shared manifest, and runs one `convert()` per engine against fixture 001. Not Safari-the-application: engine coverage only | 0.7.1 |
 | G11 | Stage 2 in CI | maintainer | `ci.yml` | `npm run conformance:stage2` runs on every PR | — | ✅ **DONE** — runs at `ci.yml:35` | 0.7.1 |
 | G12 | Undecided behavior pinned (pivot/sparkline/ListObject/page break) | maintainer | conformance fixtures + ADR per item | each: fixture pinning current behavior OR ADR explicitly deferring to 1.x | defer to 1.1 with ADR | ✅ **DONE** 2026-07-28 — ADR-0076 takes the deferral arm for all four, amending ADR-0036 with rows 10-13 and recording measured reference-impl behavior as non-normative. No fixture: pinning a behavior the ADR declines to assert would have to be deleted in 1.1. Also resolves ADR-0046 § 5, which pointed at an ADR-0036 row that was never written | 0.7.1 / 0.8 |
 | G13 | Second-language impl validation | external (xl3-py) | `conformance/reports/*.json` | xl3-py passes ≥ 80% Stage 1 OR ≥ 80% Stage 2, OR documented 50% skeleton in another language (Rust/Go/Java) within 12 months of all other gates closing | accept single-impl 1.0 via public ADR amending GOVERNANCE | 🟡 **NOT JUDGEABLE** — reverted 2026-07-30; the 2026-07-28 audit ticked this in error. `xl3-py-0.1.0a3.json` reports 133/133, but that is 100% *of the 133 fixtures the report ran*, not of the corpus. It is 36 fixtures behind today, so the gate's ">= 80%" has no denominator to evaluate against — 133 of the current corpus would be under 80%, but how many of the un-run fixtures it would pass is unknown. `IMPLEMENTATIONS.md` already said G13 is judged on a current report and not on these; the audit read the report summary without checking what its total meant. Needs a fresh report | 0.7.x–0.8.x |
@@ -61,18 +61,16 @@ milestone. Per-version step plan below references these gates by ID.
 | G23 | RC soak | maintainer | git tags | RC published; ≥ 21-day soak (extended from 7 day per review feedback); 0 critical issues | — | ✅ **DONE** — ticked 2026-06-16 | ✅ ticked 2026-06-16 (21-day soak from rc.1 2026-05-26; 0 critical — soak-period fixes #49–52 folded into 0.9.0, none reset the clock per the G23 breaking-change definition) |
 | G24 | "Stable quarter" post-checklist | maintainer | release calendar | 90-day window after the FINAL gate above ticks ✅; no breaking spec/API/error-code change during the window | breaking change → restart clock | ❌ **BLOCKED** — on the gates above only; its own data-loss requirement is met. Clock question resolved 2026-07-28 (#86): the quarter runs from 2026-06-23 uninterrupted. The `data-loss` group is complete (9 fixtures, 162-170, tagged `data-loss`) and covers all 4 required paths — silent-stringify, date round-trip, formula-result kind, and numFmt drop (170, Stage 2, since Stage 1 compares values not formats). Four of the first eight only became load-bearing once #92 landed; before that the runner let a text cell impersonate a date or formula cell, so they passed regardless of what the impl emitted | ⏳ quarter clock started **2026-06-23** (G3 = last gate to tick); 1.0 earliest ≈ **2026-09-21** if no breaking spec/API/error-code change in the window |
 
-> **Status column audited 2026-07-28** against the tree at `2ca7ab0`.
+> **Status column audited 2026-08-30.**
 > The `Planned` column is the historical milestone plan and is kept as-is;
 > where the two disagree, `Status` is the current fact.
 >
-> **5 gates are open:** G5, G13, G14, G15, G18
-> — plus G24, which cannot tick until the others do and is
-> separately missing the `data-loss/` fixture group its own definition
-> requires. G8 and G21 closed on 2026-07-28; G21 had been the worst of the
-> optimistic drift, documenting an `AbortSignal` API and an error code that
-> did not exist. G11 was stale in the *pessimistic* direction — already satisfied and not
-> marked. G13 was mis-ticked by the audit itself and reverted 2026-07-30;
-> see its Status cell.
+> **4 gates are open:** G13, G14, G15, and G18 — plus G24, which
+> cannot tick until the final prerequisite gate closes. G5 and the G24
+> `data-loss` fixture requirement are complete; fixtures 162-170 cover the
+> required paths. G13 still needs a fresh external-implementation report,
+> while G14/G15/G18 depend on external contribution and a public production
+> reference.
 >
 > **The quarter clock runs from 2026-06-23, uninterrupted** (#86, decided
 > 2026-07-28). 0.11.0 added an export and an error code on 2026-07-19;
@@ -81,10 +79,10 @@ milestone. Per-version step plan below references these gates by ID.
 > old wording made an added *export* breaking while an added *error code*
 > was not, which would have reset the clock by accident.
 >
-> **The clock is not the binding constraint.** 1.0 is gated on the 12 open
-> items, and the long pole is now the G24 `data-loss/` group, which does
-> not exist yet. Any date derived from the quarter alone is
-> meaningless until those land, so this file no longer asserts one.
+> **The clock is not the binding constraint.** The remaining long pole is
+> external validation: a current port report, an external contribution, and
+> a public production reference. The data-loss corpus and implementation
+> gates are already complete.
 
 ### Definitions (testable)
 

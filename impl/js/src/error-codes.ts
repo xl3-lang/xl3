@@ -130,6 +130,9 @@ export function xtlError(code: XtlErrorCode, message: string): XtlError {
  * ```
  */
 export function isXtlError(e: unknown): e is XtlError {
-  return e instanceof Error && typeof (e as XtlError).code === 'string'
-    && (e as XtlError).code.startsWith('xl3/');
+  return (
+    e instanceof Error &&
+    typeof (e as XtlError).code === 'string' &&
+    (e as XtlError).code.startsWith('xl3/')
+  );
 }

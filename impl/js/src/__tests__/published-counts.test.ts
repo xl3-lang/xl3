@@ -197,9 +197,9 @@ const VERSION_CLAIMS: readonly Claim[] = [
 
 describe('published version claims', () => {
   const packaged = (
-    JSON.parse(
-      readFileSync(join(REPO_ROOT, 'impl', 'js', 'package.json'), 'utf8'),
-    ) as { version: string }
+    JSON.parse(readFileSync(join(REPO_ROOT, 'impl', 'js', 'package.json'), 'utf8')) as {
+      version: string;
+    }
   ).version;
 
   it.each(VERSION_CLAIMS)('$file — $what', ({ file, re }) => {

@@ -51,9 +51,7 @@ describe('readSource', () => {
   it('uses a finite source_table range when an end row is present', async () => {
     const source = await readSource(await workbookBuffer(), 'Raw', { sourceTable: 'B3:D4' });
 
-    expect(source.rows).toEqual([
-      { Customer: 'Acme', Amount: 1200, Region: 'Seoul' },
-    ]);
+    expect(source.rows).toEqual([{ Customer: 'Acme', Amount: 1200, Region: 'Seoul' }]);
   });
 
   it('treats an explicit source_table end row as a hard boundary', async () => {
@@ -64,8 +62,9 @@ describe('readSource', () => {
   });
 
   it('rejects empty headers inside the source_table span', async () => {
-    await expect(readSource(await workbookBuffer(), 'Raw', { sourceTable: 'B3:F' }))
-      .rejects.toThrow('source_table header cell F3 is empty');
+    await expect(
+      readSource(await workbookBuffer(), 'Raw', { sourceTable: 'B3:F' }),
+    ).rejects.toThrow('source_table header cell F3 is empty');
   });
 
   it('rejects duplicate source_table headers', async () => {
@@ -75,18 +74,21 @@ describe('readSource', () => {
     sheet.getCell('B1').value = 'Customer';
     const data = await workbook.xlsx.writeBuffer();
 
-    await expect(readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'A1:B' }))
-      .rejects.toThrow('source_table has duplicate header "Customer"');
+    await expect(readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'A1:B' })).rejects.toThrow(
+      'source_table has duplicate header "Customer"',
+    );
   });
 
   it('rejects zero-based source_table row shorthand', async () => {
-    await expect(readSource(await workbookBuffer(), 'Raw', { sourceTable: '0' }))
-      .rejects.toThrow('source_table row numbers must be 1-based positive integers: 0');
+    await expect(readSource(await workbookBuffer(), 'Raw', { sourceTable: '0' })).rejects.toThrow(
+      'source_table row numbers must be 1-based positive integers: 0',
+    );
   });
 
   it('rejects zero-based source_table range rows', async () => {
-    await expect(readSource(await workbookBuffer(), 'Raw', { sourceTable: 'A0:D' }))
-      .rejects.toThrow('source_table row numbers must be 1-based positive integers: A0:D');
+    await expect(
+      readSource(await workbookBuffer(), 'Raw', { sourceTable: 'A0:D' }),
+    ).rejects.toThrow('source_table row numbers must be 1-based positive integers: A0:D');
   });
 
   it('rejects formula source_table column names without cached results', async () => {
@@ -96,8 +98,9 @@ describe('readSource', () => {
     sheet.getCell('A2').value = 'Acme';
     const data = await workbook.xlsx.writeBuffer();
 
-    await expect(readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'A1:A' }))
-      .rejects.toThrow('Formula cell A1 has no cached result');
+    await expect(readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'A1:A' })).rejects.toThrow(
+      'Formula cell A1 has no cached result',
+    );
   });
 
   it('reads rich-text source_table headers', async () => {
@@ -235,7 +238,7 @@ describe('readSource', () => {
     const source = await readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'J11:N' });
     expect(source.headers).toEqual(['품목', '수량']);
     expect(source.rows).toEqual([
-      { 품목: '품목', 수량: '수량' },     // phantom row 12 from the merge band
+      { 품목: '품목', 수량: '수량' }, // phantom row 12 from the merge band
       { 품목: '노트북', 수량: 5 },
     ]);
   });
@@ -249,8 +252,9 @@ describe('readSource', () => {
 
     const data = await workbook.xlsx.writeBuffer();
 
-    await expect(readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'B1:E' }))
-      .rejects.toThrow(/source_table header cell B1 is in a merged region whose master is empty/);
+    await expect(readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'B1:E' })).rejects.toThrow(
+      /source_table header cell B1 is in a merged region whose master is empty/,
+    );
   });
 
   it('errors when the source_table range starts inside a merged header (no master in window)', async () => {
@@ -262,8 +266,9 @@ describe('readSource', () => {
 
     const data = await workbook.xlsx.writeBuffer();
 
-    await expect(readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'K1:M' }))
-      .rejects.toThrow(/source_table row 1 resolves to no headers.*merged header/);
+    await expect(readSource(data as ArrayBuffer, 'Raw', { sourceTable: 'K1:M' })).rejects.toThrow(
+      /source_table row 1 resolves to no headers.*merged header/,
+    );
   });
 
   it('broadcasts merged data-row master values to slave rows (ADR-0035 vertical)', async () => {
@@ -335,5 +340,4 @@ describe('readSource', () => {
       { Customer: 'Beta', Memo: '   ' },
     ]);
   });
-
 });

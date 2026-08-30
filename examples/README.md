@@ -20,9 +20,17 @@ Four production-shaped XTL templates. Each is a complete `template.xlsx`
 # Build the .xlsx pairs from the .mjs source.
 npm run examples:build
 
-# Run convert() against every pair and report results.
+# Render every pair and verify its output contract.
 npm run examples:run
+
+# Self-contained operational regression gate (build + verify).
+npm run operational:regression
 ```
+
+[`expected-output.json`](./expected-output.json) pins each case's output
+filename, sheet order, row boundary, merges, and high-value cells such as
+sorted records, joins, derived labels, and totals. Adding an example without an
+output contract fails the gate.
 
 ## Running with the wasm engine (0.9.0-rc.1+)
 
@@ -62,13 +70,14 @@ back to the JS engine automatically under `'auto'`. See
 
 Examples cover composed shapes, not unit behavior. The conformance corpus
 ([`conformance/fixtures/`](../conformance/fixtures)) covers each spec rule
-in isolation. These three templates exercise combinations real reporting
+in isolation. These four templates exercise combinations real reporting
 workflows tend to use, so they catch regressions where individually-correct
 rules interact incorrectly.
 
 Adding more examples is fine when a real workflow shape isn't covered by
-01/02/03. New examples should:
+01–04. New examples should:
 
 - Be reproducible from `examples/scripts/build.mjs` (no hand-edited xlsx).
 - Include a `README.md` describing the scenario and the rules it exercises.
-- Pass `npm run examples:run` and the corresponding vitest test.
+- Add its intended workbook invariants to `expected-output.json` and pass
+  `npm run operational:regression`.

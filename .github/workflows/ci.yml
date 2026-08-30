@@ -23,10 +23,16 @@ jobs:
           cache: npm
 
       - run: npm ci
+      - run: npm run lint
+        if: matrix.node-version == '20.x'
+      - run: npm run format:check
+        if: matrix.node-version == '20.x'
       - run: npm run typecheck
       - run: npm run build
       - run: npm run build:bundle
       - run: npm test
+      - run: npm run test:coverage
+        if: matrix.node-version == '20.x'
       - run: npm run conformance
       # ROADMAP gate G11: Stage 2 OOXML canonicalization in CI. Runs
       # the Stage 2 superset that includes merge / outline-level /
@@ -95,5 +101,11 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run docs:build
-      - run: npm run examples:build
-      - run: npm run examples:run
+      # Exercise the built React page, including its default sample download
+      # and initial __inputs__ discovery. The cross-browser job above covers
+      # the engine bundle; this covers the actual user workflow.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run browser:e2e
+      # Production-shaped workbook corpus: render and assert filenames,
+      # sheets, merges, ordering, derived values, and totals.
+      - run: npm run operational:regression

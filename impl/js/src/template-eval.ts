@@ -17,10 +17,7 @@ const RESERVED_REF_RE = /^__([a-z]+)__\[([^\]\r\n]+)\]$/;
 const SOURCE_CELL_RE = /^sourceCell\s+"([^"]+)"\s+"([^"]+)"$/;
 const SOURCE_ROWS_RE = /^sourceRows\s+"([^"]+)"$/;
 
-function lookupReservedRef(
-  trimmed: string,
-  ctx: Record<string, unknown>,
-): unknown {
+function lookupReservedRef(trimmed: string, ctx: Record<string, unknown>): unknown {
   const m = trimmed.match(RESERVED_REF_RE);
   if (!m) return undefined;
   const ns = `__${m[1]}__`;
@@ -48,10 +45,7 @@ function lookupReservedRef(
 // column from the named source. The named source must be either the
 // active source for the surrounding block OR a joined source (per
 // ADR-0014). Otherwise this is an error.
-function lookupSourceCell(
-  trimmed: string,
-  ctx: Record<string, unknown>,
-): unknown | undefined {
+function lookupSourceCell(trimmed: string, ctx: Record<string, unknown>): unknown | undefined {
   const m = trimmed.match(SOURCE_CELL_RE);
   if (!m) return undefined;
   const source = m[1]!;
@@ -79,11 +73,7 @@ function lookupSourceCell(
 // Falls through silently if source metadata isn't on ctx (e.g., unit
 // tests that bypass renderer wiring) — runtime aggregators provide a
 // second line of defense via `assertField`.
-function assertSourceColumn(
-  ctx: Record<string, unknown>,
-  source: string,
-  column: string,
-): void {
+function assertSourceColumn(ctx: Record<string, unknown>, source: string, column: string): void {
   const sources = ctx['__sources__'];
   if (!sources || typeof sources !== 'object') return;
   const src = (sources as Record<string, { headers?: string[] }>)[source];
@@ -96,10 +86,7 @@ function assertSourceColumn(
 }
 
 // ADR-0012: resolve `sourceRows "Name"` → array of all rows for that source.
-function lookupSourceRows(
-  trimmed: string,
-  ctx: Record<string, unknown>,
-): unknown[] | undefined {
+function lookupSourceRows(trimmed: string, ctx: Record<string, unknown>): unknown[] | undefined {
   const m = trimmed.match(SOURCE_ROWS_RE);
   if (!m) return undefined;
   const name = m[1]!;
@@ -111,10 +98,7 @@ function lookupSourceRows(
   throw xtlError('xl3/source/undeclared', `Source "${name}" is not declared in __sources__`);
 }
 
-export function evalExpression(
-  normalized: string,
-  ctx: Record<string, unknown>,
-): unknown {
+export function evalExpression(normalized: string, ctx: Record<string, unknown>): unknown {
   const trimmed = stripOuterParens(normalized.trim());
 
   const reserved = lookupReservedRef(trimmed, ctx);
@@ -189,7 +173,7 @@ export function evalExpression(
   // Number literals with a sign at parse position (e.g., `-5`) are
   // already handled above by parseFloat — only unsupported forms
   // reach here.
-  if (/^\+/.test(trimmed) || /^--/.test(trimmed) || /^-\s*[\[(]/.test(trimmed)) {
+  if (/^\+/.test(trimmed) || /^--/.test(trimmed) || /^-\s*[([]/.test(trimmed)) {
     throw xtlError(
       'xl3/eval/unsupported-syntax',
       `Unsupported expression: "${trimmed}". Unary operators on column or sub-expressions are not supported in XTL 0.x; use (0 - [col]) for negation.`,
@@ -215,10 +199,7 @@ export function evalExpression(
  * Evaluate a full cell value that may contain {{ }} blocks mixed with text.
  * Returns the rendered string (or a single value if the cell is just one expression).
  */
-export function evalCell(
-  cellTemplate: string,
-  ctx: Record<string, unknown>,
-): unknown {
+export function evalCell(cellTemplate: string, ctx: Record<string, unknown>): unknown {
   // Single expression: {{ expr }} — must not contain }} inside
   const singleMatch = cellTemplate.match(/^\{\{\s*((?:(?!\}\}).)+)\s*\}\}$/);
   if (singleMatch) {
@@ -359,7 +340,10 @@ function splitFunctionArgs(expr: string): string[] {
       bracketDepth--;
       current += ch;
     } else if (ch === ' ' && !inQuote && parenDepth === 0 && bracketDepth === 0) {
-      if (current) { args.push(current); current = ''; }
+      if (current) {
+        args.push(current);
+        current = '';
+      }
     } else {
       current += ch;
     }

@@ -263,9 +263,9 @@ export interface GroupDirective {
 export interface BlockDirective {
   kind: 'block';
   colStart: number; // 0 = auto-detect from markers
-  colEnd: number;   // 0 = auto-detect from markers
+  colEnd: number; // 0 = auto-detect from markers
   rowStart: number; // 0 = auto-detect (first marker row below)
-  rowEnd: number;   // 0 = auto-detect (gap row or next @block)
+  rowEnd: number; // 0 = auto-detect (gap row or next @block)
 }
 
 /** @experimental */
@@ -348,9 +348,7 @@ export interface TemplateModel {
 // "__inputs__ row 3", filename) — present when known, omitted when
 // the warning is global.
 /** @stable */
-export type XtlWarningCode =
-  | 'xl3w/parser/missing-column'
-  | 'xl3w/filename/sanitized';
+export type XtlWarningCode = 'xl3w/parser/missing-column' | 'xl3w/filename/sanitized';
 
 export interface XtlWarning {
   code: XtlWarningCode;

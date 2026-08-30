@@ -30,23 +30,32 @@ async function runReferenceImpl() {
     // picks 'js', but this stays explicit so a future default flip
     // (or a sibling script copying these args) doesn't silently
     // re-route the reference row through xl3-wasm.
-    const child = spawn('node', [
-      RUNNER,
-      '--fixture-dir=conformance/fixtures',
-      '--comparison-stage=2',
-      '--report=json',
-      '--engine=js',
-    ], { cwd: REPO_ROOT, stdio: ['ignore', 'pipe', 'inherit'] });
+    const child = spawn(
+      'node',
+      [
+        RUNNER,
+        '--fixture-dir=conformance/fixtures',
+        '--comparison-stage=2',
+        '--report=json',
+        '--engine=js',
+      ],
+      { cwd: REPO_ROOT, stdio: ['ignore', 'pipe', 'inherit'] },
+    );
     let out = '';
-    child.stdout.on('data', (d) => { out += d.toString(); });
+    child.stdout.on('data', (d) => {
+      out += d.toString();
+    });
     child.on('error', reject);
     child.on('close', (code) => {
       if (code !== 0 && code !== 1) {
         reject(new Error(`runner exited ${code}`));
         return;
       }
-      try { resolve(JSON.parse(out)); }
-      catch (e) { reject(new Error(`runner produced non-JSON output: ${e.message}`)); }
+      try {
+        resolve(JSON.parse(out));
+      } catch (e) {
+        reject(new Error(`runner produced non-JSON output: ${e.message}`));
+      }
     });
   });
 }
@@ -74,7 +83,10 @@ function parseLooseYaml(src) {
     const key = m[1];
     let value = m[2].trim();
     if (value.startsWith('[') && value.endsWith(']')) {
-      value = value.slice(1, -1).split(',').map((s) => s.trim().replace(/^['"]|['"]$/g, ''));
+      value = value
+        .slice(1, -1)
+        .split(',')
+        .map((s) => s.trim().replace(/^['"]|['"]$/g, ''));
     } else {
       value = value.replace(/^['"]|['"]$/g, '');
     }
@@ -116,11 +128,16 @@ function rowStatus(report, fixture) {
   const r = (report.results ?? []).find((x) => x.fixture === fixture);
   if (!r) return '—';
   switch (r.status) {
-    case 'pass': return 'pass';
-    case 'fail': return 'fail';
-    case 'skip': return 'skip';
-    case 'error': return 'error';
-    default: return r.status;
+    case 'pass':
+      return 'pass';
+    case 'fail':
+      return 'fail';
+    case 'skip':
+      return 'skip';
+    case 'error':
+      return 'error';
+    default:
+      return r.status;
   }
 }
 
@@ -176,23 +193,31 @@ async function main() {
   const lines = [];
   lines.push('# Conformance dashboard');
   lines.push('');
-  lines.push(`_Generated ${generatedAt} by \`conformance/scripts/dashboard.mjs\`. Do not hand-edit; regenerate with \`node conformance/scripts/dashboard.mjs\`._`);
+  lines.push(
+    `_Generated ${generatedAt} by \`conformance/scripts/dashboard.mjs\`. Do not hand-edit; regenerate with \`node conformance/scripts/dashboard.mjs\`._`,
+  );
   lines.push('');
   lines.push('## Reference implementation');
   lines.push('');
-  lines.push(summaryLine(refReport.implementation ?? 'xl3-js', refReport.version ?? '?', refReport.summary));
+  lines.push(
+    summaryLine(refReport.implementation ?? 'xl3-js', refReport.version ?? '?', refReport.summary),
+  );
   lines.push('');
   if (externalReports.length) {
     lines.push('## External implementations');
     lines.push('');
     for (const er of externalReports) {
-      lines.push('- ' + summaryLine(er.implementation ?? er.filename, er.version ?? '?', er.summary));
+      lines.push(
+        '- ' + summaryLine(er.implementation ?? er.filename, er.version ?? '?', er.summary),
+      );
     }
     lines.push('');
   } else {
     lines.push('## External implementations');
     lines.push('');
-    lines.push('_No external port reports under `conformance/reports/`. Drop a JSON report from any port that implements `--report=json` and re-run this script to add it._');
+    lines.push(
+      '_No external port reports under `conformance/reports/`. Drop a JSON report from any port that implements `--report=json` and re-run this script to add it._',
+    );
     lines.push('');
   }
 
@@ -204,15 +229,15 @@ async function main() {
   if (externalReports.length) {
     lines.push('## Per-fixture status');
     lines.push('');
-    const headers = ['Fixture', refReport.implementation ?? 'xl3-js', ...externalReports.map((r) => r.implementation ?? r.filename)];
+    const headers = [
+      'Fixture',
+      refReport.implementation ?? 'xl3-js',
+      ...externalReports.map((r) => r.implementation ?? r.filename),
+    ];
     lines.push('| ' + headers.join(' | ') + ' |');
     lines.push('|' + headers.map(() => '---').join('|') + '|');
     for (const fx of Object.keys(metas).sort()) {
-      const cells = [
-        fx,
-        rowStatus(refReport, fx),
-        ...externalReports.map((r) => rowStatus(r, fx)),
-      ];
+      const cells = [fx, rowStatus(refReport, fx), ...externalReports.map((r) => rowStatus(r, fx))];
       lines.push('| ' + cells.join(' | ') + ' |');
     }
     lines.push('');
@@ -220,14 +245,20 @@ async function main() {
 
   lines.push('## How to add a port');
   lines.push('');
-  lines.push('1. Make your port emit a JSON report in the format documented in [`conformance/runner-protocol.md`](./runner-protocol.md) "JSON report format".');
+  lines.push(
+    '1. Make your port emit a JSON report in the format documented in [`conformance/runner-protocol.md`](./runner-protocol.md) "JSON report format".',
+  );
   lines.push('2. Save it under `conformance/reports/<impl>-<version>.json`.');
-  lines.push('3. Run `node conformance/scripts/dashboard.mjs` from the repo root to regenerate this file.');
+  lines.push(
+    '3. Run `node conformance/scripts/dashboard.mjs` from the repo root to regenerate this file.',
+  );
   lines.push('');
 
   await writeFile(OUT_FILE, lines.join('\n') + '\n');
   console.log(`wrote ${OUT_FILE}`);
-  console.log(summaryLine(refReport.implementation ?? 'xl3-js', refReport.version ?? '?', refReport.summary));
+  console.log(
+    summaryLine(refReport.implementation ?? 'xl3-js', refReport.version ?? '?', refReport.summary),
+  );
 }
 
 main().catch((e) => {

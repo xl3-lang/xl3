@@ -15,8 +15,8 @@ export default function NotFound() {
           <p className={styles.code}>404</p>
           <h1 className={styles.title}>That page is not in this workbook.</h1>
           <p className={styles.body}>
-            The URL you followed does not match a page on xl3.io. Use one of
-            the cards below to jump to the main areas of the site.
+            The URL you followed does not match a page on xl3.io. Use one of the cards below to jump
+            to the main areas of the site.
           </p>
 
           <div className={styles.cards}>
@@ -36,7 +36,10 @@ export default function NotFound() {
               <strong>Try it</strong>
               <span>Run xl3 in the browser</span>
             </Link>
-            <Link className={clsx(styles.card, styles.outbound)} href="https://github.com/xl3-lang/xl3">
+            <Link
+              className={clsx(styles.card, styles.outbound)}
+              href="https://github.com/xl3-lang/xl3"
+            >
               <strong>GitHub</strong>
               <span>Source, issues, discussions</span>
             </Link>

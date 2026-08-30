@@ -38,14 +38,12 @@ const REPO = join(HERE, '..');
 const BUNDLE = join(REPO, 'impl', 'js', 'dist', 'xl3.bundle.iife.min.js');
 const FIXTURE = join(REPO, 'conformance', 'fixtures', '001-bracket-substitution');
 
-// Same list the api-surface and iife-bundle tests use. Duplicated on
-// purpose so a bundle built from another commit still gets checked.
-const EXPECTED_EXPORTS = [
-  'convert', 'preview', 'convertJson', 'previewJson', 'readTemplateInputs',
-  'analyze', 'analyzeModel', 'packageZip', 'readConfigSheet',
-  'writeConfigSheet', 'readInputsSheet', 'batchMatch', 'toTemplateModel',
-  'xtlError', 'isXtlError',
-];
+// One manifest owns the public runtime surface for the ESM, IIFE-vm, and
+// real-browser checks. Additive API work updates one file, so the browser
+// gate cannot silently keep testing an older subset.
+const EXPECTED_EXPORTS = JSON.parse(
+  await readFile(join(REPO, 'impl', 'js', 'public-runtime-exports.json'), 'utf8'),
+);
 
 const ENGINES = [
   { name: 'webkit  (Safari engine)', launcher: playwright.webkit },
@@ -107,7 +105,9 @@ const [bundle, template, data] = await Promise.all([
 ]);
 
 console.log('xl3 cross-browser smoke (G10)');
-console.log(`bundle ${(bundle.length / 1024 / 1024).toFixed(2)} MB · fixture 001-bracket-substitution`);
+console.log(
+  `bundle ${(bundle.length / 1024 / 1024).toFixed(2)} MB · fixture 001-bracket-substitution`,
+);
 console.log('-'.repeat(64));
 
 let failed = 0;

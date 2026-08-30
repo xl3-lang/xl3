@@ -24,10 +24,14 @@ async function save(wb, path) {
 
 function configSheet(wb, sourceSheet = 'Data') {
   const cfg = wb.addWorksheet('__config__');
-  cfg.getCell('A1').value = 'name';             cfg.getCell('B1').value = 'explicit-block-subtotal-unsupported';
-  cfg.getCell('A2').value = 'source_sheet';     cfg.getCell('B2').value = sourceSheet;
-  cfg.getCell('A3').value = 'source_table';     cfg.getCell('B3').value = '1';
-  cfg.getCell('A4').value = 'output_file_pattern'; cfg.getCell('B4').value = 'output.xlsx';
+  cfg.getCell('A1').value = 'name';
+  cfg.getCell('B1').value = 'explicit-block-subtotal-unsupported';
+  cfg.getCell('A2').value = 'source_sheet';
+  cfg.getCell('B2').value = sourceSheet;
+  cfg.getCell('A3').value = 'source_table';
+  cfg.getCell('B3').value = '1';
+  cfg.getCell('A4').value = 'output_file_pattern';
+  cfg.getCell('B4').value = 'output.xlsx';
   return cfg;
 }
 
@@ -50,21 +54,27 @@ function configSheet(wb, sourceSheet = 'Data') {
   // Data.
   const data = new ExcelJS.Workbook();
   const dws = data.addWorksheet('Data');
-  dws.getCell('A1').value = 'Customer'; dws.getCell('B1').value = 'Amount';
-  dws.getCell('A2').value = 'Acme';     dws.getCell('B2').value = 100;
-  dws.getCell('A3').value = 'Acme';     dws.getCell('B3').value = 50;
-  dws.getCell('A4').value = 'Beta';     dws.getCell('B4').value = 200;
+  dws.getCell('A1').value = 'Customer';
+  dws.getCell('B1').value = 'Amount';
+  dws.getCell('A2').value = 'Acme';
+  dws.getCell('B2').value = 100;
+  dws.getCell('A3').value = 'Acme';
+  dws.getCell('B3').value = 50;
+  dws.getCell('A4').value = 'Beta';
+  dws.getCell('B4').value = 200;
   await save(data, join(dir, 'data.xlsx'));
 
-  writeFileSync(join(dir, 'meta.yaml'),
-`description: 'Group + subtotal (ADR-0038) does not compose with explicit @block declarations. A sheet using @block plus a @subtotal cell raises xl3/subtotal/explicit-block-unsupported at parse time (ADR-0074), rather than silently dropping the subtotal band. Diagnostic substring: "not supported on a sheet that uses explicit @block".'
+  writeFileSync(
+    join(dir, 'meta.yaml'),
+    `description: 'Group + subtotal (ADR-0038) does not compose with explicit @block declarations. A sheet using @block plus a @subtotal cell raises xl3/subtotal/explicit-block-unsupported at parse time (ADR-0074), rather than silently dropping the subtotal band. Diagnostic substring: "not supported on a sheet that uses explicit @block".'
 spec_section: ADR-0074 / language.md#group--subtotal / ADR-0038 / ADR-0068
 spec_version: "0.1"
 tags: [adr-0074, adr-0038, adr-0068, subtotal, block, error, negative-path, issue-69]
 verified_by: [manual-script]
 expected_error: 'not supported on a sheet that uses explicit @block'
 expected_error_code: 'xl3/subtotal/explicit-block-unsupported'
-`);
+`,
+  );
 }
 
 console.log('Fixture 161 written.');

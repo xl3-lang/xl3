@@ -28,23 +28,32 @@ async function writeCrossWriterVariantBook(wb, path) {
 
   renameZipFile(zip, 'xl/worksheets/sheet1.xml', 'xl/worksheets/sheet7.xml');
   await rewriteZipXml(zip, '[Content_Types].xml', (xml) =>
-    xml.replace('/xl/worksheets/sheet1.xml', '/xl/worksheets/sheet7.xml'));
+    xml.replace('/xl/worksheets/sheet1.xml', '/xl/worksheets/sheet7.xml'),
+  );
   await rewriteZipXml(zip, 'xl/_rels/workbook.xml.rels', (xml) =>
     xml
       .replace('Target="worksheets/sheet1.xml"', "Target='worksheets/sheet7.xml'")
       .replace(
         /<Relationship Id="([^"]+)" Type="([^"]+\/worksheet)" Target='worksheets\/sheet7\.xml'\/>/,
-        (_m, id, type) => `<Relationship Target='worksheets/sheet7.xml' Type='${type}' Id='${id}'></Relationship>`,
-      ));
+        (_m, id, type) =>
+          `<Relationship Target='worksheets/sheet7.xml' Type='${type}' Id='${id}'></Relationship>`,
+      ),
+  );
   await rewriteZipXml(zip, 'xl/workbook.xml', (xml) =>
     xml.replace(
       /<sheet sheetId="1" name="R" state="visible" r:id="([^"]+)"\/>/,
       (_m, id) => `<sheet r:id='${id}' sheetId='42' state='visible' name='R'></sheet>`,
-    ));
+    ),
+  );
   await rewriteZipXml(zip, 'xl/worksheets/sheet7.xml', (xml) =>
     xml
-      .replace(/<pageSetup\b([^>]*)\/>/g, (_m, attrs) => `<pageSetup${attrs} copies='1' firstPageNumber='1' useFirstPageNumber='1'></pageSetup>`)
-      .replace(/<c r="B2" s="1">/g, "<c s='1' r='B2'>"));
+      .replace(
+        /<pageSetup\b([^>]*)\/>/g,
+        (_m, attrs) =>
+          `<pageSetup${attrs} copies='1' firstPageNumber='1' useFirstPageNumber='1'></pageSetup>`,
+      )
+      .replace(/<c r="B2" s="1">/g, "<c s='1' r='B2'>"),
+  );
 
   const out = await zip.generateAsync({ type: 'uint8array' });
   await writeFile(path, Buffer.from(out));
@@ -88,7 +97,9 @@ function addLists(wb, lists, opts = {}) {
 function addSources(wb, rows, opts = {}) {
   const sh = wb.addWorksheet('__sources__', { state: opts.state ?? 'hidden' });
   const headers = ['name', 'sheet', 'table', 'description'];
-  headers.forEach((h, i) => { sh.getCell(1, i + 1).value = h; });
+  headers.forEach((h, i) => {
+    sh.getCell(1, i + 1).value = h;
+  });
   rows.forEach((row, rIdx) => {
     headers.forEach((h, cIdx) => {
       if (row[h] !== undefined) sh.getCell(rIdx + 2, cIdx + 1).value = row[h];
@@ -116,7 +127,7 @@ async function build001() {
       ['output_file_pattern', 'output.xlsx'],
     ]);
     const sh = wb.addWorksheet('Report');
-    sh.getCell('A1').value = 'Customer';   // literal header
+    sh.getCell('A1').value = 'Customer'; // literal header
     sh.getCell('A2').value = '{{ [Customer] }}'; // data block
     await writeBook(wb, join(dir, 'template.xlsx'));
   }
@@ -395,7 +406,9 @@ async function build005() {
 // ---------------------------------------------------------------------------
 async function build006() {
   const dir = join(FIXTURES, '006-filename-forbidden-chars');
-  await import('node:fs/promises').then((fs) => fs.mkdir(join(dir, 'expected'), { recursive: true }));
+  await import('node:fs/promises').then((fs) =>
+    fs.mkdir(join(dir, 'expected'), { recursive: true }),
+  );
 
   // template.xlsx
   {
@@ -444,7 +457,9 @@ async function build006() {
 // ---------------------------------------------------------------------------
 async function build007() {
   const dir = join(FIXTURES, '007-filename-reserved-name');
-  await import('node:fs/promises').then((fs) => fs.mkdir(join(dir, 'expected'), { recursive: true }));
+  await import('node:fs/promises').then((fs) =>
+    fs.mkdir(join(dir, 'expected'), { recursive: true }),
+  );
 
   // template.xlsx
   {
@@ -734,11 +749,7 @@ async function build013() {
     const sh = wb.addWorksheet('R');
     sh.getCell('A1').value = 'Customer';
     sh.getCell('A2').value = {
-      richText: [
-        { text: '{{ ' },
-        { text: '[Customer]' },
-        { text: ' }}' },
-      ],
+      richText: [{ text: '{{ ' }, { text: '[Customer]' }, { text: ' }}' }],
     };
     await writeBook(wb, join(dir, 'template.xlsx'));
   }
@@ -2026,10 +2037,14 @@ async function build040() {
     sh.getCell('A4').value = '{{ [Customer] }}';
     sh.getCell('B4').value = '{{ [Amount] }}';
 
-    addLists(wb, {
-      Allowed: ['Acme', 'Beta'],
-      Excluded: ['Gamma'],
-    }, { state: 'veryHidden' });
+    addLists(
+      wb,
+      {
+        Allowed: ['Acme', 'Beta'],
+        Excluded: ['Gamma'],
+      },
+      { state: 'veryHidden' },
+    );
 
     await writeBook(wb, join(dir, 'template.xlsx'));
   }
@@ -2752,17 +2767,17 @@ async function build052() {
     const sh = wb.addWorksheet('Data');
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'Memo';
-    sh.getCell('A2').value = 'a';            // Memo blank — empty
+    sh.getCell('A2').value = 'a'; // Memo blank — empty
     sh.getCell('A3').value = 'b';
-    sh.getCell('B3').value = '';             // empty string — empty
+    sh.getCell('B3').value = ''; // empty string — empty
     sh.getCell('A4').value = 'c';
-    sh.getCell('B4').value = '   ';          // whitespace-only — empty
+    sh.getCell('B4').value = '   '; // whitespace-only — empty
     sh.getCell('A5').value = 'd';
-    sh.getCell('B5').value = 'x';            // non-empty string
+    sh.getCell('B5').value = 'x'; // non-empty string
     sh.getCell('A6').value = 'e';
-    sh.getCell('B6').value = 0;              // number 0 — non-empty
+    sh.getCell('B6').value = 0; // number 0 — non-empty
     sh.getCell('A7').value = 'f';
-    sh.getCell('B7').value = false;          // boolean false — non-empty
+    sh.getCell('B7').value = false; // boolean false — non-empty
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
@@ -3224,11 +3239,11 @@ async function build059() {
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'Amount';
     sh.getCell('A2').value = 'Acme';
-    sh.getCell('B2').value = '150';      // string parseable as number
+    sh.getCell('B2').value = '150'; // string parseable as number
     sh.getCell('A3').value = 'Beta';
-    sh.getCell('B3').value = 50;         // number
+    sh.getCell('B3').value = 50; // number
     sh.getCell('A4').value = 'Gamma';
-    sh.getCell('B4').value = '100';      // boundary string — NOT > 100
+    sh.getCell('B4').value = '100'; // boundary string — NOT > 100
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
@@ -3530,11 +3545,11 @@ async function build064() {
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'Amount';
     sh.getCell('A2').value = 'Acme';
-    sh.getCell('B2').value = -5;          // numeric -5 — matches.
+    sh.getCell('B2').value = -5; // numeric -5 — matches.
     sh.getCell('A3').value = 'Beta';
-    sh.getCell('B3').value = '−5';   // string "−5" with U+2212 — NO match.
+    sh.getCell('B3').value = '−5'; // string "−5" with U+2212 — NO match.
     sh.getCell('A4').value = 'Gamma';
-    sh.getCell('B4').value = 5;           // numeric 5 — NO match.
+    sh.getCell('B4').value = 5; // numeric 5 — NO match.
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
@@ -3585,9 +3600,11 @@ async function build065() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addInputs(wb, ['name', 'type', 'default', 'label'], [
-      ['month', 'text', '2026-05', 'Report month'],
-    ]);
+    addInputs(
+      wb,
+      ['name', 'type', 'default', 'label'],
+      [['month', 'text', '2026-05', 'Report month']],
+    );
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Report month: {{ __inputs__[month] }}';
     sh.getCell('A2').value = 'Customer';
@@ -3639,9 +3656,7 @@ async function build066() {
       ['source_table', '1'],
       ['output_file_pattern', '{{ __inputs__[region] }}_report.xlsx'],
     ]);
-    addInputs(wb, ['name', 'type', 'label'], [
-      ['region', 'text', 'Region'],
-    ]);
+    addInputs(wb, ['name', 'type', 'label'], [['region', 'text', 'Region']]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Region: {{ __inputs__[region] }}';
     sh.getCell('A2').value = 'Customer';
@@ -3691,9 +3706,7 @@ async function build067() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addInputs(wb, ['name', 'type', 'label'], [
-      ['region', 'text', 'Region'],
-    ]);
+    addInputs(wb, ['name', 'type', 'label'], [['region', 'text', 'Region']]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = '{{ __inputs__[region] }}';
     await writeBook(wb, join(dir, 'template.xlsx'));
@@ -3783,9 +3796,7 @@ async function build069() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addSources(wb, [
-      { name: 'Renewals', sheet: 'Renewals', table: '1' },
-    ]);
+    addSources(wb, [{ name: 'Renewals', sheet: 'Renewals', table: '1' }]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'TotalRenewal';
@@ -3850,9 +3861,7 @@ async function build070() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addSources(wb, [
-      { name: 'Renewals', sheet: 'Renewals', table: '1' },
-    ]);
+    addSources(wb, [{ name: 'Renewals', sheet: 'Renewals', table: '1' }]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'RenewalCount';
@@ -3922,9 +3931,7 @@ async function build071() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addSources(wb, [
-      { name: 'Renewals', sheet: 'Renewals', table: '1' },
-    ]);
+    addSources(wb, [{ name: 'Renewals', sheet: 'Renewals', table: '1' }]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Account';
     sh.getCell('B1').value = 'Amount';
@@ -4026,9 +4033,7 @@ async function build073() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addSources(wb, [
-      { name: 'Renewals', sheet: 'Renewals', table: '1' },
-    ]);
+    addSources(wb, [{ name: 'Renewals', sheet: 'Renewals', table: '1' }]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'CrossRef';
@@ -4076,9 +4081,7 @@ async function build074() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addSources(wb, [
-      { name: 'Customers', sheet: 'Customers', table: '1' },
-    ]);
+    addSources(wb, [{ name: 'Customers', sheet: 'Customers', table: '1' }]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Account';
     sh.getCell('B1').value = 'Customer';
@@ -4138,14 +4141,13 @@ async function build075() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addSources(wb, [
-      { name: 'Customers', sheet: 'Customers', table: '1' },
-    ]);
+    addSources(wb, [{ name: 'Customers', sheet: 'Customers', table: '1' }]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Account';
     sh.getCell('B1').value = 'Tier';
     sh.getCell('A2').value = '{{ [Account] }}';
-    sh.getCell('B2').value = '{{ XLOOKUP([Account], Customers[Account], Customers[Tier], "Standard") }}';
+    sh.getCell('B2').value =
+      '{{ XLOOKUP([Account], Customers[Account], Customers[Tier], "Standard") }}';
     await writeBook(wb, join(dir, 'template.xlsx'));
   }
 
@@ -4198,9 +4200,7 @@ async function build076() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addSources(wb, [
-      { name: 'Customers', sheet: 'Customers', table: '1' },
-    ]);
+    addSources(wb, [{ name: 'Customers', sheet: 'Customers', table: '1' }]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Account';
     sh.getCell('B1').value = 'Tier';
@@ -4299,9 +4299,7 @@ async function build078() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addSources(wb, [
-      { name: 'Customers', sheet: 'Customers', table: '1' },
-    ]);
+    addSources(wb, [{ name: 'Customers', sheet: 'Customers', table: '1' }]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Account';
     sh.getCell('B1').value = 'Bad';
@@ -4348,9 +4346,7 @@ async function build079() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addSources(wb, [
-      { name: 'Customers', sheet: 'Customers', table: '1' },
-    ]);
+    addSources(wb, [{ name: 'Customers', sheet: 'Customers', table: '1' }]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Account';
     sh.getCell('B1').value = 'Customer';
@@ -4420,9 +4416,7 @@ async function build080() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addSources(wb, [
-      { name: 'Customers', sheet: 'Customers', table: '1' },
-    ]);
+    addSources(wb, [{ name: 'Customers', sheet: 'Customers', table: '1' }]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Account';
     sh.getCell('B1').value = 'Customer';
@@ -4857,7 +4851,7 @@ async function build087() {
     sh.getCell('A1').value = 'Customer';
     sh.getCell('B1').value = 'Signup';
     sh.getCell('A2').value = 'Acme';
-    sh.getCell('B2').value = new Date(Date.UTC(2026, 4, 8));          // midnight → YYYY-MM-DD
+    sh.getCell('B2').value = new Date(Date.UTC(2026, 4, 8)); // midnight → YYYY-MM-DD
     sh.getCell('B2').numFmt = 'yyyy-mm-dd';
     sh.getCell('A3').value = 'Beta';
     sh.getCell('B3').value = new Date(Date.UTC(2026, 4, 8, 9, 30, 0)); // datetime → ISO
@@ -5089,11 +5083,11 @@ async function build096() {
     sh.getCell('A1').value = 'Label';
     sh.getCell('B1').value = 'Value';
     sh.getCell('A2').value = 'inside-decimal';
-    sh.getCell('B2').value = 0.00005;       // 5e-5, decimal range
+    sh.getCell('B2').value = 0.00005; // 5e-5, decimal range
     sh.getCell('A3').value = 'at-1e-6';
-    sh.getCell('B3').value = 0.000001;      // 1e-6, decimal range (boundary)
+    sh.getCell('B3').value = 0.000001; // 1e-6, decimal range (boundary)
     sh.getCell('A4').value = 'below-boundary';
-    sh.getCell('B4').value = 0.0000005;     // 5e-7, scientific range
+    sh.getCell('B4').value = 0.0000005; // 5e-7, scientific range
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
@@ -5527,10 +5521,19 @@ async function build131() {
     // for `report_label` composes a string from __config__ + an Excel
     // function (UPPER). Both evaluate at input-read time; the
     // post-evaluation strings flow into render-time __inputs__[name].
-    addInputs(wb, ['name', 'type', 'default', 'label'], [
-      ['title_prefix', 'text', '{{ __config__[region] }} 거래명세서', 'Title prefix'],
-      ['report_label', 'text', '{{ UPPER(__config__[region]) }}-{{ __config__[period] }}', 'Report label'],
-    ]);
+    addInputs(
+      wb,
+      ['name', 'type', 'default', 'label'],
+      [
+        ['title_prefix', 'text', '{{ __config__[region] }} 거래명세서', 'Title prefix'],
+        [
+          'report_label',
+          'text',
+          '{{ UPPER(__config__[region]) }}-{{ __config__[period] }}',
+          'Report label',
+        ],
+      ],
+    );
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = '{{ __inputs__[title_prefix] }}';
     sh.getCell('A2').value = '{{ __inputs__[report_label] }}';
@@ -5605,7 +5608,7 @@ async function build130() {
     sh.getCell('A3').value = 'Beta';
     sh.getCell('B3').value = 'no';
     sh.getCell('A4').value = 'Gamma';
-    sh.getCell('B4').value = 'no';     // whitespace-only is blank per ADR-0007
+    sh.getCell('B4').value = 'no'; // whitespace-only is blank per ADR-0007
     await writeBook(wb, join(dir, 'expected.xlsx'));
   }
 }
@@ -5636,9 +5639,9 @@ async function build129() {
     sh.getCell('C1').value = 'Doubled (formula)';
     sh.getCell('A2').value = '{{ [Customer] }}';
     sh.getCell('B2').value = '{{ [Amount] }}';
-    sh.getCell('C2').value = { formula: 'B2*2' };  // static — does NOT adjust per row
+    sh.getCell('C2').value = { formula: 'B2*2' }; // static — does NOT adjust per row
     sh.getCell('A3').value = 'Total (formula)';
-    sh.getCell('B3').value = { formula: 'SUM(B2:B2)' };  // does NOT extend across expansion
+    sh.getCell('B3').value = { formula: 'SUM(B2:B2)' }; // does NOT extend across expansion
     await writeBook(wb, join(dir, 'template.xlsx'));
   }
 
@@ -5670,7 +5673,7 @@ async function build129() {
     sh.getCell('C2').value = { formula: 'B2*2' };
     sh.getCell('A3').value = 'Beta';
     sh.getCell('B3').value = 200;
-    sh.getCell('C3').value = { formula: 'B2*2' };  // same formula text, same B2 ref
+    sh.getCell('C3').value = { formula: 'B2*2' }; // same formula text, same B2 ref
     sh.getCell('A4').value = 'Gamma';
     sh.getCell('B4').value = 300;
     sh.getCell('C4').value = { formula: 'B2*2' };
@@ -5710,7 +5713,8 @@ async function build128() {
     sh.getCell('C1').value = 'Month start';
     sh.getCell('D1').value = 'Safe ratio';
     sh.getCell('A2').value = '{{ UPPER(TRIM([Customer])) }}';
-    sh.getCell('B2').value = '{{ IFS([Renewal] > 10000, "VIP", [Renewal] > 1000, "Standard", TRUE, "Lite") }}';
+    sh.getCell('B2').value =
+      '{{ IFS([Renewal] > 10000, "VIP", [Renewal] > 1000, "Standard", TRUE, "Lite") }}';
     sh.getCell('C2').value = '{{ TEXT(DATE(YEAR([Joined]), MONTH([Joined]), 1), "YYYY-MM-DD") }}';
     sh.getCell('D2').value = '{{ IFERROR([Score] / [Cap], 0) }}';
     await writeBook(wb, join(dir, 'template.xlsx'));
@@ -5724,7 +5728,7 @@ async function build128() {
     sh.getCell('C1').value = 'Joined';
     sh.getCell('D1').value = 'Score';
     sh.getCell('E1').value = 'Cap';
-    sh.getCell('A2').value = '  acme  ';                          // whitespace + lowercase
+    sh.getCell('A2').value = '  acme  '; // whitespace + lowercase
     sh.getCell('B2').value = 18000;
     sh.getCell('C2').value = new Date(Date.UTC(2026, 4, 18));
     sh.getCell('D2').value = 80;
@@ -5733,7 +5737,7 @@ async function build128() {
     sh.getCell('B3').value = 5000;
     sh.getCell('C3').value = new Date(Date.UTC(2026, 0, 15));
     sh.getCell('D3').value = 50;
-    sh.getCell('E3').value = 0;                                   // triggers DIV/0
+    sh.getCell('E3').value = 0; // triggers DIV/0
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
@@ -5744,14 +5748,14 @@ async function build128() {
     sh.getCell('B1').value = 'Tier';
     sh.getCell('C1').value = 'Month start';
     sh.getCell('D1').value = 'Safe ratio';
-    sh.getCell('A2').value = 'ACME';                              // UPPER(TRIM('  acme  '))
-    sh.getCell('B2').value = 'VIP';                               // IFS 18000 > 10000
-    sh.getCell('C2').value = '2026-05-01';                        // first of May for Joined 2026-05-18
-    sh.getCell('D2').value = 0.8;                                 // 80/100
-    sh.getCell('A3').value = 'BETA';                              // UPPER applied
-    sh.getCell('B3').value = 'Standard';                          // IFS 5000 > 1000
+    sh.getCell('A2').value = 'ACME'; // UPPER(TRIM('  acme  '))
+    sh.getCell('B2').value = 'VIP'; // IFS 18000 > 10000
+    sh.getCell('C2').value = '2026-05-01'; // first of May for Joined 2026-05-18
+    sh.getCell('D2').value = 0.8; // 80/100
+    sh.getCell('A3').value = 'BETA'; // UPPER applied
+    sh.getCell('B3').value = 'Standard'; // IFS 5000 > 1000
     sh.getCell('C3').value = '2026-01-01';
-    sh.getCell('D3').value = 0;                                   // IFERROR caught DIV/0
+    sh.getCell('D3').value = 0; // IFERROR caught DIV/0
     await writeBook(wb, join(dir, 'expected.xlsx'));
   }
 }
@@ -5898,7 +5902,7 @@ async function build127() {
     sh.getCell('A2').value = 'Acme';
     sh.getCell('B2').value = 'Line one\nLine two\nLine three';
     sh.getCell('A3').value = 'Beta';
-    sh.getCell('B3').value = '서울특별시 강남구\n테헤란로 98길 11\n2층';  // typical 3-line Korean address
+    sh.getCell('B3').value = '서울특별시 강남구\n테헤란로 98길 11\n2층'; // typical 3-line Korean address
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
@@ -6252,10 +6256,14 @@ async function build119() {
   {
     const wb = new ExcelJS.Workbook();
     const sh = wb.addWorksheet('Data');
-    sh.getCell('A1').value = 'Account'; sh.getCell('B1').value = 'Region';
-    sh.getCell('A2').value = 'Acme';    sh.getCell('B2').value = 'Seoul/Korea';
-    sh.getCell('A3').value = 'Beta';    sh.getCell('B3').value = 'Seoul:Korea';
-    sh.getCell('A4').value = 'Coreon';  sh.getCell('B4').value = 'Busan';
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Region';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Seoul/Korea';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'Seoul:Korea';
+    sh.getCell('A4').value = 'Coreon';
+    sh.getCell('B4').value = 'Busan';
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 }
@@ -6300,9 +6308,9 @@ async function build118() {
     const wb = new ExcelJS.Workbook();
     const sh = wb.addWorksheet('Data');
     sh.getCell('A1').value = 'Name';
-    sh.getCell('A2').value = NFC_HAN;     // NFC "한"
-    sh.getCell('A3').value = NFD_HAN;     // NFD "한" — looks identical, compares unequal
-    sh.getCell('A4').value = '다른';      // unrelated
+    sh.getCell('A2').value = NFC_HAN; // NFC "한"
+    sh.getCell('A3').value = NFD_HAN; // NFD "한" — looks identical, compares unequal
+    sh.getCell('A4').value = '다른'; // unrelated
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
@@ -6351,9 +6359,15 @@ async function build114() {
 
   {
     const wb = new ExcelJS.Workbook();
-    const dd = wb.addWorksheet('Data'); dd.getCell('A1').value = 'V'; dd.getCell('A2').value = 'd';
-    const da = wb.addWorksheet('A'); da.getCell('A1').value = 'v'; da.getCell('A2').value = 'a';
-    const db = wb.addWorksheet('B'); db.getCell('A1').value = 'v'; db.getCell('A2').value = 'b';
+    const dd = wb.addWorksheet('Data');
+    dd.getCell('A1').value = 'V';
+    dd.getCell('A2').value = 'd';
+    const da = wb.addWorksheet('A');
+    da.getCell('A1').value = 'v';
+    da.getCell('A2').value = 'a';
+    const db = wb.addWorksheet('B');
+    db.getCell('A1').value = 'v';
+    db.getCell('A2').value = 'b';
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 }
@@ -6377,9 +6391,7 @@ async function build115() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addSources(wb, [
-      { name: 'S', sheet: 'S', table: '1' },
-    ]);
+    addSources(wb, [{ name: 'S', sheet: 'S', table: '1' }]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'X';
     sh.getCell('A2').value = '{{ @source S }}';
@@ -6390,10 +6402,14 @@ async function build115() {
 
   {
     const wb = new ExcelJS.Workbook();
-    const dd = wb.addWorksheet('Data'); dd.getCell('A1').value = 'X'; dd.getCell('A2').value = 'd';
+    const dd = wb.addWorksheet('Data');
+    dd.getCell('A1').value = 'X';
+    dd.getCell('A2').value = 'd';
     const ds = wb.addWorksheet('S');
-    ds.getCell('A1').value = 'id'; ds.getCell('B1').value = 'parent';
-    ds.getCell('A2').value = 1; ds.getCell('B2').value = 2;
+    ds.getCell('A1').value = 'id';
+    ds.getCell('B1').value = 'parent';
+    ds.getCell('A2').value = 1;
+    ds.getCell('B2').value = 2;
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 }
@@ -6719,10 +6735,14 @@ async function build107() {
   {
     const wb = new ExcelJS.Workbook();
     const sh = wb.addWorksheet('Data');
-    sh.getCell('A1').value = 'Account'; sh.getCell('B1').value = 'Region';
-    sh.getCell('A2').value = 'Acme';   sh.getCell('B2').value = 'Seoul';
-    sh.getCell('A3').value = 'Beta';   sh.getCell('B3').value = '';     // empty Region
-    sh.getCell('A4').value = 'Coreon'; sh.getCell('B4').value = 'Busan';
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Region';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Seoul';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = ''; // empty Region
+    sh.getCell('A4').value = 'Coreon';
+    sh.getCell('B4').value = 'Busan';
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
@@ -6781,10 +6801,14 @@ async function build108() {
   {
     const wb = new ExcelJS.Workbook();
     const sh = wb.addWorksheet('Data');
-    sh.getCell('A1').value = 'Account'; sh.getCell('B1').value = 'Region';
-    sh.getCell('A2').value = 'Acme';   sh.getCell('B2').value = 'Seoul';
-    sh.getCell('A3').value = 'Beta';   sh.getCell('B3').value = '';
-    sh.getCell('A4').value = 'Coreon'; sh.getCell('B4').value = 'Busan';
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Region';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Seoul';
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = '';
+    sh.getCell('A4').value = 'Coreon';
+    sh.getCell('B4').value = 'Busan';
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
@@ -6839,20 +6863,36 @@ async function build104() {
   {
     const wb = new ExcelJS.Workbook();
     const sh = wb.addWorksheet('Data');
-    sh.getCell('A1').value = 'Account'; sh.getCell('B1').value = 'Region'; sh.getCell('C1').value = 'Amount';
-    sh.getCell('A2').value = 'Acme';   sh.getCell('B2').value = 'Seoul';  sh.getCell('C2').value = 18400;  // pass: Seoul + > 10000
-    sh.getCell('A3').value = 'Beta';   sh.getCell('B3').value = 'Busan';  sh.getCell('C3').value = 22500;  // fail: Busan
-    sh.getCell('A4').value = 'Coreon'; sh.getCell('B4').value = 'Seoul';  sh.getCell('C4').value = 5000;   // fail: <= 10000
-    sh.getCell('A5').value = 'Delta';  sh.getCell('B5').value = 'Seoul';  sh.getCell('C5').value = 25000;  // pass
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Region';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Seoul';
+    sh.getCell('C2').value = 18400; // pass: Seoul + > 10000
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'Busan';
+    sh.getCell('C3').value = 22500; // fail: Busan
+    sh.getCell('A4').value = 'Coreon';
+    sh.getCell('B4').value = 'Seoul';
+    sh.getCell('C4').value = 5000; // fail: <= 10000
+    sh.getCell('A5').value = 'Delta';
+    sh.getCell('B5').value = 'Seoul';
+    sh.getCell('C5').value = 25000; // pass
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
   {
     const wb = new ExcelJS.Workbook();
     const sh = wb.addWorksheet('Report');
-    sh.getCell('A1').value = 'Account'; sh.getCell('B1').value = 'Region'; sh.getCell('C1').value = 'Amount';
-    sh.getCell('A2').value = 'Acme';   sh.getCell('B2').value = 'Seoul';  sh.getCell('C2').value = 18400;
-    sh.getCell('A3').value = 'Delta';  sh.getCell('B3').value = 'Seoul';  sh.getCell('C3').value = 25000;
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Region';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Seoul';
+    sh.getCell('C2').value = 18400;
+    sh.getCell('A3').value = 'Delta';
+    sh.getCell('B3').value = 'Seoul';
+    sh.getCell('C3').value = 25000;
     await writeBook(wb, join(dir, 'expected.xlsx'));
   }
 }
@@ -6947,9 +6987,15 @@ async function build106() {
     sh.getCell('A1').value = 'Account';
     sh.getCell('B1').value = 'Numerator';
     sh.getCell('C1').value = 'Denominator';
-    sh.getCell('A2').value = 'Acme';   sh.getCell('B2').value = 10; sh.getCell('C2').value = 2;
-    sh.getCell('A3').value = 'Beta';   sh.getCell('B3').value = 5;  sh.getCell('C3').value = 0;
-    sh.getCell('A4').value = 'Coreon'; sh.getCell('B4').value = 1;  sh.getCell('C4').value = 4;
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 10;
+    sh.getCell('C2').value = 2;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 5;
+    sh.getCell('C3').value = 0;
+    sh.getCell('A4').value = 'Coreon';
+    sh.getCell('B4').value = 1;
+    sh.getCell('C4').value = 4;
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
@@ -7070,10 +7116,18 @@ async function build100() {
     sh.getCell('A1').value = 'Label';
     sh.getCell('B1').value = 'A';
     sh.getCell('C1').value = 'B';
-    sh.getCell('A2').value = 'numbers';        sh.getCell('B2').value = 1;       sh.getCell('C2').value = 2;
-    sh.getCell('A3').value = 'string-numeric'; sh.getCell('B3').value = '10';    sh.getCell('C3').value = 5;
-    sh.getCell('A4').value = 'thousands-sep';  sh.getCell('B4').value = '1,234'; sh.getCell('C4').value = 1;
-    sh.getCell('A5').value = 'empty-coerces';  sh.getCell('B5').value = '';      sh.getCell('C5').value = 5;
+    sh.getCell('A2').value = 'numbers';
+    sh.getCell('B2').value = 1;
+    sh.getCell('C2').value = 2;
+    sh.getCell('A3').value = 'string-numeric';
+    sh.getCell('B3').value = '10';
+    sh.getCell('C3').value = 5;
+    sh.getCell('A4').value = 'thousands-sep';
+    sh.getCell('B4').value = '1,234';
+    sh.getCell('C4').value = 1;
+    sh.getCell('A5').value = 'empty-coerces';
+    sh.getCell('B5').value = '';
+    sh.getCell('C5').value = 5;
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
@@ -7082,10 +7136,14 @@ async function build100() {
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Label';
     sh.getCell('B1').value = 'Result';
-    sh.getCell('A2').value = 'numbers';        sh.getCell('B2').value = 3;
-    sh.getCell('A3').value = 'string-numeric'; sh.getCell('B3').value = 15;
-    sh.getCell('A4').value = 'thousands-sep';  sh.getCell('B4').value = 1235;
-    sh.getCell('A5').value = 'empty-coerces';  sh.getCell('B5').value = 5;
+    sh.getCell('A2').value = 'numbers';
+    sh.getCell('B2').value = 3;
+    sh.getCell('A3').value = 'string-numeric';
+    sh.getCell('B3').value = 15;
+    sh.getCell('A4').value = 'thousands-sep';
+    sh.getCell('B4').value = 1235;
+    sh.getCell('A5').value = 'empty-coerces';
+    sh.getCell('B5').value = 5;
     await writeBook(wb, join(dir, 'expected.xlsx'));
   }
 }
@@ -7382,7 +7440,8 @@ async function build092() {
     sh.getCell('D1').value = 'Amount';
     sh.getCell('E1').value = 'Tier';
     sh.getCell('F1').value = '{{ SUM(Renewals[Amount]) }}';
-    sh.getCell('G1').value = '{{ XLOOKUP("Coreon", Customers[Account], Customers[Owner], "(unknown)") }}';
+    sh.getCell('G1').value =
+      '{{ XLOOKUP("Coreon", Customers[Account], Customers[Owner], "(unknown)") }}';
     sh.getCell('A2').value = '{{ @source Renewals }}';
     sh.getCell('A3').value = '{{ @join Customers on Customers[Account] = Renewals[Account] }}';
     sh.getCell('A4').value = '{{ @filter [Amount] > 5000 }}';
@@ -7420,8 +7479,8 @@ async function build092() {
       ['Acme', 18400],
       ['Beta', 7200],
       ['Coreon', 22500],
-      ['Delta', 4900],     // filtered out by Amount > 5000
-      ['Foxtrot', 9000],   // dropped by inner join (no Foxtrot in Customers)
+      ['Delta', 4900], // filtered out by Amount > 5000
+      ['Foxtrot', 9000], // dropped by inner join (no Foxtrot in Customers)
     ].forEach(([a, am], i) => {
       ren.getCell(`A${i + 2}`).value = a;
       ren.getCell(`B${i + 2}`).value = am;
@@ -7484,9 +7543,7 @@ async function build091() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addSources(wb, [
-      { name: 'Renewals', sheet: 'Renewals', table: '1' },
-    ]);
+    addSources(wb, [{ name: 'Renewals', sheet: 'Renewals', table: '1' }]);
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = 'Total';
     sh.getCell('A2').value = '{{ SUM(Renewals[Amout]) }}';
@@ -7700,9 +7757,11 @@ async function build139() {
       ['source_table', '1'],
       ['output_file_pattern', 'output.xlsx'],
     ]);
-    addInputs(wb, ['name', 'type', 'default', 'label'], [
-      ['customer_default', 'text', '{{ [Customer] }}', 'Customer default'],
-    ]);
+    addInputs(
+      wb,
+      ['name', 'type', 'default', 'label'],
+      [['customer_default', 'text', '{{ [Customer] }}', 'Customer default']],
+    );
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = '{{ __inputs__[customer_default] }}';
     sh.getCell('A2').value = '{{ [Customer] }}';
@@ -7739,9 +7798,11 @@ async function build140() {
     // ROW() depends on the current @repeat row index — no row context
     // exists at input-read time, so this fires runtime-only-fn (not the
     // forward-reference pattern, which would match on a bare [Column]).
-    addInputs(wb, ['name', 'type', 'default', 'label'], [
-      ['row_default', 'text', '{{ ROW() }}', 'Row default'],
-    ]);
+    addInputs(
+      wb,
+      ['name', 'type', 'default', 'label'],
+      [['row_default', 'text', '{{ ROW() }}', 'Row default']],
+    );
     const sh = wb.addWorksheet('Report');
     sh.getCell('A1').value = '{{ __inputs__[row_default] }}';
     sh.getCell('A2').value = '{{ [Amount] }}';
@@ -7821,7 +7882,11 @@ async function build171() {
     const sh = wb.addWorksheet('Data');
     sh.getCell('A1').value = 'Item';
     sh.getCell('B1').value = 'Qty';
-    [['Acme', 1], ['Beta', 2], ['Gamma', 3]].forEach(([item, qty], i) => {
+    [
+      ['Acme', 1],
+      ['Beta', 2],
+      ['Gamma', 3],
+    ].forEach(([item, qty], i) => {
       sh.getCell(`A${i + 2}`).value = item;
       sh.getCell(`B${i + 2}`).value = qty;
     });
@@ -8085,9 +8150,7 @@ const builders = [
 ];
 
 const selected = new Set(process.argv.slice(2));
-const activeBuilders = selected.size > 0
-  ? builders.filter(([id]) => selected.has(id))
-  : builders;
+const activeBuilders = selected.size > 0 ? builders.filter(([id]) => selected.has(id)) : builders;
 
 if (activeBuilders.length === 0) {
   throw new Error(`No matching fixture builders for: ${[...selected].join(', ')}`);
