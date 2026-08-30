@@ -326,7 +326,7 @@ async function runDynamicFixture(
     }
 
     const wb = new ExcelJS.Workbook();
-    await wb.xlsx.load(out[0]!.data);
+    await wb.xlsx.load(toArrayBuffer(out[0]!.data));
     const diffs: string[] = [];
     for (const assertion of meta.dynamic_cells) {
       const sheet = wb.getWorksheet(assertion.sheet);
@@ -442,7 +442,7 @@ async function loadExpected(dir: string): Promise<ExpectedFile[] | null> {
 }
 
 async function diffOutput(
-  out: { filename: string; data: ArrayBuffer }[],
+  out: { filename: string; data: Uint8Array }[],
   expected: ExpectedFile[],
   comparisonStage: ComparisonStage,
 ): Promise<string[]> {
@@ -465,9 +465,9 @@ async function diffOutput(
         continue;
       }
       if (comparisonStage === 2) {
-        await diffCanonicalWorkbooks(a, toArrayBuffer(e), diffs, fn);
+        await diffCanonicalWorkbooks(toArrayBuffer(a), toArrayBuffer(e), diffs, fn);
       } else {
-        const aCells = await loadCells(a);
+        const aCells = await loadCells(toArrayBuffer(a));
         const eCells = await loadCells(toArrayBuffer(e));
         diffCellMaps(aCells, eCells, diffs, fn);
       }
@@ -478,9 +478,13 @@ async function diffOutput(
       return diffs;
     }
     if (comparisonStage === 2) {
-      await diffCanonicalWorkbooks(out[0]!.data, toArrayBuffer(expected[0]!.buf), diffs);
+      await diffCanonicalWorkbooks(
+        toArrayBuffer(out[0]!.data),
+        toArrayBuffer(expected[0]!.buf),
+        diffs,
+      );
     } else {
-      const aCells = await loadCells(out[0]!.data);
+      const aCells = await loadCells(toArrayBuffer(out[0]!.data));
       const eCells = await loadCells(toArrayBuffer(expected[0]!.buf));
       diffCellMaps(aCells, eCells, diffs);
     }
@@ -1244,7 +1248,7 @@ function stripQuotes(v: string): string {
   return v;
 }
 
-function toArrayBuffer(buf: Buffer): ArrayBuffer {
+function toArrayBuffer(buf: Buffer | Uint8Array): ArrayBuffer {
   return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
 }
 

@@ -17,6 +17,13 @@ The contract that 1.0 will freeze is already drafted (see "Path to 1.0"
 below). The remaining deferral is for technical soak, not feature or
 ecosystem completeness.
 
+The reference implementation's 1.0 product contract is deliberately narrow:
+application-owned JavaScript data is supplied as an in-memory object, xl3
+applies that data to an `.xlsx` template, and the API returns one or more
+completed `.xlsx` workbooks as `Uint8Array` values. No source data file is
+required. Database, HTTP, ORM, and application-state access remain the host's
+responsibility; xl3 performs no external I/O while rendering.
+
 ## During 0.x
 
 - Spec breaking changes are documented in the affected ADR(s) and reflected in the conformance corpus before the next minor release.
@@ -46,7 +53,7 @@ The TypeScript reference impl freezes the following 19 runtime
 exports at 1.0 (13 through 0.10.0, plus `convertJson` / `previewJson`
 added in 0.11.0 per ADR-0075, plus `VERSION` / `getEngineInfo` added in
 0.13.0 per xl3#103, plus `validateSource` / `validateSourceJson` added in
-0.14.0 per ADR-0078). Adding a new export is backwards-compatible;
+1.0.0-rc.1 per ADR-0078). Adding a new export is backwards-compatible;
 removing or renaming any of them is a 2.0-only change.
 
 **Conversion entry points**
@@ -99,7 +106,20 @@ packaging question, not a language one.
 `TemplateMeta`, `TemplateModel`, `OutputFile`, `PreviewResult`,
 `PreviewSource`, `PreviewFile`, `PreviewSheet`, `ConvertOptions`,
 `EngineInfo`, `InputSpec`, `InputType`, `SourceSpec`, `XtlError`,
-`XtlErrorCode`, `XtlWarning`, `XtlWarningCode`.
+`XtlErrorCode`, `XtlWarning`, `XtlWarningCode`, `Xl3SourceJsonValue`,
+`Xl3SourceJsonSource`, `Xl3SourceJson`, `Xl3SourceJsonInput`.
+
+The four `Xl3SourceJson*` types and `OutputFile.data: Uint8Array` are the
+fileless host-binding boundary. Their stability means an application may keep
+data in memory, call `convertJson(template, sourceObject)`, and write or
+download the returned workbook without creating an intermediate `data.xlsx`
+or serialized JSON file.
+
+`OutputFile.data` was declared as `ArrayBuffer` through 0.13.0 but had always
+been a `Uint8Array` at runtime in both Node and browsers. The 1.0 RC corrects
+the declaration to the runtime contract. Because this is a public signature
+correction, ROADMAP G24 conservatively treats 2026-08-30 as the last breaking
+API change even though the emitted JavaScript value did not change.
 
 **Additive changes log.** ROADMAP gates G3 and G6 allow additions and
 require them recorded here. Adding an optional option property or an
@@ -114,7 +134,7 @@ one is 2.0-only and resets both gates.
 | 0.12.0 | `ConvertOptions.signal` (`AbortSignal`) | ROADMAP G21, `spec/evaluation.md` "AbortSignal" |
 | 0.12.0 | `xl3/abort/cancelled` error code | ROADMAP G21 |
 | 0.13.0 | `VERSION`, `getEngineInfo` exports + `EngineInfo` type | xl3#103 |
-| 0.14.0 | `validateSource`, `validateSourceJson` exports + validation report types | ADR-0078 |
+| 1.0.0-rc.1 | `validateSource`, `validateSourceJson` exports + validation report types | ADR-0078 |
 
 The export count is unchanged by the G21 work — `signal` is a property on
 the already-frozen `ConvertOptions`, not a new export. It goes 15 → 17

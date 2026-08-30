@@ -495,7 +495,7 @@
     "description": "Comparison row xl3 — best at"
   },
   "homepage.comparison.xl3.tradeoff": {
-    "message": "알파 단계, 단일 메인테이너, XTL 표현 범위는 의도적으로 작게 유지되며 1.0까지 계속 진화합니다.",
+    "message": "릴리스 후보, 단일 메인테이너, 1.0 계약은 2026-11-28까지 기술 안정화 중입니다.",
     "description": "Comparison row xl3 — tradeoff"
   },
   "homepage.comparison.sdk.bestAt": {
@@ -575,7 +575,7 @@
     "description": "Developer API section H2"
   },
   "homepage.api.lead": {
-    "message": "레퍼런스 구현을 설치하고 데이터 버퍼를 넘겨 템플릿을 실행하세요. 운영자 경험은 파일 기반으로 유지하면서 앱이 배포와 검증을 담당합니다. 넘길 .xlsx 파일이 없을 때는 convertJson()이 언어 중립적인 JSON 소스를 그대로 받습니다.",
+    "message": "애플리케이션이 이미 메모리에 가진 데이터를 넘기고, Excel 템플릿을 적용해 완성된 .xlsx 파일을 받으세요. convertJson()은 JavaScript 객체를 직접 받으므로 원본 데이터 파일이나 중간 workbook이 필요하지 않습니다.",
     "description": "Developer API section lead paragraph"
   },
   "homepage.api.cta.cookbook": {

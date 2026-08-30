@@ -47,9 +47,12 @@ async function buildMinimalData(): Promise<ArrayBuffer> {
   return new Uint8Array(buf).buffer;
 }
 
-async function loadFirstSheet(out: { data: ArrayBuffer }[]) {
+async function loadFirstSheet(out: { data: Uint8Array }[]) {
   const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load(new Uint8Array(out[0]!.data).buffer);
+  const data = out[0]!.data;
+  await wb.xlsx.load(
+    data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer,
+  );
   return wb.worksheets[0]!;
 }
 

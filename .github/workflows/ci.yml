@@ -32,6 +32,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - run: npm run build:bundle
+      - run: npm run package:smoke
+        if: matrix.node-version == '20.x'
       - run: npm test
       - run: npm run test:coverage
         if: matrix.node-version == '20.x'
@@ -102,12 +104,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - run: npm run build:bundle
       - run: npm run docs:build
       # Exercise the built React page, including its default sample download
       # and initial __inputs__ discovery. The cross-browser job above covers
       # the engine bundle; this covers the actual user workflow.
       - run: npx playwright install --with-deps chromium
       - run: npm run browser:e2e
+      # 1.0 core contract: a host-owned JavaScript object is bound to an
+      # Excel template and exported as a real downloaded .xlsx.
+      - run: npm run data-binding:e2e
       # Production-shaped workbook corpus: render and assert filenames,
       # sheets, merges, ordering, derived values, and totals.
       - run: npm run operational:regression

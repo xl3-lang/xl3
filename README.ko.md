@@ -5,8 +5,8 @@
 > 만들었듯, **xl3는 Excel 파일을 실행 가능한 템플릿으로 만듭니다** —
 > 단일 라이브러리가 아니라, 구현에 독립적인 열린 표준으로.
 
-**상태:** alpha · **XTL spec 0.1 (draft)** · 레퍼런스 구현
-`@xl3-lang/xl3` 0.13.0 · 1.0 전까지 breaking change 가능
+**상태:** 릴리스 후보 · **XTL spec 0.1 (draft)** · 레퍼런스 구현
+`@xl3-lang/xl3` 1.0.0-rc.1 · 안정화 기간 후 정식 1.0 예정
 
 **xl3**는 평범한 `.xlsx` 파일을 결정론적·선언형 변환 템플릿으로 바꾸는
 열린 표준입니다. 레이아웃·스타일·병합 셀·규칙이 *Excel 파일 안에* 들어가고,
@@ -168,7 +168,7 @@ xl3의 목표는 다릅니다. 개발자가 하던 반복 문서 변경을 운�
 
 | 접근 | 잘하는 영역 | 트레이드오프 |
 |---|---|---|
-| **xl3** | 선언형 Excel 템플릿 실행. Excel 파일은 이미 존재하고, xl3는 데이터를 넣어 실행합니다. | Alpha; 메인테이너 1명; XTL 표면은 의도적으로 작게 유지하며 1.0 전까지 다듬는 중. |
+| **xl3** | 선언형 Excel 템플릿 실행. Excel 파일은 이미 존재하고, xl3는 데이터를 넣어 실행합니다. | 릴리스 후보; 메인테이너 1명; 1.0 계약은 2026-11-28까지 기술 안정화 중. |
 | 스프레드시트 SDK (ExcelJS / SheetJS / openpyxl / Apache POI) | 코드 기반의 저수준 또는 풀-기능 Excel 파일 생성. | 레이아웃, 스타일, 병합, 반복, 업무 규칙이 애플리케이션 코드가 됩니다. 비개발자가 안전하게 템플릿을 고치기 어렵습니다. |
 | Python / VBA 스크립트 | 기존 스프레드시트에 가까운 빠른 일회성 자동화. | 규칙이 코드나 한 담당자의 기억에 남기 쉽고, 레이아웃 변경도 코드 변경이 됩니다. |
 | Power Query / Office Scripts / Power Automate | Microsoft 365 안에서의 데이터 가공·워크플로 자동화. | 테넌트에 묶임 — 업무 규칙이 Excel 파일과 함께 이동하지 않습니다. |
@@ -179,45 +179,50 @@ xl3의 목표는 다릅니다. 개발자가 하던 반복 문서 변경을 운�
 ## 설치
 
 ```bash
-npm install @xl3-lang/xl3
+npm install @xl3-lang/xl3@rc
 ```
 
 ## 사용법
 
 ```ts
-import { convert } from '@xl3-lang/xl3';
+import { convertJson } from '@xl3-lang/xl3';
 
 const templateBuffer = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
-const dataBuffer = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
+const orders = await db.orders.findMany();
 
-const outputs = await convert(templateBuffer, dataBuffer);
+const outputs = await convertJson(templateBuffer, {
+  version: 'xl3-source-json/0.1',
+  sources: {
+    default: {
+      headers: ['Customer', 'Amount'],
+      rows: orders.map((order) => [order.customer, order.amount]),
+    },
+  },
+});
 // outputs: OutputFile[] — 템플릿의 grouping rule에 따라 하나 이상의 .xlsx 출력
 ```
 
 브라우저와 Node 20.12 이상에서 동작합니다.
 
-### `data.xlsx` 대신 JSON 소스
+`convertJson`은 애플리케이션이 이미 가진 JavaScript 객체를 직접 받습니다.
+데이터는 데이터베이스, API, ORM, 큐 또는 애플리케이션 상태에서 가져올 수 있고,
+JSON 파일이나 중간 `data.xlsx`는 필요하지 않습니다. 각 `OutputFile.data`는
+Node에서 바로 쓰거나 브라우저 `Blob`으로 내려받을 수 있는 `Uint8Array`입니다.
 
-Excel이 아닌 호스트(Python 서비스, DB/ETL 작업)는 Excel 파일을 거치지 않고
-언어 중립적인 `xl3-source-json/0.1` 와이어 포맷을 그대로 넘길 수 있습니다.
-`convertJson`은 동등한 `data.xlsx`로 `convert`를 돌린 것과 정확히 같은
-결과를 렌더링합니다.
+### Excel 원본 파일 사용
+
+원본 데이터 자체가 Excel 파일이라면 기존 워크북 경로도 그대로 지원합니다.
 
 ```ts
-import { convertJson } from '@xl3-lang/xl3';
+import { convert } from '@xl3-lang/xl3';
 
-const outputs = await convertJson(templateBuffer, {
-  version: 'xl3-source-json/0.1',
-  sources: {
-    default: { headers: ['Customer', 'Amount'], rows: [['Acme', 100]] },
-  },
-});
+const dataBuffer = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
+const outputs = await convert(templateBuffer, dataBuffer);
 ```
 
-`previewJson`이 preview 쪽 짝입니다. 잘못된 입력은
-`xl3/source-json/invalid`를 발생시킵니다. 0.11.0에서
-[ADR-0075](./spec/decisions/0075-xl3-source-json.md)로 추가됐고, wire
-format은 구현 간 이식 가능하며 `.xlsx` 경로는 그대로입니다.
+`previewJson`과 `preview`는 각각의 미리보기 API입니다. 잘못된 객체 입력은
+`xl3/source-json/invalid`를 발생시킵니다. 이식 가능한 객체 계약은
+[ADR-0075](./spec/decisions/0075-xl3-source-json.md)에 정의되어 있습니다.
 
 ### 번들러 없이 `<script>`로 사용
 
@@ -225,7 +230,7 @@ format은 구현 간 이식 가능하며 `.xlsx` 경로는 그대로입니다.
 `window.xl3`로 사용할 수 있습니다.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@0.13.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@1.0.0-rc.1/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

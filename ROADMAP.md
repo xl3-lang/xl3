@@ -3,7 +3,7 @@
 What needs to happen for **XTL 1.0** (spec) and **xl3 1.0** (reference
 implementation).
 
-The current version is **0.13.0** (npm) targeting **XTL 0.1 (draft)**.
+The current version is **1.0.0-rc.1** (npm) targeting **XTL 0.1 (draft)**.
 Breaking changes are still possible during 0.x. The 1.0 cut is gated on
 technical stability and the time-bound soak below. Ecosystem adoption is
 tracked separately and does not block the compatibility promise (ADR-0079).
@@ -20,14 +20,26 @@ tracked separately and does not block the compatibility promise (ADR-0079).
 
 ## What 1.0 means for xl3
 
-The 1.0 target is **operator-readable trust**: a spec that doesn't
-shift, a reference impl that doesn't surprise, and a surface small
-enough that an operator can review a template without reading code.
-It is **not** about feature completeness vs JXLS — xl3 intentionally
-ships a smaller surface (ADR-0043 + ADR-0048). The intended audience
-is **Korean operations teams that manage many customer-specific
-invoice formats** (거래명세서, 정산서, 발주서); the engine
-generalizes beyond this niche, but the niche is the wedge.
+The 1.0 target is one stable end-to-end promise:
+
+> **application-owned JavaScript data → Excel template → generated `.xlsx`.**
+
+An application may pass an already-parsed `xl3-source-json/0.1` object to
+`convertJson`; no source data file is required. xl3 applies the data to the
+operator-authored workbook and returns `OutputFile[]`, with each completed
+workbook in `OutputFile.data` as a `Uint8Array`. The same API runs in Node
+and browsers.
+
+That narrow workflow still carries **operator-readable trust**: a spec that
+doesn't shift, a reference impl that doesn't surprise, and a surface small
+enough that an operator can review a template without reading code. It is
+**not** about feature completeness vs JXLS — xl3 intentionally ships a
+smaller surface (ADR-0043 + ADR-0048). Database/API/ORM access belongs to the
+host, and dynamic images, custom host-language commands, streaming, macros,
+and pivot/chart authoring do not block 1.0. The intended audience is **Korean
+operations teams that manage many customer-specific invoice formats**
+(거래명세서, 정산서, 발주서); the engine generalizes beyond this niche, but
+the niche is the wedge.
 
 ## 1.0 blocking gate table (single source of truth)
 
@@ -56,7 +68,7 @@ milestone. Per-version step plan below references these gates by ID.
 | G21 | Hard limits documented (no streaming until 1.1) | maintainer | spec/evaluation.md | row / memory hard limit values + AbortSignal API documented | — | ✅ **DONE** 2026-07-28 — `AbortSignal` shipped (`ConvertOptions.signal` on all four entry points, `xl3/abort/cancelled` catalogued, no partial output). Limits now measured rather than drafted: `spec/evaluation.md` publishes ~2.2 KB/cell memory and a verified ~2M-cell ceiling from the G8 matrix. The unmeasured 1M-row soft cap was withdrawn — it needs ~10 GB and was never reachable | 0.7.1 |
 | G22 | API surface — internal model types separated | maintainer | `impl/js/src/index.ts` exports + STABILITY.md | only `convert`/`preview`/`analyze` + stable interfaces marked `@stable`; model/parser types marked `@experimental` or moved to `xl3/internal` | — | ✅ **DONE** | DONE (0.6) |
 | G23 | RC soak | maintainer | git tags | RC published; ≥ 21-day soak (extended from 7 day per review feedback); 0 critical issues | — | ✅ **DONE** — ticked 2026-06-16 | ✅ ticked 2026-06-16 (21-day soak from rc.1 2026-05-26; 0 critical — soak-period fixes #49–52 folded into 0.9.0, none reset the clock per the G23 breaking-change definition) |
-| G24 | Technical stability window | maintainer | release calendar | 90 days after the later of the final blocking gate closing or the last breaking spec/API/error-code change; all release gates green and no known critical data-loss/security issue at cut | breaking change → restart clock; critical issue → block cut | ⏳ **IN PROGRESS** — all blocking prerequisites are complete. G5 was the last blocking technical gate to close on 2026-08-16, so the completed implementation now gets a full 90-day soak. The `data-loss` group is complete (9 fixtures, 162-170, tagged `data-loss`) and covers all 4 required paths — silent-stringify, date round-trip, formula-result kind, and numFmt drop | window **2026-08-16 → 2026-11-14** if no breaking spec/API/error-code change; adoption-track progress does not affect it |
+| G24 | Technical stability window | maintainer | release calendar | 90 days after the later of the final blocking gate closing or the last breaking spec/API/error-code change; all release gates green and no known critical data-loss/security issue at cut | breaking change → restart clock; critical issue → block cut | ⏳ **IN PROGRESS** — all blocking prerequisites are complete. G5 closed on 2026-08-16; the pre-RC audit then corrected the public `OutputFile.data` declaration from `ArrayBuffer` to the `Uint8Array` value the runtime had always returned. The conservative breaking-signature rule therefore starts the final window on 2026-08-30. The `data-loss` group is complete (9 fixtures, 162-170, tagged `data-loss`) and covers all 4 required paths — silent-stringify, date round-trip, formula-result kind, and numFmt drop | window **2026-08-30 → 2026-11-28** if no further breaking spec/API/error-code change; adoption-track progress does not affect it |
 
 ## 1.x adoption track (non-blocking for 1.0)
 
@@ -80,9 +92,10 @@ See ADR-0079 for the separation of technical readiness from ecosystem growth.
 > required paths. G13/G14/G15/G18 remain open in the non-blocking 1.x
 > adoption track.
 >
-> **The technical stability window runs from 2026-08-16 through
-> 2026-11-14.** ADR-0079 replaces the earlier 2026-06-23 calculation because
-> G5, the final blocking implementation gate, closed on 2026-08-16. Additive
+> **The technical stability window runs from 2026-08-30 through
+> 2026-11-28.** G5 closed on 2026-08-16, but the 1.0 RC audit corrected the
+> declared `OutputFile.data` type to the `Uint8Array` runtime contract on
+> 2026-08-30. The public-signature rule makes that the later date. Additive
 > exports and error codes do not reset the window; breaking changes do.
 >
 > **The stability window is the binding constraint.** External validation, an
@@ -157,7 +170,9 @@ See ADR-0079 for the separation of technical readiness from ecosystem growth.
   the later of the final **blocking** technical/process gate closing or the
   last breaking change. Adoption-track metrics are excluded. If a breaking
   change happens during RC soak, both the soak (G23) and G24 reset. Under
-  ADR-0079 the current start is 2026-08-16, when G5 closed.
+  ADR-0079 the final implementation gate closed on 2026-08-16; the subsequent
+  `OutputFile.data` signature correction moves the current start to
+  2026-08-30.
 
 ## Per-version step plan
 
@@ -436,6 +451,8 @@ backfilled.
 Gate closed: **G24** (the 90-day technical stability window completes),
 all repository release gates are green, and no known critical data-loss or
 security issue remains. G13/G14/G15/G18 continue on the 1.x adoption track.
+The frozen product claim is the in-memory JavaScript data → Excel template →
+`.xlsx` export workflow above, not JXLS feature parity.
 
 ## Recruitment and outreach
 

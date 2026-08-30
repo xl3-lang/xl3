@@ -184,13 +184,13 @@ const VERSION_CLAIMS: readonly Claim[] = [
   {
     file: 'ROADMAP.md',
     what: 'intro — "The current version is X"',
-    re: /The current version is \*\*(\d+\.\d+\.\d+)\*\* \(npm\)/,
+    re: /The current version is \*\*((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?)\*\* \(npm\)/,
     kinds: [],
   },
   {
     file: 'site/llms-full.txt',
     what: 'llms-full.txt Version line (served to AI crawlers)',
-    re: /^Version: (\d+\.\d+\.\d+) \(pre-1\.0\)/m,
+    re: /^Version: ((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?) \(release candidate\)/m,
     kinds: [],
   },
 ];

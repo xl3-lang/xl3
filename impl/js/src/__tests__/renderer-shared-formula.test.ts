@@ -74,7 +74,13 @@ describe('issue #46 — shared-formula owners do not duplicate across expanded r
     expect(outputs).toHaveLength(1);
 
     const result = new ExcelJS.Workbook();
-    await result.xlsx.load(new Uint8Array(outputs[0]!.data).buffer);
+    const outputData = outputs[0]!.data;
+    await result.xlsx.load(
+      outputData.buffer.slice(
+        outputData.byteOffset,
+        outputData.byteOffset + outputData.byteLength,
+      ) as ArrayBuffer,
+    );
     const sheet = result.getWorksheet('Main')!;
 
     // After fix: count cells in column Q that claim to be shared-formula
@@ -105,7 +111,13 @@ describe('issue #46 — shared-formula owners do not duplicate across expanded r
       engine: 'js',
     });
     const result = new ExcelJS.Workbook();
-    await result.xlsx.load(new Uint8Array(outputs[0]!.data).buffer);
+    const outputData = outputs[0]!.data;
+    await result.xlsx.load(
+      outputData.buffer.slice(
+        outputData.byteOffset,
+        outputData.byteOffset + outputData.byteLength,
+      ) as ArrayBuffer,
+    );
     const sheet = result.getWorksheet('Main')!;
 
     // Original Q5 was `{sharedFormula:'Q4'}` (slave). After cloning into

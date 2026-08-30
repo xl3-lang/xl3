@@ -6,7 +6,36 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [1.0.0-rc.1] - 2026-08-30
+
+The first 1.0 release candidate defines xl3's concrete product boundary:
+application-owned JavaScript data is bound directly to an Excel template and
+exported as completed `.xlsx` bytes in Node or a browser. It does not claim
+JXLS feature parity or ecosystem maturity. The candidate begins the final
+technical stability window; the earliest final 1.0 cut is 2026-11-28 if no
+breaking change or critical data-loss/security issue intervenes.
+
+### Changed
+
+- **The 1.0 contract now centers the fileless host-data workflow.**
+  `convertJson(template, sourceObject)` accepts data already held by an
+  application—whether obtained from a database, API, ORM, queue, or process
+  state—without requiring a JSON file or intermediate `data.xlsx`. The
+  existing workbook source path remains supported. Dynamic images, custom
+  host-language commands, streaming output, macros, pivot/chart authoring,
+  and full JXLS feature parity remain outside the 1.0 threshold.
+
+- **Adoption gates G13, G14, G15, and G18 no longer block the technical 1.0
+  cut** (ADR-0079). They remain measurable 1.x adoption goals, while G24
+  measures the completed technical surface independently.
+
 ### Fixed
+
+- **`OutputFile.data` now declares the value the runtime actually returns.**
+  The public type said `ArrayBuffer` through 0.13.0, while Node and browser
+  conversions had always returned `Uint8Array`. The declaration now matches
+  runtime behavior and is pinned by installed-package and real-browser
+  tests. Because the signature changed, G24 restarts on 2026-08-30.
 
 - **Conformance reports now identify the package that produced them.**
   `xl3-conformance` reported the historical `0.1.0-alpha.0` literal even
@@ -51,10 +80,15 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   `npm run operational:regression`, instead of accepting any non-empty output
   workbook as a pass.
 
+- **End-to-end 1.0 workflow gates.** CI now renders a template from an
+  in-memory JavaScript object in Node and real Chromium, downloads and
+  reopens the browser result, then packs the npm tarball into an isolated
+  consumer that type-checks, imports, renders, and writes a real workbook.
+
 - **Source compatibility validation** (`validateSource`,
   `validateSourceJson`; ADR-0078) returns a structured input contract and all
   schema diagnostics without rendering a workbook. The report types remain
-  experimental for 0.14.0.
+  experimental for 1.0.0-rc.1.
 
 - **Complete directive type exports.** `GroupDirective` and `BlockDirective`
   are now re-exported alongside every other member of the experimental
@@ -1518,7 +1552,8 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/xl3-lang/xl3/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/xl3-lang/xl3/compare/v1.0.0-rc.1...HEAD
+[1.0.0-rc.1]: https://github.com/xl3-lang/xl3/compare/v0.13.0...v1.0.0-rc.1
 [0.13.0]: https://github.com/xl3-lang/xl3/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/xl3-lang/xl3/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/xl3-lang/xl3/compare/v0.10.0...v0.11.0

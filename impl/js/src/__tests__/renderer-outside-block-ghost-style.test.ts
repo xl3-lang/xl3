@@ -79,9 +79,12 @@ async function makeData(n: number) {
   return Buffer.from(await wb.xlsx.writeBuffer());
 }
 
-async function load(outputs: { data: ArrayBuffer }[]) {
+async function load(outputs: { data: Uint8Array }[]) {
   const result = new ExcelJS.Workbook();
-  await result.xlsx.load(new Uint8Array(outputs[0]!.data).buffer);
+  const data = outputs[0]!.data;
+  await result.xlsx.load(
+    data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer,
+  );
   return result;
 }
 

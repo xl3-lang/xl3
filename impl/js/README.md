@@ -5,9 +5,9 @@ an open standard for declarative Excel transformation.
 
 xl3 lets you use an Excel workbook as a *template*: you write rules in
 cells with a small embedded expression language (**XTL**), and the engine
-renders formatted `.xlsx` output from your Excel data. The rules live in
-the spreadsheet, authored by the person who owns the report format; the
-engine is owned by developers.
+binds data your application already owns to produce formatted `.xlsx`
+output. The rules live in the spreadsheet, authored by the person who owns
+the report format; the engine is owned by developers.
 
 - **Standard & spec:** https://xl3.io — the language is spec-first and
   language-neutral. This package is one conforming implementation.
@@ -19,7 +19,7 @@ engine is owned by developers.
 ## Install
 
 ```bash
-npm install @xl3-lang/xl3
+npm install @xl3-lang/xl3@rc
 ```
 
 Requires Node.js >= 20.12. Also runs in the browser via the prebuilt
@@ -28,23 +28,35 @@ IIFE bundle (`@xl3-lang/xl3/bundle`, exposes `window.xl3`).
 ## Usage
 
 ```ts
-import { convert } from '@xl3-lang/xl3';
-import { readFileSync } from 'node:fs';
+import { convertJson } from '@xl3-lang/xl3';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const toArrayBuffer = (b: Buffer): ArrayBuffer =>
   b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
 
 const template = toArrayBuffer(readFileSync('template.xlsx'));
-const data = toArrayBuffer(readFileSync('data.xlsx'));
+const orders = await db.orders.findMany();
 
-// Returns Array<{ filename: string; data: Uint8Array }> — one entry per
-// output workbook (a template can fan out to multiple files by group key).
-const outputs = await convert(template, data);
+// No JSON file or intermediate data.xlsx is created.
+const outputs = await convertJson(template, {
+  version: 'xl3-source-json/0.1',
+  sources: {
+    default: {
+      headers: ['Customer', 'Amount'],
+      rows: orders.map((order) => [order.customer, order.amount]),
+    },
+  },
+});
 
 for (const { filename, data } of outputs) {
-  writeFileSync(filename, data);
+  writeFileSync(filename, new Uint8Array(data));
 }
 ```
+
+`convertJson` accepts an already-parsed JavaScript object, regardless of
+whether its rows came from a database, API, ORM, queue, or application state.
+Each output's `data` is a completed `.xlsx` `Uint8Array`. If the source is
+already an Excel workbook, use `convert(template, dataWorkbook)` instead.
 
 ## CLI
 

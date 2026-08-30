@@ -4,8 +4,8 @@
 > 结果每次一致。就像 Jinja 让 HTML 成为模板,**xl3 让 Excel 工作簿成为可执行
 > 模板** —— 作为一个与实现无关的开放标准,而不是单一的库。
 
-**状态:** alpha · **XTL spec 0.1 (draft)** · 参考实现
-`@xl3-lang/xl3` 0.13.0 · 1.0 之前可能存在 breaking change
+**状态:** 发布候选版 · **XTL spec 0.1 (draft)** · 参考实现
+`@xl3-lang/xl3` 1.0.0-rc.1 · 稳定性窗口结束后发布正式版 1.0
 
 **xl3** 是一个开放标准,用于把普通的 `.xlsx` 工作簿变成确定性的声明式
 转换模板:布局、样式、合并单元格与规则都放在 *工作簿内部*,任何符合
@@ -159,7 +159,7 @@ Runtime,运营拥有 Template。它把 Excel 自动化的所有权从开发者�
 
 | 方案 | 擅长 | 取舍 |
 |---|---|---|
-| **xl3** | 声明式 Excel 模板执行。工作簿已经存在;xl3 只是把数据带进去执行。 | Alpha 阶段;只有一位维护者;XTL 表面刻意保持精简,在 1.0 之前仍在演进。 |
+| **xl3** | 声明式 Excel 模板执行。工作簿已经存在;xl3 只是把数据带进去执行。 | 发布候选版;只有一位维护者;1.0 契约将在 2026-11-28 前进行技术稳定性验证。 |
 | 工作簿 API (ExcelJS / SheetJS / openpyxl / Apache POI) | 从代码生成低层或全功能工作簿。 | 布局、样式、合并、循环和业务规则都会变成应用代码,非开发者很难安全修改模板。 |
 | Python / VBA 脚本 | 贴近现有电子表格的快速一次性自动化。 | 规则容易留在代码或某个维护者的记忆里,布局变化仍然需要改代码。 |
 | Power Query / Office Scripts / Power Automate | Microsoft 365 内部的工作流、数据整形与操作自动化。 | 绑定具体租户;工作流规则不会跟随工作簿一起带走。 |
@@ -170,44 +170,50 @@ Runtime,运营拥有 Template。它把 Excel 自动化的所有权从开发者�
 ## 安装
 
 ```bash
-npm install @xl3-lang/xl3
+npm install @xl3-lang/xl3@rc
 ```
 
 ## 使用
 
 ```ts
-import { convert } from '@xl3-lang/xl3';
+import { convertJson } from '@xl3-lang/xl3';
 
 const templateBuffer = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
-const dataBuffer = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
+const orders = await db.orders.findMany();
 
-const outputs = await convert(templateBuffer, dataBuffer);
+const outputs = await convertJson(templateBuffer, {
+  version: 'xl3-source-json/0.1',
+  sources: {
+    default: {
+      headers: ['Customer', 'Amount'],
+      rows: orders.map((order) => [order.customer, order.amount]),
+    },
+  },
+});
 // outputs: OutputFile[] — 根据模板里的分组规则,可能输出一个或多个 .xlsx
 ```
 
 在浏览器和 Node(≥ 20.12)上都可以运行。
 
-### 用 JSON 源替代 `data.xlsx`
+`convertJson` 直接接收应用程序已有的 JavaScript 对象。数据可以来自数据库、API、
+ORM、队列或应用状态,无需 JSON 文件或中间 `data.xlsx`。每个
+`OutputFile.data` 都是 `Uint8Array`,可以在 Node 中直接写入,也可以作为
+浏览器 `Blob` 下载。
 
-非 Excel 宿主(Python 服务、DB/ETL 作业)可以跳过工作簿往返,直接传入与
-语言无关的 `xl3-source-json/0.1` 传输格式。`convertJson` 渲染出的结果与
-用等价的 `data.xlsx` 跑 `convert` 完全一致。
+### Excel 源文件
+
+如果源数据本身就是 Excel 文件,原有的工作簿路径仍然受支持。
 
 ```ts
-import { convertJson } from '@xl3-lang/xl3';
+import { convert } from '@xl3-lang/xl3';
 
-const outputs = await convertJson(templateBuffer, {
-  version: 'xl3-source-json/0.1',
-  sources: {
-    default: { headers: ['Customer', 'Amount'], rows: [['Acme', 100]] },
-  },
-});
+const dataBuffer = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
+const outputs = await convert(templateBuffer, dataBuffer);
 ```
 
-preview 侧的对应物是 `previewJson`。格式错误的输入会抛出
-`xl3/source-json/invalid`。该能力在 0.11.0 按
-[ADR-0075](./spec/decisions/0075-xl3-source-json.md) 加入;传输格式在各实现
-之间可移植,`.xlsx` 路径保持不变。
+对应的预览 API 是 `previewJson` 和 `preview`。格式错误的对象输入会抛出
+`xl3/source-json/invalid`。可移植的对象契约定义在
+[ADR-0075](./spec/decisions/0075-xl3-source-json.md) 中。
 
 ### 不依赖打包工具,直接用 `<script>`
 
@@ -215,7 +221,7 @@ preview 侧的对应物是 `previewJson`。格式错误的输入会抛出
 `window.xl3` 上挂载所有 API:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@0.13.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@1.0.0-rc.1/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

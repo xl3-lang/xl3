@@ -92,7 +92,13 @@ describe('#69 — explicit @block + group/subtotal is rejected', () => {
     // Renders fine; subtotal band emits per group (Acme=150, Beta=200).
     const out = await convert(await toBuf(wb), await makeSource(), { engine: 'js' });
     const outWb = new ExcelJS.Workbook();
-    await outWb.xlsx.load(out[0]!.data as ArrayBuffer);
+    const outputData = out[0]!.data;
+    await outWb.xlsx.load(
+      outputData.buffer.slice(
+        outputData.byteOffset,
+        outputData.byteOffset + outputData.byteLength,
+      ) as ArrayBuffer,
+    );
     const rep = outWb.getWorksheet('Report')!;
     const subtotals: number[] = [];
     rep.eachRow((row) => {

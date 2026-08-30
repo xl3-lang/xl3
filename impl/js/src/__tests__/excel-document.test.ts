@@ -101,7 +101,7 @@ describe('output determinism', () => {
     template.addWorksheet('R').getCell('A1').value = 'x';
     const templateBuffer = await template.xlsx.writeBuffer();
 
-    async function render(): Promise<ArrayBuffer> {
+    async function render(): Promise<Uint8Array> {
       const wb = new ExcelJS.Workbook();
       await wb.xlsx.load(templateBuffer);
       const doc = await ExcelJsWorkbookDocument.fromTemplate(wb);

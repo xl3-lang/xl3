@@ -49,6 +49,35 @@ G16 remains closed by ADR-0077's explicit single-maintainer fallback. Moving
 G14 does not imply that the governance risk disappeared; it means the risk is
 disclosed and monitored rather than delegated to the release clock.
 
+### The reference implementation freezes one core product workflow
+
+The functional threshold for `@xl3-lang/xl3` 1.0 is intentionally narrower
+than JXLS feature parity or general spreadsheet automation:
+
+> application-owned JavaScript data → `.xlsx` template execution → generated
+> `.xlsx` byte output.
+
+The host may have obtained that data from a database, HTTP API, ORM, queue, or
+application state. It supplies an already-parsed `xl3-source-json/0.1` object
+to `convertJson`; no `data.xlsx` or JSON file is required. xl3 does not connect
+to those systems itself. The stable boundary is the `Xl3SourceJson*` input
+family, the template `ArrayBuffer`, and `OutputFile[]` with each workbook as a
+`Uint8Array` in `OutputFile.data`.
+
+The existing file-based `convert(template, dataWorkbook)` path remains stable
+and supported, but it is not a requirement imposed on hosts that already own
+their data in memory. Dynamic image insertion, custom host-language commands,
+streaming output, pivot/chart authoring, macros, and full JXLS feature parity
+are not part of this 1.0 threshold. Their absence does not block the core
+binding/export promise.
+
+This amendment records and tests behavior already shipped by ADR-0075 in
+0.11.0. It adds no runtime export. During its RC audit, however, the project
+found that `OutputFile.data` had always been a `Uint8Array` at runtime while
+its TypeScript declaration said `ArrayBuffer`. Correcting that public
+signature is conservatively treated as a breaking API change on 2026-08-30,
+so G24 restarts and completes on 2026-11-28 if uninterrupted.
+
 ### G24 measures the completed technical surface
 
 G24 becomes the **technical stability window**. Its 90-day clock starts on
@@ -62,12 +91,12 @@ error-code changes remain non-breaking under the existing ROADMAP definition,
 but every such change must still be logged in `spec/STABILITY.md` and pass the
 full release gates.
 
-G5 was the last blocking technical gate to close, on 2026-08-16. Therefore the
-current G24 window begins on **2026-08-16** and completes on **2026-11-14** if
-there is no intervening breaking change. This deliberately replaces the old
-2026-06-23 / 2026-09-21 calculation: the new date gives the completed CF/DV
-range-extension and outline-preservation implementation a full soak before
-1.0.
+G5 was the last blocking technical gate to close, on 2026-08-16. The later
+event is the `OutputFile.data` signature correction on 2026-08-30. Therefore
+the current G24 window begins on **2026-08-30** and completes on
+**2026-11-28** if there is no intervening breaking change. This replaces both
+the old 2026-06-23 / 2026-09-21 calculation and the brief 2026-08-16 /
+2026-11-14 calculation recorded before the RC audit found the mismatch.
 
 ### Release cut
 
@@ -80,14 +109,16 @@ and RC-soak rules.
 ## Consequences
 
 - 1.0 has no open adoption-dependent blocker.
-- The earliest current 1.0 date moves to 2026-11-14, not because adoption is
+- The earliest current 1.0 date moves to 2026-11-28, not because adoption is
   missing, but because the completed technical surface gets a genuine 90-day
   stability period.
 - G13/G14/G15/G18 stay visible, measurable, and actively pursued during 1.x.
 - Project users can evaluate two claims separately: "the compatibility
   contract is stable" and "the ecosystem is mature." 1.0 asserts the former,
   not the latter.
+- For the JavaScript package, that compatibility claim has a concrete center:
+  in-memory host data can be bound to an Excel template and exported as an
+  `.xlsx` without an intermediate source file.
 - Documentation must call out the single-maintainer and limited-public-
   production evidence honestly; the version number must not be used to imply
   those risks are solved.
-

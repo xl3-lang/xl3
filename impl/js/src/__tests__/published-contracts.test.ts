@@ -57,7 +57,7 @@ describe('published behavior contracts', () => {
       expect(adoption, `${id} must remain visible in the adoption track`).toContain(`| ${id} |`);
     }
     expect(roadmap).toContain('**0 blocking prerequisites are open; G24 is in progress.**');
-    expect(roadmap).toContain('window **2026-08-16 → 2026-11-14**');
+    expect(roadmap).toContain('window **2026-08-30 → 2026-11-28**');
     expect(read('spec/decisions/0079-technical-1.0-and-adoption-track.md')).toContain(
       'G13, G14, G15, and G18 move',
     );
@@ -70,5 +70,25 @@ describe('published behavior contracts', () => {
     expect(config).toContain('Node.js ${xl3Package.engines.node}, Browser (ESM)');
     expect(config).not.toContain("softwareVersion: '0.9.0'");
     expect(config).not.toContain("operatingSystem: 'Node.js 18+");
+  });
+
+  it('freezes the fileless JavaScript data-binding workflow for 1.0', () => {
+    const stability = read('spec/STABILITY.md');
+    const roadmap = read('ROADMAP.md');
+    const decision = read('spec/decisions/0079-technical-1.0-and-adoption-track.md');
+
+    for (const body of [stability, roadmap, decision]) {
+      expect(body).toContain('application-owned JavaScript data');
+      expect(body).toContain('Uint8Array');
+    }
+    for (const typeName of [
+      'Xl3SourceJsonValue',
+      'Xl3SourceJsonSource',
+      'Xl3SourceJson',
+      'Xl3SourceJsonInput',
+    ]) {
+      expect(stability).toContain(typeName);
+    }
+    expect(decision).toContain('G24 restarts');
   });
 });

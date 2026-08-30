@@ -1,7 +1,7 @@
 {
   "name": "@xl3-lang/xl3",
-  "version": "0.13.0",
-  "description": "Use Excel workbooks as templates and render formatted Excel output from Excel data.",
+  "version": "1.0.0-rc.1",
+  "description": "Bind application data to Excel templates and export formatted .xlsx workbooks.",
   "keywords": [
     "excel",
     "xlsx",

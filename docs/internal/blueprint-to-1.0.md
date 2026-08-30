@@ -402,14 +402,17 @@ update here. The exact wording lives in `ROADMAP.md` under
 - **Technical stability window (G24 vs G23):** the 90-day window starts on
   the later of the final blocking technical/process gate closing or the last
   breaking change. G13/G14/G15/G18 are excluded. A breaking change during RC
-  soak resets BOTH the soak (G23) and G24. The current window begins
-  2026-08-16 and ends 2026-11-14 if uninterrupted.
+  soak resets BOTH the soak (G23) and G24. G5 closed on 2026-08-16; the later
+  public `OutputFile.data` signature correction restarts the current window
+  on 2026-08-30, ending 2026-11-28 if uninterrupted.
 
 The 1.0 cut is **not** about feature completeness vs JXLS — xl3
-intentionally ships a smaller surface. It is about earning the
-same kind of trust JXLS earned: a spec that doesn't shift, a
-reference impl that doesn't surprise, with ecosystem maturity reported
-separately rather than implied by the version number.
+intentionally ships a smaller surface. Its concrete reference-implementation
+threshold is application-owned JavaScript data → Excel template → generated
+`.xlsx` bytes, without requiring a source data file. It is about earning the
+same kind of trust JXLS earned: a spec that doesn't shift, a reference impl
+that doesn't surprise, with ecosystem maturity reported separately rather
+than implied by the version number.
 
 ---
 

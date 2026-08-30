@@ -403,7 +403,7 @@
     "description": "Comparison row xl3 — best at"
   },
   "homepage.comparison.xl3.tradeoff": {
-    "message": "Alpha 阶段；单一维护者；XTL 表面刻意保持精简，在 1.0 之前仍在演进。",
+    "message": "发布候选版；单一维护者；1.0 契约将在 2026-11-28 前进行技术稳定性验证。",
     "description": "Comparison row xl3 — tradeoff"
   },
   "homepage.comparison.llmDirect.bestAt": {
@@ -527,7 +527,7 @@
     "description": "Developer API section H2"
   },
   "homepage.api.lead": {
-    "message": "安装参考实现，用一段数据缓冲区运行模板。操作者的体验可以保持基于文件，而由你的应用负责部署与校验——当宿主没有 .xlsx 可交付时，convertJson() 还能接收语言中立的 JSON 源。",
+    "message": "传入应用已经保存在内存中的数据，应用 Excel 模板，并取得生成好的 .xlsx。convertJson() 可直接接收 JavaScript 对象，因此不需要源数据文件或中间工作簿。",
     "description": "Developer API section lead paragraph"
   },
   "homepage.api.cta.cookbook": {

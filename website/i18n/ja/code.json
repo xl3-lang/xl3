@@ -403,7 +403,7 @@
     "description": "Comparison row xl3 — best at"
   },
   "homepage.comparison.xl3.tradeoff": {
-    "message": "アルファ版、メンテナー一人、XTL の表面は意図的に小さく保たれ、1.0 まで進化を続けます。",
+    "message": "リリース候補、メンテナー一人、1.0 契約は 2026-11-28 まで技術的安定化中です。",
     "description": "Comparison row xl3 — tradeoff"
   },
   "homepage.comparison.llmDirect.bestAt": {
@@ -527,7 +527,7 @@
     "description": "Developer API section H2"
   },
   "homepage.api.lead": {
-    "message": "リファレンス実装をインストールし、データのバッファでテンプレートを実行します。オペレーターの体験はファイルベースのまま、アプリがデプロイと検証を担います — さらに、ホストに渡す .xlsx がない場合は convertJson() が言語中立な JSON ソースを受け取ります。",
+    "message": "アプリケーションがすでにメモリ上に持つデータを渡し、Excel テンプレートを適用して完成した .xlsx を受け取ります。convertJson() は JavaScript オブジェクトを直接受け取るため、元データファイルや中間ワークブックは不要です。",
     "description": "Developer API section lead paragraph"
   },
   "homepage.api.cta.cookbook": {

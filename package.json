@@ -42,7 +42,9 @@
     "bench": "node scripts/bench.mjs",
     "bench:matrix": "node scripts/bench-matrix.mjs",
     "browser:smoke": "node scripts/browser-smoke.mjs",
-    "browser:e2e": "node scripts/browser-try-e2e.mjs"
+    "browser:e2e": "node scripts/browser-try-e2e.mjs",
+    "data-binding:e2e": "node scripts/data-binding-e2e.mjs",
+    "package:smoke": "node scripts/package-smoke.mjs"
   },
   "devDependencies": {
     "@docusaurus/core": "^3.10.1",

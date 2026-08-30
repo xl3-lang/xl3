@@ -5,8 +5,8 @@
 > ように、**xl3 は Excel ワークブックを実行可能なテンプレートにします** —
 > 単一のライブラリではなく、実装に依存しないオープンな標準として。
 
-**ステータス:** alpha · **XTL spec 0.1 (draft)** · リファレンス実装
-`@xl3-lang/xl3` 0.13.0 · 1.0 までは breaking change の可能性あり
+**ステータス:** リリース候補 · **XTL spec 0.1 (draft)** · リファレンス実装
+`@xl3-lang/xl3` 1.0.0-rc.1 · 安定化期間の後に正式版 1.0 を予定
 
 **xl3** は、普通の `.xlsx` ワークブックを決定論的で宣言的な変換テンプレート
 に変えるためのオープンな標準です。レイアウト・スタイル・結合セル・ルールは
@@ -173,7 +173,7 @@ xl3 は開発者を置き換えるプロジェクトではありません。開�
 
 | アプローチ | 得意な領域 | トレードオフ |
 |---|---|---|
-| **xl3** | 宣言的な Excel テンプレート実行。ワークブックはすでに存在し、xl3 はデータを渡してそれを実行します。 | Alpha 段階。メンテナー 1 名。XTL の表面は意図的に小さく、1.0 までは進化中。 |
+| **xl3** | 宣言的な Excel テンプレート実行。ワークブックはすでに存在し、xl3 はデータを渡してそれを実行します。 | リリース候補。メンテナー 1 名。1.0 契約は 2026-11-28 まで技術的安定化中。 |
 | ワークブック API (ExcelJS / SheetJS / openpyxl / Apache POI) | コードからの低レベルまたは高機能なワークブック生成。 | レイアウト、スタイル、結合、繰り返し、業務ルールがアプリケーションコードになります。非開発者が安全にテンプレートを編集しにくくなります。 |
 | Python / VBA スクリプト | 既存スプレッドシートに近い、素早い使い捨て自動化。 | ルールがコードや担当者 1 人の頭の中に残りやすく、レイアウト変更にもコード変更が必要です。 |
 | Power Query / Office Scripts / Power Automate | Microsoft 365 ワークフロー、データ整形、Excel エコシステム内でのアクション自動化。 | テナント拘束で、ワークフロールールはワークブックと一緒に旅をしない。 |
@@ -184,52 +184,58 @@ xl3 は開発者を置き換えるプロジェクトではありません。開�
 ## インストール
 
 ```bash
-npm install @xl3-lang/xl3
+npm install @xl3-lang/xl3@rc
 ```
 
 ## 使い方
 
 ```ts
-import { convert } from '@xl3-lang/xl3';
+import { convertJson } from '@xl3-lang/xl3';
 
 const templateBuffer = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
-const dataBuffer = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
+const orders = await db.orders.findMany();
 
-const outputs = await convert(templateBuffer, dataBuffer);
+const outputs = await convertJson(templateBuffer, {
+  version: 'xl3-source-json/0.1',
+  sources: {
+    default: {
+      headers: ['Customer', 'Amount'],
+      rows: orders.map((order) => [order.customer, order.amount]),
+    },
+  },
+});
 // outputs: OutputFile[] — テンプレートのグルーピングルールに応じて 1 つ以上の .xlsx
 ```
 
 ブラウザと Node (20.12 以上) で動作します。
 
-### `data.xlsx` の代わりに JSON ソース
+`convertJson` は、アプリケーションがすでに保持している JavaScript オブジェクトを
+直接受け取ります。データはデータベース、API、ORM、キュー、アプリケーション状態の
+どこから来てもよく、JSON ファイルや中間の `data.xlsx` は不要です。
+各 `OutputFile.data` は、Node で書き出すこともブラウザの `Blob` として
+ダウンロードすることもできる `Uint8Array` です。
 
-Excel 以外のホスト(Python サービス、DB/ETL ジョブ)は、ワークブックの往復を
-省略し、言語非依存の `xl3-source-json/0.1` ワイヤフォーマットをそのまま
-渡せます。`convertJson` は、同等の `data.xlsx` に対する `convert` と
-まったく同じ出力をレンダリングします。
+### Excel ソースファイル
+
+ソースデータ自体が Excel ファイルなら、従来のワークブック経路もそのまま使えます。
 
 ```ts
-import { convertJson } from '@xl3-lang/xl3';
+import { convert } from '@xl3-lang/xl3';
 
-const outputs = await convertJson(templateBuffer, {
-  version: 'xl3-source-json/0.1',
-  sources: {
-    default: { headers: ['Customer', 'Amount'], rows: [['Acme', 100]] },
-  },
-});
+const dataBuffer = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
+const outputs = await convert(templateBuffer, dataBuffer);
 ```
 
-preview 側の対応物は `previewJson` です。不正な入力は
-`xl3/source-json/invalid` を送出します。0.11.0 で
-[ADR-0075](./spec/decisions/0075-xl3-source-json.md) として追加され、
-ワイヤフォーマットは実装間で可搬、`.xlsx` の経路は変更ありません。
+対応するプレビュー API は `previewJson` と `preview` です。不正なオブジェクト入力は
+`xl3/source-json/invalid` を送出します。可搬なオブジェクト契約は
+[ADR-0075](./spec/decisions/0075-xl3-source-json.md) で定義されています。
 
 ### バンドラなしの `<script>` での利用
 
 バンドラを使わないプロジェクト向けに、自己完結型の IIFE バンドルを提供しています。読み込むと `window.xl3` として利用できます。
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@0.13.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@1.0.0-rc.1/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

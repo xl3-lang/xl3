@@ -37,23 +37,21 @@ export const ZIP_ENTRY_DATE = new Date('1980-01-01T00:00:00Z');
  * this is a header rewrite: measured at 2-7 ms from 10k to 500k cells,
  * against ~12.5 s for a 2M-cell render.
  */
-async function pinZipEntryDates(buf: ArrayBuffer): Promise<ArrayBuffer> {
+async function pinZipEntryDates(buf: ArrayBuffer | Uint8Array): Promise<Uint8Array> {
   const zip = await JSZip.loadAsync(buf);
   for (const name of Object.keys(zip.files)) {
     const entry = zip.files[name];
     if (entry) entry.date = ZIP_ENTRY_DATE;
   }
-  // `uint8array`, not `arraybuffer`, to keep the runtime shape callers
-  // already had. ExcelJS returns a Buffer under Node and a Uint8Array in
-  // the browser — both `instanceof Uint8Array`, both indexable — and
-  // `OutputFile.data` has always been that value cast to `ArrayBuffer`.
-  // Returning a real ArrayBuffer here broke the IIFE bundle smoke test,
-  // which indexes `data[0]` to check the PK header. Changing the declared
-  // type instead would be a public-surface break (G6).
+  // `uint8array`, not `arraybuffer`, keeps one runtime shape in Node and the
+  // browser and can be passed directly to Node file APIs or a browser Blob.
+  // Before 1.0 the public declaration incorrectly claimed ArrayBuffer while
+  // this function had always returned Uint8Array; the RC contract now names
+  // the runtime truth explicitly.
   return zip.generateAsync({
     type: 'uint8array',
     compression: 'DEFLATE',
-  }) as unknown as Promise<ArrayBuffer>;
+  });
 }
 
 export interface WorkbookDocument {
@@ -68,7 +66,7 @@ export interface WorkbookDocument {
     deleteCount: number,
     rows?: unknown[][],
   ): void;
-  writeBuffer(): Promise<ArrayBuffer>;
+  writeBuffer(): Promise<Uint8Array>;
 }
 
 export class ExcelJsWorkbookDocument implements WorkbookDocument {
@@ -167,8 +165,8 @@ export class ExcelJsWorkbookDocument implements WorkbookDocument {
     }
   }
 
-  async writeBuffer(): Promise<ArrayBuffer> {
-    const buf = (await this.workbook.xlsx.writeBuffer()) as ArrayBuffer;
+  async writeBuffer(): Promise<Uint8Array> {
+    const buf = await this.workbook.xlsx.writeBuffer();
     return pinZipEntryDates(buf);
   }
 }

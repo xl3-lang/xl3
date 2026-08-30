@@ -31,12 +31,21 @@ a pure impl refactor can ship as `xl3` patch with no spec change.
 2. Verify locally:
 
    ```bash
+   npm run format:check
+   npm run lint
    npm run typecheck
-   npm test -- --run
    npm run build
+   npm run build:bundle
+   npm test -- --run
+   npm run test:coverage
+   npm run package:smoke
    npm run conformance
    npm run conformance:tz
    npm run operational:regression
+   npm run browser:smoke
+   npm run browser:e2e
+   npm run data-binding:e2e
+   npm run docs:build
    npm run bench
    ```
 
@@ -103,7 +112,7 @@ a pure impl refactor can ship as `xl3` patch with no spec change.
 
    | Artifact | Check |
    |---|---|
-   | npm `latest` (or `rc`) | `npm view @xl3-lang/xl3 version` matches the cut |
+   | npm `latest` (or `rc`) | `npm view @xl3-lang/xl3 version` for a stable cut, or `npm view @xl3-lang/xl3@rc version` for an RC, matches the cut |
    | Remote git tag | `git ls-remote --tags origin \| grep v1.0.0-rc.1` returns a row |
    | GitHub Release | `gh release view v1.0.0-rc.1` resolves; appears in `gh release list` |
    | CHANGELOG | `[Unreleased]` is empty; the cut version has its own dated section |

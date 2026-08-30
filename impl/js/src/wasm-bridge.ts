@@ -151,7 +151,7 @@ export function wasmConvert(
     filename: f.filename,
     // Copy out of the wasm linear-memory slice so the buffer survives
     // the next wasm allocation.
-    data: f.data.slice().buffer,
+    data: new Uint8Array(f.data),
     warnings: f.warnings.map(mapWasmWarning),
   }));
 }

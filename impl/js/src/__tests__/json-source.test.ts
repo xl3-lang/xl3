@@ -51,9 +51,13 @@ function sourceDataToJson(sources: Record<string, SourceData>): Xl3SourceJson {
 
 // Structural snapshot of a workbook (sheet names + cell values), immune
 // to zip byte / timestamp nondeterminism.
-async function snapshot(buf: ArrayBuffer): Promise<string> {
+async function snapshot(buf: ArrayBuffer | Uint8Array): Promise<string> {
   const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load(buf);
+  const data =
+    buf instanceof Uint8Array
+      ? (buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer)
+      : buf;
+  await wb.xlsx.load(data);
   const sheets = wb.worksheets.map((ws) => {
     const rows: unknown[][] = [];
     ws.eachRow({ includeEmpty: true }, (row) => {

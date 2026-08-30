@@ -209,7 +209,9 @@ export class Renderer {
 
     return {
       filename: filenameInfo.filename,
-      data: outBuf as ArrayBuffer,
+      // JSZip's `uint8array` output is backed by an ordinary ArrayBuffer,
+      // which keeps the public value directly usable as a browser BlobPart.
+      data: outBuf as Uint8Array & { readonly buffer: ArrayBuffer },
       warnings: filenameInfo.warnings,
     };
   }

@@ -53,9 +53,11 @@ function baseTemplate(): ExcelJS.Workbook {
   return wb;
 }
 
-async function readReport(data: ArrayBuffer): Promise<string[][]> {
+async function readReport(data: Uint8Array): Promise<string[][]> {
   const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load(data);
+  await wb.xlsx.load(
+    data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) as ArrayBuffer,
+  );
   const ws = wb.getWorksheet('Report')!;
   const rows: string[][] = [];
   ws.eachRow((row) => {
@@ -99,7 +101,7 @@ describe('#66 — @subtotal row with a plain current-row [Column] ref', () => {
     ws.getCell('C3').value = '{{ @subtotal SUM([Amount]) }}';
 
     const out = await convert(await toBuf(wb), await makeSource(), { engine: 'js' });
-    const rows = await readReport(out[0]!.data as ArrayBuffer);
+    const rows = await readReport(out[0]!.data);
     // one subtotal per group boundary, with per-group sums (not grand total)
     const subtotals = rows.filter((r) => r[0] === 'Subtotal').map((r) => r[2]);
     expect(subtotals).toEqual(['150', '200']);
@@ -116,7 +118,7 @@ describe('#66 — @subtotal row with a plain current-row [Column] ref', () => {
     ws.getCell('C3').value = '{{ @subtotal SUM([Amount]) }}';
 
     const out = await convert(await toBuf(wb), await makeSource(), { engine: 'js' });
-    const rows = await readReport(out[0]!.data as ArrayBuffer);
+    const rows = await readReport(out[0]!.data);
     const labelled = rows.filter((r) => r[0] === 'Subtotal [Customer]');
     // literal text preserved verbatim; per-group sums, not grand total
     expect(labelled.map((r) => r[2])).toEqual(['150', '200']);
@@ -140,7 +142,13 @@ describe('#66 — formula-cached-result self-corruption path', () => {
     // Must NOT throw (no phantom marker → no mixed-row) and must NOT demote.
     const out = await convert(await toBuf(wb), await makeSource(), { engine: 'js' });
     const outWb = new ExcelJS.Workbook();
-    await outWb.xlsx.load(out[0]!.data as ArrayBuffer);
+    const outputData = out[0]!.data;
+    await outWb.xlsx.load(
+      outputData.buffer.slice(
+        outputData.byteOffset,
+        outputData.byteOffset + outputData.byteLength,
+      ) as ArrayBuffer,
+    );
     const rep = outWb.getWorksheet('Report')!;
 
     // Collect the C column (SUM cell) and note which rows kept a formula in A.

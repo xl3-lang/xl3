@@ -778,7 +778,7 @@ function useComparisons() {
       tradeoff: translate({
         id: 'homepage.comparison.xl3.tradeoff',
         message:
-          'Alpha; one maintainer; the XTL surface is intentionally small and still evolving until 1.0.',
+          'Release candidate; one maintainer; the 1.0 contract is in technical soak through 2026-11-28.',
         description: 'Comparison row xl3 — tradeoff',
       }),
     },
@@ -950,10 +950,9 @@ function DeveloperApi() {
           </h2>
           <p>
             <Translate id="homepage.api.lead" description="Developer API section lead paragraph">
-              Install the reference implementation and run a template with a buffer of data. The
-              operator experience can stay file-based while your app owns deployment and validation
-              — and convertJson() takes a language-neutral JSON source when the host has no .xlsx to
-              hand over.
+              Pass data your application already has in memory, apply an Excel template, and receive
+              completed .xlsx workbooks. convertJson() accepts a JavaScript object directly, so no
+              source data file or workbook round-trip is required.
             </Translate>
           </p>
         </div>
@@ -977,7 +976,7 @@ function DeveloperApi() {
               [
                 { kind: 'kw', text: 'import' },
                 { kind: 'plain', text: ' { ' },
-                { kind: 'var', text: 'convert' },
+                { kind: 'var', text: 'convertJson' },
                 { kind: 'plain', text: ' } ' },
                 { kind: 'kw', text: 'from' },
                 { kind: 'plain', text: ' ' },
@@ -992,14 +991,18 @@ function DeveloperApi() {
                 { kind: 'plain', text: ' = ' },
                 { kind: 'kw', text: 'await' },
                 { kind: 'plain', text: ' ' },
-                { kind: 'fn', text: 'convert' },
+                { kind: 'fn', text: 'convertJson' },
                 { kind: 'plain', text: '(' },
                 { kind: 'var', text: 'templateBuffer' },
-                { kind: 'plain', text: ', ' },
-                { kind: 'var', text: 'dataBuffer' },
-                { kind: 'plain', text: ');' },
+                { kind: 'plain', text: ', {' },
               ],
-              [{ kind: 'comment', text: '// OutputFile[] → formatted .xlsx workbook(s)' }],
+              [{ kind: 'plain', text: "  version: 'xl3-source-json/0.1'," }],
+              [{ kind: 'plain', text: '  sources: { default: {' }],
+              [{ kind: 'plain', text: "    headers: ['Customer', 'Amount']," }],
+              [{ kind: 'plain', text: '    rows: orders.map(o => [o.customer, o.amount]),' }],
+              [{ kind: 'plain', text: '  } },' }],
+              [{ kind: 'plain', text: '});' }],
+              [{ kind: 'comment', text: '// OutputFile[].data → .xlsx Uint8Array' }],
             ]}
           />
         </div>

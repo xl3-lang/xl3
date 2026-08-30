@@ -5,8 +5,8 @@
 > templates; **xl3 makes Excel workbooks executable as templates** — as an
 > open, implementation-independent standard, not a single library.
 
-**Status:** alpha · **XTL spec 0.1 (draft)** · reference implementation
-`@xl3-lang/xl3` 0.13.0 · breaking changes possible until 1.0
+**Status:** release candidate · **XTL spec 0.1 (draft)** · reference implementation
+`@xl3-lang/xl3` 1.0.0-rc.1 · final 1.0 after the stability window
 
 **xl3** is an open standard for turning an ordinary `.xlsx` workbook into a
 deterministic, declarative transformation template: the layout, styles,
@@ -83,7 +83,7 @@ A template can contain ordinary Excel content, `__config__`, and xl3 expressions
 | C5 | `{{ [Renewal] }}` |
 | E5 | `{{ IF([Renewal] > 10000, "Priority", "Standard") }}` |
 
-Given this data workbook:
+Given data the application already holds in memory:
 
 | Account | Region | Renewal | Owner |
 |---|---|---:|---|
@@ -174,7 +174,7 @@ automation becomes an organizational capability.
 
 | Approach | Best at | Tradeoff |
 |---|---|---|
-| **xl3** | Declarative Excel template execution. The workbook already exists; xl3 runs it with data. | Alpha; one maintainer; the XTL surface is intentionally small and still evolving until 1.0. |
+| **xl3** | Declarative Excel template execution. The workbook already exists; xl3 runs it with data. | Release candidate; one maintainer; the 1.0 contract is in technical soak through 2026-11-28. |
 | Workbook APIs (ExcelJS / SheetJS / openpyxl / Apache POI) | Low-level or full-featured workbook generation from code. | Layout, styles, merges, loops, and business rules become application code. Non-developers cannot safely edit the template. |
 | Python / VBA scripts | Fast one-off automation close to existing spreadsheets. | Rules live in code or one maintainer's memory; layout changes still need code changes. |
 | Power Query / Office Scripts / Power Automate | Microsoft 365 workflows, data shaping, and action automation inside the Excel ecosystem. | Tenant-bound; the workflow rules don't travel with the workbook. |
@@ -185,7 +185,7 @@ automation becomes an organizational capability.
 ## Install
 
 ```bash
-npm install @xl3-lang/xl3
+npm install @xl3-lang/xl3@rc
 ```
 
 Optional acceleration (rc):
@@ -197,39 +197,45 @@ npm install @xl3-lang/xl3@rc xl3-wasm
 ## Usage
 
 ```ts
-import { convert } from '@xl3-lang/xl3';
+import { convertJson } from '@xl3-lang/xl3';
 
 const templateBuffer = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
-const dataBuffer = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
+const orders = await db.orders.findMany();
 
-const outputs = await convert(templateBuffer, dataBuffer);
+const outputs = await convertJson(templateBuffer, {
+  version: 'xl3-source-json/0.1',
+  sources: {
+    default: {
+      headers: ['Customer', 'Amount'],
+      rows: orders.map((order) => [order.customer, order.amount]),
+    },
+  },
+});
 // outputs: OutputFile[] — one or more .xlsx, depending on grouping rules in the template
 ```
 
 Runs in browsers and Node (≥20.12).
 
-### JSON source instead of `data.xlsx`
+`convertJson` accepts the already-parsed object directly. The data may come
+from a database, API, ORM, queue, or application state; no JSON file and no
+intermediate `data.xlsx` are required. Each `OutputFile.data` is a
+`Uint8Array` that can be written in Node or downloaded as a browser `Blob`.
 
-Non-Excel hosts (Python services, DB/ETL jobs) can skip the workbook
-round-trip and pass the language-neutral `xl3-source-json/0.1` wire
-format instead. `convertJson` renders exactly what `convert` produces
-from the equivalent `data.xlsx`.
+### Excel workbook source
+
+The original workbook-to-workbook path remains supported when the source
+itself is an Excel file:
 
 ```ts
-import { convertJson } from '@xl3-lang/xl3';
+import { convert } from '@xl3-lang/xl3';
 
-const outputs = await convertJson(templateBuffer, {
-  version: 'xl3-source-json/0.1',
-  sources: {
-    default: { headers: ['Customer', 'Amount'], rows: [['Acme', 100]] },
-  },
-});
+const dataBuffer = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
+const outputs = await convert(templateBuffer, dataBuffer);
 ```
 
-`previewJson` is the preview counterpart. Malformed input raises
-`xl3/source-json/invalid`. Added in 0.11.0 per
-[ADR-0075](./spec/decisions/0075-xl3-source-json.md); the wire format is
-portable across implementations and the `.xlsx` path is unchanged.
+`previewJson` and `preview` are the corresponding preview APIs. Malformed
+object input raises `xl3/source-json/invalid`. The portable object contract is
+defined by [ADR-0075](./spec/decisions/0075-xl3-source-json.md).
 
 ### CLI — rendering from any language
 
@@ -291,7 +297,7 @@ For projects that don't use a bundler, a self-contained IIFE bundle
 exposes `window.xl3`:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@0.13.0/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@1.0.0-rc.1/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());

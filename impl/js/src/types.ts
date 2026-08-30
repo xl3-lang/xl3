@@ -139,6 +139,7 @@ export interface SourceSpec {
 // JSON source input consumed by `convertJson` / `previewJson`. The
 // *format* is normative (portable across implementations); the internal
 // `SourceData` the reader produces is not (see PORTERS_GUIDE.md).
+/** @stable Frozen at 1.0 as the host-data value contract. */
 export type Xl3SourceJsonValue =
   | null
   | string
@@ -147,17 +148,29 @@ export type Xl3SourceJsonValue =
   | { type: 'date'; value: string }
   | { type: 'error'; value: string };
 
+/** @stable Frozen at 1.0 as one named, in-memory tabular source. */
 export interface Xl3SourceJsonSource {
   headers: string[];
   rows: Xl3SourceJsonValue[][];
 }
 
+/**
+ * Application-owned data supplied directly to `convertJson` without a data
+ * file.
+ *
+ * @stable Frozen at 1.0 as the JavaScript host-data envelope.
+ */
 export interface Xl3SourceJson {
   version: string;
   sources: Record<string, Xl3SourceJsonSource>;
 }
 
-/** Accepted input shapes for `convertJson` / `previewJson` (ADR-0075). */
+/**
+ * Accepted input shapes for `convertJson` / `previewJson` (ADR-0075).
+ * Passing an already-parsed object performs no source-file I/O.
+ *
+ * @stable Frozen at 1.0.
+ */
 export type Xl3SourceJsonInput = string | ArrayBuffer | Uint8Array | object;
 
 /**
@@ -386,9 +399,15 @@ export interface FileGroup {
   sheetGroups: SheetGroup[];
 }
 
+/**
+ * One generated `.xlsx` workbook. `data` can be written directly in Node or
+ * wrapped in a `Blob` for a browser download.
+ *
+ * @stable Frozen at 1.0.
+ */
 export interface OutputFile {
   filename: string;
-  data: ArrayBuffer;
+  data: Uint8Array & { readonly buffer: ArrayBuffer };
   warnings: XtlWarning[];
 }
 

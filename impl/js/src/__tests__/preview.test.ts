@@ -37,7 +37,12 @@ describe('preview', () => {
     expect(planned.files[0]!.sheets).toEqual([{ name: 'Seoul', rowCount: 1 }]);
 
     const output = new ExcelJS.Workbook();
-    await output.xlsx.load(rendered[0]!.data);
+    await output.xlsx.load(
+      rendered[0]!.data.buffer.slice(
+        rendered[0]!.data.byteOffset,
+        rendered[0]!.data.byteOffset + rendered[0]!.data.byteLength,
+      ) as ArrayBuffer,
+    );
     expect(output.worksheets.map((sheet) => sheet.name)).toEqual(['Seoul']);
   });
 });
