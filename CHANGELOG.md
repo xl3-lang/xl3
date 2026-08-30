@@ -39,6 +39,18 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Added
 
+- **`xl3 validate` CLI command.** Non-JavaScript hosts and CI can now run the
+  source/template compatibility gate for `.xlsx` or `xl3-source-json/0.1`
+  inputs without rendering. Exit codes distinguish compatible (`0`),
+  incompatible/execution failure (`1`), and invalid usage (`2`); `--json`
+  emits the complete validation report even for an incompatible source.
+
+- **Production-shaped workbook regression contracts.** The four runnable
+  examples now assert output filenames, sheet structure, merged ranges,
+  ordering, joins, derived values, and totals through
+  `npm run operational:regression`, instead of accepting any non-empty output
+  workbook as a pass.
+
 - **Source compatibility validation** (`validateSource`,
   `validateSourceJson`; ADR-0078) returns a structured input contract and all
   schema diagnostics without rendering a workbook. The report types remain
