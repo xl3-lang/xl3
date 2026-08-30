@@ -8,20 +8,20 @@ slug: /implementations
 
 | 语言 | 仓库 | 包 | 规范版本 | 一致性 | 备注 |
 |---|---|---|---|---|---|
-| TypeScript | [`xl3-lang/xl3`](https://github.com/xl3-lang/xl3) | [`@xl3-lang/xl3`](https://www.npmjs.com/package/@xl3-lang/xl3) | XTL 0.1（草案） | 参考实现；**160/160** fixture 通过（154 Stage 1 + 仅 6 Stage 2） | 浏览器 + Node ≥ 20.12；通过 `npx xl3-conformance` 运行；CI 中带 3 时区矩阵 |
+| TypeScript | [`xl3-lang/xl3`](https://github.com/xl3-lang/xl3) | [`@xl3-lang/xl3`](https://www.npmjs.com/package/@xl3-lang/xl3) | XTL 0.1（草案） | 参考实现；**当前 fixture 全部通过**（[实时仪表盘](https://github.com/xl3-lang/xl3/blob/main/conformance/DASHBOARD.md)） | 浏览器 + Node ≥ 20.12；通过 `npx xl3-conformance` 运行；CI 中带 3 时区矩阵 |
 | Rust (WASM) | [`xl3-lang/xl3-rs`](https://github.com/xl3-lang/xl3-rs) | [`xl3-core`](https://crates.io/crates/xl3-core) + [`xl3-wasm`](https://www.npmjs.com/package/xl3-wasm) | XTL 0.1（草案） | **partial 119/148** Stage 1（见下方新鲜度说明） | 纯 Rust 加速核心（calamine + rust_xlsxwriter），为浏览器 / Node 宿主做了封装。驱动 xl3 0.9.0 引入的可选 `engine: 'wasm'` 路径。尚未覆盖：HYPERLINK 函数、共享公式、约 20 处校验错误点 |
 | Python | [`xl3-lang/xl3-py`](https://github.com/xl3-lang/xl3-py) | _（未发布）_ | XTL 0.1（草案） | 在其实际运行的语料上 **133/133** Stage 1（见下方新鲜度说明） | 与参考实现并行跟踪；在 [`conformance/reports/`](https://github.com/xl3-lang/xl3/tree/main/conformance/reports) 下放一份 `--report=json` 产物，`npm run conformance:dashboard` 就会把它接进来 |
 
 ### 报告新鲜度
 
-上面两个数字来自提交在 [`conformance/reports/`](https://github.com/xl3-lang/xl3/tree/main/conformance/reports) 下的 JSON 报告，**两者都早于当前的 160 fixture 语料**：
+上面两个数字来自提交在 [`conformance/reports/`](https://github.com/xl3-lang/xl3/tree/main/conformance/reports) 下的 JSON 报告，**两者都早于当前语料**。当前数量请以[实时仪表盘](https://github.com/xl3-lang/xl3/blob/main/conformance/DASHBOARD.md)为准；本页不再重复一个会随着 fixture 增长而过期的硬编码数量。
 
 | 报告 | 运行的语料 | 结果 |
 |---|---|---|
 | `xl3-wasm-0.1.0.json`（2026-06-08） | 154 个 fixture | 119 通过、29 失败、6 跳过 → 可比部分 119/148 |
-| `xl3-py-0.1.0a3.json`（2026-05-23） | 139 个 fixture | 133 通过、0 失败、6 跳过 |
+| `xl3-py-0.1.0a3.json`（2026-05-23） | 133 个 fixture | 133 通过、0 失败、6 跳过 |
 
-语料增长到 160 之后（fixture 158-161 在 0.9.0 / 0.10.0 落地），两者都没有重跑过；因此在提交新报告之前，各移植针对**当前**语料的实际状况是未知的。ROADMAP 的 **G13** 以最新报告为判据，而不是以这两份为准。
+`133/133` 表示该报告实际运行范围内的 100%，并不代表当前完整语料。两份报告都落后了数十个 fixture；因此在提交新报告之前，各移植针对**当前**语料的实际状况是未知的。ROADMAP 的 **G13** 以最新报告为判据，而不是以这两份为准。
 
 ## 生产用户
 

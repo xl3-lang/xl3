@@ -123,8 +123,8 @@ tooling, but their shape MAY change between minor versions:
 `ParsedTemplate`, `SheetTemplate`, `TemplateVariable`, `DataBlock`,
 `Directive`, `FilterDirective`, `FilterOp`, `SortDirective`,
 `TopDirective`, `RepeatDirective`, `SourceDirective`,
-`JoinDirective`, `ValidateOptions`, `InputContract`,
-`ValidationDiagnostic`, `ValidationReport`.
+`JoinDirective`, `GroupDirective`, `BlockDirective`, `ValidateOptions`,
+`InputContract`, `ValidationDiagnostic`, `ValidationReport`.
 
 Each experimental type carries an `@experimental` JSDoc tag. Hosts
 that hold one of these objects SHOULD dispatch on `kind` (for

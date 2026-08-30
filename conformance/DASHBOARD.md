@@ -1,10 +1,10 @@
 # Conformance dashboard
 
-_Generated 2026-08-16T13:30:09.435Z by `conformance/scripts/dashboard.mjs`. Do not hand-edit; regenerate with `node conformance/scripts/dashboard.mjs`._
+_Generated 2026-08-30T08:42:16.634Z by `conformance/scripts/dashboard.mjs`. Do not hand-edit; regenerate with `node conformance/scripts/dashboard.mjs`._
 
 ## Reference implementation
 
-**xl3-js** 0.1.0-alpha.0 — 171/171 pass (100.0%); 0 fail, 0 error, 0 skip
+**xl3-js** 0.13.0 — 171/171 pass (100.0%); 0 fail, 0 error, 0 skip
 
 ## External implementations
 

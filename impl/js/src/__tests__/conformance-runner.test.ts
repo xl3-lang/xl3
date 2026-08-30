@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
-import { canonicalizeXlsx, comparable, formatTextReport, parseMeta } from '../conformance-runner.js';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import {
+  canonicalizeXlsx,
+  comparable,
+  formatTextReport,
+  parseMeta,
+  runConformance,
+} from '../conformance-runner.js';
+import { VERSION } from '../pkg-version.js';
 
 describe('parseMeta', () => {
   it('reads required scalar fields', () => {
@@ -276,6 +286,16 @@ describe('formatTextReport', () => {
 
     expect(text).toContain('XTL 0.1 — Stage 2');
     expect(text).toContain('024-stage2-merge-preservation [stage 2]');
+  });
+
+  it('reports the installed package version, not a historical literal', async () => {
+    const fixtureDir = await mkdtemp(join(tmpdir(), 'xl3-conformance-version-'));
+    try {
+      const report = await runConformance({ fixtureDir });
+      expect(report.version).toBe(VERSION);
+    } finally {
+      await rm(fixtureDir, { recursive: true, force: true });
+    }
   });
 });
 

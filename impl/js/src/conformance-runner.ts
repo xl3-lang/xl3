@@ -13,6 +13,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { convert } from './index.js';
 import { versionsEqual } from './version.js';
+import { VERSION } from './pkg-version.js';
 
 export type ComparisonStage = 1 | 2;
 
@@ -120,7 +121,7 @@ export async function runConformance(opts: RunOptions): Promise<ConformanceRepor
 
   return {
     implementation: 'xl3-js',
-    version: pkgVersion(),
+    version: VERSION,
     spec_version: opts.specVersion ?? '0.1',
     comparison_stage: comparisonStage,
     results,
@@ -1204,11 +1205,6 @@ function stripQuotes(v: string): string {
 
 function toArrayBuffer(buf: Buffer): ArrayBuffer {
   return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
-}
-
-function pkgVersion(): string {
-  // Hardcoded floor; bin can override by reading package.json if needed.
-  return '0.1.0-alpha.0';
 }
 
 export function formatTextReport(report: ConformanceReport): string {

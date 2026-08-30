@@ -73,7 +73,11 @@ export async function tryLoadWasmEngine(): Promise<WasmExports | null> {
       // wrap the specifier so they leave it as a runtime import and
       // fall through to the catch when the package isn't installed.
       const specifier = 'xl3-wasm';
-      const mod = (await import(/* @vite-ignore */ specifier)) as WasmExports;
+      const mod = (await import(
+        /* webpackIgnore: true */
+        /* @vite-ignore */
+        specifier
+      )) as WasmExports;
       if (typeof mod.default === 'function') {
         // wasm-pack web target's init() auto-fetches the .wasm in
         // browsers but cannot fetch file:// URLs in Node. Detect Node
@@ -87,7 +91,11 @@ export async function tryLoadWasmEngine(): Promise<WasmExports | null> {
           // `node:` scheme when bundling for the browser even though
           // this branch is Node-only, so hide the specifiers behind a
           // runtime indirection it can't statically resolve.
-          const nodeImport = (specifier: string) => import(/* @vite-ignore */ specifier);
+          const nodeImport = (specifier: string) => import(
+            /* webpackIgnore: true */
+            /* @vite-ignore */
+            specifier
+          );
           const [{ readFile }, { fileURLToPath }, { createRequire }] = (await Promise.all([
             nodeImport('node:fs/promises'),
             nodeImport('node:url'),

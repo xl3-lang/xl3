@@ -8,6 +8,17 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ### Fixed
 
+- **Conformance reports now identify the package that produced them.**
+  `xl3-conformance` reported the historical `0.1.0-alpha.0` literal even
+  when run from a newer package. It now reads the same generated `VERSION`
+  constant as the public API and CLI, so dashboard and JSON evidence name
+  the actual implementation version.
+
+- **The byte-determinism regression test now compares identical serialized
+  inputs.** It previously constructed two separate workbooks, whose preserved
+  `docProps/core.xml` creation times could differ across a clock boundary and
+  make a deterministic renderer look flaky.
+
 - **`@repeat`-expanded rows lost their outline level** (ROADMAP G5,
   ADR-0040). Grouping an outlined template row and expanding it left the
   produced rows carrying whatever the row splice happened to leave behind
@@ -27,6 +38,16 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   like it covered this and did not.
 
 ### Added
+
+- **Source compatibility validation** (`validateSource`,
+  `validateSourceJson`; ADR-0078) returns a structured input contract and all
+  schema diagnostics without rendering a workbook. The report types remain
+  experimental for 0.14.0.
+
+- **Complete directive type exports.** `GroupDirective` and `BlockDirective`
+  are now re-exported alongside every other member of the experimental
+  `Directive` union, so generated API documentation no longer contains
+  unresolved constituent types.
 
 - **Conditional-formatting and data-validation ranges now stretch with a
   data block** (ROADMAP G5, ADR-0040). A CF or DV range authored against

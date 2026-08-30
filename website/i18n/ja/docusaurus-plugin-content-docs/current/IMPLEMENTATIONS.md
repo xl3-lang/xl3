@@ -8,20 +8,20 @@ slug: /implementations
 
 | 言語 | リポジトリ | パッケージ | 仕様バージョン | 適合性 | 備考 |
 |---|---|---|---|---|---|
-| TypeScript | [`xl3-lang/xl3`](https://github.com/xl3-lang/xl3) | [`@xl3-lang/xl3`](https://www.npmjs.com/package/@xl3-lang/xl3) | XTL 0.1(ドラフト) | リファレンス。**160/160** フィクスチャが通過(Stage 1 が 154 件 + Stage 2 のみ 6 件) | ブラウザ + Node ≥ 20.12;ランナーは `npx xl3-conformance`;CI で 3 タイムゾーンのマトリクスを実行 |
+| TypeScript | [`xl3-lang/xl3`](https://github.com/xl3-lang/xl3) | [`@xl3-lang/xl3`](https://www.npmjs.com/package/@xl3-lang/xl3) | XTL 0.1(ドラフト) | リファレンス。**現行 fixture はすべて通過**（[ライブダッシュボード](https://github.com/xl3-lang/xl3/blob/main/conformance/DASHBOARD.md)） | ブラウザ + Node ≥ 20.12;ランナーは `npx xl3-conformance`;CI で 3 タイムゾーンのマトリクスを実行 |
 | Rust (WASM) | [`xl3-lang/xl3-rs`](https://github.com/xl3-lang/xl3-rs) | [`xl3-core`](https://crates.io/crates/xl3-core) + [`xl3-wasm`](https://www.npmjs.com/package/xl3-wasm) | XTL 0.1(ドラフト) | **partial 119/148** Stage 1(下の鮮度メモ参照) | 純 Rust の高速化コア(calamine + rust_xlsxwriter)をブラウザ / Node ホスト向けにラップ。xl3 0.9.0 で導入されたオプトインの `engine: 'wasm'` 経路を駆動。未対応: HYPERLINK 関数、共有数式、約 20 箇所のバリデーションエラー地点 |
 | Python | [`xl3-lang/xl3-py`](https://github.com/xl3-lang/xl3-py) | _(未公開)_ | XTL 0.1(ドラフト) | 実行したコーパスに対して **133/133** Stage 1(下の鮮度メモ参照) | リファレンス実装と並走して追跡。[`conformance/reports/`](https://github.com/xl3-lang/xl3/tree/main/conformance/reports) 配下に `--report=json` のアーティファクトを置けば、`npm run conformance:dashboard` が拾います |
 
 ### レポートの鮮度
 
-上記の 2 つの数値は [`conformance/reports/`](https://github.com/xl3-lang/xl3/tree/main/conformance/reports) にコミットされている JSON レポート由来で、**どちらも現在の 160 フィクスチャのコーパスより前**のものです:
+上記の 2 つの数値は [`conformance/reports/`](https://github.com/xl3-lang/xl3/tree/main/conformance/reports) にコミットされている JSON レポート由来で、**どちらも現行コーパスより前**のものです。現行件数は[ライブダッシュボード](https://github.com/xl3-lang/xl3/blob/main/conformance/DASHBOARD.md)を参照してください。このページでは、fixture が増えるたびに古くなる件数を重複して固定しません。
 
 | レポート | 対象コーパス | 結果 |
 |---|---|---|
 | `xl3-wasm-0.1.0.json`(2026-06-08) | 154 フィクスチャ | 119 通過、29 失敗、6 スキップ → 比較可能分で 119/148 |
-| `xl3-py-0.1.0a3.json`(2026-05-23) | 139 フィクスチャ | 133 通過、0 失敗、6 スキップ |
+| `xl3-py-0.1.0a3.json`(2026-05-23) | 133 フィクスチャ | 133 通過、0 失敗、6 スキップ |
 
-コーパスが 160 に増えた後(フィクスチャ 158-161 が 0.9.0 / 0.10.0 で着地)は、どちらも再実行されていません。したがって **現在の** コーパスに対するポートの位置づけは、新しいレポートが提出されるまで不明です。ROADMAP の **G13** は、これらではなく最新のレポートで判定されます。
+`133/133` は、そのレポートが実行した範囲の 100% であり、現行コーパス全体を意味しません。どちらのレポートも数十 fixture 遅れているため、**現在の**コーパスに対するポートの位置づけは、新しいレポートが提出されるまで不明です。ROADMAP の **G13** は、これらではなく最新のレポートで判定されます。
 
 ## 本番利用者
 

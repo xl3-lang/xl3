@@ -43,6 +43,8 @@ export type {
   RepeatDirective,
   SourceDirective,
   JoinDirective,
+  GroupDirective,
+  BlockDirective,
   ConvertOptions,
   ValidateOptions,
   EngineInfo,

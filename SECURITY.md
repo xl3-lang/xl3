@@ -1,8 +1,8 @@
 # Security policy
 
-> **Status:** draft (ROADMAP gate G20). This document states the
-> threat model, the stance on each attack class, and the disclosure
-> process. Hard-limit values are tracked separately in
+> **Status:** published and maintained (ROADMAP gate G20). This document
+> states the threat model, the stance on each attack class, and the
+> disclosure process. Hard-limit values are tracked separately in
 > [`spec/evaluation.md`](./spec/evaluation.md) under "Implementation
 > limits" (ROADMAP gate G21).
 

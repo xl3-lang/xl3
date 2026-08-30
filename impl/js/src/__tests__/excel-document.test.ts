@@ -90,9 +90,13 @@ describe('output determinism', () => {
   });
 
   it('renders the same bytes for the same input', async () => {
+    const template = new ExcelJS.Workbook();
+    template.addWorksheet('R').getCell('A1').value = 'x';
+    const templateBuffer = await template.xlsx.writeBuffer();
+
     async function render(): Promise<ArrayBuffer> {
       const wb = new ExcelJS.Workbook();
-      wb.addWorksheet('R').getCell('A1').value = 'x';
+      await wb.xlsx.load(templateBuffer);
       const doc = await ExcelJsWorkbookDocument.fromTemplate(wb);
       return doc.writeBuffer();
     }
