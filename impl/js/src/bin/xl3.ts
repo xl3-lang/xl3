@@ -11,7 +11,8 @@
 //
 // Exit codes, so a calling process can branch without parsing text:
 //   0  success
-//   1  conversion failed (an `xl3/...` error, or an I/O failure)
+//   1  conversion/validation failed (an incompatible source, `xl3/...`
+//      error, or an I/O failure)
 //   2  usage error (bad flags, missing file)
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -24,12 +25,21 @@ import {
   preview,
   previewJson,
   readTemplateInputs,
+  validateSource,
+  validateSourceJson,
 } from '../index.js';
 import { isXtlError } from '../error-codes.js';
-import type { ConvertOptions, OutputFile } from '../types.js';
+import type {
+  ConvertOptions,
+  OutputFile,
+  ValidateOptions,
+  ValidationDiagnostic,
+  ValidationReport,
+} from '../types.js';
 
-type Command = 'render' | 'preview' | 'inputs';
+type Command = 'render' | 'preview' | 'validate' | 'inputs';
 type Engine = NonNullable<ConvertOptions['engine']>;
+type ValidateDepth = NonNullable<ValidateOptions['depth']>;
 
 interface Cli {
   command: Command;
@@ -40,6 +50,7 @@ interface Cli {
   zip?: string;
   inputs: Record<string, unknown>;
   engine: Engine;
+  depth: ValidateDepth;
   json: boolean;
   quiet: boolean;
 }
@@ -47,6 +58,7 @@ interface Cli {
 const USAGE = [
   'usage: xl3 render  <template.xlsx> --data=<source.json|source.xlsx|-> [options]',
   '       xl3 preview <template.xlsx> --data=<source.json|source.xlsx|-> [options]',
+  '       xl3 validate <template.xlsx> --data=<source.json|source.xlsx|-> [options]',
   '       xl3 inputs  <template.xlsx>',
   '',
   'options:',
@@ -58,6 +70,8 @@ const USAGE = [
   '  --inputs=<path|->   Same, as a JSON object. Merged under --input.',
   '  --engine=auto|wasm|js   Render engine (default: auto). JSON sources are',
   '                      JS-only; --engine=wasm with JSON input is an error.',
+  '  --depth=schema|full Validation depth (default: schema). `full` currently',
+  '                      runs the same checks and reserves the future CLI shape.',
   '  --json              Emit a machine-readable result on stdout.',
   '  --quiet             Suppress the human summary on stderr.',
   '  --version           Print the package version.',
@@ -81,7 +95,12 @@ function parseArgs(argv: string[]): Cli {
   }
 
   const command = args[0];
-  if (command !== 'render' && command !== 'preview' && command !== 'inputs') {
+  if (
+    command !== 'render' &&
+    command !== 'preview' &&
+    command !== 'validate' &&
+    command !== 'inputs'
+  ) {
     die(`unknown command: ${command}`);
   }
 
@@ -91,11 +110,13 @@ function parseArgs(argv: string[]): Cli {
     out: '.',
     inputs: {},
     engine: 'auto',
+    depth: 'schema',
     json: false,
     quiet: false,
   };
   const inputPairs: [string, string][] = [];
   let inputsFile: string | undefined;
+  let depthSpecified = false;
 
   for (const arg of args.slice(1)) {
     if (!arg.startsWith('--')) {
@@ -107,10 +128,18 @@ function parseArgs(argv: string[]): Cli {
     const name = eq < 0 ? arg.slice(2) : arg.slice(2, eq);
     const value = eq < 0 ? '' : arg.slice(eq + 1);
     switch (name) {
-      case 'data': cli.data = value; break;
-      case 'out': cli.out = value; break;
-      case 'zip': cli.zip = value; break;
-      case 'inputs': inputsFile = value; break;
+      case 'data':
+        cli.data = value;
+        break;
+      case 'out':
+        cli.out = value;
+        break;
+      case 'zip':
+        cli.zip = value;
+        break;
+      case 'inputs':
+        inputsFile = value;
+        break;
       case 'input': {
         const sep = value.indexOf('=');
         if (sep <= 0) die(`--input expects name=value (got "${value}")`);
@@ -123,15 +152,30 @@ function parseArgs(argv: string[]): Cli {
         }
         cli.engine = value;
         break;
-      case 'json': cli.json = true; break;
-      case 'quiet': cli.quiet = true; break;
-      default: die(`unrecognized option: --${name}`);
+      case 'depth':
+        if (value !== 'schema' && value !== 'full') {
+          die(`--depth expects schema|full (got "${value}")`);
+        }
+        cli.depth = value;
+        depthSpecified = true;
+        break;
+      case 'json':
+        cli.json = true;
+        break;
+      case 'quiet':
+        cli.quiet = true;
+        break;
+      default:
+        die(`unrecognized option: --${name}`);
     }
   }
 
   if (!cli.template) die('missing <template.xlsx>');
   if (cli.command !== 'inputs' && !cli.data) die('missing --data');
   if (cli.zip && cli.command !== 'render') die('--zip applies to `render` only');
+  if (depthSpecified && cli.command !== 'validate') {
+    die('--depth applies to `validate` only');
+  }
 
   // Deferred so the JSON file is read once, after arg validation.
   (cli as Cli & { inputsFile?: string }).inputsFile = inputsFile;
@@ -154,9 +198,10 @@ async function resolveInputs(cli: Cli): Promise<Record<string, unknown>> {
   const merged: Record<string, unknown> = {};
 
   if (withExtras.inputsFile) {
-    const raw = withExtras.inputsFile === '-'
-      ? await readStdin()
-      : await readFile(resolve(withExtras.inputsFile), 'utf8');
+    const raw =
+      withExtras.inputsFile === '-'
+        ? await readStdin()
+        : await readFile(resolve(withExtras.inputsFile), 'utf8');
     let parsed: unknown;
     try {
       parsed = JSON.parse(raw);
@@ -220,6 +265,34 @@ async function writeOutputs(files: OutputFile[], cli: Cli): Promise<string[]> {
   return written;
 }
 
+function diagnosticContext(diagnostic: ValidationDiagnostic): string {
+  const parts = [
+    diagnostic.source ? `source=${diagnostic.source}` : undefined,
+    diagnostic.sheet ? `sheet=${diagnostic.sheet}` : undefined,
+    diagnostic.column ? `column=${diagnostic.column}` : undefined,
+    diagnostic.location ? `location=${diagnostic.location}` : undefined,
+  ].filter((part): part is string => part !== undefined);
+  return parts.length > 0 ? ` (${parts.join(', ')})` : '';
+}
+
+function printValidationReport(report: ValidationReport): void {
+  for (const diagnostic of report.diagnostics) {
+    console.error(
+      `xl3: ${diagnostic.severity}: ${diagnostic.code}${diagnosticContext(diagnostic)}: ${diagnostic.detail}`,
+    );
+  }
+
+  const errors = report.diagnostics.filter((diagnostic) => diagnostic.severity === 'error').length;
+  const warnings = report.diagnostics.length - errors;
+  if (report.ok) {
+    console.error(
+      `xl3: validation passed (${report.contract.sources.length} source(s), ${warnings} warning(s))`,
+    );
+  } else {
+    console.error(`xl3: validation failed (${errors} error(s), ${warnings} warning(s))`);
+  }
+}
+
 async function main(): Promise<number> {
   const cli = parseArgs(process.argv);
   const templateBuffer = toArrayBuffer(await readFile(resolve(cli.template)));
@@ -231,6 +304,26 @@ async function main(): Promise<number> {
   }
 
   const data = cli.data as string;
+
+  if (cli.command === 'validate') {
+    const report = isJsonSource(data)
+      ? await validateSourceJson(
+          templateBuffer,
+          data === '-' ? await readStdin() : await readFile(resolve(data), 'utf8'),
+          { depth: cli.depth },
+        )
+      : await validateSource(templateBuffer, toArrayBuffer(await readFile(resolve(data))), {
+          depth: cli.depth,
+        });
+
+    if (cli.json) {
+      process.stdout.write(JSON.stringify(report, null, 2) + '\n');
+    } else if (!cli.quiet) {
+      printValidationReport(report);
+    }
+    return report.ok ? 0 : 1;
+  }
+
   const options: ConvertOptions = {
     inputs: await resolveInputs(cli),
     engine: cli.engine,

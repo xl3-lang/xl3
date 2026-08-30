@@ -116,6 +116,19 @@ template reads `{{ [Amount] }}` and the source has no `Amount` header, the
 validator reports `xl3/source/unknown-column` as an error. That makes
 `report.ok === true` mean the template's required source columns are present.
 
+The same gate is available without embedding JavaScript:
+
+```bash
+xl3 validate template.xlsx --data=data.xlsx
+xl3 validate template.xlsx --data=source.json --json
+cat source.json | xl3 validate template.xlsx --data=- --json
+```
+
+The command exits `0` when the source is compatible, `1` when validation
+reports errors, and `2` for invalid CLI usage. With `--json`, the complete
+`ValidationReport` is written to stdout even when the exit code is `1`, so CI
+and operator tooling can display every diagnostic from a single run.
+
 After validation, use `preview(template, data, options)` when the host needs
 planned filenames, sheet names, row counts, resolved inputs, or non-fatal
 warnings:

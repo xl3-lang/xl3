@@ -242,6 +242,8 @@ reads the result:
 xl3 render template.xlsx --data=source.json --out=./out/
 cat source.json | xl3 render template.xlsx --data=- --out=./out/
 xl3 render template.xlsx --data=data.xlsx --zip=reports.zip
+xl3 validate template.xlsx --data=data.xlsx
+xl3 validate template.xlsx --data=source.json --json
 ```
 
 `--data` reads `.json` as `xl3-source-json/0.1`, `.xlsx` as a data
@@ -249,13 +251,15 @@ workbook, and `-` as JSON on stdin. Templates that declare runtime
 inputs take `--input=name=value` (repeatable) or `--inputs=values.json`;
 `xl3 inputs template.xlsx` lists what a template expects.
 
-Two more commands support scripting around it: `xl3 preview` reports the
-output filenames, source shape, and warnings without writing anything,
-and both commands accept `--json` for machine-readable output.
+Three more commands support scripting around it: `xl3 validate` checks the
+template/source schema contract without rendering, `xl3 preview` reports the
+planned filenames, source shape, and warnings, and `xl3 inputs` lists runtime
+inputs. Validation and preview accept `--json` for machine-readable output.
 
-Exit codes separate the two failure modes a caller handles differently —
-`2` is a usage error, `1` is a conversion failure, and the failure
-carries its stable [`error.code`](./docs/guides/13-error-handling.md):
+Exit codes separate the outcomes a caller handles differently — `0` is a
+successful render or compatible validation, `1` is an incompatible source or
+execution failure, and `2` is a usage error. Thrown failures carry their stable
+[`error.code`](./docs/guides/13-error-handling.md):
 
 ```console
 $ xl3 render template.xlsx --data=- --json < bad.json
@@ -368,7 +372,8 @@ Four production-shaped templates live in [`examples/`](./examples):
 basic renewal report, sheet-per-region with list-filter, a
 multi-source join with runtime inputs, and a cafe weekly report
 showcasing `@group` + `@subtotal` per-category subtotals. Run them
-with `npm run examples:build && npm run examples:run`.
+with `npm run operational:regression`. The gate checks the rendered workbook
+contract in addition to successful conversion.
 
 ## Guides
 

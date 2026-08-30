@@ -75,7 +75,13 @@ async function cli(
 describeCli('xl3 CLI', () => {
   it('renders from an .xlsx source', async () => {
     const out = tempDir();
-    const { code } = await cli(['render', TEMPLATE, `--data=${DATA_XLSX}`, `--out=${out}`, '--quiet']);
+    const { code } = await cli([
+      'render',
+      TEMPLATE,
+      `--data=${DATA_XLSX}`,
+      `--out=${out}`,
+      '--quiet',
+    ]);
     expect(code).toBe(0);
     const bytes = readFileSync(join(out, 'output.xlsx'));
     // PK zip magic — a real workbook, not an error page or empty file.
@@ -127,21 +133,83 @@ describeCli('xl3 CLI', () => {
   it('writes a zip when asked', async () => {
     const out = tempDir();
     const zip = join(out, 'bundle.zip');
-    const { code } = await cli(
-      ['render', TEMPLATE, `--data=${DATA_XLSX}`, `--zip=${zip}`, '--quiet'],
-    );
+    const { code } = await cli([
+      'render',
+      TEMPLATE,
+      `--data=${DATA_XLSX}`,
+      `--zip=${zip}`,
+      '--quiet',
+    ]);
     expect(code).toBe(0);
     expect(readFileSync(zip).subarray(0, 2).toString('latin1')).toBe('PK');
   });
 
   it('previews without writing anything', async () => {
     const out = tempDir();
-    const { code, stdout } = await cli(['preview', TEMPLATE, `--data=${DATA_XLSX}`, `--out=${out}`]);
+    const { code, stdout } = await cli([
+      'preview',
+      TEMPLATE,
+      `--data=${DATA_XLSX}`,
+      `--out=${out}`,
+    ]);
     expect(code).toBe(0);
     const result = JSON.parse(stdout);
     expect(result.files[0].filename).toBe('output.xlsx');
     expect(result.sources[0].headers).toEqual(['Customer']);
     expect(existsSync(join(out, 'output.xlsx'))).toBe(false);
+  });
+
+  it('validates a compatible .xlsx source without rendering', async () => {
+    const out = tempDir();
+    const { code, stderr } = await cli([
+      'validate',
+      TEMPLATE,
+      `--data=${DATA_XLSX}`,
+      `--out=${out}`,
+    ]);
+    expect(code).toBe(0);
+    expect(stderr).toContain('validation passed');
+    expect(existsSync(join(out, 'output.xlsx'))).toBe(false);
+  });
+
+  it('emits the validation contract as JSON', async () => {
+    const { code, stdout } = await cli(
+      ['validate', TEMPLATE, '--data=-', '--depth=full', '--json'],
+      EQUIVALENT_JSON,
+    );
+    expect(code).toBe(0);
+    const report = JSON.parse(stdout);
+    expect(report.ok).toBe(true);
+    expect(report.contract.sources).toEqual([
+      {
+        name: 'default',
+        sheet: 'default',
+        headerRow: 1,
+        requiredColumns: ['Customer'],
+        optionalColumns: [],
+      },
+    ]);
+    expect(report.diagnostics).toEqual([]);
+  });
+
+  it('returns exit 1 and all diagnostics for an incompatible source', async () => {
+    const incompatible = JSON.stringify({
+      version: 'xl3-source-json/0.1',
+      sources: { default: { headers: ['Wrong'], rows: [] } },
+    });
+    const { code, stdout } = await cli(['validate', TEMPLATE, '--data=-', '--json'], incompatible);
+    expect(code).toBe(1);
+    const report = JSON.parse(stdout);
+    expect(report.ok).toBe(false);
+    expect(report.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'xl3/source/unknown-column',
+          severity: 'error',
+          column: 'Customer',
+        }),
+      ]),
+    );
   });
 
   it('lists template inputs as JSON', async () => {
@@ -179,12 +247,37 @@ describeCli('xl3 CLI', () => {
     expect(stderr).toContain('missing --data');
   });
 
+  it('rejects an unknown validation depth as a usage error', async () => {
+    const { code, stderr } = await cli([
+      'validate',
+      TEMPLATE,
+      `--data=${DATA_XLSX}`,
+      '--depth=rows',
+    ]);
+    expect(code).toBe(2);
+    expect(stderr).toContain('--depth expects schema|full');
+  });
+
+  it('does not silently accept --depth on rendering commands', async () => {
+    const { code, stderr } = await cli([
+      'preview',
+      TEMPLATE,
+      `--data=${DATA_XLSX}`,
+      '--depth=full',
+    ]);
+    expect(code).toBe(2);
+    expect(stderr).toContain('--depth applies to `validate` only');
+  });
+
   it('passes --input through to the template', async () => {
     // 066's `region` input reaches the output filename pattern, so the
     // rendered name is proof the value arrived — not just that the run
     // exited 0.
     const { code, stdout } = await cli([
-      'preview', INPUTS_TEMPLATE, `--data=${INPUTS_DATA}`, '--input=region=Busan',
+      'preview',
+      INPUTS_TEMPLATE,
+      `--data=${INPUTS_DATA}`,
+      '--input=region=Busan',
     ]);
     expect(code).toBe(0);
     expect(JSON.parse(stdout).files[0].filename).toBe('Busan_report.xlsx');
@@ -196,8 +289,11 @@ describeCli('xl3 CLI', () => {
     writeFileSync(inputsFile, JSON.stringify({ region: 'Seoul' }));
 
     const { code, stdout } = await cli([
-      'preview', INPUTS_TEMPLATE, `--data=${INPUTS_DATA}`,
-      `--inputs=${inputsFile}`, '--input=region=Busan',
+      'preview',
+      INPUTS_TEMPLATE,
+      `--data=${INPUTS_DATA}`,
+      `--inputs=${inputsFile}`,
+      '--input=region=Busan',
     ]);
     expect(code).toBe(0);
     expect(JSON.parse(stdout).files[0].filename).toBe('Busan_report.xlsx');
@@ -205,7 +301,10 @@ describeCli('xl3 CLI', () => {
 
   it('surfaces a missing required input as its error code', async () => {
     const { code, stderr } = await cli([
-      'preview', INPUTS_TEMPLATE, `--data=${INPUTS_DATA}`, '--json',
+      'preview',
+      INPUTS_TEMPLATE,
+      `--data=${INPUTS_DATA}`,
+      '--json',
     ]);
     expect(code).toBe(1);
     expect(JSON.parse(stderr).error.code).toBe('xl3/inputs/missing-required');

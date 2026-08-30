@@ -46,6 +46,23 @@ for (const { filename, data } of outputs) {
 }
 ```
 
+## CLI
+
+The package installs an `xl3` executable for hosts and CI jobs that do not
+embed JavaScript:
+
+```bash
+xl3 render template.xlsx --data=data.xlsx --out=./out/
+xl3 validate template.xlsx --data=data.xlsx
+xl3 validate template.xlsx --data=source.json --json
+cat source.json | xl3 validate template.xlsx --data=- --json
+```
+
+`validate` checks the source/template schema contract without rendering. It
+exits `0` for a compatible source, `1` for validation errors or execution
+failures, and `2` for invalid CLI usage. `--json` writes the complete report to
+stdout even when validation returns exit code `1`.
+
 ## Conformance
 
 This implementation is validated against the standard's language-neutral
