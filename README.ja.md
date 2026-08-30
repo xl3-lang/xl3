@@ -124,7 +124,7 @@ Excel に残し、ワークブックを実行可能にします。アプリケ�
   AI も下書きしやすくなります。並べて見たい場合は
   [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md) を参照して
   ください。
-- **Conformance コーパス。** 171 件の fixture、すべて green、78 件の
+- **Conformance コーパス。** 171 件の fixture、すべて green、79 件の
   ADR を網羅。変換契約を実行可能な形で検証するテストベッドです。
 - **実装は 1 つ、仕様は 1 つ。** [`spec/`](./spec) ディレクトリは XTL を
   この TypeScript リファレンス実装から独立に定義しています。他ランタイム

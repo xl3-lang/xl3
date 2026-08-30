@@ -5,7 +5,8 @@ implementation).
 
 The current version is **0.13.0** (npm) targeting **XTL 0.1 (draft)**.
 Breaking changes are still possible during 0.x. The 1.0 cut is gated on
-the items below, not on a calendar date.
+technical stability and the time-bound soak below. Ecosystem adoption is
+tracked separately and does not block the compatibility promise (ADR-0079).
 
 > **Deep version planning** lives in
 > [`docs/internal/blueprint-to-1.0.md`](./docs/internal/blueprint-to-1.0.md)
@@ -28,13 +29,13 @@ is **Korean operations teams that manage many customer-specific
 invoice formats** (거래명세서, 정산서, 발주서); the engine
 generalizes beyond this niche, but the niche is the wedge.
 
-## 1.0 gate table (single source of truth)
+## 1.0 blocking gate table (single source of truth)
 
-Each gate has an owner, the artifact that closes it, the pass-fail
+Each blocking gate has an owner, the artifact that closes it, the pass-fail
 criterion, a fallback if the gate is unreachable, and the target
 milestone. Per-version step plan below references these gates by ID.
 
-| ID | Gate | Owner | Artifact | Pass criterion | Fallback | Status (audited 2026-07-28) | Planned |
+| ID | Gate | Owner | Artifact | Pass criterion | Fallback | Status (audited 2026-08-30) | Planned |
 |----|------|-------|----------|----------------|----------|--------|---------|
 | G1 | Conformance corpus ≥ 140 | maintainer | `conformance/fixtures/` | `ls conformance/fixtures/ \| wc -l` ≥ 140 | — | ✅ **DONE** — corpus is well past the ≥ 140 threshold; the live count is in [`conformance/DASHBOARD.md`](./conformance/DASHBOARD.md), which is generated | DONE (160 fixtures; ADR-0066 added 141-145 mid-0.7.x; ADRs 0067-0069 added 146-155 in 0.8.0; 156 (#49 native value preservation) + 157 (#51 grouped side cells) added post-0.8.1; 158 (#52 arithmetic associativity) in 0.9.0; 159-161 (ADR-0073/0074 subtotal errors) in 0.10.0; 162-169 (data-loss group, spec-derived) + 170 (numFmt across @repeat expansion, Stage 2) added 2026-07-28 for G24; number 098 is unused, so at that point the count was 169 against a highest index of 170; ADRs 0051-0065 reserved further numbers for 0.7.1) |
 | G2 | Stage 2 OOXML canonicalization spec'd | maintainer | ADR-0006 + canonicalizer in src/ | covered by fixtures 024-027, 093 + ADR-0006 amendment | — | ✅ **DONE** | DONE |
@@ -48,44 +49,51 @@ milestone. Per-version step plan below references these gates by ID.
 | G10 | Cross-browser smoke | maintainer | `ci.yml` | Safari + Firefox bundle-load + 1 convert() per run | — | ✅ **DONE** 2026-07-28 — `cross-browser` job runs `npm run browser:smoke`, which loads the IIFE bundle in Playwright `webkit` (the engine Safari is built on) and `firefox`, checks all 19 runtime exports from the shared manifest, and runs one `convert()` per engine against fixture 001. Not Safari-the-application: engine coverage only | 0.7.1 |
 | G11 | Stage 2 in CI | maintainer | `ci.yml` | `npm run conformance:stage2` runs on every PR | — | ✅ **DONE** — runs at `ci.yml:35` | 0.7.1 |
 | G12 | Undecided behavior pinned (pivot/sparkline/ListObject/page break) | maintainer | conformance fixtures + ADR per item | each: fixture pinning current behavior OR ADR explicitly deferring to 1.x | defer to 1.1 with ADR | ✅ **DONE** 2026-07-28 — ADR-0076 takes the deferral arm for all four, amending ADR-0036 with rows 10-13 and recording measured reference-impl behavior as non-normative. No fixture: pinning a behavior the ADR declines to assert would have to be deleted in 1.1. Also resolves ADR-0046 § 5, which pointed at an ADR-0036 row that was never written | 0.7.1 / 0.8 |
-| G13 | Second-language impl validation | external (xl3-py) | `conformance/reports/*.json` | xl3-py passes ≥ 80% Stage 1 OR ≥ 80% Stage 2, OR documented 50% skeleton in another language (Rust/Go/Java) within 12 months of all other gates closing | accept single-impl 1.0 via public ADR amending GOVERNANCE | 🟡 **NOT JUDGEABLE** — reverted 2026-07-30; the 2026-07-28 audit ticked this in error. `xl3-py-0.1.0a3.json` reports 133/133, but that is 100% *of the 133 fixtures the report ran*, not of the corpus. It is 36 fixtures behind today, so the gate's ">= 80%" has no denominator to evaluate against — 133 of the current corpus would be under 80%, but how many of the un-run fixtures it would pass is unknown. `IMPLEMENTATIONS.md` already said G13 is judged on a current report and not on these; the audit read the report summary without checking what its total meant. Needs a fresh report | 0.7.x–0.8.x |
-| G14 | External-contributor ADR | external | `spec/decisions/NNNN-*.md` | ≥ 1 ADR with non-maintainer as Author (≥ 60% of Context/Decision sections by line count) | 18-month time-box, then: ≥ 2 external-authored cookbook recipes OR ≥ 5 external-authored conformance fixtures | ❌ **OPEN** — no ADR in `spec/decisions/` carries an Author field | 0.8 |
-| G15 | Production reference case | external (with maintainer help) | `IMPLEMENTATIONS.md` "Production users" row | ≥ 1 named user, satisfied by EITHER (a) external company with permission to list, OR (b) the maintainer's own employer running xl3 in scheduled production with a public case study | — | ❌ **OPEN** — `IMPLEMENTATIONS.md` Production users reads `_none listed yet_` | 0.8.x — **in progress** via maintainer's-employer production deployment (template setup complete 2026-05-24; live usage starts week of 2026-05-26); G15 ticks when the case study is published |
 | G16 | Maintainer set widening | maintainer | `GOVERNANCE.md` | ≥ 2 people with accept/reject rights for ADRs and impl PRs | explicit accept of single-maintainer 1.0 governance shape via amendment to GOVERNANCE | ✅ **DONE (via fallback)** 2026-07-28 — ADR-0077 explicitly accepts a single-maintainer 1.0 and `GOVERNANCE.md` states it. The primary criterion (≥ 2 accepters) is **not** met; the fallback is. ADR-0077 records what that does and does not mitigate, and names the triggers to revisit | 0.8 |
-| G17 | Korean cookbook i18n complete | maintainer | `website/i18n/ko/.../guides/` | all cookbook recipes have Korean translation | — | ✅ **DONE** 2026-07-28 — guide 19 translated for ko / ja / zh-CN, so the "is a migration guide a cookbook recipe?" question in the Planned column is moot: it is translated either way. All 19 guides + index now exist in all three locales | DONE (0.6) for recipes 01-18 — **open question before 1.0:** `docs/guides/19-jxls-to-xl3.md` was added later and has no ko/ja/zh translation. Decide whether a migration guide counts as a "cookbook recipe"; if yes, G17 needs re-ticking |
-| G18 | Production use case in README | maintainer | `README.md` | replaces "alpha" status with concrete production reference (tied to G15) | — | ❌ **OPEN** — blocked on G15 | 1.0 (with G15) |
+| G17 | Korean cookbook i18n complete | maintainer | `website/i18n/ko/.../guides/` | all cookbook recipes have Korean translation | — | ✅ **DONE** 2026-07-28 — guide 19 translated for ko / ja / zh-CN. All 19 guides + index now exist in all three locales | DONE — recipes 01-18 in 0.6; guide 19 and all locale indexes completed 2026-07-28 |
 | G19 | Migration guide 0.x → 1.0 | maintainer | `docs/migration-0.x-to-1.0.md` | documents every behavior change or confirms additive-only | downgrade to CHANGELOG note if confirmed additive-only | ✅ **DONE** 2026-07-28 — `docs/migration-0.x-to-1.0.md` written. The CHANGELOG fallback did **not** apply: 0.x was not additive-only. 17 behavior changes across 0.2/0.3/0.6/0.7/0.10 are documented, split by whether they raise or silently alter output | 0.8 |
 | G20 | SECURITY.md + threat model | maintainer | `SECURITY.md` + spec amendment | docs zip-bomb / oversized workbook / formula-execution stance + limits API | — | ✅ **DONE** — SECURITY.md covers zip bomb, large workbook, formula stance, and points at the limits table | 0.7.1 |
 | G21 | Hard limits documented (no streaming until 1.1) | maintainer | spec/evaluation.md | row / memory hard limit values + AbortSignal API documented | — | ✅ **DONE** 2026-07-28 — `AbortSignal` shipped (`ConvertOptions.signal` on all four entry points, `xl3/abort/cancelled` catalogued, no partial output). Limits now measured rather than drafted: `spec/evaluation.md` publishes ~2.2 KB/cell memory and a verified ~2M-cell ceiling from the G8 matrix. The unmeasured 1M-row soft cap was withdrawn — it needs ~10 GB and was never reachable | 0.7.1 |
 | G22 | API surface — internal model types separated | maintainer | `impl/js/src/index.ts` exports + STABILITY.md | only `convert`/`preview`/`analyze` + stable interfaces marked `@stable`; model/parser types marked `@experimental` or moved to `xl3/internal` | — | ✅ **DONE** | DONE (0.6) |
 | G23 | RC soak | maintainer | git tags | RC published; ≥ 21-day soak (extended from 7 day per review feedback); 0 critical issues | — | ✅ **DONE** — ticked 2026-06-16 | ✅ ticked 2026-06-16 (21-day soak from rc.1 2026-05-26; 0 critical — soak-period fixes #49–52 folded into 0.9.0, none reset the clock per the G23 breaking-change definition) |
-| G24 | "Stable quarter" post-checklist | maintainer | release calendar | 90-day window after the FINAL gate above ticks ✅; no breaking spec/API/error-code change during the window | breaking change → restart clock | ❌ **BLOCKED** — on the gates above only; its own data-loss requirement is met. Clock question resolved 2026-07-28 (#86): the quarter runs from 2026-06-23 uninterrupted. The `data-loss` group is complete (9 fixtures, 162-170, tagged `data-loss`) and covers all 4 required paths — silent-stringify, date round-trip, formula-result kind, and numFmt drop (170, Stage 2, since Stage 1 compares values not formats). Four of the first eight only became load-bearing once #92 landed; before that the runner let a text cell impersonate a date or formula cell, so they passed regardless of what the impl emitted | ⏳ quarter clock started **2026-06-23** (G3 = last gate to tick); 1.0 earliest ≈ **2026-09-21** if no breaking spec/API/error-code change in the window |
+| G24 | Technical stability window | maintainer | release calendar | 90 days after the later of the final blocking gate closing or the last breaking spec/API/error-code change; all release gates green and no known critical data-loss/security issue at cut | breaking change → restart clock; critical issue → block cut | ⏳ **IN PROGRESS** — all blocking prerequisites are complete. G5 was the last blocking technical gate to close on 2026-08-16, so the completed implementation now gets a full 90-day soak. The `data-loss` group is complete (9 fixtures, 162-170, tagged `data-loss`) and covers all 4 required paths — silent-stringify, date round-trip, formula-result kind, and numFmt drop | window **2026-08-16 → 2026-11-14** if no breaking spec/API/error-code change; adoption-track progress does not affect it |
+
+## 1.x adoption track (non-blocking for 1.0)
+
+These metrics remain public project-health commitments, but they do not block
+the 1.0 compatibility promise. Their IDs are retained for stable references.
+See ADR-0079 for the separation of technical readiness from ecosystem growth.
+
+| ID | Adoption outcome | Owner | Artifact | Success criterion | Status |
+|----|------------------|-------|----------|-------------------|--------|
+| G13 | Second-language impl validation | external (xl3-py) | `conformance/reports/*.json` | xl3-py passes ≥ 80% Stage 1 OR ≥ 80% Stage 2, or another Rust/Go/Java implementation reaches a documented 50% | 🟡 **NOT JUDGEABLE** — the last xl3-py report passed 133/133 fixtures it ran, but it is not current enough to establish a percentage of today's corpus; needs a fresh report |
+| G14 | External-contributor ADR | external | `spec/decisions/NNNN-*.md` | ≥ 1 ADR with non-maintainer as Author (≥ 60% of Context/Decision sections by line count) | ❌ **OPEN** — no qualifying ADR yet |
+| G15 | Production reference case | external (with maintainer help) | `IMPLEMENTATIONS.md` "Production users" row | ≥ 1 named user with permission to list, including a public case study from the maintainer's employer | ❌ **OPEN** — no public named production user yet |
+| G18 | Production use case in README | maintainer | `README.md` | publish a concrete production reference after G15 | ❌ **OPEN** — follows G15; it does not control the 1.0 status label |
 
 > **Status column audited 2026-08-30.**
 > The `Planned` column is the historical milestone plan and is kept as-is;
 > where the two disagree, `Status` is the current fact.
 >
-> **4 gates are open:** G13, G14, G15, and G18 — plus G24, which
-> cannot tick until the final prerequisite gate closes. G5 and the G24
+> **0 blocking prerequisites are open; G24 is in progress.** G5 and the G24
 > `data-loss` fixture requirement are complete; fixtures 162-170 cover the
-> required paths. G13 still needs a fresh external-implementation report,
-> while G14/G15/G18 depend on external contribution and a public production
-> reference.
+> required paths. G13/G14/G15/G18 remain open in the non-blocking 1.x
+> adoption track.
 >
-> **The quarter clock runs from 2026-06-23, uninterrupted** (#86, decided
-> 2026-07-28). 0.11.0 added an export and an error code on 2026-07-19;
-> both are additive, so G3 and G6 stand. See "Frozen vs unchanged" and the
-> amendment note under `Breaking change` in the Definitions below — the
-> old wording made an added *export* breaking while an added *error code*
-> was not, which would have reset the clock by accident.
+> **The technical stability window runs from 2026-08-16 through
+> 2026-11-14.** ADR-0079 replaces the earlier 2026-06-23 calculation because
+> G5, the final blocking implementation gate, closed on 2026-08-16. Additive
+> exports and error codes do not reset the window; breaking changes do.
 >
-> **The clock is not the binding constraint.** The remaining long pole is
-> external validation: a current port report, an external contribution, and
-> a public production reference. The data-loss corpus and implementation
-> gates are already complete.
+> **The stability window is the binding constraint.** External validation, an
+> external contribution, and a public production reference remain important
+> adoption goals, but they no longer determine whether the technical 1.0
+> contract may be cut.
 
 ### Definitions (testable)
 
+- **Adoption track (G13, G14, G15, G18):** public, testable project-health
+  metrics that continue through 1.x but do not start, stop, or reset G24.
 - **External contributor (G14):** not in `GOVERNANCE.md` maintainer set
   AND not in `Co-authored-by` history of merged ADR commits at PR open
   time. Drive-by typo edits do not count; named Author in ADR
@@ -145,11 +153,11 @@ milestone. Per-version step plan below references these gates by ID.
   dashboard already groups by tag. The numFmt-drop path cannot be pinned
   at Stage 1, which compares values and not formats, so 170 declares
   `comparison_stage: 2`.
-- **Quarter clock start (G24 vs G23):** the 90-day quarter starts on
-  the day the LAST gate ticks ✅. RC publication does NOT start the
-  clock; the clock must have started BEFORE RC publication. If a
-  breaking change happens during RC soak, both the soak (G23) and the
-  quarter (G24) reset.
+- **Technical stability window (G24 vs G23):** the 90-day window starts on
+  the later of the final **blocking** technical/process gate closing or the
+  last breaking change. Adoption-track metrics are excluded. If a breaking
+  change happens during RC soak, both the soak (G23) and G24 reset. Under
+  ADR-0079 the current start is 2026-08-16, when G5 closed.
 
 ## Per-version step plan
 
@@ -285,8 +293,9 @@ file) may be added during the 0.8.x window.
 
 Gates closed: **G3**, **G6**, **G7**, **G23** (≥ 21-day RC soak).
 
-After G23 starts, the quarter clock for G24 begins (it must have
-ticked while G3/G6/G7/etc. were closing — see definitions above).
+This milestone originally treated G23/G3 as the start of G24. ADR-0079
+supersedes that calculation: G24 starts only after the final blocking
+technical/process gate has closed.
 
 ### 0.9.0 — Final freeze cut (2026-06-23)
 
@@ -297,11 +306,10 @@ RC-soak fixes #49–52 folded in; #54/#56/#57 deferred to the
 `post-1.0` milestone (POST-1.0 additive — the milestone was titled
 "0.10.0" at this cut; renamed 2026-07-27 once 0.10.0 and 0.11.0 both
 shipped without these items, and #57 was closed as superseded by the
-host-driven `__inputs__` source metadata in #82). The **G24** 90-day
-quarter clock starts at the last gate tick (2026-06-23 via G3); the
-quarter runs uninterrupted from that date (confirmed by the 2026-07-28
-audit, #86). The 1.0 date is not derived from the quarter alone — see the
-audit note above the Definitions block for what actually gates it.
+host-driven `__inputs__` source metadata in #82). At this cut, G24 was
+calculated from 2026-06-23 via G3 (confirmed by the 2026-07-28 audit, #86).
+ADR-0079 later superseded that calculation and rebased the window to
+2026-08-16, when G5 became the final blocking implementation gate to close.
 
 ### 0.10.0 — Org move + `@subtotal` correctness (shipped 2026-07-19)
 
@@ -342,11 +350,10 @@ Gate impact:
 - **G6** — the frozen surface gains two exports (`convertJson`,
   `previewJson`, recorded in `spec/STABILITY.md`). Additive: no existing
   export removed or re-signed, and the `.xlsx` path is untouched.
-- **G24 window** — both cuts landed 2026-07-19, inside the quarter that
-  started 2026-06-23. Neither was breaking under the definition above, so
-  the quarter is undisturbed and completes ≈ 2026-09-21. That is when the
-  *clock* clears, not a ship date: 12 gates are still open, so the quarter
-  stops being the binding constraint.
+- **G24 window (historical calculation)** — both cuts landed 2026-07-19
+  without a breaking change. ADR-0079 later rebased G24 to 2026-08-16,
+  when the final blocking implementation gate actually closed; the old
+  2026-06-23 / 2026-09-21 calculation is superseded.
 - **Resolved by the 2026-07-28 audit (#86)** — the conclusion above is
   correct, but it rested on a definition that did not say so. `Breaking
   change` clause (a) read "any change to public API surface snapshot",
@@ -412,9 +419,9 @@ Gate impact:
   constant and `getEngineInfo()` is never called during a conversion;
   `bench` sat at 240 / 71 / 71 ms, inside the <10% run-to-run band
   `scripts/BENCH.md` documents.
-- **G24 window** — additive under the breaking-change definition above,
-  so the quarter that started 2026-06-23 is undisturbed and still
-  completes ≈ 2026-09-21.
+- **G24 window** — additive under the breaking-change definition above.
+  ADR-0079 later starts the technical window on 2026-08-16, when G5 closed;
+  this release does not move that date.
 
 One correction landed with this cut: the `spec/STABILITY.md` additive log
 carried `ConvertOptions.signal` and `xl3/abort/cancelled` as
@@ -426,12 +433,13 @@ backfilled.
 
 ### 1.0.0 — Final cut
 
-Gate closed: **G24** (90-day quarter complete after last gate
-ticked).
+Gate closed: **G24** (the 90-day technical stability window completes),
+all repository release gates are green, and no known critical data-loss or
+security issue remains. G13/G14/G15/G18 continue on the 1.x adoption track.
 
 ## Recruitment and outreach
 
-Sociological gates (G13/G14/G15/G16) require people, not code. The
+Adoption-track outcomes (G13/G14/G15/G18) require people, not code. The
 project has two distinct recruitment surfaces:
 
 ### Korean operations audience (G15, future cookbook contributors)
@@ -450,7 +458,8 @@ artifact:
 
 - 0.7.0 release: "Show HN: xl3 0.7 — 100k-row Excel template engine"
 - 0.8.0 release: case study + xl3-py conformance dashboard
-- 1.0.0 release: spec + multi-impl validation
+- 1.0.0 release: stable technical contract + current port status, without
+  claiming multi-implementation maturity unless G13 has actually closed
 
 ## Non-goals for 1.0
 
@@ -492,26 +501,23 @@ These are intentionally deferred. Each has an ADR explaining why:
 
 These remain candidates for **XTL 1.1, 1.2, 1.x** based on demand.
 
-## How to help close items
+## How to help advance the adoption track
 
 | Item | How to help |
 |---|---|
 | G13 second-impl ≥ 80% | Contribute to [xl3-py](https://github.com/xl3-lang/xl3-py), or start a new port (Rust, Java, Go). See [PORTERS_GUIDE.md](./PORTERS_GUIDE.md). |
 | G14 external ADR | Pick a deferred item (pivot table preservation, page-break, ADR-0045 carved-out function), draft an ADR in `spec/decisions/`. See [GOVERNANCE.md](./GOVERNANCE.md) "How changes enter the project." A few "starter ADR stubs" are available as `good-first-ADR` issues on GitHub. |
 | G15 production case | Use xl3 internally, share what worked / didn't. Drop a row in [IMPLEMENTATIONS.md](./IMPLEMENTATIONS.md) if appropriate. The maintainer's own employer (Snack24h) qualifies if it ships a public case study. |
-| G17 guide i18n | `docs/guides/19-jxls-to-xl3.md` (JXLS → xl3 migration) has no ko / ja / zh-CN translation; recipes 01-18 are done. |
-| G8 benchmarks | Run `npm run bench` on representative templates, share results. |
-| G10 cross-browser | Add Safari + Firefox to the bundle smoke test. |
 | Function re-proposal | If you need a function rejected per ADR-0045, file the [`Function re-proposal`](https://github.com/xl3-lang/xl3/issues/new?template=function-reproposal.md) issue template. |
 
 ## How this roadmap evolves
 
-This document is the public elevator pitch + the gate table is the
-single source of truth. The deeper
+This document is the public elevator pitch; the blocking table and adoption
+track are the single source of truth. The deeper
 [`docs/internal/blueprint-to-1.0.md`](./docs/internal/blueprint-to-1.0.md)
 carries the gap analysis, philosophy boundary, and per-version
 rationale. As gates tick, both documents update. As new gaps surface,
 both add them.
 
-Cuts and additions to the 1.0 gate table are discussed via the same
-ADR/issue process as everything else.
+Cuts, additions, or movements between the blocking table and adoption track
+are discussed via the same ADR/issue process as everything else.

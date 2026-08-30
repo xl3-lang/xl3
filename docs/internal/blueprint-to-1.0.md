@@ -306,7 +306,9 @@ Cut criteria: see Part 5.
 
 ## Part 5 — Sharpened 1.0 cut criteria
 
-xl3 cuts 1.0 when **all** of the following hold:
+xl3 cuts 1.0 when every item under Spec / language, Implementation, Process,
+and Governance holds. The separate adoption-track section is measured through
+1.x and is deliberately non-blocking (ADR-0079).
 
 ### Spec / language
 
@@ -323,7 +325,7 @@ xl3 cuts 1.0 when **all** of the following hold:
 
 ### Implementation
 
-- [ ] All ROADMAP 1.0 checklist items ✅
+- [ ] All ROADMAP 1.0 **blocking** items ✅
 - [ ] `INFORMATIONAL_ADRS` does not contain any ADR that
       represents impl-pending work
 - [ ] No known data-loss bug in `convert()` (silent
@@ -332,12 +334,17 @@ xl3 cuts 1.0 when **all** of the following hold:
 - [ ] Stage 1 and Stage 2 conformance both green on the
       reference impl
 
-### External validation
+### 1.x adoption track (non-blocking for the 1.0 cut)
 
-- [ ] xl3-py (or any second impl) passes ≥ 80% Stage 1
-- [ ] At least one production user is listed in
+- [ ] G13: xl3-py (or any second impl) passes ≥ 80% Stage 1
+- [ ] G15: at least one production user is listed in
       `IMPLEMENTATIONS.md` (with permission)
-- [ ] At least one ADR has been authored by a non-maintainer
+- [ ] G14: at least one ADR has been authored by a non-maintainer
+- [ ] G18: publish the production reference in the README after G15
+
+These remain active, public project-health outcomes, but ADR-0079 moves them
+out of the 1.0 blocking set. A stable compatibility promise is a prerequisite
+for adoption, not a reward that waits for adoption to happen first.
 
 ### Process
 
@@ -346,8 +353,9 @@ xl3 cuts 1.0 when **all** of the following hold:
 - [ ] Performance benchmarks published with at least
       1k / 10k / 100k row measurements
 - [ ] RC has soaked ≥ 21 days with no critical issues (G23)
-- [ ] 0.x has had ≥ 1 quarter of stable behavior since the
-      checklist became complete (per existing ROADMAP rule)
+- [ ] The completed blocking technical surface has had a 90-day stability
+      window since the later of the final blocking gate or last breaking
+      change (G24 / ADR-0079)
 
 ### Governance
 
@@ -359,12 +367,13 @@ xl3 cuts 1.0 when **all** of the following hold:
 
 ### Final sentence
 
-> *xl3 1.0 is cut when the function surface, directive set,
-> preservation matrix, error code catalog, and public API are
-> all frozen; when at least one second-language port has
-> validated the spec at ≥ 80% Stage 1; when at least one
-> production user is publicly listed; and when at least one
-> external contributor has driven an ADR end-to-end.*
+> *xl3 1.0 is cut when the function surface, directive set, preservation
+> matrix, error code catalog, and public API are frozen; when the executable
+> contract and repository release gates are green; and when the completed
+> technical surface has passed G24's 90-day stability window without a
+> breaking change or known critical data-loss/security issue. Port,
+> contributor, and production-reference outcomes continue visibly in the
+> 1.x adoption track.*
 
 ### Definitions (mirror of ROADMAP)
 
@@ -390,17 +399,17 @@ update here. The exact wording lives in `ROADMAP.md` under
 - **Data-loss test (G24):** a dedicated `data-loss/` fixture group
   (≥ 8 fixtures) exercising silent-stringify, numFmt drop, formula
   rewrite, and date round-trip paths; all pass on the reference impl.
-- **Quarter clock start (G24 vs G23):** the 90-day quarter starts
-  the day the LAST G1-G22 gate ticks ✅. RC publication does NOT
-  start the clock; the clock must have started BEFORE RC. A breaking
-  change during RC soak resets BOTH the soak (G23) and the quarter
-  (G24).
+- **Technical stability window (G24 vs G23):** the 90-day window starts on
+  the later of the final blocking technical/process gate closing or the last
+  breaking change. G13/G14/G15/G18 are excluded. A breaking change during RC
+  soak resets BOTH the soak (G23) and G24. The current window begins
+  2026-08-16 and ends 2026-11-14 if uninterrupted.
 
 The 1.0 cut is **not** about feature completeness vs JXLS — xl3
 intentionally ships a smaller surface. It is about earning the
 same kind of trust JXLS earned: a spec that doesn't shift, a
-reference impl that doesn't surprise, and an ecosystem big
-enough that the project isn't single-maintainer-fragile.
+reference impl that doesn't surprise, with ecosystem maturity reported
+separately rather than implied by the version number.
 
 ---
 

@@ -39,7 +39,7 @@ const INFORMATIONAL_ADRS = new Set([
   '0034', // relationship to prior-art template engines (informational principle)
   '0037', // rejected — dynamic image insertion (rejection IS the contract; no fixture)
   // 0038 — @group + @subtotal: impl shipped 2026-05-18, fixtures 132-135 cover it.
-  '0040', // preservation matrix amendment: outline-level shipped in spliceRowsPreservingMerges 2026-05-18 (no semantic fixture; behavior is observable indirectly via Stage 2 OOXML diff); CF/DV range PE remains impl-pending — both parts intentionally untracked here until fixtures land
+  '0040', // preservation matrix process record; shipped behavior is pinned by Stage 2 fixtures 171/172 rather than a fixture whose spec_section names this ADR
   '0042', // rejected — runtime cell mutation (rejection IS the contract)
   '0043', // accepted (process gate) — Excel-native preference principle
   '0045', // rejected bundle — rejection IS the contract
@@ -47,6 +47,8 @@ const INFORMATIONAL_ADRS = new Set([
   '0049', // accepted (informational) — template display vs render output
   '0077', // accepted (process gate) — single-maintainer 1.0 (G16 fallback);
   // a governance decision, no observable output
+  '0079', // accepted (release process) — technical 1.0 vs 1.x adoption track;
+  // a roadmap/governance decision, no observable workbook output
   '0076', // deferred — pivot / sparkline / ListObject / page break left
   // implementation-defined for 1.0 (G12's deferral arm). A fixture
   // would assert the behavior the ADR declines to assert and would

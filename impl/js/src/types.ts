@@ -63,8 +63,8 @@ export interface ConvertOptions {
 export interface ValidateOptions {
   /**
    * `'schema'` validates declarations and headers without scanning source rows.
-   * `'full'` is reserved for future row-level checks; it currently includes the
-   * same schema checks.
+   * `'full'` also scans selected XLSX cells for unreadable values and validates
+   * JSON row shapes and tagged scalar values.
    */
   depth?: 'schema' | 'full';
 }

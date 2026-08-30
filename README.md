@@ -123,7 +123,7 @@ Concretely:
   evaluates it at open time. The smaller the language, the easier it is
   for humans to review — and for AI systems to draft. See [Cookbook 16](./docs/guides/16-xtl-vs-excel-formula.md)
   for the side-by-side guide.
-- **Conformance corpus.** 171 fixtures, all green, across 78 ADRs.
+- **Conformance corpus.** 171 fixtures, all green, across 79 ADRs.
   This is the test bed for the transformation contract.
 - **One implementation, one spec.** The [`spec/`](./spec) directory
   defines XTL independently of this TypeScript reference. Ports to
@@ -244,6 +244,7 @@ cat source.json | xl3 render template.xlsx --data=- --out=./out/
 xl3 render template.xlsx --data=data.xlsx --zip=reports.zip
 xl3 validate template.xlsx --data=data.xlsx
 xl3 validate template.xlsx --data=source.json --json
+xl3 validate template.xlsx --data=source.json --depth=full --json
 ```
 
 `--data` reads `.json` as `xl3-source-json/0.1`, `.xlsx` as a data
@@ -252,7 +253,8 @@ inputs take `--input=name=value` (repeatable) or `--inputs=values.json`;
 `xl3 inputs template.xlsx` lists what a template expects.
 
 Three more commands support scripting around it: `xl3 validate` checks the
-template/source schema contract without rendering, `xl3 preview` reports the
+template/source contract without rendering (`--depth=full` also scans row
+shapes and values), `xl3 preview` reports the
 planned filenames, source shape, and warnings, and `xl3 inputs` lists runtime
 inputs. Validation and preview accept `--json` for machine-readable output.
 

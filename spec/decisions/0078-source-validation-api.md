@@ -1,6 +1,6 @@
 # ADR 0078 - Source compatibility validation API
 
-- **Status:** accepted (implemented in xl3-js unit tests)
+- **Status:** accepted (schema and full depth implemented in xl3-js)
 - **Date:** 2026-08-30
 - **Spec target:** XTL 1.x (additive - new read-only public API; does not change `convert()`, `preview()`, `convertJson()`, or `previewJson()` behavior)
 - **Affects:** new public API (`validateSource`, `validateSourceJson`); `spec/evaluation.md` (Source compatibility validation); `spec/STABILITY.md` (public API surface addition); impl (`validator.ts`, `reader.ts`, `types.ts`, `index.ts`); focused unit tests
@@ -57,10 +57,14 @@ validateSourceJson(
 
 `ValidateOptions.depth` defaults to `"schema"`. Schema validation resolves
 the template, source declarations, source sheet/table headers, and static
-column requirements without scanning source data rows. `"full"` is accepted as
-a forward-compatible spelling, but this ADR does not define any additional
-row-level checks; the reference implementation currently treats it as schema
-validation.
+column requirements without scanning source data rows. `"full"` includes all
+schema checks and additionally scans the selected XLSX data cells or JSON rows.
+
+For XLSX sources, full depth parses every selected cell with the same scalar
+rules conversion uses and collects row-level failures such as an uncached
+formula result. For JSON sources, it checks that every row is a dense array of
+the declared header width and validates each scalar/tagged value with the same
+date, error, finite-number, and supported-tag rules as `convertJson()`.
 
 The report shape is:
 
@@ -157,7 +161,9 @@ Malformed envelope and source-shape findings are returned as
 `xl3/source-json/invalid` diagnostics; they do not short-circuit the report when
 the remaining source objects can still be inspected.
 At schema depth it does not scan row values, row lengths, or per-cell tagged
-values. Those remain `convertJson()` / `previewJson()` responsibilities.
+values. At full depth those errors are returned as
+`xl3/source-json/invalid` diagnostics with row/column context rather than
+throwing on the first invalid row.
 
 ## Consequences
 
@@ -167,8 +173,8 @@ input contract for mapping and preprocessing workflows.
 
 The diagnostic shape is intentionally marked experimental in xl3-js until it
 has real host feedback. In particular, `location`, `candidates`, warning
-diagnostics, and future `"full"` row-level checks may evolve before being
-frozen.
+diagnostics, and the exact aggregation of `"full"` row-level findings may
+evolve before being frozen.
 
 The conformance corpus remains output-oriented (`template.xlsx + data.xlsx ->
 output.xlsx`), so this ADR is covered by focused reference-implementation unit

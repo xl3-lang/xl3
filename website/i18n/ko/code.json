@@ -331,7 +331,7 @@
     "description": "Hero section eyebrow / kicker line"
   },
   "homepage.hero.title": {
-    "message": "Excel 보고서, 코드가 아니라{lineBreak}템플릿으로 만듭니다{dot}",
+    "message": "Excel 변환 로직, 코드가 아니라{lineBreak}템플릿으로{dot}",
     "description": "Hero section H1"
   },
   "homepage.hero.title.fullStop": {
@@ -339,7 +339,7 @@
     "description": "Sentence-final mark rendered as the hero H1's accent dot. Override per locale (ja/zh use 。)."
   },
   "homepage.hero.lead": {
-    "message": "개발 요청 없이, 변환 로직을 Excel 파일에서 직접 고칩니다. 데이터를 넣으면 xl3가 실행합니다. 서식은 그대로, 결과는 매번 같습니다.",
+    "message": "개발자 없이 Excel 출력 양식을 직접 변경하세요.",
     "description": "Hero section lead paragraph"
   },
   "homepage.hero.cta.try": {
@@ -375,11 +375,11 @@
     "description": "Walkthrough section kicker"
   },
   "homepage.walkthrough.title": {
-    "message": "Excel이 템플릿이고, 실행은 xl3가 합니다.",
+    "message": "비개발자가 직접 작성 가능한 Excel 생성 로직.",
     "description": "Walkthrough section H2"
   },
   "homepage.walkthrough.lead": {
-    "message": "비즈니스 사용자는 Excel에서 레이아웃을 편집하고, 애플리케이션은 데이터와 입력값을 공급하며, xl3는 그 파일을 결정론적으로 실행합니다. 세 단계를 클릭하며 리포트 하나가 원본 데이터에서 완성된 Excel 파일까지 가는 과정을 따라가 보세요.",
+    "message": "비개발자는 Excel에서 출력 양식을 설계하고, 애플리케이션은 데이터와 입력값을 전달합니다. xl3는 이 둘을 결합해 항상 같은 결과를 만듭니다. 아래 세 단계에서 원본 데이터가 완성된 Excel 파일로 변환되는 과정을 확인해 보세요.",
     "description": "Walkthrough section lead paragraph"
   },
   "homepage.walkthrough.steps.ariaLabel": {
@@ -391,7 +391,7 @@
     "description": "Handoff section kicker"
   },
   "homepage.handoff.title": {
-    "message": "리포트 레이아웃을 일회성 스크립트에 박아 넣지 마세요.",
+    "message": "Excel 서식을 코드로 작성하지 마세요.",
     "description": "Handoff section H2"
   },
   "homepage.handoff.body.p1": {

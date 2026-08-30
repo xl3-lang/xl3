@@ -6,13 +6,16 @@
 
 import { readFile } from 'node:fs/promises';
 import { existsSync, readdirSync, statSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { convert } from '@xl3-lang/xl3';
+import { convert, preview, validateSource } from '@xl3-lang/xl3';
 import ExcelJS from 'exceljs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(HERE, '..');
+if (process.argv.length > 3) {
+  throw new Error('usage: run-all.mjs [corpus-directory]');
+}
+const ROOT = process.argv[2] ? resolve(process.argv[2]) : join(HERE, '..');
 const manifest = JSON.parse(await readFile(join(ROOT, 'expected-output.json'), 'utf8'));
 
 if (manifest.version !== 'xl3-operational-regression/0.1') {
@@ -49,11 +52,18 @@ for (const entry of declared) {
   try {
     const tplBuf = await readFile(tpl);
     const dataBuf = await readFile(data);
-    const out = await convert(
-      toAB(tplBuf),
-      toAB(dataBuf),
-      expected.inputs ? { inputs: expected.inputs } : undefined,
-    );
+    const options = expected.inputs ? { inputs: expected.inputs } : undefined;
+    // Keep these sequential: a private production corpus can contain large
+    // workbooks, and parsing four copies concurrently would multiply peak RSS.
+    const schemaValidation = await validateSource(toAB(tplBuf), toAB(dataBuf), {
+      depth: 'schema',
+    });
+    const fullValidation = await validateSource(toAB(tplBuf), toAB(dataBuf), { depth: 'full' });
+    const planned = await preview(toAB(tplBuf), toAB(dataBuf), options);
+    const out = await convert(toAB(tplBuf), toAB(dataBuf), options);
+    assertValidation(schemaValidation, `${entry}: schema preflight`);
+    assertValidation(fullValidation, `${entry}: full preflight`);
+    assertEqual(planned.files.length, expected.outputs.length, `${entry}: preview file count`);
     assertEqual(out.length, expected.outputs.length, `${entry}: output file count`);
 
     let assertedCells = 0;
@@ -61,7 +71,14 @@ for (const entry of declared) {
     for (let i = 0; i < expected.outputs.length; i++) {
       const expectedOutput = expected.outputs[i];
       const actualOutput = out[i];
+      const previewOutput = planned.files[i];
       assertFilename(actualOutput.filename, expectedOutput, `${entry}: output ${i + 1}`);
+      assertFilename(previewOutput.filename, expectedOutput, `${entry}: preview ${i + 1}`);
+      assertEqual(
+        previewOutput.sheets.map((sheet) => sheet.name),
+        expectedOutput.sheets.map((sheet) => sheet.name),
+        `${entry}: preview sheet names`,
+      );
 
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.load(actualOutput.data);
@@ -89,7 +106,7 @@ for (const entry of declared) {
     }
 
     successes.push(
-      `${entry}: ${out.length} file(s), ${assertedSheets} sheet(s), ${assertedCells} cell assertion(s)`,
+      `${entry}: schema/full/preview/convert, ${out.length} file(s), ${assertedSheets} sheet(s), ${assertedCells} cell assertion(s)`,
     );
   } catch (e) {
     failures.push(`${entry}: ${e.code ?? '(no code)'} ${e.message}`);
@@ -117,6 +134,12 @@ function assertFilename(actual, expected, label) {
     throw new Error(
       `${label}: filename expected /${expected.filenamePattern}/, received ${JSON.stringify(actual)}`,
     );
+  }
+}
+
+function assertValidation(report, label) {
+  if (!report.ok) {
+    throw new Error(`${label}: ${JSON.stringify(report.diagnostics)}`);
   }
 }
 

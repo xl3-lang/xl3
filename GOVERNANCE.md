@@ -28,6 +28,13 @@ releases stop if the maintainer stops, and nobody else can accept an ADR.
 Treat xl3 as a fork-if-needed dependency rather than a managed one if that
 matters to you.
 
+ADR-0079 separately makes external authorship, a current port report, and a
+public production reference **1.x adoption outcomes rather than 1.0 release
+blockers**. This does not claim those governance and adoption risks are solved;
+it prevents external timing from controlling when the tested compatibility
+contract becomes stable. They remain public triggers for broadening project
+ownership.
+
 ## Roles
 
 | Role | Responsibility | Who |
@@ -140,6 +147,6 @@ When the maintainer set widens, this document is rewritten to reflect the
 new state — including any voting / RFC / TSC processes adopted. Until then,
 this is the working description.
 
-That trigger is unchanged by the 1.0 decision above. ADR-0077 also names
-two further moments to look again: an external contributor landing an
-accepted ADR (ROADMAP G14), and a second production user appearing.
+That trigger is unchanged by the 1.0 decisions above. ADR-0077 and ADR-0079
+also name two further moments to look again: an external contributor landing
+an accepted ADR (adoption-track G14), and a second production user appearing.

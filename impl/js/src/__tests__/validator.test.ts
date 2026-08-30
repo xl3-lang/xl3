@@ -109,6 +109,33 @@ describe('validateSource', () => {
     ]);
   });
 
+  it('scans XLSX row cells only at full depth', async () => {
+    const workbook = new ExcelJS.Workbook();
+    const raw = workbook.addWorksheet('Raw');
+    raw.addRow(['Customer', 'Status', 'Amount']);
+    raw.getCell('A2').value = 'Acme';
+    raw.getCell('B2').value = 'Open';
+    raw.getCell('C2').value = { formula: '1+1' };
+    const source = await toBuffer(workbook);
+    const template = await basicTemplate();
+
+    const schema = await validateSource(template, source, { depth: 'schema' });
+    const full = await validateSource(template, source, { depth: 'full' });
+
+    expect(schema.ok).toBe(true);
+    expect(schema.diagnostics).toEqual([]);
+    expect(full.ok).toBe(false);
+    expect(full.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'xl3/cell/formula-no-cache',
+        source: 'default',
+        sheet: 'Raw',
+        column: 'Amount',
+        location: 'cell:Raw!C2',
+      }),
+    ]);
+  });
+
   it('includes @sort, @group, file group keys, and sheet group keys in the contract', async () => {
     const workbook = new ExcelJS.Workbook();
     writeConfigSheet(workbook, {
@@ -320,6 +347,44 @@ describe('validateSourceJson', () => {
     });
     expect(validation.ok).toBe(true);
     expect(validation.diagnostics).toEqual([]);
+  });
+
+  it('collects JSON row-shape and tagged-value errors at full depth', async () => {
+    const validation = await validateSourceJson(
+      await basicTemplate(),
+      {
+        version: 'xl3-source-json/0.1',
+        sources: {
+          default: {
+            headers: ['Customer', 'Status', 'Amount'],
+            rows: [
+              ['Acme', 'Open'],
+              ['Beta', 'Open', { type: 'date', value: '2026-02-30' }],
+            ],
+          },
+        },
+      },
+      { depth: 'full' },
+    );
+
+    expect(validation.ok).toBe(false);
+    expect(validation.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'xl3/source-json/invalid',
+          source: 'default',
+          location: 'row:0',
+          detail: expect.stringContaining('2 value(s) but there are 3 headers'),
+        }),
+        expect.objectContaining({
+          code: 'xl3/source-json/invalid',
+          source: 'default',
+          column: 'Amount',
+          location: 'row:1',
+          detail: expect.stringContaining('not a real calendar date'),
+        }),
+      ]),
+    );
   });
 
   it('returns malformed envelopes as diagnostics', async () => {

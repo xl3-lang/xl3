@@ -111,6 +111,18 @@ if (!report.ok) {
 }
 ```
 
+The default `{ depth: 'schema' }` is the cheap preflight: declarations and
+headers only. Use `{ depth: 'full' }` before a production conversion when row
+values may be malformed. Full depth also catches XLSX formula cells without a
+cached result and JSON row-width/tagged-value/date errors, while still avoiding
+rendering:
+
+```ts
+const report = await validateSourceJson(templateBuffer, sourceJson, {
+  depth: 'full',
+});
+```
+
 `validateSource*()` is stricter than the legacy preview warning path: if the
 template reads `{{ [Amount] }}` and the source has no `Amount` header, the
 validator reports `xl3/source/unknown-column` as an error. That makes
@@ -121,6 +133,7 @@ The same gate is available without embedding JavaScript:
 ```bash
 xl3 validate template.xlsx --data=data.xlsx
 xl3 validate template.xlsx --data=source.json --json
+xl3 validate template.xlsx --data=source.json --depth=full --json
 cat source.json | xl3 validate template.xlsx --data=- --json
 ```
 

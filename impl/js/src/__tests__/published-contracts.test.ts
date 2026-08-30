@@ -48,8 +48,19 @@ describe('published behavior contracts', () => {
 
   it('keeps the roadmap summary consistent with the gate table', () => {
     const roadmap = read('ROADMAP.md');
-    expect(roadmap).toContain('**4 gates are open:** G13, G14, G15, and G18');
-    expect(roadmap).not.toContain('**5 gates are open:**');
+    const [blocking, adoption] = roadmap.split('## 1.x adoption track (non-blocking for 1.0)');
+
+    expect(blocking).toContain('## 1.0 blocking gate table');
+    expect(blocking).toContain('| G24 | Technical stability window |');
+    for (const id of ['G13', 'G14', 'G15', 'G18']) {
+      expect(blocking, `${id} must not remain in the blocking table`).not.toContain(`| ${id} |`);
+      expect(adoption, `${id} must remain visible in the adoption track`).toContain(`| ${id} |`);
+    }
+    expect(roadmap).toContain('**0 blocking prerequisites are open; G24 is in progress.**');
+    expect(roadmap).toContain('window **2026-08-16 → 2026-11-14**');
+    expect(read('spec/decisions/0079-technical-1.0-and-adoption-track.md')).toContain(
+      'G13, G14, G15, and G18 move',
+    );
     expect(roadmap).not.toContain('data-loss/` group, which does\n> not exist yet');
   });
 

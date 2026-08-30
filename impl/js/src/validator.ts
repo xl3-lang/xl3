@@ -1,5 +1,6 @@
 import type ExcelJS from 'exceljs';
 import { isDirectiveExpression } from './directive-parser.js';
+import { validateJsonSourceRows } from './json-source.js';
 import { normalizeTemplate } from './normalizer.js';
 import { parseTemplate } from './parser.js';
 import { readAllSourceSchemas, sourceTableHeaderRow, type SourceSchema } from './reader.js';
@@ -73,6 +74,7 @@ export async function validateSource(
     parsed.meta.source_sheet,
     { sourceTable: parsed.meta.source_table },
     parsed.sources,
+    { scanRows: options?.depth === 'full' },
   );
   return buildReport(built, sourceRead.schemas, sourceRead.diagnostics);
 }
@@ -91,7 +93,7 @@ export async function validateSourceJson(
   assertValidateDepth(options);
   const parsed = await parseTemplate(templateBuffer);
   const built = buildInputContract(parsed, 'json');
-  const sourceRead = readJsonSourceSchemas(sourceJson, parsed.sources);
+  const sourceRead = readJsonSourceSchemas(sourceJson, parsed.sources, options?.depth === 'full');
   return buildReport(built, sourceRead.schemas, sourceRead.diagnostics);
 }
 
@@ -333,6 +335,7 @@ function compareContractToSchemas(
 function readJsonSourceSchemas(
   input: Xl3SourceJsonInput,
   declaredSources: SourceSpec[],
+  scanRows: boolean,
 ): JsonSchemaReadResult {
   const decoded = decodeJsonInput(input);
   if (decoded.error) return invalidJsonResult(decoded.error);
@@ -366,7 +369,12 @@ function readJsonSourceSchemas(
       detail: 'source JSON must include a "default" source',
     });
   } else {
-    const schema = buildJsonSourceSchema('default', own(jsonSources, 'default'), diagnostics);
+    const schema = buildJsonSourceSchema(
+      'default',
+      own(jsonSources, 'default'),
+      diagnostics,
+      scanRows,
+    );
     if (schema) schemas.set('default', schema);
   }
 
@@ -390,7 +398,12 @@ function readJsonSourceSchemas(
       });
       continue;
     }
-    const schema = buildJsonSourceSchema(spec.name, own(jsonSources, spec.name), diagnostics);
+    const schema = buildJsonSourceSchema(
+      spec.name,
+      own(jsonSources, spec.name),
+      diagnostics,
+      scanRows,
+    );
     if (schema) schemas.set(spec.name, schema);
   }
 
@@ -401,6 +414,7 @@ function buildJsonSourceSchema(
   name: string,
   raw: unknown,
   diagnostics: ValidationDiagnostic[],
+  scanRows: boolean,
 ): SourceSchema | undefined {
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
     pushInvalidJson(
@@ -479,6 +493,7 @@ function buildJsonSourceSchema(
     normHeaders.push(header);
   }
 
+  if (scanRows) diagnostics.push(...validateJsonSourceRows(name, raw, normHeaders));
   return { sheetName: name, headerRow: 1, headers: normHeaders };
 }
 

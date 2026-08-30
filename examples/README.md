@@ -20,17 +20,35 @@ Four production-shaped XTL templates. Each is a complete `template.xlsx`
 # Build the .xlsx pairs from the .mjs source.
 npm run examples:build
 
-# Render every pair and verify its output contract.
+# Run schema/full validation, preview, render, and verify the output contract.
 npm run examples:run
 
 # Self-contained operational regression gate (build + verify).
 npm run operational:regression
 ```
 
-[`expected-output.json`](./expected-output.json) pins each case's output
+Each case runs through four public host paths: schema validation, full row
+validation, preview, and conversion. [`expected-output.json`](./expected-output.json) pins each case's output
 filename, sheet order, row boundary, merges, and high-value cells such as
 sorted records, joins, derived labels, and totals. Adding an example without an
 output contract fails the gate.
+
+### Running a private production corpus
+
+Real customer workbooks often cannot be committed. The same runner accepts an
+external corpus directory without copying its files into this repository:
+
+```bash
+npm run build
+npm run examples:run -- /secure/path/to/xl3-operational-corpus
+```
+
+The external directory uses the same shape as `examples/`: an
+`expected-output.json` with version `xl3-operational-regression/0.1`, plus one
+folder per declared case containing `template.xlsx` and `data.xlsx`. The
+runner performs schema/full validation, preview, conversion, and output
+assertions for every case. Keep sensitive workbooks outside the repository;
+share only anonymized failures or the resulting diagnostics.
 
 ## Running with the wasm engine (0.9.0-rc.1+)
 

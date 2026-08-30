@@ -6,15 +6,16 @@ XTL is at version **0.1**. The reference impl ships XTL 0.1 as
 `@xl3-lang/xl3` on npm; its package version moves on a timeline
 independent of the spec version (see
 [RELEASING.md](../RELEASING.md)), so it is not pinned here.
-The 1.0 cut is deliberately deferred until external
-validation accumulates — at minimum, a second-language port that
-passes the conformance corpus and one production adopter. Until
-then, breaking changes are possible across 0.x minor bumps and
-SHOULD be documented in the affected ADR(s).
+The 1.0 cut is deferred until the completed technical contract has passed
+the 90-day stability window in ROADMAP G24. External validation, an
+externally authored ADR, and a public production reference remain visible
+1.x adoption goals, but do not block the compatibility promise (ADR-0079).
+Until 1.0, breaking changes are possible across 0.x minor bumps and SHOULD
+be documented in the affected ADR(s).
 
-The contract that 1.0 will freeze is already drafted (see "Path to
-1.0" below); the deferral is about the level of external signal
-required to commit, not about the spec being incomplete.
+The contract that 1.0 will freeze is already drafted (see "Path to 1.0"
+below). The remaining deferral is for technical soak, not feature or
+ecosystem completeness.
 
 ## During 0.x
 
@@ -27,6 +28,10 @@ required to commit, not about the spec being incomplete.
 - The spec freezes for backwards-compatible evolution only.
 - Breaking spec changes require XTL 2.0 with public discussion and a migration guide.
 - The reference implementation follows SemVer strictly.
+- 1.0 asserts a stable compatibility contract. It does not assert that the
+  project has multiple maintainers, a current second-language implementation,
+  or a public named production user; those risks remain disclosed in
+  `GOVERNANCE.md` and the ROADMAP adoption track.
 
 ## Path to 1.0
 

@@ -245,13 +245,17 @@ function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
     const sheets: { name: string; rowCount: number }[] = [];
 
     for (const st of parsed.sheetTemplates) {
+      const isMultiBlockSheet = st.blocks.length > 1;
       if (st.groupKeys.length === 0) {
         const sg = fg.sheetGroups.find((g) => Object.keys(g.key.values).length === 0);
         if (!sg) continue;
-        const dataDirectives = st.directives.filter((d) => d.kind !== 'repeat');
+        const dataDirectives = isMultiBlockSheet
+          ? []
+          : st.directives.filter((d) => d.kind !== 'repeat');
         const filteredRows = dataDirectives.length
           ? applyDirectives(sg.rows, dataDirectives, parsed.listSheets)
           : sg.rows;
+        if (!isMultiBlockSheet && filteredRows.length === 0) continue;
         sheets.push({ name: st.originalName, rowCount: filteredRows.length });
       } else {
         const matchingGroups = fg.sheetGroups.filter((g) => {
@@ -260,10 +264,13 @@ function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
         });
         for (const sg of matchingGroups) {
           const sheetName = renderer.previewSheetName([st], sg.key);
-          const dataDirectives = st.directives.filter((d) => d.kind !== 'repeat');
+          const dataDirectives = isMultiBlockSheet
+            ? []
+            : st.directives.filter((d) => d.kind !== 'repeat');
           const filteredRows = dataDirectives.length
             ? applyDirectives(sg.rows, dataDirectives, parsed.listSheets)
             : sg.rows;
+          if (!isMultiBlockSheet && filteredRows.length === 0) continue;
           sheets.push({ name: sheetName, rowCount: filteredRows.length });
         }
       }

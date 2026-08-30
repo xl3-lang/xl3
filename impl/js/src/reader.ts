@@ -24,6 +24,11 @@ export interface SourceSchemaReadResult {
   diagnostics: ValidationDiagnostic[];
 }
 
+export interface SourceSchemaReadOptions {
+  /** Parse every selected data cell and collect row-level source errors. */
+  scanRows?: boolean;
+}
+
 export async function readSource(
   buffer: ArrayBuffer,
   sheetPattern: string,
@@ -62,6 +67,7 @@ export async function readAllSourceSchemas(
   defaultSheetPattern: string,
   defaultOptions: SourceReadOptions,
   sources: SourceSpec[],
+  validationOptions: SourceSchemaReadOptions = {},
 ): Promise<SourceSchemaReadResult> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer);
@@ -74,6 +80,7 @@ export async function readAllSourceSchemas(
     defaultSheetPattern,
     defaultOptions,
     diagnostics,
+    validationOptions.scanRows ?? false,
   );
   if (defaultSchema) schemas.set('default', defaultSchema);
 
@@ -84,6 +91,7 @@ export async function readAllSourceSchemas(
       spec.sheet,
       { sourceTable: spec.table },
       diagnostics,
+      validationOptions.scanRows ?? false,
     );
     if (schema) schemas.set(spec.name, schema);
   }
@@ -154,6 +162,7 @@ function readSourceSchemaFromWorkbook(
   sheetPattern: string,
   options: SourceReadOptions,
   diagnostics: ValidationDiagnostic[],
+  scanRows: boolean,
 ): SourceSchema | undefined {
   const sheet = resolveSheet(workbook, sheetPattern);
   if (!sheet) {
@@ -168,11 +177,42 @@ function readSourceSchemaFromWorkbook(
 
   const table = resolveSourceTableForSchema(sheet, options, sourceName, diagnostics);
   const headers = table ? readHeadersCollecting(sheet, table, sourceName, diagnostics) : [];
+  if (table && scanRows) scanSourceRows(sheet, sourceName, table, headers, diagnostics);
   return {
     sheetName: sheet.name,
     headerRow: table?.headerRow ?? sourceTableHeaderRow(options.sourceTable),
     headers: headers.map((c) => c.header),
   };
+}
+
+function scanSourceRows(
+  sheet: ExcelJS.Worksheet,
+  sourceName: string,
+  table: SourceTable,
+  columns: HeaderColumn[],
+  diagnostics: ValidationDiagnostic[],
+): void {
+  const totalRows = table.bottomRow ?? sheet.rowCount;
+  for (let rowNumber = table.headerRow + 1; rowNumber <= totalRows; rowNumber++) {
+    const row = sheet.getRow(rowNumber);
+    for (const { header, col } of columns) {
+      const cell = row.getCell(col);
+      try {
+        parseCellValue(cell);
+      } catch (error) {
+        if (!isXtlError(error)) throw error;
+        diagnostics.push({
+          code: error.code,
+          severity: 'error',
+          source: sourceName,
+          sheet: sheet.name,
+          column: header,
+          location: `cell:${sheet.name}!${cell.address}`,
+          detail: error.message,
+        });
+      }
+    }
+  }
 }
 
 interface SourceTable {

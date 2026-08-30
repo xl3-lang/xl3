@@ -419,6 +419,15 @@ returns malformed envelope/source-shape findings as
 does not scan row values, row lengths, or per-cell tagged values; those remain
 the responsibility of `convertJson()` / `previewJson()` (ADR-0075).
 
+With `{ depth: "full" }`, validation also walks the source rows without
+rendering output. XLSX validation parses every selected source cell and reports
+unreadable values such as formula cells with no cached result. JSON validation
+requires dense row arrays whose widths match `headers`, and applies the same
+finite-number, date, error, and tagged-value rules as `convertJson()`. Row-level
+findings include `location` (`row:<zero-based-index>` for JSON or a cell address
+for XLSX) and `column` when available. Full validation collects these findings
+instead of stopping at the first bad row.
+
 ## Empty Values
 
 A value is **empty** if it is missing — the source column does not exist

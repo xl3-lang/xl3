@@ -120,8 +120,17 @@ consumer, so a `critical` finding there is not a `critical` finding in
 xl3.
 
 Audit output at the root is therefore **not** a signal about the shipped
-artifact. To see what a consumer actually gets, install the package in an
-empty directory and audit there.
+artifact. The CI release gate uses `npm audit --omit=dev --audit-level=high`;
+to reproduce the consumer view, install the package in an empty directory and
+audit there.
+
+### Resolved: `brace-expansion` and `tmp` high advisories
+
+The root lockfile now resolves `brace-expansion` 1.x to 1.1.18, 2.x to 2.1.4,
+and `tmp` 0.2.x to 0.2.7. Root `overrides` keep clean installs on those patched
+lines until ExcelJS's transitive ranges move forward. As of 2026-08-30,
+`npm audit --omit=dev` reports **0 high / 0 critical** findings. CI fails if a
+high-or-critical production advisory returns.
 
 ### Triaged: `uuid` < 11.1.1 via `exceljs` (moderate, not reachable)
 
@@ -144,7 +153,9 @@ taken on it:
   publishes a release that bumps its `uuid` range past 11.1.1. Verify by
   re-grepping the file above rather than trusting this note.
 
-Triaged 2026-08-02 against `exceljs@4.4.0` / `uuid@8.3.2`.
+Re-triaged 2026-08-30 against `exceljs@4.4.0` / `uuid@8.3.2`. The production
+audit reports two moderate entries (`uuid` and its direct parent `exceljs`)
+for this single unreachable advisory.
 
 ## Hardening checklist for host integrators
 

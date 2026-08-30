@@ -11,10 +11,16 @@
 // and headers are trimmed and all-empty rows skipped, matching the
 // `.xlsx` source path (`headerText` trims; `allEmpty` skips).
 
-import type { Row, SourceSpec, Xl3SourceJsonInput, Xl3SourceJsonValue } from './types.js';
+import type {
+  Row,
+  SourceSpec,
+  ValidationDiagnostic,
+  Xl3SourceJsonInput,
+  Xl3SourceJsonValue,
+} from './types.js';
 import type { SourceData } from './reader.js';
 import { isEmpty } from './functions.js';
-import { xtlError } from './error-codes.js';
+import { isXtlError, xtlError } from './error-codes.js';
 
 const WIRE_VERSION = 'xl3-source-json/0.1';
 
@@ -196,6 +202,67 @@ function buildSource(name: string, raw: unknown): SourceData {
   }
 
   return { sheetName: name, headers: normHeaders, rows: outRows };
+}
+
+/**
+ * Collect the row-shape and tagged-value errors that conversion would raise.
+ * Header/envelope diagnostics stay in validator.ts; this helper deliberately
+ * reuses mapValue() so full validation and conversion cannot drift on JSON
+ * scalar semantics.
+ */
+export function validateJsonSourceRows(
+  name: string,
+  raw: unknown,
+  headers: string[],
+): ValidationDiagnostic[] {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return [];
+  const rows = own(raw, 'rows');
+  if (!Array.isArray(rows)) return [];
+
+  const diagnostics: ValidationDiagnostic[] = [];
+  const invalid = (detail: string, rowIndex: number, column?: string) => {
+    diagnostics.push({
+      code: 'xl3/source-json/invalid',
+      severity: 'error',
+      source: name,
+      sheet: name,
+      ...(column ? { column } : {}),
+      location: `row:${rowIndex}`,
+      detail,
+    });
+  };
+
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+    if (!Object.prototype.hasOwnProperty.call(rows, rowIndex)) {
+      invalid(`source "${name}" row ${rowIndex} is missing (sparse rows array)`, rowIndex);
+      continue;
+    }
+    const row = rows[rowIndex];
+    if (!Array.isArray(row)) {
+      invalid(`source "${name}" row ${rowIndex} must be an array`, rowIndex);
+      continue;
+    }
+    if (row.length !== headers.length) {
+      invalid(
+        `source "${name}" row ${rowIndex} has ${row.length} value(s) but there are ${headers.length} headers`,
+        rowIndex,
+      );
+    }
+
+    for (let columnIndex = 0; columnIndex < Math.min(row.length, headers.length); columnIndex++) {
+      const header = headers[columnIndex]!;
+      const cell = Object.prototype.hasOwnProperty.call(row, columnIndex)
+        ? row[columnIndex]
+        : undefined;
+      try {
+        mapValue(cell as Xl3SourceJsonValue, `source "${name}" row ${rowIndex} column "${header}"`);
+      } catch (error) {
+        if (!isXtlError(error)) throw error;
+        invalid(error.message, rowIndex, header);
+      }
+    }
+  }
+  return diagnostics;
 }
 
 /**

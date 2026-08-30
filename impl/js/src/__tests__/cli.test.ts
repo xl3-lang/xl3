@@ -192,6 +192,27 @@ describeCli('xl3 CLI', () => {
     expect(report.diagnostics).toEqual([]);
   });
 
+  it('makes --depth=full reject a malformed JSON row', async () => {
+    const malformed = JSON.stringify({
+      version: 'xl3-source-json/0.1',
+      sources: { default: { headers: ['Customer'], rows: [['Acme', 'extra']] } },
+    });
+    const { code, stdout } = await cli(
+      ['validate', TEMPLATE, '--data=-', '--depth=full', '--json'],
+      malformed,
+    );
+
+    expect(code).toBe(1);
+    const report = JSON.parse(stdout);
+    expect(report.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'xl3/source-json/invalid',
+        location: 'row:0',
+        detail: expect.stringContaining('2 value(s) but there are 1 headers'),
+      }),
+    ]);
+  });
+
   it('returns exit 1 and all diagnostics for an incompatible source', async () => {
     const incompatible = JSON.stringify({
       version: 'xl3-source-json/0.1',
