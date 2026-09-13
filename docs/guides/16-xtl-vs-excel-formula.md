@@ -1,5 +1,37 @@
 # 16 · XTL function vs Excel formula
 
+## Opt in to formula reference adjustment (unreleased)
+
+Add this row to the template's `__config__` sheet:
+
+| key | value |
+|---|---|
+| `formula_mode` | `adjust` |
+
+For a single vertical, ungrouped data block, `=B2*2` now becomes
+`=B3*2`, `=B4*2`, etc. in repeated rows. A footer `=SUM(B2:B2)`
+becomes `=SUM(B2:B4)` for three records. `$B$2` stays fixed during
+copying, while references to cells below the block follow structural
+insertion even if they use `$`. Whole-column references are unchanged.
+
+This also handles multi-row records, directive-row deletion and shared
+formulas. Styles remain in the workbook. Cached formula results are cleared
+and Excel is requested to recalculate on open; readers that do not calculate
+formulas will not receive precomputed results from xl3.
+
+The first version rejects multiple/horizontal/grouped blocks on a sheet
+containing formulas, explicit sheet references, defined names, structured
+references, array/spill formulas, INDIRECT and OFFSET. Partial multi-row
+record ranges and ranges crossing stationary side columns are also rejected.
+Errors identify the template sheet and cell where applicable. Existing
+empty-source behavior is unchanged; a retained sheet emptied by a join is
+rejected in this mode. JS supports this mode; automatic backend selection
+uses JS and explicit WASM fails.
+
+Leave the setting absent, or use `preserve`, for the existing behavior
+described below. Test a copy of an existing template before enabling
+adjustment. Full rules: [ADR-0080](../../spec/decisions/0080-opt-in-formula-adjustment.md).
+
 ## Common gotchas — start here
 
 You probably arrived here because something didn't work the way
@@ -89,8 +121,9 @@ Four caveats that make this production-safe:
 Same root cause — xl3 doesn't rewrite range references. Two
 options:
 
-- **Whole-column reference** in the footer: `=SUM(B:B)` (or use
-  a `@filter` upstream to keep only data rows).
+- **Whole-column reference in a different column**: `=SUM(B:B)` in C,
+  provided column B contains only values intended for that total. Putting
+  this formula in column B includes itself and creates a circular reference.
 - **XTL aggregate**: put `{{ SUM([Amount]) }}` in the footer cell.
   This computes at render time and writes the number.
 

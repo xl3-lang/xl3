@@ -8,6 +8,8 @@ export interface TemplateMeta {
   source_table?: string;
   output_file_pattern: string;
   match_pattern: string;
+  /** ADR-0080: opt in to bounded A1 formula reference adjustment. */
+  formula_mode?: 'preserve' | 'adjust';
 }
 
 // ADR-0010: a runtime input declaration parsed from the `__inputs__`

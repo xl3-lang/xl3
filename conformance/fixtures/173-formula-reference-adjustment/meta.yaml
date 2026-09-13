@@ -1,0 +1,6 @@
+description: "Opt-in A1 formula adjustment replicates relative references and grows footer ranges while preserving styles."
+spec_section: ADR-0080; evaluation.md "Template Configuration"
+spec_version: "0.1"
+tags: [adr-0080, formula, repeat, preservation, stage2]
+comparison_stage: 2
+verified_by: [hand, spec-derivation]

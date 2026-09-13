@@ -17,6 +17,10 @@ import { xtlError, isXtlError, type XtlErrorCode } from '../error-codes.js';
 // added — any addition or rename pushes the 0.9-rc target. See
 // ROADMAP.md "0.8.x — Sociological gates (in flight)".
 const EXPECTED_CODES: XtlErrorCode[] = [
+  'xl3/formula/invalid-mode',
+  'xl3/formula/unsupported-reference',
+  'xl3/formula/unsupported-layout',
+  'xl3/formula/invalid-reference',
   'xl3/cell/formula-no-cache',
   'xl3/eval/arity-mismatch',
   'xl3/eval/operand-coercion',

@@ -6,6 +6,25 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Added
+
+- **Opt-in formula reference adjustment** (ADR-0080). Set `formula_mode`
+  to `adjust` in `__config__` to translate per-record A1 references and
+  extend footer ranges for a single vertical, ungrouped block. Relative,
+  absolute and mixed references, multi-row records, directive-row removal,
+  shared formulas and stationary side areas are covered. Template caches
+  are cleared and Excel is requested to recalculate on open. Unsupported
+  layouts/references fail with a sheet/cell diagnostic. The default stays
+  `preserve`; existing templates and fixture 129 retain their behavior.
+  Auto backend selection uses JS for this mode; explicit WASM is rejected.
+  Formula tokenization distinguishes reference intersections from function
+  calls, and direct ROW/COLUMN/ROWS/COLUMNS reference arguments are not
+  mistaken for circular value dependencies.
+
+- Four stable diagnostics: `xl3/formula/invalid-mode`,
+  `xl3/formula/unsupported-reference`, `xl3/formula/unsupported-layout`,
+  and `xl3/formula/invalid-reference`.
+
 ## [1.0.0-rc.1] - 2026-08-30
 
 The first 1.0 release candidate defines xl3's concrete product boundary:

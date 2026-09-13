@@ -34,6 +34,14 @@ so — that is different from "nobody checked."
 
 ## Rules with ranges
 
+**Unreleased opt-in:** `formula_mode=adjust` in `__config__` translates
+ordinary A1 cell formulas for a single vertical, ungrouped block and extends
+static ranges covering that block. It clears formula caches and requests
+Excel recalculation. Unsupported references fail instead of being guessed.
+The default remains `preserve`; this option does not change the named-range,
+image-anchor, print-area, chart, CF/DV-formula or page-break contracts below.
+See [the formula guide](./guides/16-xtl-vs-excel-formula.md).
+
 Range-bearing features follow one of two contracts. Conditional formatting
 and data validation grow only when their authored range is fully contained in
 an `@repeat` block. A partial overlap is left untouched, so a rule cannot bleed

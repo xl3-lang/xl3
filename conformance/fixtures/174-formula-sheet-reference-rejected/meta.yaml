@@ -1,0 +1,6 @@
+description: "Adjustment mode rejects explicit sheet references instead of silently retaining stale coordinates."
+spec_section: ADR-0080
+spec_version: "0.1"
+tags: [adr-0080, formula, validation]
+verified_by: [hand, spec-derivation]
+expected_error: "Report!C2: Only unqualified A1 references are supported"
