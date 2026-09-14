@@ -14,8 +14,7 @@ const blankRows = (count: number): string[][] => Array.from({ length: count }, (
 
 // One preview per walkthrough step. Clicking a step (01–03) swaps the
 // Excel view on the right to the artifact for that stage: raw data →
-// template → result. The template step carries two sheets (Report +
-// __config__) you can toggle inside the preview window.
+// template → result. The template preview focuses on the Report sheet.
 //
 // Built inside a hook so the caption strings (title / note / subtitle) are
 // localized via translate() at render time; filenames, sheet names, and
@@ -56,7 +55,7 @@ function useStepPreviews(): Workbook[] {
         ['', '', 'currency', ''],
       ],
     },
-    // 02 — Template: the executable workbook (two switchable sheets)
+    // 02 — Template: the Report sheet with data bindings
     {
       kind: 'template.xlsx',
       title: translate({
@@ -67,7 +66,7 @@ function useStepPreviews(): Workbook[] {
       note: translate({
         id: 'homepage.preview.template.note',
         message:
-          'The visible layout carries XTL {{ … }} cells; the hidden __config__ sheet declares the rules. Click the sheet tabs to switch between them.',
+          'The Report sheet combines your Excel layout with XTL {{ … }} cells that bind the data.',
         description: 'Excel preview note — template step',
       }),
       workbookTitle: 'template.xlsx',
@@ -77,21 +76,6 @@ function useStepPreviews(): Workbook[] {
         description: 'Excel preview window subtitle — template step',
       }),
       sheets: [
-        {
-          name: '__config__',
-          formula: 'source_table = 1',
-          rows: [
-            ['key', 'value', 'notes'],
-            ['source_sheet', 'Sheet1', 'worksheet to read'],
-            ['source_table', '1', 'column names and data rows'],
-            ...blankRows(5),
-          ],
-          classes: [
-            ['header', 'header', 'header'],
-            ['', '', ''],
-            ['', 'selected', ''],
-          ],
-        },
         {
           name: 'Report',
           formula: '{{ IF([Renewal] > 10000, "Priority", "Standard") }}',
@@ -399,7 +383,7 @@ function useWalkthroughSteps() {
       body: translate({
         id: 'homepage.walkthrough.step02.body',
         message:
-          'The template carries the visible layout with XTL {{ … }} cells and a hidden __config__ sheet that says what to repeat, filter, group, and render. Switch sheets in the preview to see both.',
+          'Design the Report sheet in Excel and add XTL {{ … }} cells where data belongs. The template keeps the layout and data bindings together.',
         description: 'Walkthrough step 02 body',
       }),
     },
