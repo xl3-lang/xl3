@@ -347,11 +347,11 @@
     "description": "Hero primary CTA button"
   },
   "homepage.walkthrough.step01.title": {
-    "message": "元データから始める",
+    "message": "毎回届く元データ",
     "description": "Walkthrough step 01 title"
   },
   "homepage.walkthrough.step01.body": {
-    "message": "アプリケーションが xl3 にデータテーブル — .xlsx シートまたは JSON ソース — と実行ごとの入力値を渡します。レイアウトに関するものはコードに存在しません。",
+    "message": "顧客、金額、担当者など、毎回変わるデータを .xlsx または JSON で渡します。テンプレートを適用する前の入力データです。",
     "description": "Walkthrough step 01 body"
   },
   "homepage.walkthrough.step02.title": {
@@ -359,15 +359,15 @@
     "description": "Walkthrough step 02 title"
   },
   "homepage.walkthrough.step02.body": {
-    "message": "Excel で Report シートをデザインし、データを入れるセルに XTL {{ … }} を記述します。レイアウトとデータのバインディングを一つのテンプレートで管理します。",
+    "message": "Excel でタイトルの背景色、フォント、罫線、セルの結合をデザインします。データを入れるセルに XTL {{ … }} を記述します。",
     "description": "Walkthrough step 02 body"
   },
   "homepage.walkthrough.step03.title": {
-    "message": "毎回同じワークブックを得る",
+    "message": "新しいデータ、同じ書式の文書",
     "description": "Walkthrough step 03 title"
   },
   "homepage.walkthrough.step03.body": {
-    "message": "適合するエンジンであれば、テンプレートを純粋関数のようにレンダリングします: 同じ入力、同じ出力 — 書式、結合、罫線がそのまま保たれます。",
+    "message": "データが変わっても、テンプレートのタイトルの背景色、フォント、セルの結合、罫線、数値書式はそのまま保たれます。",
     "description": "Walkthrough step 03 body"
   },
   "homepage.walkthrough.kicker": {
@@ -379,7 +379,7 @@
     "description": "Walkthrough section H2"
   },
   "homepage.walkthrough.lead": {
-    "message": "ビジネスユーザーは Excel でレイアウトを編集し、アプリケーションはデータと入力値を供給し、xl3 はワークブックを決定的に実行します。三つのステージをクリックして、一つのレポートが元データから完成した出力まで進む様子をたどってください。",
+    "message": "Excel でレイアウトをデザインしてデータを結び付けると、xl3 が文書を生成します。元データ → テンプレート → 出力を並べて比較できます。",
     "description": "Walkthrough section lead paragraph"
   },
   "homepage.handoff.kicker": {
@@ -751,15 +751,15 @@
     "description": "Link label inside the conformance fact sentence"
   },
   "homepage.preview.raw.title": {
-    "message": "元データから始めます。",
+    "message": "毎回新しい元データから始めます。",
     "description": "Excel preview caption — raw data step"
   },
   "homepage.preview.raw.note": {
-    "message": "アプリケーションが xl3 にデータテーブル — .xlsx シートまたは言語中立な JSON ソース — と実行ごとの入力値を渡します。レイアウトに関するものはコードに存在しません。",
+    "message": "顧客、金額、担当者など、毎回変わるデータを .xlsx または JSON で渡します。テンプレートを適用する前の入力データです。",
     "description": "Excel preview note — raw data step"
   },
   "homepage.preview.raw.subtitle": {
-    "message": "生のオペレーターデータ",
+    "message": "実行ごとに変わる、変換前のデータ",
     "description": "Excel preview window subtitle — raw data step"
   },
   "homepage.preview.template.title": {
@@ -849,5 +849,20 @@
   "consent.reset.change": {
     "message": "Cookie の選択を変更する",
     "description": "Privacy page button shown to visitors who declined cookies"
+  },
+  "homepage.flow.title": {
+    "message": "データのつながりを見る"
+  },
+  "homepage.flow.hint": {
+    "message": "フィールドにカーソルを合わせるか、キーボードで選択してつながりを確認。クリックで固定し、もう一度クリックするか Esc で解除します。"
+  },
+  "homepage.flow.clear": {
+    "message": "解除"
+  },
+  "homepage.flow.pinned": {
+    "message": "{field} を固定中"
+  },
+  "homepage.flow.explore": {
+    "message": "フィールドを選んでください"
   }
 }

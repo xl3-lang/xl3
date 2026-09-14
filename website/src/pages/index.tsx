@@ -4,17 +4,17 @@ import Link from '@docusaurus/Link';
 import Translate, { translate } from '@docusaurus/Translate';
 import clsx from 'clsx';
 import { CodeCard } from '@site/src/components/CodeCard';
-import { ExcelPreview, ExcelPreviewFrame } from '@site/src/components/ExcelPreview';
-import type { Workbook } from '@site/src/components/ExcelPreview';
+import { ExcelPreview } from '@site/src/components/ExcelPreview';
+import type { FieldInteraction, PreviewField, Workbook } from '@site/src/components/ExcelPreview';
+import { WorkbookFlow } from '@site/src/components/WorkbookFlow';
 import styles from './index.module.css';
 
 // Trailing blank rows so every sheet has breathing room below the data
 // and the fixed-height viewer scrolls like a real Excel worksheet.
 const blankRows = (count: number): string[][] => Array.from({ length: count }, () => []);
 
-// One preview per walkthrough step. Clicking a step (01–03) swaps the
-// Excel view on the right to the artifact for that stage: raw data →
-// template → result. The template preview focuses on the Report sheet.
+// Three simultaneous previews trace raw data → template → result.
+// The template preview focuses on the Report sheet.
 //
 // Built inside a hook so the caption strings (title / note / subtitle) are
 // localized via translate() at render time; filenames, sheet names, and
@@ -26,23 +26,24 @@ function useStepPreviews(): Workbook[] {
       kind: 'data.xlsx',
       title: translate({
         id: 'homepage.preview.raw.title',
-        message: 'Start with the raw data.',
+        message: 'Start with fresh data for each run.',
         description: 'Excel preview caption — raw data step',
       }),
       note: translate({
         id: 'homepage.preview.raw.note',
         message:
-          'The application hands xl3 a data table — an .xlsx sheet or a language-neutral JSON source — plus any per-run inputs. Nothing about layout lives in code.',
+          'Pass the latest customers, amounts, and owners as .xlsx or JSON. This is the input data before the template is applied.',
         description: 'Excel preview note — raw data step',
       }),
       workbookTitle: 'data.xlsx',
       workbookSubtitle: translate({
         id: 'homepage.preview.raw.subtitle',
-        message: 'raw operator data',
+        message: 'new input for each run, before rendering',
         description: 'Excel preview window subtitle — raw data step',
       }),
       formula: 'Acme Logistics',
       sheetName: 'Sheet1',
+      columnFields: ['Account', 'Region', 'Renewal', 'Owner'],
       rows: [
         ['Account', 'Region', 'Renewal', 'Owner'],
         ['Acme Logistics', 'Seoul', '18400', 'Mina'],
@@ -51,7 +52,7 @@ function useStepPreviews(): Workbook[] {
       ],
       classes: [
         ['header', 'header', 'header', 'header'],
-        ['selected', '', 'currency', ''],
+        ['', '', 'currency', ''],
         ['', '', 'currency', ''],
       ],
     },
@@ -78,6 +79,8 @@ function useStepPreviews(): Workbook[] {
       sheets: [
         {
           name: 'Report',
+          columnFields: ['Account', 'Region', 'Renewal', 'Owner', 'Renewal'],
+          fieldHeaderRow: 1,
           formula: '{{ IF([Renewal] > 10000, "Priority", "Standard") }}',
           rows: [
             ['Customer Renewal Report', '', '', '', ''],
@@ -92,9 +95,9 @@ function useStepPreviews(): Workbook[] {
             ...blankRows(5),
           ],
           classes: [
+            ['report-title', '', '', '', ''],
             ['header', 'header', 'header', 'header', 'header'],
-            ['header', 'header', 'header', 'header', 'header'],
-            ['template', 'template', 'template', 'template', 'selected template'],
+            ['template', 'template', 'template', 'template', 'template'],
           ],
           merges: [{ row: 0, col: 0, span: 5 }],
         },
@@ -122,6 +125,8 @@ function useStepPreviews(): Workbook[] {
       }),
       formula: 'Priority',
       sheetName: 'Report',
+      columnFields: ['Account', 'Region', 'Renewal', 'Owner', 'Renewal'],
+      fieldHeaderRow: 1,
       rows: [
         ['Customer Renewal Report', '', '', '', ''],
         ['Account', 'Region', 'Renewal', 'Owner', 'Tier'],
@@ -130,7 +135,7 @@ function useStepPreviews(): Workbook[] {
         ...blankRows(4),
       ],
       classes: [
-        ['header', 'header', 'header', 'header', 'header'],
+        ['report-title', '', '', '', ''],
         ['header', 'header', 'header', 'header', 'header'],
         ['', '', 'currency', '', 'status'],
         ['', '', 'currency', '', 'status'],
@@ -363,13 +368,13 @@ function useWalkthroughSteps() {
       index: '01',
       title: translate({
         id: 'homepage.walkthrough.step01.title',
-        message: 'Start with the raw data',
+        message: 'Fresh data for each run',
         description: 'Walkthrough step 01 title',
       }),
       body: translate({
         id: 'homepage.walkthrough.step01.body',
         message:
-          'The application hands xl3 a data table — an .xlsx sheet or a JSON source — plus any per-run inputs. Nothing about layout lives in code.',
+          'Pass the latest customers, amounts, and owners as .xlsx or JSON. This is the input data before the template is applied.',
         description: 'Walkthrough step 01 body',
       }),
     },
@@ -383,7 +388,7 @@ function useWalkthroughSteps() {
       body: translate({
         id: 'homepage.walkthrough.step02.body',
         message:
-          'Design the Report sheet in Excel and add XTL {{ … }} cells where data belongs. The template keeps the layout and data bindings together.',
+          'Style the title, fonts, borders, and merged cells in Excel. Add XTL {{ … }} cells where data belongs.',
         description: 'Walkthrough step 02 body',
       }),
     },
@@ -391,13 +396,13 @@ function useWalkthroughSteps() {
       index: '03',
       title: translate({
         id: 'homepage.walkthrough.step03.title',
-        message: 'Get the same workbook, every run',
+        message: 'New data, the same document style',
         description: 'Walkthrough step 03 title',
       }),
       body: translate({
         id: 'homepage.walkthrough.step03.body',
         message:
-          'Any conforming engine renders the template as a pure function: same inputs, same output — formats, merges, and borders preserved verbatim.',
+          'The data changes; the template’s title fill, fonts, merged cells, borders, and number formats stay the same.',
         description: 'Walkthrough step 03 body',
       }),
     },
@@ -407,10 +412,33 @@ function useWalkthroughSteps() {
 function Walkthrough() {
   const steps = useWalkthroughSteps();
   const stepPreviews = useStepPreviews();
-  const [active, setActive] = React.useState(0);
-  const preview = stepPreviews[active];
+  const [hoveredField, setHoveredField] = React.useState<PreviewField | null>(null);
+  const [focusedField, setFocusedField] = React.useState<PreviewField | null>(null);
+  const [pinnedField, setPinnedField] = React.useState<PreviewField | null>(null);
+  const clearField = () => {
+    setPinnedField(null);
+    setHoveredField(null);
+    setFocusedField(null);
+  };
+  const interaction: FieldInteraction = {
+    activeField: pinnedField ?? hoveredField ?? focusedField,
+    pinnedField,
+    onHover: setHoveredField,
+    onFocus: setFocusedField,
+    onPin: (field) => {
+      setPinnedField((previous) => (previous === field ? null : field));
+      setHoveredField(null);
+      setFocusedField(null);
+    },
+  };
   return (
-    <section id="walkthrough" className={styles.walkthrough}>
+    <section
+      id="walkthrough"
+      className={styles.walkthrough}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') clearField();
+      }}
+    >
       <div className="container">
         <div className={styles.sectionIntro}>
           <p className={styles.kicker}>
@@ -429,44 +457,34 @@ function Walkthrough() {
               description="Walkthrough section lead paragraph"
             >
               The business user edits layout in Excel; the application supplies data and inputs; xl3
-              executes the workbook deterministically. Click through the three stages to follow one
-              report from raw data to finished output.
+              executes the workbook deterministically. Follow the three workbooks side by side, from
+              raw data to finished output.
             </Translate>
           </p>
         </div>
+        <WorkbookFlow interaction={interaction} onClear={clearField} />
         <div className={styles.walkthroughLayout}>
-          <div
-            className={styles.stepsGrid}
-            role="tablist"
-            aria-label={translate({
-              id: 'homepage.walkthrough.steps.ariaLabel',
-              message: 'Workflow steps',
-              description: 'Aria label for the clickable walkthrough step list',
-            })}
-          >
-            {steps.map((s, i) => (
-              <button
-                key={s.index}
-                type="button"
-                role="tab"
-                aria-selected={i === active}
-                className={clsx(styles.stepCard, i === active && styles.stepCardActive)}
-                onClick={() => setActive(i)}
-              >
-                <span className={styles.stepIndex}>{s.index}</span>
-                <div>
-                  <h3 className={styles.stepTitle}>{s.title}</h3>
-                  <p className={styles.stepBody}>{s.body}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-          <div className={styles.previewColumn}>
-            <ExcelPreviewFrame kind={preview.kind} title={preview.title} note={preview.note}>
-              {/* key on active step so the sheet-tab state resets when the step changes */}
-              <ExcelPreview key={active} workbook={preview} />
-            </ExcelPreviewFrame>
-          </div>
+          {steps.map((step, index) => (
+            <article
+              key={step.index}
+              className={styles.stepCard}
+              aria-labelledby={`flow-step-${step.index}`}
+            >
+              <header className={styles.stepHeader}>
+                <span className={styles.stepIndex}>{step.index}</span>
+                <h3 id={`flow-step-${step.index}`} className={styles.stepTitle}>
+                  {step.title}
+                </h3>
+                {index < 2 ? (
+                  <span className={styles.stepArrow} aria-hidden="true">
+                    →
+                  </span>
+                ) : null}
+              </header>
+              <ExcelPreview workbook={stepPreviews[index]} interaction={interaction} compact />
+              <p className={styles.stepBody}>{step.body}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
