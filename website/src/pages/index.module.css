@@ -14,7 +14,7 @@
 
 .heroBanner::before,
 .heroBanner::after {
-  content: "";
+  content: '';
   position: absolute;
   pointer-events: none;
   border-top: 1px solid rgba(96, 165, 250, 0.32);
@@ -135,8 +135,7 @@
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(37, 99, 235, 0.18), transparent 36%),
-    rgba(7, 17, 31, 0.78);
+    linear-gradient(135deg, rgba(37, 99, 235, 0.18), transparent 36%), rgba(7, 17, 31, 0.78);
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.36);
   backdrop-filter: blur(16px);
 }
@@ -169,9 +168,7 @@
   padding: 1rem 1.05rem 1.1rem;
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(37, 99, 235, 0.12), transparent 38%),
-    #07111f;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), transparent 38%), #07111f;
 }
 
 .ruleBar {
@@ -359,111 +356,65 @@
 .handoff,
 .api {
   padding: 5rem 0;
-  background:
-    radial-gradient(circle at 92% 8%, rgba(37, 99, 235, 0.07), transparent 30%),
-    #ffffff;
+  background: radial-gradient(circle at 92% 8%, rgba(37, 99, 235, 0.07), transparent 30%), #ffffff;
 }
 
 .walkthroughLayout {
   display: grid;
-  grid-template-columns: minmax(260px, 0.86fr) minmax(0, 1.14fr);
-  gap: 1.5rem;
-  /* stretch both columns to the same height so the steps line up with the
-     Excel viewer (symmetric top and bottom edges) */
-  align-items: stretch;
-}
-
-.previewColumn {
-  position: sticky;
-  top: calc(var(--ifm-navbar-height) + 1.3rem);
-  /* A grid item's automatic minimum is its content size, and this column holds
-     the Excel viewer, whose sheet is deliberately `width: max-content`. Without
-     this the item sizes to the whole sheet and drags the page into horizontal
-     scroll on narrow viewports — the sheet is meant to scroll inside
-     `.sheetWrap`, not to widen the document. */
-  min-width: 0;
-}
-
-.stepsGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  height: 100%;
-  /* Same reason as .previewColumn: this is the other track of
-     .walkthroughLayout, and a long unbroken token in a step card would
-     otherwise push the grid wider than the viewport. */
-  min-width: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
 }
 
 .stepCard {
-  display: grid;
-  grid-template-columns: 3.1rem minmax(0, 1fr);
-  gap: 1rem;
-  width: 100%;
-  /* grow equally so the three cards fill the viewer height in step; content
-     stays vertically centered in the taller card */
-  flex: 1;
+  min-width: 0;
+}
+.stepHeader {
+  display: flex;
   align-items: center;
-  padding: 1.2rem 1.2rem;
-  border: 1px solid #d8dee8;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.05);
-  /* rendered as a <button> — reset native styling and align content left */
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, transform 0.15s ease;
+  gap: 0.65rem;
+  min-height: 64px;
+  padding: 0.6rem 0;
 }
-
-.stepCard:hover {
-  border-color: #93b4f5;
-}
-
-.stepCard:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
-}
-
-.stepCardActive {
-  border-color: #2563eb;
-  background: #ffffff;
-  box-shadow: 0 18px 38px rgba(37, 99, 235, 0.16);
-}
-
-.stepCardActive .stepIndex {
-  color: #1d4ed8;
-}
-
 .stepIndex {
   color: #2563eb;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.9rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.82rem;
   font-weight: 800;
 }
-
 .stepTitle {
-  margin: 0 0 0.42rem;
-  color: #0f172a;
-  font-size: 1.04rem;
-  line-height: 1.25;
-}
-
-.stepBody {
   margin: 0;
+  color: #0f172a;
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+.stepArrow {
+  margin-left: auto;
+  color: #2563eb;
+  font-size: 1.25rem;
+}
+.stepBody {
+  margin: 1rem 0 0;
   color: #475569;
-  font-size: 0.94rem;
-  line-height: 1.58;
+  font-size: 0.84rem;
+  line-height: 1.65;
+}
+[data-theme='dark'] .stepTitle {
+  color: #f1f5f9;
+}
+[data-theme='dark'] .stepBody {
+  color: #94a3b8;
+}
+@media (max-width: 996px) {
+  .stepArrow {
+    transform: rotate(90deg);
+  }
 }
 
 .responsibility,
 .comparison {
   padding: 5rem 0;
-  background:
-    linear-gradient(180deg, #f8fafc 0%, #ffffff 52%, #eef2f7 100%);
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 52%, #eef2f7 100%);
   border-top: 1px solid #d8dee8;
   border-bottom: 1px solid #d8dee8;
 }
@@ -658,10 +609,6 @@
 
   .heroTitle {
     font-size: 3.5rem;
-  }
-
-  .previewColumn {
-    position: static;
   }
 
   .stageGrid,

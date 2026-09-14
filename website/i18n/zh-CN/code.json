@@ -347,11 +347,11 @@
     "description": "Hero primary CTA button"
   },
   "homepage.walkthrough.step01.title": {
-    "message": "从原始数据开始",
+    "message": "每次传入的原始数据",
     "description": "Walkthrough step 01 title"
   },
   "homepage.walkthrough.step01.body": {
-    "message": "应用把一张数据表——一个 .xlsx 工作表或一个 JSON 源——连同任意逐次输入一起交给 xl3。任何与布局相关的东西都不在代码里。",
+    "message": "以 .xlsx 或 JSON 传入每次变化的客户、金额、负责人等数据。这些是尚未应用模板的输入数据。",
     "description": "Walkthrough step 01 body"
   },
   "homepage.walkthrough.step02.title": {
@@ -359,15 +359,15 @@
     "description": "Walkthrough step 02 title"
   },
   "homepage.walkthrough.step02.body": {
-    "message": "在 Excel 中设计 Report 工作表，并在需要填入数据的单元格中编写 XTL {{ … }}。布局和数据绑定都保存在同一个模板中。",
+    "message": "在 Excel 中设计标题背景色、字体、边框和合并单元格，并在需要填入数据的单元格中编写 XTL {{ … }}。",
     "description": "Walkthrough step 02 body"
   },
   "homepage.walkthrough.step03.title": {
-    "message": "每次都得到同一个工作簿",
+    "message": "新数据，相同格式的文档",
     "description": "Walkthrough step 03 title"
   },
   "homepage.walkthrough.step03.body": {
-    "message": "任何合规的引擎都会把模板当作纯函数来渲染：相同输入，相同输出——格式、合并与边框都原样保留。",
+    "message": "即使数据发生变化，模板中的标题背景色、字体、合并单元格、边框和数字格式仍保持不变。",
     "description": "Walkthrough step 03 body"
   },
   "homepage.walkthrough.kicker": {
@@ -379,7 +379,7 @@
     "description": "Walkthrough section H2"
   },
   "homepage.walkthrough.lead": {
-    "message": "业务用户在 Excel 中编辑布局；应用提供数据与输入；xl3 确定性地执行工作簿。点击这三个阶段，跟随一份报表从原始数据走到成品输出。",
+    "message": "在 Excel 中设计布局并绑定数据，xl3 即可生成文档。并排查看原始数据 → 模板 → 输出结果。",
     "description": "Walkthrough section lead paragraph"
   },
   "homepage.handoff.kicker": {
@@ -751,15 +751,15 @@
     "description": "Link label inside the conformance fact sentence"
   },
   "homepage.preview.raw.title": {
-    "message": "从原始数据开始。",
+    "message": "每次都从新的原始数据开始。",
     "description": "Excel preview caption — raw data step"
   },
   "homepage.preview.raw.note": {
-    "message": "应用把一张数据表——一个 .xlsx 工作表或一个语言中立的 JSON 源——连同任意逐次输入一起交给 xl3。任何与布局相关的东西都不在代码里。",
+    "message": "以 .xlsx 或 JSON 传入每次变化的客户、金额、负责人等数据。这些是尚未应用模板的输入数据。",
     "description": "Excel preview note — raw data step"
   },
   "homepage.preview.raw.subtitle": {
-    "message": "原始操作数据",
+    "message": "每次运行都会变化的转换前数据",
     "description": "Excel preview window subtitle — raw data step"
   },
   "homepage.preview.template.title": {
@@ -849,5 +849,20 @@
   "consent.reset.change": {
     "message": "更改 Cookie 选择",
     "description": "Privacy page button shown to visitors who declined cookies"
+  },
+  "homepage.flow.title": {
+    "message": "查看数据关联"
+  },
+  "homepage.flow.hint": {
+    "message": "悬停或通过键盘聚焦字段以查看关联。点击固定，再次点击或按 Esc 取消。"
+  },
+  "homepage.flow.clear": {
+    "message": "取消"
+  },
+  "homepage.flow.pinned": {
+    "message": "已固定 {field}"
+  },
+  "homepage.flow.explore": {
+    "message": "请选择字段"
   }
 }

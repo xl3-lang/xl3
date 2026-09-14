@@ -10,6 +10,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { checkPreviewFlow } from './preview-flow-checks.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = join(HERE, '..');
@@ -127,6 +128,8 @@ try {
     throw new Error(`sample input default was not loaded: ${await month.inputValue()}`);
   }
   await inputContext.close();
+
+  await checkPreviewFlow(browser, baseUrl, pageErrors);
 
   if (pageErrors.length > 0) {
     throw new Error(`page errors: ${pageErrors.join(' | ')}`);

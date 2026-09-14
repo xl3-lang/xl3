@@ -347,11 +347,11 @@
     "description": "Hero primary CTA button"
   },
   "homepage.walkthrough.step01.title": {
-    "message": "원본 데이터로 시작",
+    "message": "매번 들어오는 원본 데이터",
     "description": "Walkthrough step 01 title"
   },
   "homepage.walkthrough.step01.body": {
-    "message": "애플리케이션은 데이터 테이블(.xlsx 시트 또는 JSON 소스)과 실행 시 입력값을 xl3에 넘깁니다. 레이아웃에 관한 것은 코드에 하나도 들어가지 않습니다.",
+    "message": "고객, 금액, 담당자처럼 매번 바뀌는 데이터를 .xlsx 또는 JSON으로 전달합니다. 아직 템플릿을 적용하기 전의 입력 데이터입니다.",
     "description": "Walkthrough step 01 body"
   },
   "homepage.walkthrough.step02.title": {
@@ -359,15 +359,15 @@
     "description": "Walkthrough step 02 title"
   },
   "homepage.walkthrough.step02.body": {
-    "message": "Excel에서 Report 시트를 디자인하고, 데이터가 들어갈 셀에 XTL {{ … }}을 작성합니다. 레이아웃과 데이터 연결을 템플릿 하나에서 관리합니다.",
+    "message": "Excel에서 제목 배경색, 글꼴, 테두리와 셀 병합을 디자인합니다. 데이터가 들어갈 셀에는 XTL {{ … }}을 작성합니다.",
     "description": "Walkthrough step 02 body"
   },
   "homepage.walkthrough.step03.title": {
-    "message": "매번 같은 Excel 파일을 생성",
+    "message": "새 데이터, 같은 서식의 문서",
     "description": "Walkthrough step 03 title"
   },
   "homepage.walkthrough.step03.body": {
-    "message": "적합성을 통과한 엔진이라면 어느 것이든 템플릿을 순수 함수처럼 렌더링합니다: 같은 입력, 같은 출력 — 서식, 병합, 테두리가 그대로 보존됩니다.",
+    "message": "데이터가 달라져도 템플릿의 제목 배경색, 글꼴, 셀 병합, 테두리와 숫자 서식은 그대로 유지됩니다.",
     "description": "Walkthrough step 03 body"
   },
   "homepage.walkthrough.kicker": {
@@ -379,7 +379,7 @@
     "description": "Walkthrough section H2"
   },
   "homepage.walkthrough.lead": {
-    "message": "비개발자는 Excel에서 출력 양식을 설계하고, 애플리케이션은 데이터와 입력값을 전달합니다. xl3는 이 둘을 결합해 항상 같은 결과를 만듭니다. 아래 세 단계에서 원본 데이터가 완성된 Excel 파일로 변환되는 과정을 확인해 보세요.",
+    "message": "Excel에서 양식을 디자인하고 데이터를 연결하면 xl3가 문서를 생성합니다. 원본 데이터 → 템플릿 → 결과를 나란히 비교해 보세요.",
     "description": "Walkthrough section lead paragraph"
   },
   "homepage.walkthrough.steps.ariaLabel": {
@@ -751,15 +751,15 @@
     "description": "BrowserOnly fallback while xl3 engine loads"
   },
   "homepage.preview.raw.title": {
-    "message": "원본 데이터로 시작합니다.",
+    "message": "매번 새로운 원본 데이터로 시작합니다.",
     "description": "Excel preview caption — raw data step"
   },
   "homepage.preview.raw.note": {
-    "message": "애플리케이션은 데이터 테이블(.xlsx 시트 또는 언어 중립적인 JSON 소스)과 실행 시 입력값을 xl3에 넘깁니다. 레이아웃에 관한 것은 코드에 하나도 들어가지 않습니다.",
+    "message": "고객, 금액, 담당자처럼 매번 바뀌는 데이터를 .xlsx 또는 JSON으로 전달합니다. 아직 템플릿을 적용하기 전의 입력 데이터입니다.",
     "description": "Excel preview note — raw data step"
   },
   "homepage.preview.raw.subtitle": {
-    "message": "원본 운영 데이터",
+    "message": "실행마다 달라지는 변환 전 데이터",
     "description": "Excel preview window subtitle — raw data step"
   },
   "homepage.preview.template.title": {
@@ -849,5 +849,20 @@
   "consent.reset.change": {
     "message": "쿠키 선택 변경",
     "description": "Privacy page button shown to visitors who declined cookies"
+  },
+  "homepage.flow.title": {
+    "message": "데이터 연결 살펴보기"
+  },
+  "homepage.flow.hint": {
+    "message": "필드에 마우스를 올리거나 키보드로 선택해 연결을 확인하세요. 클릭하면 고정되고, 다시 클릭하거나 Esc를 누르면 해제됩니다."
+  },
+  "homepage.flow.clear": {
+    "message": "해제"
+  },
+  "homepage.flow.pinned": {
+    "message": "{field} 고정됨"
+  },
+  "homepage.flow.explore": {
+    "message": "필드를 선택해 보세요"
   }
 }

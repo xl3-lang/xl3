@@ -83,16 +83,12 @@
   min-height: 58px;
   padding: 0.8rem 0.95rem;
   border-bottom: 1px solid rgba(216, 222, 232, 0.88);
-  background:
-    linear-gradient(135deg, rgba(37, 99, 235, 0.08), transparent 42%),
-    #f8fafc;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), transparent 42%), #f8fafc;
 }
 
 [data-theme='dark'] .titlebar {
   border-bottom-color: rgba(148, 163, 184, 0.18);
-  background:
-    linear-gradient(135deg, rgba(37, 99, 235, 0.18), transparent 42%),
-    #07111f;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.18), transparent 42%), #07111f;
 }
 
 .titlebar strong {
@@ -234,6 +230,21 @@
   font-weight: 820;
 }
 
+/* The same authored title formatting appears in template and result. */
+.sheetGrid td.reportTitle {
+  height: 64px;
+  padding: 0.85rem 1rem;
+  background: #17365d;
+  color: #ffffff;
+  font-family: Calibri, 'Segoe UI', sans-serif;
+  font-size: 0.94rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  text-align: left;
+  border-bottom: 3px solid #e9b44c;
+}
+
 [data-theme='dark'] .headerCell {
   background: rgba(37, 99, 235, 0.18) !important;
   color: #bfdbfe !important;
@@ -243,6 +254,59 @@
   color: #1d4ed8;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.76rem;
+}
+
+.sheetGrid td.interactiveCell {
+  padding: 0;
+}
+.cellButton {
+  display: block;
+  width: 100%;
+  min-height: 45px;
+  padding: 0.45rem 0.6rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+.cellButton:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -3px;
+}
+.sheetGrid td.linkedCell {
+  background: #eff6ff !important;
+  box-shadow: inset 0 0 0 1.5px #60a5fa;
+}
+.referencePulse {
+  display: inline-block;
+  white-space: nowrap;
+  border-radius: 3px;
+  background: #bfdbfe;
+  color: #1e3a8a;
+  box-shadow: 0 0 0 1px #60a5fa;
+  animation: referenceGlow 1.6s ease-in-out 2;
+}
+@keyframes referenceGlow {
+  50% {
+    background: #93c5fd;
+    box-shadow:
+      0 0 0 2px #2563eb,
+      0 0 9px #93c5fd;
+  }
+}
+[data-theme='dark'] .sheetGrid td.linkedCell {
+  background: #172b49 !important;
+}
+[data-theme='dark'] .referencePulse {
+  background: #1e40af;
+  color: #eff6ff;
+}
+@media (prefers-reduced-motion: reduce) {
+  .referencePulse {
+    animation: none;
+  }
 }
 
 [data-theme='dark'] .templateCell {
@@ -319,7 +383,10 @@
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    border-color 0.12s ease;
 }
 
 .sheetTabButton:focus-visible {
@@ -346,4 +413,42 @@
 
 [data-theme='dark'] .sheetTabInactive:hover {
   color: #bfdbfe;
+}
+
+/* Fit each workbook into one third of the walkthrough without hiding Tier. */
+.compact .sheetWrap {
+  height: 310px;
+}
+.compact .sheetGrid {
+  display: table;
+  width: 100%;
+  min-width: 380px;
+  font-size: 0.7rem;
+}
+.compact .sheetGrid thead th:not(:first-child) {
+  width: auto;
+}
+.compact .sheetGrid thead th:first-child,
+.compact .sheetGrid tbody th {
+  width: 28px;
+  padding: 0.25rem;
+}
+.compact .sheetGrid td {
+  overflow-wrap: anywhere;
+}
+.compact .cellButton {
+  padding: 0.4rem 0.3rem;
+}
+.compact .templateCell {
+  font-size: 0.65rem;
+}
+.compact .titlebar {
+  padding: 0.7rem;
+  min-height: 64px;
+}
+.compact .titlebar small {
+  font-size: 0.68rem;
+}
+.compact .sheetTab {
+  min-width: 80px;
 }
