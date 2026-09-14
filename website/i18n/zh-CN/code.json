@@ -359,7 +359,7 @@
     "description": "Walkthrough step 02 title"
   },
   "homepage.walkthrough.step02.body": {
-    "message": "模板同时承载着带有 XTL {{ … }} 单元格的可见布局，以及一张隐藏的 __config__ 表，用来声明重复、过滤、分组与渲染的规则。在预览中切换工作表即可同时看到两者。",
+    "message": "在 Excel 中设计 Report 工作表，并在需要填入数据的单元格中编写 XTL {{ … }}。布局和数据绑定都保存在同一个模板中。",
     "description": "Walkthrough step 02 body"
   },
   "homepage.walkthrough.step03.title": {
@@ -767,7 +767,7 @@
     "description": "Excel preview caption — template step"
   },
   "homepage.preview.template.note": {
-    "message": "可见的布局承载着 XTL {{ … }} 单元格；隐藏的 __config__ 表声明规则。点击工作表标签即可在两者之间切换。",
+    "message": "Report 工作表将 Excel 布局与用于绑定数据的 XTL {{ … }} 单元格放在一起。",
     "description": "Excel preview note — template step"
   },
   "homepage.preview.template.subtitle": {

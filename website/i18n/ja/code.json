@@ -359,7 +359,7 @@
     "description": "Walkthrough step 02 title"
   },
   "homepage.walkthrough.step02.body": {
-    "message": "テンプレートは、XTL {{ … }} セルを含む目に見えるレイアウトと、何を繰り返し・フィルタ・グループ化・レンダリングするかを宣言する隠し __config__ シートの両方を持ちます。プレビューでシートを切り替えて両方を確認してください。",
+    "message": "Excel で Report シートをデザインし、データを入れるセルに XTL {{ … }} を記述します。レイアウトとデータのバインディングを一つのテンプレートで管理します。",
     "description": "Walkthrough step 02 body"
   },
   "homepage.walkthrough.step03.title": {
@@ -767,7 +767,7 @@
     "description": "Excel preview caption — template step"
   },
   "homepage.preview.template.note": {
-    "message": "目に見えるレイアウトは XTL {{ … }} セルを含み、隠し __config__ シートがルールを宣言します。シートタブをクリックして切り替えてください。",
+    "message": "Report シートには、Excel のレイアウトとデータを結び付ける XTL {{ … }} セルが含まれています。",
     "description": "Excel preview note — template step"
   },
   "homepage.preview.template.subtitle": {

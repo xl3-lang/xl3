@@ -359,7 +359,7 @@
     "description": "Walkthrough step 02 title"
   },
   "homepage.walkthrough.step02.body": {
-    "message": "템플릿 하나에 XTL {{ … }} 셀이 담긴 눈에 보이는 레이아웃과, 무엇을 반복·필터·그룹화·렌더링할지 선언하는 숨겨진 __config__ 시트가 함께 들어 있습니다. 미리보기에서 시트를 전환해 둘 다 확인해 보세요.",
+    "message": "Excel에서 Report 시트를 디자인하고, 데이터가 들어갈 셀에 XTL {{ … }}을 작성합니다. 레이아웃과 데이터 연결을 템플릿 하나에서 관리합니다.",
     "description": "Walkthrough step 02 body"
   },
   "homepage.walkthrough.step03.title": {
@@ -767,7 +767,7 @@
     "description": "Excel preview caption — template step"
   },
   "homepage.preview.template.note": {
-    "message": "눈에 보이는 레이아웃은 XTL {{ … }} 셀을 담고, 숨겨진 __config__ 시트가 규칙을 선언합니다. 시트 탭을 클릭해 둘을 전환해 보세요.",
+    "message": "Report 시트에 Excel 레이아웃과 데이터를 연결하는 XTL {{ … }} 셀이 함께 담겨 있습니다.",
     "description": "Excel preview note — template step"
   },
   "homepage.preview.template.subtitle": {
