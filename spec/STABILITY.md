@@ -2,6 +2,13 @@
 
 ## Current state
 
+Unreleased ADR-0080 adds opt-in `TemplateMeta.formula_mode` and the error
+codes `xl3/formula/invalid-mode`, `xl3/formula/unsupported-reference`,
+`xl3/formula/unsupported-layout`, and `xl3/formula/invalid-reference`.
+Existing templates retain ADR-0046 formula behavior when the option is
+omitted. See [the adjustment contract](./decisions/0080-opt-in-formula-adjustment.md)
+before enabling it; current WASM ports do not support this mode.
+
 XTL is at version **0.1**. The reference impl ships XTL 0.1 as
 `@xl3-lang/xl3` on npm; its package version moves on a timeline
 independent of the spec version (see

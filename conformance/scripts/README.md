@@ -24,6 +24,16 @@ The committed `.xlsx` files in `conformance/fixtures/<NNN>-*/` are the artifacts
 
 ## Verifying a fixture against the impl
 
+ADR-0080's formula fixtures 173 and 174 have a separate authoring script:
+
+```bash
+node conformance/scripts/build-formula-fixtures.mjs
+```
+
+It writes explicit expected formula strings from the ADR and never invokes
+the renderer. Fixture 173 uses Stage 2 so cached values cannot mask wrong
+formula references.
+
 `AUTHORING.md` step 4 — run the reference impl and confirm it agrees with
 the hand-authored `expected.xlsx`:
 
@@ -40,4 +50,3 @@ repaired — its comparison collapsed dates to ISO strings, so it would
 have passed a fixture whose expected `Date` had been replaced by the
 equivalent text. A checker that cannot see that difference gives false
 assurance on exactly the fixtures that pin native value types.
-

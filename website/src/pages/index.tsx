@@ -742,8 +742,8 @@ function Standard() {
               // minus ADR-0018 (a reserved gap placeholder, not a decision),
               // and the corpus size in conformance/DASHBOARD.md. Refresh both
               // on every release cut.
-              adrCount: <strong>79 ADRs</strong>,
-              fixtureCount: <strong>171 conformance fixtures</strong>,
+              adrCount: <strong>80 ADRs</strong>,
+              fixtureCount: <strong>173 conformance fixtures</strong>,
               npmLink: <a href="https://www.npmjs.com/package/@xl3-lang/xl3">@xl3-lang/xl3</a>,
               portersGuideLink: (
                 <Link to="/porters-guide">

@@ -1,5 +1,8 @@
 # ADR 0046 - Cell formula preservation contract
 
+> ADR-0080 adds opt-in `formula_mode=adjust`. This ADR remains the default
+> contract when the setting is omitted or `preserve`.
+
 - **Status:** accepted
 - **Date:** 2026-05-18
 - **Spec target:** XTL 0.1

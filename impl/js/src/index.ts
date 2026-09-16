@@ -337,6 +337,11 @@ export async function convert(
         // we accept paying it twice (once here, once inside the JS
         // fallback) rather than reorganising the call sites.
         const parsed = await parseTemplate(templateBuffer);
+        if (parsed.meta.formula_mode === 'adjust') {
+          throw new Error(
+            'formula_mode=adjust requires the JavaScript engine; use engine: "js" or "auto"',
+          );
+        }
         const manifest = extractManifest(parsed.workbook);
         // wasmConvert is synchronous, so a throw from it still lands in
         // the catch below and 'auto' still falls back to the JS path.
@@ -388,6 +393,12 @@ export async function preview(
   // the wasm bridge cannot reconstruct from its abbreviated surface.
   throwIfAborted(options?.signal);
   if (options?.engine === 'wasm') {
+    const parsed = await parseTemplate(templateBuffer);
+    if (parsed.meta.formula_mode === 'adjust') {
+      throw new Error(
+        'formula_mode=adjust requires the JavaScript engine; use engine: "js" or "auto"',
+      );
+    }
     const engine = await tryLoadWasmEngine();
     if (!engine) {
       throw new Error(

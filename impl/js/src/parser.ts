@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { FormulaAdjustment } from './formula-adjustment.js';
 import type {
   TemplateMeta,
   TemplateVariable,
@@ -740,6 +741,12 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
     }
   }
 
+  if (meta.formula_mode === 'adjust') {
+    for (const st of sheetTemplates) {
+      new FormulaAdjustment(workbook.getWorksheet(st.originalName)!, st);
+    }
+  }
+
   return {
     meta,
     variables: deduplicateVars(allVars),
@@ -1041,6 +1048,12 @@ export function readConfigSheet(workbook: ExcelJS.Workbook): ConfigResult {
       case 'match_pattern':
         meta.match_pattern = val;
         break;
+      case 'formula_mode':
+        if (val !== 'preserve' && val !== 'adjust') {
+          throw xtlError('xl3/formula/invalid-mode', 'formula_mode must be "preserve" or "adjust"');
+        }
+        meta.formula_mode = val;
+        break;
       default:
         if (REMOVED_SOURCE_CONFIG_KEYS.has(key)) {
           throw xtlError(
@@ -1198,6 +1211,7 @@ export function writeConfigSheet(workbook: ExcelJS.Workbook, meta: TemplateMeta)
     ['output_file_pattern', meta.output_file_pattern],
     ['match_pattern', meta.match_pattern],
   ];
+  if (meta.formula_mode) entries.push(['formula_mode', meta.formula_mode]);
   entries.forEach(([k, v], i) => {
     sheet.getCell(i + 1, 1).value = k;
     sheet.getCell(i + 1, 2).value = v;

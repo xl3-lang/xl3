@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { FormulaAdjustment } from './formula-adjustment.js';
 import type {
   ParsedTemplate,
   Row,
@@ -223,6 +224,8 @@ export class Renderer {
     sg: SheetGroup,
     fileKey: GroupKey,
   ) {
+    const formulas =
+      this.parsed.meta.formula_mode === 'adjust' ? new FormulaAdjustment(sheet, st) : undefined;
     // 0. Remove directive rows (iterate in reverse to keep indices
     // stable). ADR-0067: with multi-directive rows now possible (e.g.,
     // two `@block` directives side-by-side at row 1), the same row
@@ -418,13 +421,21 @@ export class Renderer {
 
       // Render data rows
       if (adjustedSt.dataStartRow === 0 || filteredRows.length === 0) {
+        if (formulas?.hasFormulas && adjustedSt.dataStartRow > 0) {
+          throw xtlError(
+            'xl3/formula/invalid-reference',
+            `${sheet.name}: formula_mode=adjust cannot retain formulas after the block emits zero records`,
+          );
+        }
         if (adjustedSt.dataStartRow > 0) {
           document.spliceRowsPreservingMerges(sheet, adjustedSt.dataStartRow, 1);
         }
+        formulas?.apply(sheet, 0);
         return;
       }
 
       this.renderDataRows(document, sheet, adjustedSt, filteredRows, activeSource, downBlock);
+      formulas?.apply(sheet, filteredRows.length);
     }
   }
 

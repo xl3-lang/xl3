@@ -3,6 +3,11 @@
 // remains the conformance-corpus contract.
 
 export type XtlErrorCode =
+  // Opt-in formula adjustment (ADR-0080)
+  | 'xl3/formula/invalid-mode'
+  | 'xl3/formula/unsupported-reference'
+  | 'xl3/formula/unsupported-layout'
+  | 'xl3/formula/invalid-reference'
   // Config
   | 'xl3/config/source-table-removed'
   | 'xl3/config/invalid-source-table'

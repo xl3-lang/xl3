@@ -47,6 +47,7 @@ defined values. Column A holds the key, column B holds the value.
 | `source_table` | Source table selector. The first selected row contains column names; rows below are data. | `1`, `A1:D`, `B5:H200` |
 | `output_file_pattern` | Output filename template | `{{ __config__[customer] }}_report.xlsx` |
 | `match_pattern` | Batch matching pattern | `Orders*` |
+| `formula_mode` | Formula reference policy; omitted means `preserve`. Opt-in `adjust` follows [ADR-0080](./decisions/0080-opt-in-formula-adjustment.md). | `adjust` |
 | any other key | Author-defined value | `title = Q2 Sales` |
 
 `source_table` is the only source table selector.
@@ -534,7 +535,8 @@ following:
   - Stay at their original `(r, c)` position regardless of
     expansion factor `N`.
   - Their cell value, formula text, and style MUST be preserved
-    verbatim.
+    verbatim by default. With `formula_mode=adjust`, native formula text
+    and caches follow ADR-0080; the cell position and style remain fixed.
 
 The row-shift effect of the splice is therefore **column-scoped**:
 the same OOXML row insertion only shifts inside-column cells, and
