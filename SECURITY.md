@@ -126,11 +126,15 @@ audit there.
 
 ### Resolved: `brace-expansion` and `tmp` high advisories
 
-The root lockfile now resolves `brace-expansion` 1.x to 1.1.18, 2.x to 2.1.4,
+The root lockfile now resolves `brace-expansion` 1.x to 1.1.21, 2.x to 2.1.7,
 and `tmp` 0.2.x to 0.2.7. Root `overrides` keep clean installs on those patched
-lines until ExcelJS's transitive ranges move forward. As of 2026-08-30,
-`npm audit --omit=dev` reports **0 high / 0 critical** findings. CI fails if a
-high-or-critical production advisory returns.
+lines until ExcelJS's transitive ranges move forward. The `brace-expansion`
+pins were raised from 1.1.18 / 2.1.4 on 2026-10-30 for
+[GHSA-6j4f-fj2g-mc7p](https://github.com/advisories/GHSA-6j4f-fj2g-mc7p),
+[GHSA-qhr7-859c-m2p7](https://github.com/advisories/GHSA-qhr7-859c-m2p7), and
+[GHSA-q2hr-2g5m-vwhr](https://github.com/advisories/GHSA-q2hr-2g5m-vwhr). As of
+2026-10-30, `npm audit --omit=dev` reports **0 high / 0 critical** findings. CI
+fails if a high-or-critical production advisory returns.
 
 ### Triaged: `uuid` < 11.1.1 via `exceljs` (moderate, not reachable)
 

@@ -77,8 +77,8 @@
     "node": ">=20.19"
   },
   "overrides": {
-    "brace-expansion@1.x": "1.1.18",
-    "brace-expansion@2.x": "2.1.4",
+    "brace-expansion@1.x": "1.1.21",
+    "brace-expansion@2.x": "2.1.7",
     "tmp@0.2.x": "0.2.7"
   }
 }
