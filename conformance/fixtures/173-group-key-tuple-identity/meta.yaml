@@ -1,0 +1,5 @@
+description: "Group identity is the tuple of key values: rows whose key values differ stay in separate sheet groups even when a value contains separator-like text."
+spec_section: glossary "Group key"; evaluation.md "Render Phases" step 5; ADR-0016
+spec_version: "0.1"
+tags: [evaluation, grouping, sheets]
+verified_by: [hand]

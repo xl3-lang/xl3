@@ -15,6 +15,14 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   is now checked again after each render, and both entry points reject with
   `xl3/abort/cancelled` (ROADMAP G21).
 
+- **Rows with different group keys could merge into one file or sheet.**
+  Composite group keys were compared as a joined `name=value|name=value`
+  string, so values containing `|` or `=` could collide — for example,
+  (`North|Team=East`, `Sales`) and (`North`, `East|Team=Sales`) — and one
+  group's rows were rendered under the other group's file or sheet. Keys are
+  now compared as value tuples. Pinned by fixture
+  `173-group-key-tuple-identity`.
+
 ## [1.0.0-rc.1] - 2026-08-30
 
 The first 1.0 release candidate defines xl3's concrete product boundary:

@@ -8005,6 +8005,68 @@ async function build172() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 173 - group-key-tuple-identity
+//
+// Concept: a group key's identity is the tuple of its values. Two rows whose
+// values differ belong to different groups, even when a value contains text
+// that looks like a separator between key names and values. An implementation
+// that concatenates `Region=…|Team=…` into one string merges the two rows
+// below into a single sheet.
+//
+// Spec section: glossary "Group key"; evaluation.md "Render Phases" step 5;
+// ADR-0016.
+// ---------------------------------------------------------------------------
+async function build173() {
+  const dir = join(FIXTURES, '173-group-key-tuple-identity');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx — single output file, sheet name templated by two keys.
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'group-key-tuple-identity'],
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('{{ Region }}-{{ Team }}');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = '{{ [Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — (Region, Team) differs between the rows, but both render
+  // `Region=North|Team=East|Team=Sales` when joined with `|` and `=`.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.getCell('A1').value = 'Region';
+    sh.getCell('B1').value = 'Team';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'North|Team=East';
+    sh.getCell('B2').value = 'Sales';
+    sh.getCell('C2').value = 100;
+    sh.getCell('A3').value = 'North';
+    sh.getCell('B3').value = 'East|Team=Sales';
+    sh.getCell('C3').value = 200;
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — two sheet groups in first-seen order, one row each.
+  // Excel permits `|` and `=` in sheet names, so neither name is altered.
+  {
+    const wb = new ExcelJS.Workbook();
+    const first = wb.addWorksheet('North|Team=East-Sales');
+    first.getCell('A1').value = 'Amount';
+    first.getCell('A2').value = 100;
+    const second = wb.addWorksheet('North-East|Team=Sales');
+    second.getCell('A1').value = 'Amount';
+    second.getCell('A2').value = 200;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -8147,6 +8209,7 @@ const builders = [
   ['140', build140],
   ['171', build171],
   ['172', build172],
+  ['173', build173],
 ];
 
 const selected = new Set(process.argv.slice(2));

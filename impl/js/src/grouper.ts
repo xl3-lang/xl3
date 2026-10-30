@@ -214,9 +214,11 @@ function extractKey(row: Row, keys: string[]): GroupKey {
 }
 
 function groupKeyStr(key: GroupKey): string {
-  if (Object.keys(key.values).length === 0) return '__default__';
-  return Object.keys(key.values)
-    .sort()
-    .map((k) => `${k}=${key.values[k]}`)
-    .join('|');
+  // Values can contain both separators and column names. Encode tuples
+  // rather than concatenating them so distinct groups cannot alias.
+  return JSON.stringify(
+    Object.keys(key.values)
+      .sort()
+      .map((k) => [k, key.values[k]]),
+  );
 }
