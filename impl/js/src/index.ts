@@ -167,6 +167,7 @@ async function renderPreparedConversion(
     // "no partial output" guarantee is structural, not best-effort.
     throwIfAborted(signal);
     const outFile = await prepared.renderer.renderFile(fg);
+    throwIfAborted(signal);
     files.push(outFile);
   }
 
