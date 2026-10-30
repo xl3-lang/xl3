@@ -106,6 +106,7 @@ jobs:
       - run: npm run build
       - run: npm run build:bundle
       - run: npm run docs:build
+      - run: npm run typecheck:website
       # Exercise the built React page, including its default sample download
       # and initial __inputs__ discovery. The cross-browser job above covers
       # the engine bundle; this covers the actual user workflow.
