@@ -6,7 +6,6 @@ import type { SourceData } from './reader.js';
 import { readJsonSources } from './json-source.js';
 import { groupRows } from './grouper.js';
 import { Renderer } from './renderer.js';
-import { applyDirectives } from './data-transform.js';
 import { toTemplateModel } from './template-model.js';
 import { resolveInputs } from './inputs.js';
 import type {
@@ -250,13 +249,8 @@ function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
       if (st.groupKeys.length === 0) {
         const sg = fg.sheetGroups.find((g) => Object.keys(g.key.values).length === 0);
         if (!sg) continue;
-        const dataDirectives = isMultiBlockSheet
-          ? []
-          : st.directives.filter((d) => d.kind !== 'repeat');
-        const filteredRows = dataDirectives.length
-          ? applyDirectives(sg.rows, dataDirectives, parsed.listSheets)
-          : sg.rows;
-        if (!isMultiBlockSheet && filteredRows.length === 0) continue;
+        if (!isMultiBlockSheet && renderer.filterSheetRows(st, sg.rows).length === 0) continue;
+        const filteredRows = isMultiBlockSheet ? sg.rows : renderer.previewSheetRows(st, sg.rows);
         sheets.push({ name: st.originalName, rowCount: filteredRows.length });
       } else {
         const matchingGroups = fg.sheetGroups.filter((g) => {
@@ -265,13 +259,8 @@ function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
         });
         for (const sg of matchingGroups) {
           const sheetName = renderer.previewSheetName([st], sg.key);
-          const dataDirectives = isMultiBlockSheet
-            ? []
-            : st.directives.filter((d) => d.kind !== 'repeat');
-          const filteredRows = dataDirectives.length
-            ? applyDirectives(sg.rows, dataDirectives, parsed.listSheets)
-            : sg.rows;
-          if (!isMultiBlockSheet && filteredRows.length === 0) continue;
+          if (!isMultiBlockSheet && renderer.filterSheetRows(st, sg.rows).length === 0) continue;
+          const filteredRows = isMultiBlockSheet ? sg.rows : renderer.previewSheetRows(st, sg.rows);
           sheets.push({ name: sheetName, rowCount: filteredRows.length });
         }
       }

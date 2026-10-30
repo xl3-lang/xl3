@@ -2,7 +2,7 @@ import ExcelJS from 'exceljs';
 import JSZip from 'jszip';
 import { xtlError } from './error-codes.js';
 import { extendSqref, replicatedRowsFor } from './range-extension.js';
-import type { XtlWarning } from './types.js';
+import type { DataBlock, XtlWarning } from './types.js';
 
 /**
  * Fixed timestamp written into every output zip entry.
@@ -356,6 +356,19 @@ export function sanitizeSheetName(name: string): string {
 }
 
 function copyWorksheet(src: ExcelJS.Worksheet, dst: ExcelJS.Worksheet) {
+  // ExcelJS does not expose these collections in its worksheet typings.
+  // Each output needs independent rules because range expansion mutates them.
+  type PreservationMetadata = {
+    conditionalFormattings: ExcelJS.ConditionalFormattingOptions[];
+    dataValidations: { model: Record<string, ExcelJS.DataValidation> };
+    sheetProtection: Record<string, unknown> | null;
+  };
+  const source = src as unknown as PreservationMetadata;
+  const target = dst as unknown as PreservationMetadata;
+  target.conditionalFormattings = cloneMetadata(source.conditionalFormattings);
+  target.dataValidations.model = cloneMetadata(source.dataValidations.model);
+  target.sheetProtection = cloneMetadata(source.sheetProtection);
+
   src.columns.forEach((col, i) => {
     if (col.width) {
       const dstCol = dst.getColumn(i + 1);
@@ -377,6 +390,7 @@ function copyWorksheet(src: ExcelJS.Worksheet, dst: ExcelJS.Worksheet) {
       const dstCell = dstRow.getCell(colNumber);
       dstCell.value = srcCell.value;
       if (srcCell.style) dstCell.style = { ...srcCell.style };
+      if (srcCell.note !== undefined) dstCell.note = cloneMetadata(srcCell.note);
     });
 
     dstRow.commit();
@@ -394,6 +408,173 @@ function copyWorksheet(src: ExcelJS.Worksheet, dst: ExcelJS.Worksheet) {
     if (Number.isNaN(imageId)) continue;
     dst.addImage(imageId, img.range);
   }
+}
+
+function cloneMetadata<T>(value: T): T {
+  if (value instanceof Date) return new Date(value.getTime()) as T;
+  if (Array.isArray(value)) return value.map(cloneMetadata) as T;
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, cloneMetadata(entry)]),
+    ) as T;
+  }
+  return value;
+}
+
+type DetachedMerge = MergeRect & { slaveStyles: Map<string, Partial<ExcelJS.Style>> };
+
+function snapshotMergeStyles(sheet: ExcelJS.Worksheet, merge: MergeRect): DetachedMerge {
+  const slaveStyles = new Map<string, Partial<ExcelJS.Style>>();
+  for (let row = merge.top; row <= merge.bottom; row++) {
+    for (let col = merge.left; col <= merge.right; col++) {
+      if (row === merge.top && col === merge.left) continue;
+      slaveStyles.set(
+        `${row - merge.top},${col - merge.left}`,
+        cloneMetadata(sheet.getCell(row, col).style),
+      );
+    }
+  }
+  return { ...merge, slaveStyles };
+}
+
+function sameStyle(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+  const left = a as Record<string, unknown>;
+  const right = b as Record<string, unknown>;
+  const keys = Object.keys(left);
+  return (
+    keys.length === Object.keys(right).length &&
+    keys.every((key) => Object.hasOwn(right, key) && sameStyle(left[key], right[key]))
+  );
+}
+
+/** Remove a vertical block without moving any cells in neighboring columns. */
+export function deleteBlockRows(
+  sheet: ExcelJS.Worksheet,
+  block: Pick<DataBlock, 'startRow' | 'endRow' | 'templateColStart' | 'templateColEnd'>,
+): void {
+  const { startRow, endRow, templateColStart, templateColEnd } = block;
+  const count = endRow - startRow + 1;
+  const inside = (col: number) => col >= templateColStart && col <= templateColEnd;
+  const outsideMerge = (cell: ExcelJS.Cell) => cell.isMerged && !inside(Number(cell.master.col));
+  const movedMerges: DetachedMerge[] = [];
+  // A merge owned by the block can extend into neighboring columns.
+  // Refuse a move that would overwrite those cells or intersect their
+  // merges instead of silently discarding data in ExcelJS.mergeCells.
+  for (const ref of sheet.model.merges ?? []) {
+    const merge = decodeMerge(ref as string);
+    if (!merge || !inside(merge.left) || merge.top <= endRow) continue;
+    for (let r = merge.top - count; r <= merge.bottom - count; r++) {
+      for (let c = templateColEnd + 1; c <= merge.right; c++) {
+        const target = sheet.getCell(r, c);
+        const master = target.master;
+        if (target.isMerged && inside(Number(master.col)) && Number(master.row) >= startRow) {
+          continue; // This merge will itself be removed or shifted.
+        }
+        if (target.value !== null || target.isMerged) {
+          throw xtlError(
+            'xl3/block/overlap',
+            `Moving merged range ${sheet.name}!${ref} would overwrite outside cell ${target.address}`,
+          );
+        }
+      }
+    }
+  }
+  // Unmerge only ranges owned by the deleted block's columns. Neighboring
+  // merges retain their coordinates, even when they share the deleted rows.
+  for (const ref of [...(sheet.model.merges ?? [])]) {
+    const merge = decodeMerge(ref as string);
+    if (!merge || !inside(merge.left) || merge.top < startRow) continue;
+    sheet.unMergeCells(merge.top, merge.left, merge.bottom, merge.right);
+    if (merge.top > endRow) movedMerges.push(snapshotMergeStyles(sheet, merge));
+  }
+  const movedCells: {
+    row: number;
+    col: number;
+    value: ExcelJS.CellValue;
+    style: Partial<ExcelJS.Style>;
+  }[] = [];
+  sheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+    if (rowNumber < startRow) return;
+    row.eachCell({ includeEmpty: true }, (cell, col) => {
+      // A slave can be inside the block while its master is outside it.
+      // Writing the slave would mutate that neighboring master as well.
+      if (!inside(col) || outsideMerge(cell)) return;
+      if (rowNumber > endRow) {
+        movedCells.push({ row: rowNumber - count, col, value: cell.value, style: cell.style });
+      }
+      cell.value = null;
+      cell.style = {};
+    });
+  });
+  // Clear first and restore second; interleaving the two can erase a
+  // previously restored cell when the source and target ranges overlap.
+  for (const snap of movedCells) {
+    const cell = sheet.getRow(snap.row).getCell(snap.col);
+    if (outsideMerge(cell)) {
+      if (snap.value !== null || Object.keys(snap.style).length > 0) {
+        throw xtlError(
+          'xl3/block/overlap',
+          `Moving a block cell to ${sheet.name}!${cell.address} would overwrite an outside merge`,
+        );
+      }
+      continue;
+    }
+    cell.value = snap.value;
+    cell.style = snap.style;
+  }
+  for (const merge of movedMerges) {
+    mergeWithoutOverwriting(sheet, {
+      ...merge,
+      top: merge.top - count,
+      bottom: merge.bottom - count,
+    });
+  }
+}
+
+/** Keep outside-owned merges at their authored coordinates while a block resizes. */
+export function detachOutsideMerges(
+  sheet: ExcelJS.Worksheet,
+  startRow: number,
+  colStart: number,
+  colEnd: number,
+): () => void {
+  const preserved: DetachedMerge[] = [];
+  for (const ref of [...(sheet.model.merges ?? [])]) {
+    const merge = decodeMerge(ref as string);
+    if (!merge || merge.bottom < startRow) continue;
+    if (merge.left >= colStart && merge.left <= colEnd) continue;
+    sheet.unMergeCells(merge.top, merge.left, merge.bottom, merge.right);
+    // Capture after unmerging: slaves now carry their inherited row/column
+    // styles. Only subsequent changes should prevent restoring this merge.
+    preserved.push(snapshotMergeStyles(sheet, merge));
+  }
+  return () => {
+    for (const merge of preserved) {
+      mergeWithoutOverwriting(sheet, merge);
+    }
+  };
+}
+
+/** Restoring a merge must not discard data rendered or moved into its range. */
+function mergeWithoutOverwriting(sheet: ExcelJS.Worksheet, merge: DetachedMerge): void {
+  for (let row = merge.top; row <= merge.bottom; row++) {
+    for (let col = merge.left; col <= merge.right; col++) {
+      const cell = sheet.getCell(row, col);
+      const isMaster = row === merge.top && col === merge.left;
+      const unchangedStyle =
+        isMaster ||
+        sameStyle(cell.style, merge.slaveStyles.get(`${row - merge.top},${col - merge.left}`));
+      if (cell.isMerged || (!isMaster && cell.value !== null) || !unchangedStyle) {
+        throw xtlError(
+          'xl3/block/overlap',
+          `Restoring a merged range would overwrite ${sheet.name}!${cell.address}`,
+        );
+      }
+    }
+  }
+  sheet.mergeCells(merge.top, merge.left, merge.bottom, merge.right);
 }
 
 /**
