@@ -76,6 +76,13 @@ Two distinct file group keys sanitized to the same filename
 (e.g., `Seoul/Korea` and `Seoul:Korea` both → `Seoul_Korea.xlsx`). The
 operator usually needs to clean their data, not the template.
 
+**Block or merged-cell collision** (`xl3/block/overlap`):
+Block rectangles overlap, or resizing a block would restore a merged range
+over another cell or merge. The renderer also rejects moving a block cell
+into a preserved outside merge. Adjust the template's block boundaries or
+merged ranges so data and side content have separate space. These render-time
+collisions can depend on the row count and are not detected by source validation.
+
 **Source mismatch in XLOOKUP** (`xl3/xlookup/source-mismatch`):
 The template author wrote `XLOOKUP(x, A[k], B[v])` where `A` and `B`
 are different sources. Template needs fixing — not an operator issue.

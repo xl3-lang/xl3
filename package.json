@@ -21,6 +21,7 @@
     "sync:version": "npm -w @xl3-lang/xl3 run sync:version",
     "build:bundle": "npm -w @xl3-lang/xl3 run build:bundle",
     "typecheck": "npm -w @xl3-lang/xl3 run typecheck",
+    "typecheck:website": "tsc -p website/tsconfig.json --noEmit",
     "lint": "eslint impl/js/src website/src website/docusaurus.config.ts website/sidebars.ts scripts conformance/scripts examples/scripts --max-warnings=0",
     "format": "prettier --write \"impl/js/src/**/*.ts\" \"website/src/**/*.{ts,tsx}\" website/docusaurus.config.ts website/sidebars.ts \"scripts/**/*.mjs\" \"conformance/scripts/**/*.mjs\" \"examples/scripts/**/*.mjs\" eslint.config.js package.json impl/js/package.json impl/js/public-runtime-exports.json examples/expected-output.json",
     "format:check": "prettier --check \"impl/js/src/**/*.ts\" \"website/src/**/*.{ts,tsx}\" website/docusaurus.config.ts website/sidebars.ts \"scripts/**/*.mjs\" \"conformance/scripts/**/*.mjs\" \"examples/scripts/**/*.mjs\" eslint.config.js package.json impl/js/package.json impl/js/public-runtime-exports.json examples/expected-output.json",
@@ -76,8 +77,8 @@
     "node": ">=20.19"
   },
   "overrides": {
-    "brace-expansion@1.x": "1.1.18",
-    "brace-expansion@2.x": "2.1.4",
+    "brace-expansion@1.x": "1.1.21",
+    "brace-expansion@2.x": "2.1.7",
     "tmp@0.2.x": "0.2.7"
   }
 }
