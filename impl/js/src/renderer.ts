@@ -19,6 +19,8 @@ import { partitionByGroupKeys, planEmissionEvents } from './grouper.js';
 import type { SourceData } from './reader.js';
 import {
   ExcelJsWorkbookDocument,
+  deleteBlockRows,
+  detachOutsideMerges,
   extendRangesForExpansion,
   sanitizeFilename,
   sanitizeSheetName,
@@ -136,6 +138,32 @@ export class Renderer {
     return sheetName;
   }
 
+  /** Single-block sheet pruning must use the block's source. */
+  filterSheetRows(st: SheetTemplate, groupRows: Row[]): Row[] {
+    const activeSource = st.blocks[0]?.source ?? 'default';
+    const rows = activeSource === 'default' ? groupRows : (this.sources[activeSource]?.rows ?? []);
+    // Keep the existing empty-filter policy: an unmatched join removes
+    // data rows, whereas an empty filter removes the entire sheet.
+    return applyDirectives(rows, st.directives, this.listSheets);
+  }
+
+  /** Preview the same joined and transformed rows that a single block renders. */
+  previewSheetRows(st: SheetTemplate, groupRows: Row[]): Row[] {
+    return this.rowsForBlock(st.blocks[0], groupRows, st.directives);
+  }
+
+  private rowsForBlock(
+    block: DataBlock | undefined,
+    groupRows: Row[],
+    directives: SheetTemplate['directives'],
+  ): Row[] {
+    const activeSource = block?.source ?? 'default';
+    const rows = activeSource === 'default' ? groupRows : (this.sources[activeSource]?.rows ?? []);
+    // Joining precedes filter/sort/top: unmatched rows must not consume
+    // the top-N budget. Keep preview and rendering on the same pipeline.
+    return applyDirectives(this.applyJoin(rows, block), directives, this.listSheets);
+  }
+
   async renderFile(fileGroup: FileGroup): Promise<OutputFile> {
     const document = await ExcelJsWorkbookDocument.fromTemplate(this.parsed.workbook);
     document.removeAuxiliarySheets();
@@ -155,11 +183,7 @@ export class Renderer {
         if (matchingGroups.length >= 1) {
           // Skip sheet if filtered data count is 0 (single-block path only)
           if (!isMultiBlockSheet) {
-            const filteredRows = applyDirectives(
-              matchingGroups[0].rows,
-              st.directives,
-              this.listSheets,
-            );
+            const filteredRows = this.filterSheetRows(st, matchingGroups[0].rows);
             if (filteredRows.length === 0) {
               document.removeWorksheet(st.originalName);
               continue;
@@ -177,7 +201,7 @@ export class Renderer {
         for (const sg of matchingGroups) {
           // Skip sheet if filtered data count is 0 (single-block path only)
           if (!isMultiBlockSheet) {
-            const filteredRows = applyDirectives(sg.rows, st.directives, this.listSheets);
+            const filteredRows = this.filterSheetRows(st, sg.rows);
             if (filteredRows.length === 0) continue;
           }
 
@@ -258,6 +282,41 @@ export class Renderer {
         directiveRows: [],
       }));
 
+      // Evaluate static cells in template coordinates, before block expansion
+      // moves footers or produces data that itself contains {{...}} text.
+      const allFilteredRows = applyDirectives(
+        sg.rows,
+        st.directives.filter((d) => d.kind !== 'repeat'),
+        this.listSheets,
+      );
+      const finalStaticCtx = this.buildStaticContext(fileKey, { ...sg, rows: allFilteredRows });
+      sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+        row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+          // A slave outside a block can still belong to a data cell inside it.
+          // Evaluate only masters so the slave cannot overwrite its context.
+          if (cell.isMerged && cell.master.address !== cell.address) return;
+          if (
+            adjustedBlocks.some(
+              (b) =>
+                rowNumber >= b.startRow &&
+                rowNumber <= b.endRow &&
+                colNumber >= b.templateColStart &&
+                colNumber <= b.templateColEnd,
+            )
+          )
+            return;
+          const val = cellString(cell.value);
+          if (VAR_PATTERN.test(val)) {
+            const normalized = normalizeTemplate(val, this.columns);
+            cell.value = renderCellValue(
+              normalized,
+              evalCellAt(sheet.name, cell.address, normalized, finalStaticCtx),
+              cell.style,
+            );
+          }
+        });
+      });
+
       // Apply directives per block and render.
       // ADR-0066 (column-scoped splice) + ADR-0068 (multi-block):
       // when blocks have disjoint column ranges, expanding block A
@@ -282,14 +341,7 @@ export class Renderer {
         const blockDirectives = block.directives.filter(
           (d) => d.kind !== 'repeat' && d.kind !== 'source' && d.kind !== 'join',
         );
-        // ADR-0012: a block scoped to a non-default source iterates that
-        // source's full row set rather than the file/sheet group rows.
-        const blockRows =
-          block.source === 'default' ? sg.rows : (this.sources[block.source]?.rows ?? []);
-        const directiveFiltered = applyDirectives(blockRows, blockDirectives, this.listSheets);
-        // ADR-0014: apply inner join — keep only primary rows with a
-        // matching joined row, and stash the paired row for ctx assembly.
-        const filteredRows = this.applyJoin(directiveFiltered, block);
+        const filteredRows = this.rowsForBlock(block, sg.rows, blockDirectives);
         const staticCtx = this.buildStaticContext(
           fileKey,
           { ...sg, rows: filteredRows },
@@ -308,10 +360,10 @@ export class Renderer {
           };
           if (filteredRows.length === 0) {
             if (shiftedBlock.startRow > 0) {
-              document.spliceRowsPreservingMerges(sheet, shiftedBlock.startRow, 1);
+              deleteBlockRows(sheet, shiftedBlock);
               expansionShifts.push({
                 range: { start: block.templateColStart, end: block.templateColEnd },
-                delta: -1,
+                delta: -(shiftedBlock.endRow - shiftedBlock.startRow + 1),
               });
             }
           } else {
@@ -321,14 +373,14 @@ export class Renderer {
               dataEndRow: shiftedBlock.endRow,
               directiveRows: [],
             };
-            const before = sheet.actualRowCount;
-            this.renderDataRows(document, sheet, asSt, filteredRows, block.source, block);
-            const after = sheet.actualRowCount;
-            const templateRowCount = shiftedBlock.endRow - shiftedBlock.startRow + 1;
-            const groupDir = block.directives.find((d) => d.kind === 'group');
-            const delta = groupDir
-              ? after - before - templateRowCount
-              : filteredRows.length - templateRowCount;
+            const delta = this.renderDataRows(
+              document,
+              sheet,
+              asSt,
+              filteredRows,
+              block.source,
+              block,
+            );
             expansionShifts.push({
               range: { start: block.templateColStart, end: block.templateColEnd },
               delta,
@@ -336,37 +388,6 @@ export class Renderer {
           }
         }
       }
-
-      // Render static rows (those not in any block)
-      // Static rendering needs final context
-      const allFilteredRows = applyDirectives(
-        sg.rows,
-        st.directives.filter((d) => d.kind !== 'repeat'),
-        this.listSheets,
-      );
-      const finalStaticCtx = this.buildStaticContext(fileKey, { ...sg, rows: allFilteredRows });
-      sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-        // Skip rows that belong to data blocks (approximate — blocks may have shifted)
-        let inBlock = false;
-        for (const b of adjustedBlocks) {
-          if (rowNumber >= b.startRow && rowNumber <= b.endRow) {
-            inBlock = true;
-            break;
-          }
-        }
-        if (inBlock) return;
-        row.eachCell({ includeEmpty: false }, (cell) => {
-          const val = cellString(cell.value);
-          if (VAR_PATTERN.test(val)) {
-            const normalized = normalizeTemplate(val, this.columns);
-            cell.value = renderCellValue(
-              normalized,
-              evalCellAt(sheet.name, cell.address, normalized, finalStaticCtx),
-              cell.style,
-            );
-          }
-        });
-      });
     } else {
       // Legacy: single down-block rendering
       const adjustedStartRow = adjustRow(st.dataStartRow);
@@ -383,11 +404,7 @@ export class Renderer {
       // legacy templates default to `default`.
       const downBlock = st.blocks.find((b) => b.direction === 'down');
       const activeSource = downBlock?.source ?? 'default';
-      const blockRows =
-        activeSource === 'default' ? sg.rows : (this.sources[activeSource]?.rows ?? []);
-      const directiveFiltered = applyDirectives(blockRows, st.directives, this.listSheets);
-      // ADR-0014: apply inner join when the block has one.
-      const filteredRows = this.applyJoin(directiveFiltered, downBlock);
+      const filteredRows = this.rowsForBlock(downBlock, sg.rows, st.directives);
       const staticCtx = this.buildStaticContext(
         fileKey,
         { ...sg, rows: filteredRows },
@@ -418,8 +435,12 @@ export class Renderer {
 
       // Render data rows
       if (adjustedSt.dataStartRow === 0 || filteredRows.length === 0) {
-        if (adjustedSt.dataStartRow > 0) {
-          document.spliceRowsPreservingMerges(sheet, adjustedSt.dataStartRow, 1);
+        if (adjustedSt.dataStartRow > 0 && downBlock) {
+          deleteBlockRows(sheet, {
+            ...downBlock,
+            startRow: adjustedStartRow,
+            endRow: adjustedEndRow,
+          });
         }
         return;
       }
@@ -435,13 +456,13 @@ export class Renderer {
     dataRows: Row[],
     activeSource = 'default',
     block?: DataBlock,
-  ) {
+  ): number {
     // ADR-0038 dispatch: a block carrying a `@group` directive or
     // any @subtotal rows takes the grouped emission path.
     const groupDir = block?.directives.find((d) => d.kind === 'group');
     const subtotalOffsets = block?.subtotalRowOffsets ?? [];
     if (groupDir && groupDir.kind === 'group') {
-      this.renderGroupedDataRows(
+      return this.renderGroupedDataRows(
         document,
         sheet,
         st,
@@ -451,7 +472,6 @@ export class Renderer {
         subtotalOffsets,
         block,
       );
-      return;
     }
     if (subtotalOffsets.length > 0) {
       throw xtlError('xl3/subtotal/outside-group', '@subtotal requires an active @group directive');
@@ -497,6 +517,7 @@ export class Renderer {
         // ADR-0066: only capture cells inside the block's col-range.
         // Outside cells are preserved naturally (we don't touch them).
         if (!isInsideCol(colNumber)) return;
+        if (cell.isMerged && !isInsideCol(Number(cell.master.col))) return;
         const val = cellString(cell.value);
         const style = cell.style;
         // Only track if it has a value or a non-empty style
@@ -517,6 +538,10 @@ export class Renderer {
     const totalTargetRows = dataRows.length * templateRowCount;
     const insertCount = Math.max(0, totalTargetRows - templateRowCount);
     const insertPoint = st.dataStartRow + templateRowCount;
+    const restoreOutsideMerges =
+      hasColScope && insertCount > 0
+        ? detachOutsideMerges(sheet, st.dataStartRow, colStart, colEnd)
+        : undefined;
 
     type OutsideCellSnap = {
       row: number;
@@ -649,12 +674,15 @@ export class Renderer {
       }
     }
 
+    restoreOutsideMerges?.();
+
     // 6. ADR-0040 (ROADMAP G5): stretch conditional-formatting and
     // data-validation ranges authored against the block's template rows.
     // Runs last, and reads template coordinates directly: the splice
     // moves cells but leaves both collections addressed as authored, so
     // there is no shift to compensate for here.
     extendRangesForExpansion(sheet, st.dataStartRow, st.dataEndRow, insertCount);
+    return insertCount;
   }
 
   /**
@@ -673,7 +701,7 @@ export class Renderer {
     groupKeys: string[],
     subtotalOffsets: number[],
     block?: DataBlock,
-  ) {
+  ): number {
     const templateRowCount = st.dataEndRow - st.dataStartRow + 1;
 
     if (subtotalOffsets.length > groupKeys.length) {
@@ -710,6 +738,7 @@ export class Renderer {
       >();
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
         if (!isInsideCol(colNumber)) return;
+        if (cell.isMerged && !isInsideCol(Number(cell.master.col))) return;
         const val = cellString(cell.value);
         const style = cell.style;
         if (val || (style && Object.keys(style).length > 0)) {
@@ -733,7 +762,7 @@ export class Renderer {
       // Degenerate: only subtotal rows in the block. Remove the
       // template rows and stop — there is no per-row content to clone.
       document.spliceRowsPreservingMerges(sheet, st.dataStartRow, templateRowCount);
-      return;
+      return -templateRowCount;
     }
 
     // 3. Partition + plan emission.
@@ -750,7 +779,7 @@ export class Renderer {
     // Empty source after filter/sort: drop the block entirely.
     if (totalOutputRows === 0) {
       document.spliceRowsPreservingMerges(sheet, st.dataStartRow, templateRowCount);
-      return;
+      return -templateRowCount;
     }
 
     // ADR-0066: snapshot outside-block cells before splice (same as
@@ -764,6 +793,10 @@ export class Renderer {
     };
     const outsideSnapshots: OutsideCellSnap[] = [];
     const insertDelta = totalOutputRows - templateRowCount; // can be ±
+    const restoreOutsideMerges =
+      hasColScope && insertDelta !== 0
+        ? detachOutsideMerges(sheet, st.dataStartRow, colStart, colEnd)
+        : undefined;
 
     if (hasColScope && insertDelta !== 0) {
       const firstShiftRow =
@@ -875,10 +908,13 @@ export class Renderer {
       }
     }
 
+    restoreOutsideMerges?.();
+
     // ADR-0040 (ROADMAP G5), grouped path. The delta here counts the
     // subtotal and repeated group rows too, which is correct: the rule is
     // stated over rows the block grew by, not over data records.
     extendRangesForExpansion(sheet, st.dataStartRow, st.dataEndRow, insertDelta);
+    return insertDelta;
   }
 
   private renderDataCols(

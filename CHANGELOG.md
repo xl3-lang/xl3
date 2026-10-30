@@ -23,6 +23,45 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   now compared as value tuples. Pinned by fixture
   `173-group-key-tuple-identity`.
 
+- **An empty data block no longer deletes its neighbors' cells.** When a
+  block's filter left no rows, the renderer spliced one whole worksheet row,
+  so a multi-row block kept its extra template rows and a block or side cell
+  sharing that row in other columns was deleted with it. The block's full
+  height is now removed from its own columns only, as ADR-0066 requires for
+  outside cells, and later blocks shift by that height.
+
+- **Source values that look like `{{ … }}` are no longer evaluated.** Static
+  cells were evaluated after block expansion, so a source value such as
+  `{{ 1 + 1 }}` written into a data row was evaluated again as a template
+  expression. Static cells are now evaluated once, in template coordinates,
+  before any block expands.
+
+- **Merged ranges around a resizing block are kept or rejected, not lost.**
+  Merges owned by columns outside a block now stay at their authored
+  coordinates while the block grows or shrinks. When restoring or moving a
+  merge would overwrite another cell, value, style, or merge, rendering
+  fails with `xl3/block/overlap` instead of silently discarding the overlap.
+  These collisions depend on row counts, so source validation cannot detect
+  them ahead of rendering.
+
+- **Sheets cloned for sheet groups keep their own preservation metadata.**
+  Conditional formatting, data validation, sheet protection, and cell notes
+  are now copied to every grouped sheet, and each copy owns its rules, so
+  expanding one group's ranges no longer changes another group's sheet.
+
+- **Preview row counts match the rendered rows for `@source` and `@join`.**
+  `preview`/`previewJson` counted rows from the default source without the
+  join, so sheets using another source or an inner join reported the wrong
+  count, and sheet removal could check the wrong source. Preview and render
+  now share one row pipeline.
+
+### Changed
+
+- **`@join` is applied before `@filter`, `@sort`, and `@top` on the same
+  block.** Previously `@top N` could pick primary rows that the inner join
+  then dropped, rendering fewer than N rows. Unmatched rows no longer use up
+  the `@top` budget. ADR-0014 does not specify this order.
+
 ## [1.0.0-rc.1] - 2026-08-30
 
 The first 1.0 release candidate defines xl3's concrete product boundary:
