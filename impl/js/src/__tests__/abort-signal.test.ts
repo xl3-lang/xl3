@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { convert, convertJson, isXtlError, preview, previewJson } from '../index.js';
 import { throwIfAborted } from '../abort.js';
+import { Renderer } from '../renderer.js';
 import type { XtlError } from '../error-codes.js';
 import type { Xl3SourceJson } from '../types.js';
 
@@ -24,7 +25,7 @@ const data = () => toAB(join(FAN_OUT, 'data.xlsx'));
 
 const SOURCE_JSON: Xl3SourceJson = {
   version: 'xl3-source-json/0.1',
-  sources: { default: { headers: ['City', 'Amount'], rows: [['Seoul', 1]] } },
+  sources: { default: { headers: ['City', 'Customer', 'Amount'], rows: [['Seoul', 'Acme', 1]] } },
 };
 
 async function expectCancelled(run: () => Promise<unknown>): Promise<void> {
@@ -117,6 +118,34 @@ describe('G21 AbortSignal', () => {
     const out = await convert(template(), data());
     expect(out.map((f) => f.filename)).toEqual(['Seoul.xlsx', 'Busan.xlsx', 'Daegu.xlsx']);
   });
+
+  it.each(['xlsx', 'json'])(
+    'rejects when cancelled during the last %s file render',
+    async (kind) => {
+      const ctrl = new AbortController();
+      const renderFile = Renderer.prototype.renderFile;
+      let rendered = 0;
+      const spy = vi.spyOn(Renderer.prototype, 'renderFile').mockImplementation(async function (
+        this: Renderer,
+        group,
+      ) {
+        const output = await renderFile.call(this, group);
+        rendered++;
+        if (rendered === (kind === 'xlsx' ? 3 : 1)) ctrl.abort();
+        return output;
+      });
+      try {
+        const result =
+          kind === 'xlsx'
+            ? convert(template(), data(), { engine: 'js', signal: ctrl.signal })
+            : convertJson(template(), SOURCE_JSON, { signal: ctrl.signal });
+        await expect(result).rejects.toMatchObject({ code: 'xl3/abort/cancelled' });
+        expect(ctrl.signal.aborted).toBe(true);
+      } finally {
+        spy.mockRestore();
+      }
+    },
+  );
 
   it('leaves conversion unaffected when the signal never aborts', async () => {
     const ctrl = new AbortController();

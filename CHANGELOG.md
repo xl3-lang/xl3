@@ -6,6 +6,15 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Cancelling while the last file renders now rejects the conversion.**
+  `convert` and `convertJson` checked the `AbortSignal` before each file
+  render but not after the last one, so an abort that arrived during the
+  final render was ignored and the call resolved with every file. The signal
+  is now checked again after each render, and both entry points reject with
+  `xl3/abort/cancelled` (ROADMAP G21).
+
 ## [1.0.0-rc.1] - 2026-08-30
 
 The first 1.0 release candidate defines xl3's concrete product boundary:
