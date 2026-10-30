@@ -5,6 +5,7 @@ import Translate, { translate } from '@docusaurus/Translate';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import clsx from 'clsx';
+import type { OutputFile } from '@xl3-lang/xl3';
 import styles from './try.module.css';
 
 // Sample files shipped under website/static/playground-samples/. ko ships its
@@ -22,43 +23,12 @@ const SAMPLES: Record<string, { raw: string; template: string }> = {
   },
 };
 
-type OutputFile = { filename: string; data: Uint8Array };
-type Xl3Module = {
-  convert(
-    template: ArrayBuffer,
-    data: ArrayBuffer,
-    options?: { inputs?: Record<string, string | number | boolean> },
-  ): Promise<OutputFile[]>;
-  packageZip(files: OutputFile[]): Promise<Blob>;
-  preview(
-    template: ArrayBuffer,
-    data: ArrayBuffer,
-    options?: { inputs?: Record<string, string | number | boolean> },
-  ): Promise<{
-    files: Array<{ filename: string; sheets: Array<{ name: string; rowCount: number }> }>;
-    inputs: Array<{
-      name: string;
-      type: string;
-      required?: boolean;
-      default?: unknown;
-      label?: string;
-      description?: string;
-    }>;
-    sources: Array<{ name: string; rowCount: number; headers: string[] }>;
-    warnings: Array<{ message: string }>;
-  }>;
-  readTemplateInputs(
-    template: ArrayBuffer,
-  ): Promise<
-    Array<{ name: string; type: string; required?: boolean; default?: unknown; label?: string }>
-  >;
-  isXtlError(e: unknown): e is Error & { code: string };
-};
+type Xl3Module = typeof import('@xl3-lang/xl3');
 
 let xl3Promise: Promise<Xl3Module> | undefined;
 function loadXl3(): Promise<Xl3Module> {
   if (!xl3Promise) {
-    xl3Promise = import(/* webpackChunkName: 'xl3-engine' */ '@xl3-lang/xl3') as Promise<Xl3Module>;
+    xl3Promise = import(/* webpackChunkName: 'xl3-engine' */ '@xl3-lang/xl3');
   }
   return xl3Promise;
 }
