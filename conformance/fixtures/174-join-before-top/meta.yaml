@@ -1,0 +1,5 @@
+description: "@join applies before @sort and @top: a primary row dropped by the inner join never consumes a @top slot."
+spec_section: evaluation.md "Directives"; ADR-0014
+spec_version: "0.1"
+tags: [directive, join, sort, top]
+verified_by: [hand]
