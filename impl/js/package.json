@@ -55,6 +55,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "tsc -p tsconfig.build.json",
     "sync:version": "node scripts/gen-version.mjs",
     "build:bundle": "tsup && MINIFY=1 tsup",
@@ -65,7 +66,7 @@
     "conformance": "node dist/bin/conformance.js --fixture-dir=../../conformance/fixtures",
     "conformance:stage2": "node dist/bin/conformance.js --fixture-dir=../../conformance/fixtures --comparison-stage=2",
     "docs:api": "typedoc",
-    "prepublishOnly": "npm run typecheck && npm run test && npm run build && npm run build:bundle && npm run conformance && npm run conformance:stage2"
+    "prepublishOnly": "npm run clean && npm run typecheck && npm run test && npm run build && npm run build:bundle && npm run conformance && npm run conformance:stage2"
   },
   "dependencies": {
     "exceljs": "^4.4.0",

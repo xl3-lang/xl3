@@ -87,6 +87,12 @@ a pure impl refactor can ship as `xl3` patch with no spec change.
    (`npm install @xl3-lang/xl3@rc`) get the candidate; default
    `npm install @xl3-lang/xl3` keeps the prior stable.
 
+   `prepublishOnly` deletes `impl/js/dist/` before it rebuilds, so the
+   tarball holds only what the tagged commit builds. Without that step,
+   output left by a local build of another branch ships too:
+   1.0.0-rc.2 carried an unreferenced `dist/formula-adjustment.*` that
+   way.
+
 8. Create the GitHub Release **immediately after `npm publish`**.
    `npm publish` is the easy-to-forget half-step: the package goes
    live but external installers have no release notes / changelog
