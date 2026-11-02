@@ -55,12 +55,13 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   count, and sheet removal could check the wrong source. Preview and render
   now share one row pipeline.
 
-### Changed
-
-- **`@join` is applied before `@filter`, `@sort`, and `@top` on the same
-  block.** Previously `@top N` could pick primary rows that the inner join
-  then dropped, rendering fewer than N rows. Unmatched rows no longer use up
-  the `@top` budget. ADR-0014 does not specify this order.
+- **`@join` now runs before `@filter`, `@sort`, and `@top`, as the spec
+  requires.** evaluation.md "Directives" orders them
+  `source -> join -> filter -> sort -> group -> top -> repeat`, but the
+  renderer joined last. `@top N` could therefore pick primary rows that the
+  inner join then dropped, rendering fewer than N rows. Unmatched rows no
+  longer use up the `@top` budget; outputs change only for blocks that
+  combine `@join` with `@top`. Pinned by fixture `174-join-before-top`.
 
 ## [1.0.0-rc.1] - 2026-08-30
 
