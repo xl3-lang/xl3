@@ -8067,6 +8067,89 @@ async function build173() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 174 - join-before-top
+//
+// Concept: `@join` applies before `@filter`, `@sort`, and `@top`, so a primary
+// row dropped by the inner join never takes a `@top` slot. An implementation
+// that cuts the top N first and joins afterwards renders fewer than N rows
+// whenever an unmatched row ranks inside the top N. Here Gamma ranks second
+// by Amount but has no customer, so the output must still hold two rows.
+//
+// Spec section: evaluation.md "Directives"; ADR-0014.
+// ---------------------------------------------------------------------------
+async function build174() {
+  const dir = join(FIXTURES, '174-join-before-top');
+  await mkdir(dir, { recursive: true });
+
+  // template.xlsx
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['name', 'join-before-top'],
+      ['source_sheet', 'Renewals'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    addSources(wb, [{ name: 'Customers', sheet: 'Customers', table: '1' }]);
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = '{{ @join Customers on Customers[Account] = default[Account] }}';
+    sh.getCell('A3').value = '{{ @sort [Amount] desc }}';
+    sh.getCell('A4').value = '{{ @top 2 }}';
+    sh.getCell('A5').value = '{{ [Account] }}';
+    sh.getCell('B5').value = '{{ Customers[Name] }}';
+    sh.getCell('C5').value = '{{ [Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+
+  // data.xlsx — Gamma (400) has no customer; by Amount it ranks second.
+  {
+    const wb = new ExcelJS.Workbook();
+    const ren = wb.addWorksheet('Renewals');
+    ren.getCell('A1').value = 'Account';
+    ren.getCell('B1').value = 'Amount';
+    ren.getCell('A2').value = 'Delta';
+    ren.getCell('B2').value = 200;
+    ren.getCell('A3').value = 'Gamma';
+    ren.getCell('B3').value = 400;
+    ren.getCell('A4').value = 'Beta';
+    ren.getCell('B4').value = 300;
+    ren.getCell('A5').value = 'Acme';
+    ren.getCell('B5').value = 500;
+
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Account';
+    cust.getCell('B1').value = 'Name';
+    cust.getCell('A2').value = 'Acme';
+    cust.getCell('B2').value = 'Acme Logistics';
+    cust.getCell('A3').value = 'Beta';
+    cust.getCell('B3').value = 'Beta Works';
+    cust.getCell('A4').value = 'Delta';
+    cust.getCell('B4').value = 'Delta Foods';
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // expected.xlsx — join drops Gamma, then sort + top 2 keep Acme and Beta.
+  // Joining after the cut would keep Acme alone.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Account';
+    sh.getCell('B1').value = 'Customer';
+    sh.getCell('C1').value = 'Amount';
+    sh.getCell('A2').value = 'Acme';
+    sh.getCell('B2').value = 'Acme Logistics';
+    sh.getCell('C2').value = 500;
+    sh.getCell('A3').value = 'Beta';
+    sh.getCell('B3').value = 'Beta Works';
+    sh.getCell('C3').value = 300;
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -8210,6 +8293,7 @@ const builders = [
   ['171', build171],
   ['172', build172],
   ['173', build173],
+  ['174', build174],
 ];
 
 const selected = new Set(process.argv.slice(2));
