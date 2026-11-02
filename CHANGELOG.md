@@ -6,6 +6,16 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [1.0.0-rc.2] - 2026-11-02
+
+The second 1.0 release candidate fixes silent data-loss and misattribution
+paths in rendering that were found during the stability window: cells lost
+around empty or resizing blocks, rows from different group keys merging into
+one output, cancellation ignored during the last file render, and `@join`
+applied after `@top` contrary to the spec. It adds no export and removes or
+renames no export or error code, so the technical stability window is
+unchanged and the earliest final 1.0 cut remains 2026-11-28.
+
 ### Fixed
 
 - **Cancelling while the last file renders now rejects the conversion.**
@@ -1609,7 +1619,8 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/xl3-lang/xl3/compare/v1.0.0-rc.1...HEAD
+[Unreleased]: https://github.com/xl3-lang/xl3/compare/v1.0.0-rc.2...HEAD
+[1.0.0-rc.2]: https://github.com/xl3-lang/xl3/compare/v1.0.0-rc.1...v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/xl3-lang/xl3/compare/v0.13.0...v1.0.0-rc.1
 [0.13.0]: https://github.com/xl3-lang/xl3/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/xl3-lang/xl3/compare/v0.11.0...v0.12.0

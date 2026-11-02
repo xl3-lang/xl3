@@ -3,7 +3,7 @@
 What needs to happen for **XTL 1.0** (spec) and **xl3 1.0** (reference
 implementation).
 
-The current version is **1.0.0-rc.1** (npm) targeting **XTL 0.1 (draft)**.
+The current version is **1.0.0-rc.2** (npm) targeting **XTL 0.1 (draft)**.
 Breaking changes are still possible during 0.x. The 1.0 cut is gated on
 technical stability and the time-bound soak below. Ecosystem adoption is
 tracked separately and does not block the compatibility promise (ADR-0079).

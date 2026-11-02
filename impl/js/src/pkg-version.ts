@@ -6,4 +6,4 @@
 // `src/__tests__/pkg-version.test.ts` fails if the two disagree.
 
 /** This package's own version, as published to npm. */
-export const VERSION = '1.0.0-rc.1';
+export const VERSION = '1.0.0-rc.2';

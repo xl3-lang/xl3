@@ -6,7 +6,7 @@
 > open, implementation-independent standard, not a single library.
 
 **Status:** release candidate · **XTL spec 0.1 (draft)** · reference implementation
-`@xl3-lang/xl3` 1.0.0-rc.1 · final 1.0 after the stability window
+`@xl3-lang/xl3` 1.0.0-rc.2 · final 1.0 after the stability window
 
 **xl3** is an open standard for turning an ordinary `.xlsx` workbook into a
 deterministic, declarative transformation template: the layout, styles,
@@ -297,7 +297,7 @@ For projects that don't use a bundler, a self-contained IIFE bundle
 exposes `window.xl3`:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@1.0.0-rc.1/dist/xl3.bundle.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xl3-lang/xl3@1.0.0-rc.2/dist/xl3.bundle.iife.min.js"></script>
 <script>
   const tpl = await fetch('./template.xlsx').then((r) => r.arrayBuffer());
   const data = await fetch('./data.xlsx').then((r) => r.arrayBuffer());
