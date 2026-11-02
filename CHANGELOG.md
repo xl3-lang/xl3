@@ -6,6 +6,15 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The npm package is built from an empty `dist/`.** `prepublishOnly`
+  rebuilt over whatever `dist/` already held, so 1.0.0-rc.2 shipped
+  `dist/formula-adjustment.js` and `.d.ts` left by a local build of an
+  unmerged branch. Nothing imports them and the `exports` map does not
+  expose them, so no consumer could load them. Publishing now deletes
+  `dist/` first.
+
 ## [1.0.0-rc.2] - 2026-11-02
 
 The second 1.0 release candidate fixes silent data-loss and misattribution
