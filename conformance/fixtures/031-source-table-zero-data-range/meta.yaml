@@ -1,6 +1,5 @@
-description: source_table range whose end row equals the first row is valid and produces zero source rows.
-spec_section: evaluation.md#source-data-model
+description: source_table range whose end row equals the first row is valid and produces zero source rows; the static output_file_pattern still names one file (ADR-0080).
+spec_section: evaluation.md#source-data-model; ADR-0080
 spec_version: "0.1"
-tags: [config, source-table]
+tags: [config, source-table, empty]
 verified_by: [manual-script]
-

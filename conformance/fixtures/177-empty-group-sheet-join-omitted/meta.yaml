@@ -1,0 +1,5 @@
+description: "A sheet named by a group key is omitted when the inner @join leaves its block with zero rows, the same as an empty @filter."
+spec_section: evaluation.md "Empty Output"; ADR-0080; ADR-0014
+spec_version: "0.1"
+tags: [empty, directive, join, group-key]
+verified_by: [hand]
