@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import ExcelJS from 'exceljs';
 import JSZip from 'jszip';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -314,6 +315,42 @@ describe('formatTextReport', () => {
       expect(report.version).toBe(VERSION);
     } finally {
       await rm(fixtureDir, { recursive: true, force: true });
+    }
+  });
+});
+
+// runner-protocol.md: Stage 1 "compares worksheet names and non-auxiliary
+// cell values". A sheet without cells has no cell to differ on, so it has to
+// be caught by name, or an omitted sheet and an empty one look the same.
+describe('Stage 1 compares worksheet names', () => {
+  it('fails a fixture whose output has a sheet the expected file lacks', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'xl3-conformance-sheets-'));
+    const dir = join(root, '001-extra-empty-sheet');
+    try {
+      await mkdir(dir);
+      const book = async (build: (wb: ExcelJS.Workbook) => void, file: string) => {
+        const wb = new ExcelJS.Workbook();
+        build(wb);
+        await writeFile(join(dir, file), Buffer.from(await wb.xlsx.writeBuffer()));
+      };
+      await book((wb) => {
+        wb.addWorksheet('__config__').addRow(['output_file_pattern', 'out.xlsx']);
+        wb.addWorksheet('Report').getCell('A1').value = 'kept';
+        wb.addWorksheet('Blank');
+      }, 'template.xlsx');
+      await book((wb) => wb.addWorksheet('Data').addRow(['Value']), 'data.xlsx');
+      await book((wb) => {
+        wb.addWorksheet('Report').getCell('A1').value = 'kept';
+      }, 'expected.xlsx');
+      await writeFile(
+        join(dir, 'meta.yaml'),
+        'description: extra sheet\nspec_section: runner-protocol.md\nspec_version: "0.1"\ntags: [runner]\nverified_by: [hand]\n',
+      );
+      const report = await runConformance({ fixtureDir: root, engine: 'js' });
+      expect(report.results[0]).toMatchObject({ status: 'fail' });
+      expect(report.results[0]!.diff).toContain('unexpected sheet: Blank');
+    } finally {
+      await rm(root, { recursive: true, force: true });
     }
   });
 });
