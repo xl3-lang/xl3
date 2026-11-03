@@ -137,6 +137,15 @@ export function groupRows(
   const fileGroupMap = new Map<string, { key: GroupKey; rows: Row[] }>();
   const fileGroupOrder: string[] = [];
 
+  // ADR-0080: a pattern without file group keys names exactly one file,
+  // which exists even when the source has zero rows. With group keys,
+  // each file is named by rows, so zero rows means zero files.
+  if (fileKeys.length === 0) {
+    const key: GroupKey = { values: {} };
+    fileGroupMap.set(groupKeyStr(key), { key, rows: [] });
+    fileGroupOrder.push(groupKeyStr(key));
+  }
+
   for (const row of rows) {
     const fk = extractKey(row, fileKeys);
     const fkStr = groupKeyStr(fk);

@@ -421,7 +421,7 @@ describe('grouping and block composition', () => {
     ['Report', 'Report'],
     ['{{Region}}', 'Seoul'],
   ])(
-    'previews joined row counts while retaining an unmatched sheet: %s',
+    'previews joined row counts; an unmatched join keeps only a static sheet: %s',
     async (templateName, outputName) => {
       const template = new ExcelJS.Workbook();
       template.addWorksheet('__sources__').addRows([
@@ -447,8 +447,15 @@ describe('grouping and block composition', () => {
       for (const rows of [[['c1']], []]) {
         data.sources.Customers = { headers: ['ID'], rows };
         const preview = await previewJson(buffer, data);
-        const [file] = await convertJson(buffer, data);
-        const output = (await load(file!)).getWorksheet(outputName!)!;
+        const files = await convertJson(buffer, data);
+        // ADR-0080: a group sheet the join empties is omitted, and a file
+        // left without a sheet is skipped.
+        if (rows.length === 0 && templateName !== 'Report') {
+          expect(files).toEqual([]);
+          expect(preview.files).toEqual([]);
+          continue;
+        }
+        const output = (await load(files[0]!)).getWorksheet(outputName!)!;
         expect(output.getCell('A1').value).toBe('ID');
         expect(output.getCell('A2').value).toBe(rows.length ? 'c1' : null);
         expect(preview.files[0]!.sheets).toEqual([{ name: outputName, rowCount: rows.length }]);

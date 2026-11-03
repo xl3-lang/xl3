@@ -95,6 +95,16 @@ function unshareFormula(value: ExcelJS.CellValue, sheet: ExcelJS.Worksheet): Exc
   return value;
 }
 
+/** One sheet a file group produces (see `Renderer.planSheets`). */
+export interface PlannedSheet {
+  st: SheetTemplate;
+  sg: SheetGroup;
+  /** Final sheet name, sanitized. */
+  name: string;
+  /** True for a group sheet cloned from its template sheet. */
+  clone: boolean;
+}
+
 export class Renderer {
   private parsed: ParsedTemplate;
   private columns: Set<string>;
@@ -122,34 +132,72 @@ export class Renderer {
     return this.renderFilenameDetail(fileGroup.key, fileGroup).warnings;
   }
 
-  /** Generate a preview-safe sheet name from sheet templates and a group key. */
-  previewSheetName(sheetTemplates: SheetTemplate[], sheetKey: GroupKey): string {
-    let sheetName = 'Sheet';
-    for (const st of sheetTemplates) {
-      if (st.groupKeys.length > 0) {
-        sheetName = st.originalName.replace(
-          /\{\{\s*(.+?)\s*\}\}/g,
-          (_, expr) => sheetKey.values[expr.trim()] || expr,
+  /**
+   * The sheets a file group produces, in output order, with their final
+   * names. `renderFile` renders exactly this list and `preview()` lists
+   * it, so the two cannot disagree on which sheets exist (ADR-0080).
+   */
+  planSheets(fileGroup: FileGroup): PlannedSheet[] {
+    // Names the output workbook already holds before any group sheet is
+    // added: every template sheet except the reserved ones, hidden
+    // pass-through sheets included. Excel compares sheet names without
+    // case, so `seoul` and `Seoul` collide; the later one is skipped
+    // (ADR-0021 § "Sheet-name collisions").
+    const taken = new Set(
+      this.parsed.workbook.worksheets
+        .filter((ws) => !/^__[a-z]+__$/.test(ws.name))
+        .map((ws) => ws.name.toLowerCase()),
+    );
+    const planned: PlannedSheet[] = [];
+
+    for (const st of this.parsed.sheetTemplates) {
+      const matchingGroups = findSheetGroups(fileGroup.sheetGroups, st);
+      if (st.groupKeys.length === 0) {
+        // ADR-0080: a sheet with a static name renders once, even when
+        // its blocks have no rows; the static cells still evaluate.
+        if (matchingGroups[0]) {
+          planned.push({ st, sg: matchingGroups[0], name: st.originalName, clone: false });
+        }
+        continue;
+      }
+      for (const sg of matchingGroups) {
+        // ADR-0080: omit a group sheet when every block is empty after
+        // its directives, whether a filter, a join, or @top emptied it.
+        if (!this.hasSheetRows(st, sg.rows)) continue;
+        const name = sanitizeSheetName(
+          this.renderString(st.originalName, mergeContexts(fileGroup.key, sg.key)),
         );
-      } else {
-        sheetName = st.originalName;
+        // Several templates can share a group key and render one name.
+        if (taken.has(name.toLowerCase())) continue;
+        taken.add(name.toLowerCase());
+        planned.push({ st, sg, name, clone: true });
       }
     }
-    return sheetName;
+    return planned;
   }
 
-  /** Single-block sheet pruning must use the block's source. */
-  filterSheetRows(st: SheetTemplate, groupRows: Row[]): Row[] {
-    const activeSource = st.blocks[0]?.source ?? 'default';
-    const rows = activeSource === 'default' ? groupRows : (this.sources[activeSource]?.rows ?? []);
-    // Keep the existing empty-filter policy: an unmatched join removes
-    // data rows, whereas an empty filter removes the entire sheet.
-    return applyDirectives(rows, st.directives, this.listSheets);
+  /**
+   * The rows each data block of a sheet renders, in `st.blocks` order —
+   * the one pipeline that rendering, sheet omission, and preview share.
+   * A sheet without a data block yields a single entry: its group rows
+   * after the sheet's directives.
+   */
+  sheetBlockRows(st: SheetTemplate, groupRows: Row[]): Row[][] {
+    // Mirrors the dispatch in `renderSheet`: one down block (or none)
+    // uses the sheet's directives; the block renderer uses each block's.
+    if (st.blocks.length <= 1 && !st.blocks.some((b) => b.direction === 'right')) {
+      return [this.rowsForBlock(st.blocks[0], groupRows, st.directives)];
+    }
+    return st.blocks.map((block) => this.rowsForBlock(block, groupRows, block.directives));
   }
 
-  /** Preview the same joined and transformed rows that a single block renders. */
-  previewSheetRows(st: SheetTemplate, groupRows: Row[]): Row[] {
-    return this.rowsForBlock(st.blocks[0], groupRows, st.directives);
+  /**
+   * ADR-0080: a sheet named by a group key renders only when at least
+   * one of its blocks keeps a row after every directive. A sheet with a
+   * static name is never omitted.
+   */
+  hasSheetRows(st: SheetTemplate, groupRows: Row[]): boolean {
+    return this.sheetBlockRows(st, groupRows).some((rows) => rows.length > 0);
   }
 
   private rowsForBlock(
@@ -164,68 +212,28 @@ export class Renderer {
     return applyDirectives(this.applyJoin(rows, block), directives, this.listSheets);
   }
 
-  async renderFile(fileGroup: FileGroup): Promise<OutputFile> {
+  /**
+   * Render one file group. Returns `null` when no sheet template
+   * produced a sheet (ADR-0080): a workbook needs at least one sheet,
+   * so the file is skipped rather than written empty.
+   */
+  async renderFile(fileGroup: FileGroup): Promise<OutputFile | null> {
+    const plan = this.planSheets(fileGroup);
+    if (plan.length === 0) return null;
+
     const document = await ExcelJsWorkbookDocument.fromTemplate(this.parsed.workbook);
     document.removeAuxiliarySheets();
 
-    const sheetsToDelete: string[] = [];
-
-    for (const st of this.parsed.sheetTemplates) {
-      // ADR-0068: multi-block sheets can't be sheet-pruned by applying
-      // ALL directives at sheet level — each @block has its own
-      // per-block @filter via proximity scoping (ADR-0069), so the
-      // sheet-level pipeline is meaningless (would AND every block's
-      // filter together, producing 0 rows even when each block has
-      // matches). Multi-block sheets always render.
-      const isMultiBlockSheet = st.blocks.length > 1;
-      if (st.groupKeys.length === 0) {
-        const matchingGroups = findSheetGroups(fileGroup.sheetGroups, st);
-        if (matchingGroups.length >= 1) {
-          // Skip sheet if filtered data count is 0 (single-block path only)
-          if (!isMultiBlockSheet) {
-            const filteredRows = this.filterSheetRows(st, matchingGroups[0].rows);
-            if (filteredRows.length === 0) {
-              document.removeWorksheet(st.originalName);
-              continue;
-            }
-          }
-          const sheet = document.getWorksheet(st.originalName);
-          if (sheet) {
-            this.renderSheet(document, sheet, st, matchingGroups[0], fileGroup.key);
-          }
-        }
-      } else {
-        const matchingGroups = findSheetGroups(fileGroup.sheetGroups, st);
-        sheetsToDelete.push(st.originalName);
-
-        for (const sg of matchingGroups) {
-          // Skip sheet if filtered data count is 0 (single-block path only)
-          if (!isMultiBlockSheet) {
-            const filteredRows = this.filterSheetRows(st, sg.rows);
-            if (filteredRows.length === 0) continue;
-          }
-
-          const sheetName = this.renderString(
-            st.originalName,
-            mergeContexts(fileGroup.key, sg.key),
-          );
-          const sanitized = sanitizeSheetName(sheetName);
-
-          // Skip if this exact sheet name was already created
-          // (can happen when multiple templates share the same group key)
-          if (document.hasWorksheet(sanitized)) continue;
-
-          const newSheet = document.cloneWorksheet(st.originalName, sanitized);
-          if (!newSheet) continue;
-
-          this.renderSheet(document, newSheet, st, sg, fileGroup.key);
-        }
-      }
+    for (const { st, sg, name, clone } of plan) {
+      const sheet = clone
+        ? document.cloneWorksheet(st.originalName, name)
+        : document.getWorksheet(name);
+      if (sheet) this.renderSheet(document, sheet, st, sg, fileGroup.key);
     }
 
     // Delete template sheets used for dynamic generation
-    for (const name of sheetsToDelete) {
-      document.removeWorksheet(name);
+    for (const st of this.parsed.sheetTemplates) {
+      if (st.groupKeys.length > 0) document.removeWorksheet(st.originalName);
     }
 
     const filenameInfo = this.renderFilenameDetail(fileGroup.key, fileGroup);
@@ -264,6 +272,9 @@ export class Renderer {
       const removed = uniqueDirectiveRows.filter((r) => r < row).length;
       return row - removed;
     };
+
+    // Same rows that decided whether this sheet renders (ADR-0080).
+    const blockRows = this.sheetBlockRows(st, sg.rows);
 
     // ADR-0067/0068: multi-block path. Route to the per-block renderer
     // when either (a) any block is `@repeat right` horizontal, or
@@ -337,11 +348,8 @@ export class Renderer {
         return acc;
       };
 
-      for (const block of adjustedBlocks) {
-        const blockDirectives = block.directives.filter(
-          (d) => d.kind !== 'repeat' && d.kind !== 'source' && d.kind !== 'join',
-        );
-        const filteredRows = this.rowsForBlock(block, sg.rows, blockDirectives);
+      for (const [index, block] of adjustedBlocks.entries()) {
+        const filteredRows = blockRows[index]!;
         const staticCtx = this.buildStaticContext(
           fileKey,
           { ...sg, rows: filteredRows },
@@ -404,7 +412,7 @@ export class Renderer {
       // legacy templates default to `default`.
       const downBlock = st.blocks.find((b) => b.direction === 'down');
       const activeSource = downBlock?.source ?? 'default';
-      const filteredRows = this.rowsForBlock(downBlock, sg.rows, st.directives);
+      const filteredRows = blockRows[0]!;
       const staticCtx = this.buildStaticContext(
         fileKey,
         { ...sg, rows: filteredRows },
@@ -933,7 +941,15 @@ export class Renderer {
     const tColStart = block.templateColStart;
     const tColEnd = block.templateColEnd;
 
-    if (tColStart === 0 || dataRows.length === 0) return;
+    if (tColStart === 0) return;
+    if (dataRows.length === 0) {
+      // ADR-0080: a right block over zero rows renders no record. Its
+      // template cells stay in place but empty, so no `{{ }}` text leaks.
+      for (let r = startRow; r <= endRow; r++) {
+        for (let c = tColStart; c <= tColEnd; c++) sheet.getRow(r).getCell(c).value = null;
+      }
+      return;
+    }
 
     // Read template cells: for each row in block, read the template column range
     const templateData: Map<
@@ -1092,6 +1108,10 @@ export class Renderer {
           // ADR-0009: filename-pattern context uses canonical string form.
           data[k] = canonicalString(v);
         }
+      } else {
+        // ADR-0080: with zero rows there is no first row; source columns
+        // evaluate as empty instead of leaking their names.
+        for (const column of this.columns) data[column] = '';
       }
     }
 
