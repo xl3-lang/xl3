@@ -11,7 +11,8 @@ template.xlsx
 data.xlsx
 ```
 
-and produces one or more `.xlsx` output files.
+and produces zero or more `.xlsx` output files. When an empty data set
+produces no file is defined in [Empty Output](#empty-output).
 
 The template workbook defines the output workbook shape, template expressions, grouping rules, directives, and configuration. The source workbook provides tabular data.
 
@@ -542,6 +543,41 @@ the renderer restores outside-column cells to their original row
 positions in the same render phase. Implementations that perform a
 row-wide splice MUST follow it with an outside-cell restore pass to
 satisfy this contract.
+
+`N` may be `0` (ADR-0080). The same rules then remove the block's rows
+from its columns: no row is cloned, inside cells below move up by
+`r_end - r_start + 1`, and outside cells stay where they are.
+
+## Empty Output
+
+Whether a sheet or file exists follows from who named it (ADR-0080): what
+the template names statically renders exactly once; what the data names
+renders once per group that still has rows after every directive.
+
+- **Data block.** A block over zero rows expands with `N = 0` (see
+  [Block expansion](#block-expansion--column-scoped-splice-adr-0066)).
+  A `@repeat right` block over zero rows renders no record and leaves
+  its template cells empty. Static cells still evaluate once; aggregates
+  over zero rows follow ADR-0021.
+- **Sheet with a static name.** Always renders once, even when every data
+  block on it has zero rows.
+- **Sheet named by a group key.** Renders for a sheet group only when at
+  least one of its data blocks has a row after that block's directives. A
+  sheet without a data block counts its group's rows after the sheet's
+  directives. An unmatched `@join` empties a block exactly as `@filter`
+  or `@top` does.
+- **File.** An `output_file_pattern` without a file group key names one
+  file, which exists even when the `default` source has zero rows; a
+  source column the pattern references then evaluates as empty. A
+  pattern with a file group key names one file per group, so zero rows
+  produce zero files.
+- **File with no sheet.** A file group whose sheets are all omitted
+  produces no file. This is not an error. Implementations MUST NOT write a
+  workbook without a worksheet. Filename collision detection (ADR-0031)
+  still covers every file group, including one that is then skipped.
+
+`preview()` lists the same files and sheets that conversion produces, under
+the same sanitized names.
 
 ## Ordering
 

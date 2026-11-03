@@ -49,6 +49,7 @@ matrix.
 | Resource limits | evaluation.md "Resource Limits" | — | (implementation-defined; no fixtures) |
 | Render phases | evaluation.md "Render Phases" | — | 002 |
 | Ordering | evaluation.md "Ordering" | ADR-0016 | 083–086 |
+| Empty output (zero-row blocks, omitted sheets, skipped files) | evaluation.md "Empty Output" | ADR-0080 | 031, 175–179 |
 | Stage 2 OOXML canonicalization | conformance/runner-protocol.md "Stage 2" | ADR-0006 | 024–027, 093 |
 | Dynamic conformance assertions | conformance/runner-protocol.md "Dynamic" | ADR-0005 | 023 |
 | Excel version compatibility | (informational) | ADR-0022 | (no fixtures; authoring guidance) |
@@ -81,7 +82,6 @@ for the full catalog.
 | `TEXT()` formats outside the core table | implementation-defined extension |
 | Merge-cell preservation under row expansion | required (above/below); implementation-defined inside the data block |
 | `__config__` author-defined keys | required: accessible via `{{ __config__[key] }}` |
-| Empty source (zero rows) | implementation-defined output, no error |
 | Sheet-name collision after sanitization | implementation-defined |
 | Empty template block `{{   }}` | error |
 | Non-template, non-reserved sheets in input | implementation-defined (typically pass-through) |
