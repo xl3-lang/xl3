@@ -167,7 +167,8 @@ async function renderPreparedConversion(
     throwIfAborted(signal);
     const outFile = await prepared.renderer.renderFile(fg);
     throwIfAborted(signal);
-    files.push(outFile);
+    // ADR-0080: a file group whose sheets were all omitted emits nothing.
+    if (outFile) files.push(outFile);
   }
 
   return files;
@@ -241,33 +242,19 @@ function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
     };
   });
 
-  const files = grouped.fileGroups.map((fg) => {
-    const sheets: { name: string; rowCount: number }[] = [];
-
-    for (const st of parsed.sheetTemplates) {
-      const isMultiBlockSheet = st.blocks.length > 1;
-      if (st.groupKeys.length === 0) {
-        const sg = fg.sheetGroups.find((g) => Object.keys(g.key.values).length === 0);
-        if (!sg) continue;
-        if (!isMultiBlockSheet && renderer.filterSheetRows(st, sg.rows).length === 0) continue;
-        const filteredRows = isMultiBlockSheet ? sg.rows : renderer.previewSheetRows(st, sg.rows);
-        sheets.push({ name: st.originalName, rowCount: filteredRows.length });
-      } else {
-        const matchingGroups = fg.sheetGroups.filter((g) => {
-          if (Object.keys(g.key.values).length === 0) return false;
-          return st.groupKeys.every((k) => k in g.key.values);
-        });
-        for (const sg of matchingGroups) {
-          const sheetName = renderer.previewSheetName([st], sg.key);
-          if (!isMultiBlockSheet && renderer.filterSheetRows(st, sg.rows).length === 0) continue;
-          const filteredRows = isMultiBlockSheet ? sg.rows : renderer.previewSheetRows(st, sg.rows);
-          sheets.push({ name: sheetName, rowCount: filteredRows.length });
-        }
-      }
-    }
-
+  const files = grouped.fileGroups.flatMap((fg) => {
+    // ADR-0080: list exactly the sheets renderFile produces, by the same
+    // plan, and drop a file that produces none.
+    const sheets = renderer.planSheets(fg).map(({ st, sg, name }) => ({
+      name,
+      // A single block reports the rows it renders; a multi-block sheet
+      // has no single count, so it reports its group's rows.
+      rowCount:
+        st.blocks.length > 1 ? sg.rows.length : renderer.sheetBlockRows(st, sg.rows)[0]!.length,
+    }));
+    if (sheets.length === 0) return [];
     warnings.push(...renderer.previewFilenameWarnings(fg));
-    return { filename: renderer.previewFilename(fg), sheets };
+    return [{ filename: renderer.previewFilename(fg), sheets }];
   });
 
   return { files, inputs, sources: previewSources, warnings };
@@ -277,7 +264,9 @@ function buildPreviewFromPrepared(prepared: PreparedConversion): PreviewResult {
  * Run full conversion: template + source → output files.
  *
  * Reads the XTL template workbook, applies its directives over the
- * source workbook, and returns one OutputFile per emitted file group.
+ * source workbook, and returns one OutputFile per file group that keeps at
+ * least one sheet. A file group whose sheets are all omitted produces no
+ * file, so the array can be empty (ADR-0080).
  *
  * @stable Frozen at 1.0 per `spec/STABILITY.md` "Public API surface".
  *   Signature changes are 2.0-only.
