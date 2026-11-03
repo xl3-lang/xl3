@@ -44,6 +44,44 @@ describe('grouping and block composition', () => {
     else expect(books[0]!.worksheets.map((s) => s.name)).toEqual(['x|B=y-z', 'x-y|B=z']);
   });
 
+  // #119: each sheet template renders only the sheet groups it produced.
+  // A template with more keys used to lend its narrower groups to one with
+  // fewer, so `Seoul` held only the first customer's rows.
+  const BY_REGION = { Seoul: ['Acme', 'Alpha'], Busan: ['Beta'] };
+  const BY_CUSTOMER = { 'Seoul-Acme': ['Acme'], 'Seoul-Alpha': ['Alpha'], 'Busan-Beta': ['Beta'] };
+  it.each([
+    [['{{Region}}-{{Customer}}', '{{Region}}'], { ...BY_CUSTOMER, ...BY_REGION }],
+    [['{{Region}}', '{{Region}}-{{Customer}}'], { ...BY_REGION, ...BY_CUSTOMER }],
+    [
+      ['{{Region}}', 'D {{Region}}'],
+      { ...BY_REGION, 'D Seoul': ['Acme', 'Alpha'], 'D Busan': ['Beta'] },
+    ],
+  ])('renders each template from its own sheet groups: %j', async (names, expected) => {
+    const template = new ExcelJS.Workbook();
+    template.addWorksheet('__config__').addRow(['output_file_pattern', 'out.xlsx']);
+    for (const name of names) template.addWorksheet(name).addRow(['{{ [Customer] }}']);
+    const buffer = await template.xlsx.writeBuffer();
+    const data = source(
+      ['Region', 'Customer'],
+      [
+        ['Seoul', 'Acme'],
+        ['Seoul', 'Alpha'],
+        ['Busan', 'Beta'],
+      ],
+    );
+    const [file] = await convertJson(buffer, data);
+    const book = await load(file!);
+    const rows = Object.fromEntries(
+      book.worksheets.map((s) => [s.name, s.getColumn(1).values.filter(Boolean)]),
+    );
+    expect(rows).toEqual(expected);
+    expect(book.worksheets.map((s) => s.name)).toEqual(Object.keys(expected));
+    const preview = await previewJson(buffer, data);
+    expect(preview.files[0]!.sheets).toEqual(
+      Object.entries(expected).map(([name, values]) => ({ name, rowCount: values.length })),
+    );
+  });
+
   it.each([1, 2])(
     'removes an empty %i-row block without deleting its neighbor or side cells',
     async (height) => {

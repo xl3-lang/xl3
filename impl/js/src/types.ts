@@ -390,6 +390,12 @@ export interface GroupKey {
 }
 
 export interface SheetGroup {
+  /**
+   * `originalName` of the sheet template that produced this group. Each
+   * template renders only its own groups: another template's groups can
+   * carry the same keys and more, but hold a different row split (#119).
+   */
+  template: string;
   key: GroupKey;
   rows: Row[];
 }
