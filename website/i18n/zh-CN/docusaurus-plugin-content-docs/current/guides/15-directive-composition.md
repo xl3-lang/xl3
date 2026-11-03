@@ -85,11 +85,19 @@ pagination_label: '15 · 组合指令'
 
 ## 过滤后为空
 
-如果 `@filter` 把所有行都丢掉了，数据块就展开为 0 行。模板行的样式 / 格式仍保留在输出，但不会产生数据行。数据块下方的页脚行依然可见。
+如果经过 `@filter`、`@join` 或 `@top` 之后数据块里一行都不剩，数据块所占的行会从它的列中删除，下方的行相应上移。数据块旁边的单元格保持原位。表头、`{{ SUM([金额]) }}` 合计行这类静态单元格照常输出，合计为 `0`。
+
+工作表是否输出取决于工作表名：
+
+- 像 `Report` 这样名称固定的工作表总是输出。
+- 像 `{{ 客户 }}` 这样用分组键命名的工作表，只为经过指令后仍有行的客户输出。所有行都被过滤掉的客户不会生成工作表。
+
+一个工作表都不剩的文件不会生成。完整规则见 [`spec/evaluation.md`](/spec/evaluation) 的 "Empty Output" 与 ADR-0080。
 
 ## 规范参考
 
 - ADR-0029 ——指令组合 + 源边界语义。
+- ADR-0080 ——没有行的数据块、工作表和文件的输出规则。
 - [`spec/language.md`](/spec/language) "Filter"、"Sort"、"Top"、"Source"、"Join"。
 - [Cookbook 05](/guides/sheet-per-group) ——`@filter in __lists__[…]`。
 - [Cookbook 07](/guides/multi-source-join) ——`@source` + `@join` 基础。
