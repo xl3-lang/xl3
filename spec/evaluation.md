@@ -509,7 +509,7 @@ Implementations MUST render in this conceptual order:
 2. Read source rows.
 3. Resolve source columns referenced by template expressions.
 4. Split source rows into file groups from `output_file_pattern`.
-5. Split file groups into sheet groups from sheet-name group keys.
+5. Split file groups into sheet groups from sheet-name group keys. Each sheet template splits the file group's rows by its own keys and renders only the sheet groups it produced, even when another template's keys include its own.
 6. Apply directives to the current row set.
 7. Expand repeat blocks.
 8. Evaluate static cells and data cells.
