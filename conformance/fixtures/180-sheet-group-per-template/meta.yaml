@@ -1,0 +1,5 @@
+description: "Each sheet template renders only the sheet groups it produced: a {{ Region }} sheet after a {{ Region }}-{{ Customer }} sheet still holds every row of its region."
+spec_section: evaluation.md "Render Phases"; ADR-0016
+spec_version: "0.1"
+tags: [group-key, sheet-group]
+verified_by: [hand]
