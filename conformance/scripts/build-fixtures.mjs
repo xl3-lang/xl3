@@ -8316,6 +8316,52 @@ async function build179() {
   await writeRegionData(dir);
 }
 
+// ---------------------------------------------------------------------------
+// 180 - sheet-group-per-template (#119)
+//
+// Each sheet template splits the file group's rows by its own group keys.
+// The (Region, Customer) template comes first; its groups also carry Region,
+// and a key-subset match used to hand them to the {{ Region }} template, so
+// the Seoul sheet held Acme alone and silently dropped Alpha.
+// Spec section: evaluation.md "Render Phases" (step 5); ADR-0016.
+// ---------------------------------------------------------------------------
+async function build180() {
+  const dir = join(FIXTURES, '180-sheet-group-per-template');
+  await mkdir(dir, { recursive: true });
+  {
+    const wb = new ExcelJS.Workbook();
+    regionConfig(wb, 'sheet-group-per-template', 'output.xlsx');
+    wb.addWorksheet('{{ Region }}-{{ Customer }}').getCell('A1').value = '{{ [Customer] }}';
+    wb.addWorksheet('{{ Region }}').getCell('A1').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Data');
+    sh.addRows([
+      ['Region', 'Customer'],
+      ['Seoul', 'Acme'],
+      ['Seoul', 'Alpha'],
+      ['Busan', 'Beta'],
+    ]);
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+  {
+    const wb = new ExcelJS.Workbook();
+    const sheets = [
+      ['Seoul-Acme', ['Acme']],
+      ['Seoul-Alpha', ['Alpha']],
+      ['Busan-Beta', ['Beta']],
+      ['Seoul', ['Acme', 'Alpha']],
+      ['Busan', ['Beta']],
+    ];
+    for (const [name, values] of sheets) {
+      wb.addWorksheet(name).addRows(values.map((v) => [v]));
+    }
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -8465,6 +8511,7 @@ const builders = [
   ['177', build177],
   ['178', build178],
   ['179', build179],
+  ['180', build180],
 ];
 
 const selected = new Set(process.argv.slice(2));
