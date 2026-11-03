@@ -24,9 +24,18 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
     contradicted ADR-0021, which already said the file is produced.
   - `preview()` lists the same sheets and files as `convert()`.
 
-  Fixtures 175–179 pin the rule; the corpus is now 178 fixtures.
+  Fixtures 175–179 pin the rule.
 
 ### Fixed
+
+- **A group sheet no longer drops rows when a sheet with more group keys
+  comes first** (#119). With a `{{ Region }}-{{ Customer }}` sheet before
+  a `{{ Region }}` sheet, the `Seoul` sheet held only the first customer's
+  rows: sheet groups were matched by key subset, so the `{{ Region }}`
+  template rendered the other template's `(Seoul, Acme)` group and then
+  skipped its own `(Seoul)` group as a duplicate name. No error or warning
+  was raised. Each template now renders only the groups it produced.
+  Fixture 180 pins it; the corpus is now 179 fixtures.
 
 - **A conversion no longer writes a workbook without a worksheet.** When
   every sheet of a file was removed — for example, a one-sheet template
