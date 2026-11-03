@@ -166,10 +166,9 @@ export function groupRows(
 
     for (const st of sheetTemplates) {
       if (st.groupKeys.length === 0) {
-        sheetGroups.push({ key: { values: {} }, rows: fileRows });
+        sheetGroups.push({ template: st.originalName, key: { values: {} }, rows: fileRows });
       } else {
-        const subGroups = groupByKeysOrdered(fileRows, st.groupKeys);
-        sheetGroups.push(...subGroups);
+        sheetGroups.push(...groupByKeysOrdered(fileRows, st.groupKeys, st.originalName));
       }
     }
 
@@ -179,7 +178,7 @@ export function groupRows(
   return { fileGroups: result };
 }
 
-function groupByKeysOrdered(rows: Row[], keys: string[]): SheetGroup[] {
+function groupByKeysOrdered(rows: Row[], keys: string[], template: string): SheetGroup[] {
   const map = new Map<string, SheetGroup>();
   const order: string[] = [];
 
@@ -188,7 +187,7 @@ function groupByKeysOrdered(rows: Row[], keys: string[]): SheetGroup[] {
     const gkStr = groupKeyStr(gk);
 
     if (!map.has(gkStr)) {
-      map.set(gkStr, { key: gk, rows: [] });
+      map.set(gkStr, { template, key: gk, rows: [] });
       order.push(gkStr);
     }
     map.get(gkStr)!.rows.push(row);

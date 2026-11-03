@@ -1124,13 +1124,9 @@ function mergeContexts(a: GroupKey, b: GroupKey): Record<string, string> {
 }
 
 function findSheetGroups(groups: SheetGroup[], st: SheetTemplate): SheetGroup[] {
-  if (st.groupKeys.length === 0) {
-    return groups.filter((g) => Object.keys(g.key.values).length === 0);
-  }
-  return groups.filter((g) => {
-    if (Object.keys(g.key.values).length === 0) return false;
-    return st.groupKeys.every((k) => k in g.key.values);
-  });
+  // #119: match by producing template, not by key subset — a template
+  // with keys (Region, Customer) yields groups that also carry Region.
+  return groups.filter((g) => g.template === st.originalName);
 }
 
 function renderCellValue(
