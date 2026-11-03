@@ -1,0 +1,5 @@
+description: "A sheet named by a group key is omitted when @filter leaves its block with zero rows; the static sheet beside it is kept."
+spec_section: evaluation.md "Empty Output"; ADR-0080
+spec_version: "0.1"
+tags: [empty, directive, filter, group-key]
+verified_by: [hand]

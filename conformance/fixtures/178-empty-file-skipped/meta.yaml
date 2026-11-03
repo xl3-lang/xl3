@@ -1,0 +1,5 @@
+description: "A file whose sheets are all omitted is not produced: Seoul.xlsx would hold no sheet, so only Busan.xlsx is written."
+spec_section: evaluation.md "Empty Output"; ADR-0080
+spec_version: "0.1"
+tags: [empty, directive, filter, group-key, file-group]
+verified_by: [hand]

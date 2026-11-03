@@ -1,0 +1,5 @@
+description: "A static output_file_pattern names one file, but when every group sheet is omitted the file has no sheet and is not produced (zero output files)."
+spec_section: evaluation.md "Empty Output"; ADR-0080
+spec_version: "0.1"
+tags: [empty, directive, filter, group-key]
+verified_by: [hand]

@@ -1616,9 +1616,10 @@ async function build030() {
 // ---------------------------------------------------------------------------
 // 031 - source-table-zero-data-range
 //
-// Concept: source_table = B3:D3 is valid and has zero source data rows. Since
-// no source rows exist, conversion produces zero output files.
-// Spec section: evaluation.md "Source Data Model".
+// Concept: source_table = B3:D3 is valid and has zero source data rows. The
+// output_file_pattern has no group key, so it names one file, which is
+// produced with its data block at zero rows (ADR-0080).
+// Spec section: evaluation.md "Source Data Model"; ADR-0080.
 // ---------------------------------------------------------------------------
 async function build031() {
   const dir = join(FIXTURES, '031-source-table-zero-data-range');
@@ -1651,8 +1652,13 @@ async function build031() {
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
 
-  // expected/ empty directory means zero output files.
-  await mkdir(join(dir, 'expected'), { recursive: true });
+  // expected.xlsx — the header stays; the zero-row block leaves no row.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -8150,6 +8156,166 @@ async function build174() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 175-179 — empty output (ADR-0080)
+//
+// One rule decides an empty block, sheet, and file: what the template names
+// statically renders once; what the data names renders only for data that
+// survived the directives. All five share one source: Seoul's only customer
+// has Amount 100, Busan's has 200.
+// ---------------------------------------------------------------------------
+async function writeRegionData(dir, extra) {
+  const wb = new ExcelJS.Workbook();
+  const sh = wb.addWorksheet('Data');
+  sh.getCell('A1').value = 'Region';
+  sh.getCell('B1').value = 'Customer';
+  sh.getCell('C1').value = 'Amount';
+  sh.getCell('A2').value = 'Seoul';
+  sh.getCell('B2').value = 'Acme';
+  sh.getCell('C2').value = 100;
+  sh.getCell('A3').value = 'Busan';
+  sh.getCell('B3').value = 'Beta';
+  sh.getCell('C3').value = 200;
+  extra?.(wb);
+  await writeBook(wb, join(dir, 'data.xlsx'));
+}
+
+function regionConfig(wb, name, pattern) {
+  addConfig(wb, [
+    ['name', name],
+    ['source_sheet', 'Data'],
+    ['source_table', '1'],
+    ['output_file_pattern', pattern],
+  ]);
+}
+
+// 175 — a sheet with a static name whose block filters to zero rows is kept.
+// The block's rows leave its columns (the N = 0 splice), the footer moves up,
+// and the note in column D, outside the block, stays where it was.
+async function build175() {
+  const dir = join(FIXTURES, '175-empty-block-static-sheet-kept');
+  await mkdir(dir, { recursive: true });
+  {
+    const wb = new ExcelJS.Workbook();
+    regionConfig(wb, 'empty-block-static-sheet-kept', 'output.xlsx');
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = '{{ @filter [Amount] > 1000 }}';
+    sh.getCell('A3').value = '{{ [Customer] }}';
+    sh.getCell('B3').value = '{{ [Amount] }}';
+    sh.getCell('D3').value = 'Checked by';
+    sh.getCell('A4').value = 'Total';
+    sh.getCell('B4').value = '{{ SUM([Amount]) }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+  await writeRegionData(dir);
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.getCell('A1').value = 'Customer';
+    sh.getCell('B1').value = 'Amount';
+    sh.getCell('A2').value = 'Total';
+    sh.getCell('B2').value = 0;
+    sh.getCell('D2').value = 'Checked by';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// 176 — a group sheet whose block filters to zero rows is omitted; the
+// static Summary sheet is kept.
+async function build176() {
+  const dir = join(FIXTURES, '176-empty-group-sheet-filter-omitted');
+  await mkdir(dir, { recursive: true });
+  {
+    const wb = new ExcelJS.Workbook();
+    regionConfig(wb, 'empty-group-sheet-filter-omitted', 'output.xlsx');
+    wb.addWorksheet('Summary').getCell('A1').value = 'Large accounts';
+    const sh = wb.addWorksheet('{{ Region }}');
+    sh.getCell('A1').value = '{{ @filter [Amount] > 150 }}';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+  await writeRegionData(dir);
+  {
+    const wb = new ExcelJS.Workbook();
+    wb.addWorksheet('Summary').getCell('A1').value = 'Large accounts';
+    wb.addWorksheet('Busan').getCell('A1').value = 'Beta';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// 177 — a group sheet whose block an inner @join empties is omitted, the same
+// as one a filter empties. Acme has no customer record; Beta does.
+async function build177() {
+  const dir = join(FIXTURES, '177-empty-group-sheet-join-omitted');
+  await mkdir(dir, { recursive: true });
+  {
+    const wb = new ExcelJS.Workbook();
+    regionConfig(wb, 'empty-group-sheet-join-omitted', 'output.xlsx');
+    addSources(wb, [{ name: 'Customers', sheet: 'Customers', table: '1' }]);
+    wb.addWorksheet('Summary').getCell('A1').value = 'Customers on file';
+    const sh = wb.addWorksheet('{{ Region }}');
+    sh.getCell('A1').value = '{{ @join Customers on Customers[Customer] = default[Customer] }}';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    sh.getCell('B2').value = '{{ Customers[Name] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+  await writeRegionData(dir, (wb) => {
+    const cust = wb.addWorksheet('Customers');
+    cust.getCell('A1').value = 'Customer';
+    cust.getCell('B1').value = 'Name';
+    cust.getCell('A2').value = 'Beta';
+    cust.getCell('B2').value = 'Beta Works';
+  });
+  {
+    const wb = new ExcelJS.Workbook();
+    wb.addWorksheet('Summary').getCell('A1').value = 'Customers on file';
+    const busan = wb.addWorksheet('Busan');
+    busan.getCell('A1').value = 'Beta';
+    busan.getCell('B1').value = 'Beta Works';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
+// 178 — a file whose sheets are all omitted is not produced. Seoul.xlsx
+// would hold no sheet, so only Busan.xlsx is written.
+async function build178() {
+  const dir = join(FIXTURES, '178-empty-file-skipped');
+  await mkdir(join(dir, 'expected'), { recursive: true });
+  {
+    const wb = new ExcelJS.Workbook();
+    regionConfig(wb, 'empty-file-skipped', '{{ Region }}.xlsx');
+    const sh = wb.addWorksheet('{{ Customer }}');
+    sh.getCell('A1').value = '{{ @filter [Amount] > 150 }}';
+    sh.getCell('A2').value = '{{ [Amount] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+  await writeRegionData(dir);
+  {
+    const wb = new ExcelJS.Workbook();
+    wb.addWorksheet('Beta').getCell('A1').value = 200;
+    await writeBook(wb, join(dir, 'expected', 'Busan.xlsx'));
+  }
+}
+
+// 179 — the same rule with a static file name: every group sheet is
+// omitted, so the one file the pattern names has no sheet and is not
+// produced. The empty expected/ directory means zero output files.
+async function build179() {
+  const dir = join(FIXTURES, '179-all-sheets-empty-no-file');
+  await mkdir(join(dir, 'expected'), { recursive: true });
+  {
+    const wb = new ExcelJS.Workbook();
+    regionConfig(wb, 'all-sheets-empty-no-file', 'output.xlsx');
+    const sh = wb.addWorksheet('{{ Region }}');
+    sh.getCell('A1').value = '{{ @filter [Amount] > 1000 }}';
+    sh.getCell('A2').value = '{{ [Customer] }}';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+  await writeRegionData(dir);
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -8294,6 +8460,11 @@ const builders = [
   ['172', build172],
   ['173', build173],
   ['174', build174],
+  ['175', build175],
+  ['176', build176],
+  ['177', build177],
+  ['178', build178],
+  ['179', build179],
 ];
 
 const selected = new Set(process.argv.slice(2));
