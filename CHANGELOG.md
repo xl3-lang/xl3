@@ -6,7 +6,48 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Changed
+
+- **Empty data follows one rule for blocks, sheets, and files** (ADR-0080,
+  #116). What the template names statically renders once; what the data
+  names renders only while it still has rows after the directives. Before,
+  the result depended on whether `@filter` or `@join` emptied a block and on
+  how many blocks a sheet had. Four outcomes change for hosts:
+  - A sheet with a fixed name, such as `Report`, whose only block filters to
+    zero rows is kept with its header and footer instead of being removed.
+  - A sheet named by a group key, such as `{{ Customer }}`, is omitted when
+    all of its blocks are empty, whichever directive emptied them. A group
+    sheet emptied by an unmatched `@join`, or one with two or more blocks,
+    used to be kept.
+  - A fixed `output_file_pattern` over a source with zero rows returns one
+    file instead of none. Conformance fixture 031 changes to match; it had
+    contradicted ADR-0021, which already said the file is produced.
+  - `preview()` lists the same sheets and files as `convert()`.
+
+  Fixtures 175–179 pin the rule; the corpus is now 178 fixtures.
+
 ### Fixed
+
+- **A conversion no longer writes a workbook without a worksheet.** When
+  every sheet of a file was removed — for example, a one-sheet template
+  whose `@filter` matched nothing — the file was written with no
+  worksheet, and Excel cannot open it. Such a file is now not produced
+  (ADR-0080).
+
+- **A `@repeat right` block with no rows no longer leaves `{{ }}` text.**
+  The block's template cells kept their raw expressions when a filter or
+  join left it empty; they are now emptied (ADR-0080).
+
+- **`preview()` reports the sheet names `convert()` writes.** Group sheet
+  names in a preview were not sanitized (`A/B` instead of `A_B`), and a
+  sheet that conversion skipped because its name was already taken was
+  still listed. Both now come from one plan. A group sheet whose name
+  differs from an existing sheet only in case is skipped like any other
+  duplicate (ADR-0021); `convert()` used to throw a generic error for it.
+
+- **The conformance runner compares worksheet names at Stage 1.**
+  `runner-protocol.md` requires it, but the runner compared only cell
+  values, so an extra sheet with no cells passed as if it were absent.
 
 - **The npm package is built from an empty `dist/`.** `prepublishOnly`
   rebuilt over whatever `dist/` already held, so 1.0.0-rc.2 shipped

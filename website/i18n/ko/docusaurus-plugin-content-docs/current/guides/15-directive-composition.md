@@ -85,11 +85,19 @@ ADR-0029 기준:
 
 ## 필터 후 행이 비는 경우
 
-`@filter`가 모든 행을 떨어뜨리면, 데이터 블록은 0행으로 expand 됩니다. 템플릿 행의 스타일과 포맷은 결과에 남지만 데이터 행 자체는 생성되지 않습니다. 블록 아래의 footer 행은 그대로 보입니다.
+`@filter`, `@join`, `@top`을 거친 뒤 데이터 블록에 남은 행이 없으면, 블록이 차지하던 행이 그 블록의 열에서 지워지고 아래 행이 그만큼 올라옵니다. 블록 옆에 있는 셀은 제자리에 그대로 있습니다. 머리글이나 `{{ SUM([금액]) }}` 합계 행 같은 고정 셀도 그대로 나오고, 합계는 `0`이 됩니다.
+
+시트가 나오는지는 시트 이름에 따라 달라집니다.
+
+- `Report`처럼 이름이 고정된 시트는 항상 나옵니다.
+- `{{ 거래처 }}`처럼 그룹 키로 이름을 붙인 시트는, 디렉티브를 거친 뒤에도 행이 남은 거래처만 나옵니다. 행이 모두 걸러진 거래처는 시트가 생기지 않습니다.
+
+시트가 하나도 남지 않은 파일은 만들어지지 않습니다. 자세한 규칙은 [`spec/evaluation.md`](https://xl3.io/spec/evaluation)의 "Empty Output"과 ADR-0080에 있습니다.
 
 ## 스펙 포인터
 
 - ADR-0029 — 디렉티브 조합 + 소스 엣지 시맨틱.
+- ADR-0080 — 행이 없는 블록, 시트, 파일의 출력 규칙.
 - [`spec/language.md`](https://xl3.io/spec/language) "Filter", "Sort", "Top", "Source", "Join".
 - `@filter in __lists__[…]`는 [Cookbook 05](/guides/sheet-per-group) 참고.
 - `@source` + `@join` 기본은 [Cookbook 07](/guides/multi-source-join) 참고.

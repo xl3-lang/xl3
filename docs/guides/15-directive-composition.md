@@ -92,13 +92,27 @@ useful but is rarely what authors mean.
 
 ## Empty after filter
 
-If `@filter` drops all rows, the data block expands to zero rows. The
-template row's styling/formats stay on the output but no data row is
-produced. Footer rows below the block stay visible.
+If `@filter`, `@join`, or `@top` leaves a data block with no rows, the
+block's rows are removed from its columns and the rows below it in those
+columns move up. Cells beside the block stay where they are. Static cells
+such as a header or a `{{ SUM([Amount]) }}` footer still render; the sum
+is `0`.
+
+Whether the sheet itself appears depends on its name:
+
+- A sheet with a fixed name, like `Report`, always appears.
+- A sheet named by a group key, like `{{ Customer }}`, appears only for
+  customers that still have a row after the directives. A customer whose
+  rows were all filtered out gets no sheet.
+
+A file left with no sheet is not produced. The rules are in
+[`spec/evaluation.md`](../../spec/evaluation.md) "Empty Output" and
+ADR-0080.
 
 ## Spec pointers
 
 - ADR-0029 — Directive composition + source edge semantics.
+- ADR-0080 — Empty output: blocks, sheets, and files with no rows.
 - [`spec/language.md`](../../spec/language.md) "Filter", "Sort", "Top",
   "Source", "Join".
 - [Cookbook 05](./05-sheet-per-group.md) for `@filter in __lists__[…]`.
