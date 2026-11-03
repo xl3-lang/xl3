@@ -153,12 +153,16 @@ This pattern lets templates centralize a constant ("report title",
 
 ### Empty source data (zero rows)
 
-**Position:** implementation-defined output, no error.
+**Position:** required behavior, no error. *Amended 2026-11-03 by
+ADR-0080; previously implementation-defined.*
 
 A source workbook with the source_table headers but zero data rows
 is valid. A data block over zero rows expands to zero rendered rows;
-static cells in the surrounding sheet still render once. The output
-file IS produced — empty data does not error.
+static cells in the surrounding sheet still render once. Empty data
+does not error. Whether the output file is produced follows ADR-0080
+(evaluation.md "Empty Output"): an `output_file_pattern` without a
+file group key produces its one file; a pattern with a file group key
+produces none.
 
 Aggregate functions over zero rows return `0` (`SUM`, `COUNT`,
 `AVERAGE`) or empty string (`MIN`, `MAX`); this is normative per
