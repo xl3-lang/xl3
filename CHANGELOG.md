@@ -6,6 +6,16 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+## [1.0.0-rc.3] - 2026-11-03
+
+The third 1.0 release candidate settles what empty data produces and fixes
+a silent row loss in group sheets. A block, sheet, or file that its
+directives leave without rows now follows one rule (ADR-0080); four
+outcomes visible to hosts change, and conformance fixture 031 now expects
+one file instead of none. It adds no export and removes or renames no
+export or error code, so the technical stability window is unchanged and
+the earliest final 1.0 cut remains 2026-11-28.
+
 ### Changed
 
 - **Empty data follows one rule for blocks, sheets, and files** (ADR-0080,
@@ -1678,7 +1688,8 @@ Initial public draft.
 - Single-expression cells preserve source value types and use template cell
   number/date/text formats for coercion.
 
-[Unreleased]: https://github.com/xl3-lang/xl3/compare/v1.0.0-rc.2...HEAD
+[Unreleased]: https://github.com/xl3-lang/xl3/compare/v1.0.0-rc.3...HEAD
+[1.0.0-rc.3]: https://github.com/xl3-lang/xl3/compare/v1.0.0-rc.2...v1.0.0-rc.3
 [1.0.0-rc.2]: https://github.com/xl3-lang/xl3/compare/v1.0.0-rc.1...v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/xl3-lang/xl3/compare/v0.13.0...v1.0.0-rc.1
 [0.13.0]: https://github.com/xl3-lang/xl3/compare/v0.12.0...v0.13.0
