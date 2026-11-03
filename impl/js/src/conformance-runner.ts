@@ -1070,6 +1070,11 @@ function formatUtcToday(d: Date, fmt: string): string {
 function diffCellMaps(actual: CellMap, expected: CellMap, diffs: string[], fnPrefix?: string) {
   const sheets = new Set([...Object.keys(actual), ...Object.keys(expected)]);
   for (const sheet of sheets) {
+    // Stage 1 compares worksheet names as well as cells: a sheet with no
+    // cells must not pass for one that is absent (runner-protocol.md).
+    const where = fnPrefix ? `[${fnPrefix}] ` : '';
+    if (!(sheet in actual)) diffs.push(`${where}missing sheet: ${sheet}`);
+    else if (!(sheet in expected)) diffs.push(`${where}unexpected sheet: ${sheet}`);
     const a = actual[sheet] ?? {};
     const e = expected[sheet] ?? {};
     const cells = new Set([...Object.keys(a), ...Object.keys(e)]);
