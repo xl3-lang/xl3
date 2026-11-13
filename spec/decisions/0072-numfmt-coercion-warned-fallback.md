@@ -1,8 +1,8 @@
 # ADR 0072 — numFmt coercion failure degrades to a warned text fallback (amends ADR-0003)
 
-- **Status:** proposed
+- **Status:** accepted (implementation prepared for the post-1.0 release)
 - **Date:** 2026-06-28
-- **Spec target:** XTL 1.x, **POST-1.0** (per ROADMAP, #56 is post-1.0 additive). Amends ADR-0003: relaxes a fatal error to a warned text fallback. The behavior relaxation is more permissive, but **removing** the `xl3/cell/numfmt-coercion` error code is a breaking catalog change — so implementation is gated to after the 1.0 freeze (this `proposed` doc does not reset the G24 clock).
+- **Spec target:** **POST-1.0**, per ROADMAP #56. Amends ADR-0003: relaxes a fatal error to a warned text fallback. Removing `xl3/cell/numfmt-coercion` is a breaking catalog change. This implementation must be released on a version line that permits that removal; merging it into the current 1.0 RC line resets the G3/G24 stability gates. Preparing the change locally does not change the published release or its calendar.
 - **Affects:** evaluation.md ("Cell Evaluation / Single-Expression Cells"); language.md (numFmt coercion paragraph, L253); ADR-0003 (failure-mode clause); impl (`renderer.ts` `renderCellValue` / `coerceDateValue` / `coerceNumberValue`); `types.ts` (`XtlWarningCode`); error-codes catalog; conformance fixtures 021/022
 - **Amends:** ADR-0003
 - **Issue:** #56
@@ -97,8 +97,8 @@ cell:
 1. **does not throw** — conversion of the file continues;
 2. **emits** a warning `xl3w/cell/numfmt-coercion` whose `code` and
    English `message` are normative (corpus-matched), with `location` =
-   `sheet "<name>" cell <address>` (plus the source column name when the
-   cell is a data-block `[col]` reference and the name is known);
+   `sheet "<name>" cell <address>` using final output coordinates, plus
+   ` column "<column>"` for a direct data-block column reference;
 3. **writes the original value as text** via the existing text/General
    path (`preserveValue`) — the cell shows the literal value (`-`),
    exactly as Excel would.
@@ -115,11 +115,18 @@ longer conformant" is upheld — the fallback is **warned**, never silent.
   this path (the cells that previously threw). Mixed-text cells and `@`
   text-format cells already stringify via `canonicalString` and never
   threw — untouched.
-- Empty / null / already-typed values (number, Date, boolean) coerce as
-  before — no warning.
+- Empty / null values and successful coercions of already-typed values
+  behave as before, without a warning. A boolean under a date format,
+  which previously failed, now warns and is preserved by `preserveValue`.
 - The change is **per cell**: N non-coercible cells emit N warnings, in
-  deterministic render order (row-major, then cell-major), so
-  `expected_warnings` lists are stable and ordered.
+  deterministic sheet render order, then row/column order within each
+  sheet, after filename warnings. Addresses account for block expansion
+  and deletion. `expected_warnings` lists are stable and ordered.
+- Warning messages retain the previous diagnostic text:
+  `Value cannot be coerced to a number for cell format "<numFmt>": <value>`
+  (or `a date`), where `<value>` is the trimmed string form. Fallback
+  strings retain their original whitespace and cell format. Preview
+  does not render cells, so it does not emit these warnings.
 
 ## Consequences
 
@@ -144,8 +151,8 @@ longer conformant" is upheld — the fallback is **warned**, never silent.
     ≈ 2026-09-21 absent such a change). This matches ROADMAP already
     classifying #54/#56/#57 as **POST-1.0 additive** — so the removal
     (and this ADR's whole implementation) lands **after the 1.0 freeze**,
-    not during the G24 window. This `proposed` ADR is doc-only and does
-    not touch behavior/codes, so it does **not** reset the clock.
+    not during the G24 window. The original `proposed` ADR was doc-only;
+    accepting and implementing it does not waive this release constraint.
 - **Conformance fixtures** `021-numfmt-number-coercion-error` and
   `022-numfmt-date-coercion-error` convert from `expected_error_code`
   to `expected_warnings` + a rendered output pinning the text fallback.
