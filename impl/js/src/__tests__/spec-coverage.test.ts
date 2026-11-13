@@ -82,11 +82,6 @@ const INFORMATIONAL_ADRS = new Set([
   // metadata is covered by __inputs__ for host-driven flows (#57). A
   // rejected design has no covering fixture.
   '0071', // rejected — source cell scalar reference (superseded by __inputs__)
-  // ADR-0072 — proposed / impl-pending. Amends ADR-0003: numFmt coercion
-  // failure degrades to a warned text fallback. Doc-only design ahead of
-  // implementation, so no covering fixture yet. Remove from this list when
-  // the warned-fallback conformance fixtures land (021/022 conversion).
-  '0072', // proposed — numFmt coercion warned fallback (amends ADR-0003)
   // ADR-0075 — implemented, but JSON source input is outside the
   // .xlsx-driven conformance corpus (template.xlsx + data.xlsx). Covered
   // by focused unit tests (json-source.test.ts) instead of a fixture.
@@ -105,8 +100,6 @@ const ADR_0015_FIXTURES = [
   '018',
   '019',
   '020',
-  '021',
-  '022',
   '032',
   '033',
   '034',

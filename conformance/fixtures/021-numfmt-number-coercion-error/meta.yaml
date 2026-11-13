@@ -1,7 +1,6 @@
-description: Numeric template formats report an error when coercion fails.
-spec_section: evaluation.md "Single-Expression Cells"
+description: Numeric template formats warn and preserve text when coercion fails.
+spec_section: evaluation.md "Single-Expression Cells"; ADR-0003; ADR-0072
 spec_version: "0.1"
-tags: [numfmt, coercion, numeric, error]
+tags: [numfmt, coercion, numeric, warning]
 verified_by: [manual-script]
-expected_error: 'Value cannot be coerced to a number for cell format "0.00": not-a-number'
-expected_error_code: 'xl3/cell/numfmt-coercion'
+expected_warnings: ['Value cannot be coerced to a number for cell format "0.00": not-a-number']

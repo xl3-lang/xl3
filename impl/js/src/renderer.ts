@@ -29,6 +29,53 @@ import {
 
 const VAR_PATTERN = /\{\{.*?\}\}/;
 
+/** Per-sheet diagnostics, kept in output coordinates as blocks expand. */
+class CellWarnings {
+  private entries: {
+    row: number;
+    col: number;
+    letters: string;
+    column?: string;
+    message: string;
+  }[] = [];
+
+  constructor(private sheet: ExcelJS.Worksheet) {}
+
+  add(cell: ExcelJS.Cell, template: string, message: string): void {
+    if (cell.isMerged && cell.master.address !== cell.address) return;
+    // Direct row references after normalization; compound expressions have
+    // no single source column to name in the diagnostic.
+    const ref = template.match(/^\{\{\s*(?:index\s+\.|sourceCell\s+"[^"]+")\s+"([^"]+)"\s*\}\}$/);
+    this.entries.push({
+      row: Number(cell.row),
+      col: Number(cell.col),
+      letters: cell.address.replace(/\d+$/, ''),
+      column: ref?.[1],
+      message,
+    });
+  }
+
+  shiftAfter(row: number, delta: number, firstCol = 0, lastCol = 0): void {
+    for (const entry of this.entries) {
+      if (entry.row > row && (firstCol === 0 || (entry.col >= firstCol && entry.col <= lastCol))) {
+        entry.row += delta;
+      }
+    }
+  }
+
+  collect(): XtlWarning[] {
+    // Static cells evaluate before blocks, and right blocks render record
+    // by record. Publish a stable row/column order regardless of that path.
+    return this.entries
+      .sort((a, b) => a.row - b.row || a.col - b.col)
+      .map((entry) => ({
+        code: 'xl3w/cell/numfmt-coercion',
+        message: entry.message,
+        location: `sheet "${this.sheet.name}" cell ${entry.letters}${entry.row}${entry.column === undefined ? '' : ` column "${entry.column}"`}`,
+      }));
+  }
+}
+
 /** Convert Excel column letters (A, B, …, Z, AA, …) to 1-based column number. */
 function letterToCol(letters: string): number {
   let n = 0;
@@ -223,12 +270,17 @@ export class Renderer {
 
     const document = await ExcelJsWorkbookDocument.fromTemplate(this.parsed.workbook);
     document.removeAuxiliarySheets();
+    const cellWarnings: XtlWarning[] = [];
 
     for (const { st, sg, name, clone } of plan) {
       const sheet = clone
         ? document.cloneWorksheet(st.originalName, name)
         : document.getWorksheet(name);
-      if (sheet) this.renderSheet(document, sheet, st, sg, fileGroup.key);
+      if (sheet) {
+        const warnings = new CellWarnings(sheet);
+        this.renderSheet(document, sheet, st, sg, fileGroup.key, warnings);
+        cellWarnings.push(...warnings.collect());
+      }
     }
 
     // Delete template sheets used for dynamic generation
@@ -244,7 +296,7 @@ export class Renderer {
       // JSZip's `uint8array` output is backed by an ordinary ArrayBuffer,
       // which keeps the public value directly usable as a browser BlobPart.
       data: outBuf as Uint8Array & { readonly buffer: ArrayBuffer },
-      warnings: filenameInfo.warnings,
+      warnings: [...filenameInfo.warnings, ...cellWarnings],
     };
   }
 
@@ -254,6 +306,7 @@ export class Renderer {
     st: SheetTemplate,
     sg: SheetGroup,
     fileKey: GroupKey,
+    warnings: CellWarnings,
   ) {
     // 0. Remove directive rows (iterate in reverse to keep indices
     // stable). ADR-0067: with multi-directive rows now possible (e.g.,
@@ -323,6 +376,8 @@ export class Renderer {
               normalized,
               evalCellAt(sheet.name, cell.address, normalized, finalStaticCtx),
               cell.style,
+              cell,
+              warnings,
             );
           }
         });
@@ -359,7 +414,7 @@ export class Renderer {
         const blockShift = shiftForBlock(block);
 
         if (block.direction === 'right') {
-          this.renderDataCols(sheet, block, filteredRows, staticCtx, blockShift);
+          this.renderDataCols(sheet, block, filteredRows, staticCtx, blockShift, warnings);
         } else {
           const shiftedBlock = {
             ...block,
@@ -369,6 +424,12 @@ export class Renderer {
           if (filteredRows.length === 0) {
             if (shiftedBlock.startRow > 0) {
               deleteBlockRows(sheet, shiftedBlock);
+              warnings.shiftAfter(
+                shiftedBlock.endRow,
+                -(shiftedBlock.endRow - shiftedBlock.startRow + 1),
+                block.templateColStart,
+                block.templateColEnd,
+              );
               expansionShifts.push({
                 range: { start: block.templateColStart, end: block.templateColEnd },
                 delta: -(shiftedBlock.endRow - shiftedBlock.startRow + 1),
@@ -386,6 +447,7 @@ export class Renderer {
               sheet,
               asSt,
               filteredRows,
+              warnings,
               block.source,
               block,
             );
@@ -436,6 +498,8 @@ export class Renderer {
               normalized,
               evalCellAt(sheet.name, cell.address, normalized, staticCtx),
               cell.style,
+              cell,
+              warnings,
             );
           }
         });
@@ -449,11 +513,25 @@ export class Renderer {
             startRow: adjustedStartRow,
             endRow: adjustedEndRow,
           });
+          warnings.shiftAfter(
+            adjustedEndRow,
+            -(adjustedEndRow - adjustedStartRow + 1),
+            downBlock.templateColStart,
+            downBlock.templateColEnd,
+          );
         }
         return;
       }
 
-      this.renderDataRows(document, sheet, adjustedSt, filteredRows, activeSource, downBlock);
+      this.renderDataRows(
+        document,
+        sheet,
+        adjustedSt,
+        filteredRows,
+        warnings,
+        activeSource,
+        downBlock,
+      );
     }
   }
 
@@ -462,6 +540,7 @@ export class Renderer {
     sheet: ExcelJS.Worksheet,
     st: SheetTemplate,
     dataRows: Row[],
+    warnings: CellWarnings,
     activeSource = 'default',
     block?: DataBlock,
   ): number {
@@ -475,6 +554,7 @@ export class Renderer {
         sheet,
         st,
         dataRows,
+        warnings,
         activeSource,
         groupDir.keys,
         subtotalOffsets,
@@ -510,7 +590,12 @@ export class Renderer {
       outlineLevel?: number;
       cells: Map<
         number,
-        { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }
+        {
+          template: string;
+          rawValue: ExcelJS.CellValue;
+          style: Partial<ExcelJS.Style>;
+          mergedSlave: boolean;
+        }
       >;
     }[] = [];
 
@@ -518,7 +603,12 @@ export class Renderer {
       const row = sheet.getRow(st.dataStartRow + i);
       const cells = new Map<
         number,
-        { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }
+        {
+          template: string;
+          rawValue: ExcelJS.CellValue;
+          style: Partial<ExcelJS.Style>;
+          mergedSlave: boolean;
+        }
       >();
 
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
@@ -534,7 +624,14 @@ export class Renderer {
           // expanded row gets a standalone `{formula}` instead of N
           // duplicate "owners" of the same OOXML shared range.
           const rawValue = unshareFormula(cell.value, sheet);
-          cells.set(colNumber, { template: val, rawValue, style: style || {} });
+          // A merge slave repeats its anchor's value, but is not another
+          // source expression. Keep that identity when expansion unmerges it.
+          cells.set(colNumber, {
+            template: val,
+            rawValue,
+            style: style || {},
+            mergedSlave: cell.isMerged && cell.master.address !== cell.address,
+          });
         }
       });
       templateRows.push({ height: row.height, outlineLevel: row.outlineLevel, cells });
@@ -607,6 +704,7 @@ export class Renderer {
     }
 
     // 3. Insert rows for data
+    warnings.shiftAfter(st.dataEndRow, insertCount, colStart, colEnd);
     if (insertCount > 0) {
       document.spliceRowsPreservingMerges(sheet, insertPoint, 0, Array(insertCount).fill([]));
     }
@@ -632,7 +730,10 @@ export class Renderer {
         // clears whatever the splice left on a reused row object.
         targetRow.outlineLevel = templateRowInfo.outlineLevel ?? 0;
 
-        for (const [colNumber, { template, rawValue, style }] of templateRowInfo.cells) {
+        for (const [
+          colNumber,
+          { template, rawValue, style, mergedSlave },
+        ] of templateRowInfo.cells) {
           const cell = targetRow.getCell(colNumber);
 
           // Copy style before writing the value so the template's intended
@@ -647,6 +748,8 @@ export class Renderer {
               normalized,
               evalCellAt(sheet.name, cell.address, normalized, rowData),
               style,
+              cell,
+              mergedSlave ? undefined : warnings,
             );
           } else if (template) {
             // ADR-0046: re-emit the ORIGINAL CellValue (preserves
@@ -705,6 +808,7 @@ export class Renderer {
     sheet: ExcelJS.Worksheet,
     st: SheetTemplate,
     dataRows: Row[],
+    warnings: CellWarnings,
     activeSource: string,
     groupKeys: string[],
     subtotalOffsets: number[],
@@ -735,14 +839,24 @@ export class Renderer {
       outlineLevel?: number;
       cells: Map<
         number,
-        { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }
+        {
+          template: string;
+          rawValue: ExcelJS.CellValue;
+          style: Partial<ExcelJS.Style>;
+          mergedSlave: boolean;
+        }
       >;
     }[] = [];
     for (let i = 0; i < templateRowCount; i++) {
       const row = sheet.getRow(st.dataStartRow + i);
       const cells = new Map<
         number,
-        { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }
+        {
+          template: string;
+          rawValue: ExcelJS.CellValue;
+          style: Partial<ExcelJS.Style>;
+          mergedSlave: boolean;
+        }
       >();
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
         if (!isInsideCol(colNumber)) return;
@@ -754,7 +868,12 @@ export class Renderer {
           // applies to the grouped path so subtotal rows don't duplicate
           // shared-formula owners either.
           const rawValue = unshareFormula(cell.value, sheet);
-          cells.set(colNumber, { template: val, rawValue, style: style || {} });
+          cells.set(colNumber, {
+            template: val,
+            rawValue,
+            style: style || {},
+            mergedSlave: cell.isMerged && cell.master.address !== cell.address,
+          });
         }
       });
       templateRows.push({ height: row.height, outlineLevel: row.outlineLevel, cells });
@@ -770,6 +889,7 @@ export class Renderer {
       // Degenerate: only subtotal rows in the block. Remove the
       // template rows and stop — there is no per-row content to clone.
       document.spliceRowsPreservingMerges(sheet, st.dataStartRow, templateRowCount);
+      warnings.shiftAfter(st.dataEndRow, -templateRowCount);
       return -templateRowCount;
     }
 
@@ -787,6 +907,7 @@ export class Renderer {
     // Empty source after filter/sort: drop the block entirely.
     if (totalOutputRows === 0) {
       document.spliceRowsPreservingMerges(sheet, st.dataStartRow, templateRowCount);
+      warnings.shiftAfter(st.dataEndRow, -templateRowCount);
       return -templateRowCount;
     }
 
@@ -828,6 +949,7 @@ export class Renderer {
     }
 
     // 5. Resize the block.
+    warnings.shiftAfter(st.dataEndRow, insertDelta, colStart, colEnd);
     if (totalOutputRows > templateRowCount) {
       const insertCount = totalOutputRows - templateRowCount;
       document.spliceRowsPreservingMerges(
@@ -855,7 +977,7 @@ export class Renderer {
       if (tmpl.height) targetRow.height = tmpl.height;
       // ADR-0040 § "Outline level" — same replication on the grouped path.
       targetRow.outlineLevel = tmpl.outlineLevel ?? 0;
-      for (const [colNumber, { template, rawValue, style }] of tmpl.cells) {
+      for (const [colNumber, { template, rawValue, style, mergedSlave }] of tmpl.cells) {
         const cell = targetRow.getCell(colNumber);
         if (style && Object.keys(style).length > 0) cell.style = { ...style };
         if (VAR_PATTERN.test(template)) {
@@ -864,6 +986,8 @@ export class Renderer {
             normalized,
             evalCellAt(sheet.name, cell.address, normalized, ctx),
             style,
+            cell,
+            mergedSlave ? undefined : warnings,
           );
         } else if (template) {
           cell.value = rawValue;
@@ -931,6 +1055,7 @@ export class Renderer {
     dataRows: Row[],
     staticCtx: Record<string, unknown>,
     rowShift: number,
+    warnings: CellWarnings,
   ) {
     const colSpan =
       block.directives.find((d) => d.kind === 'repeat')?.kind === 'repeat'
@@ -954,17 +1079,24 @@ export class Renderer {
     // Read template cells: for each row in block, read the template column range
     const templateData: Map<
       number,
-      Map<number, { template: string; style: Partial<ExcelJS.Style> }>
+      Map<number, { template: string; style: Partial<ExcelJS.Style>; mergedSlave: boolean }>
     > = new Map();
     const colWidths: Map<number, number | undefined> = new Map();
 
     for (let r = startRow; r <= endRow; r++) {
       const row = sheet.getRow(r);
-      const rowCells = new Map<number, { template: string; style: Partial<ExcelJS.Style> }>();
+      const rowCells = new Map<
+        number,
+        { template: string; style: Partial<ExcelJS.Style>; mergedSlave: boolean }
+      >();
       for (let c = tColStart; c <= tColEnd; c++) {
         const cell = row.getCell(c);
         const val = cellString(cell.value);
-        rowCells.set(c, { template: val, style: cell.style ? { ...cell.style } : {} });
+        rowCells.set(c, {
+          template: val,
+          style: cell.style ? { ...cell.style } : {},
+          mergedSlave: cell.isMerged && cell.master.address !== cell.address,
+        });
       }
       templateData.set(r, rowCells);
     }
@@ -997,6 +1129,8 @@ export class Renderer {
               normalized,
               evalCellAt(sheet.name, cell.address, normalized, ctx),
               tmpl.style,
+              cell,
+              tmpl.mergedSlave ? undefined : warnings,
             );
           } else if (tmpl.template) {
             cell.value = tmpl.template as ExcelJS.CellValue;
@@ -1133,6 +1267,8 @@ function renderCellValue(
   normalizedTemplate: string,
   value: unknown,
   style: Partial<ExcelJS.Style> | undefined,
+  cell: ExcelJS.Cell,
+  warnings: CellWarnings | undefined,
 ): ExcelJS.CellValue {
   // ADR-0025: an XtlErrorCell marker (e.g., from division by zero)
   // becomes a real ExcelJS error cell value regardless of cell
@@ -1160,8 +1296,9 @@ function renderCellValue(
   // cells stringify via canonical form (Booleans uppercase, etc.).
   if (!singleExpression) return canonicalString(value) as ExcelJS.CellValue;
   if (numFmt === '@') return canonicalString(value) as ExcelJS.CellValue;
-  if (numFmt && isDateNumFmt(numFmt)) return coerceDateValue(value, numFmt);
-  if (numFmt && isNumericNumFmt(numFmt)) return coerceNumberValue(value, numFmt);
+  const warn = (message: string) => warnings?.add(cell, normalizedTemplate, message);
+  if (numFmt && isDateNumFmt(numFmt)) return coerceDateValue(value, numFmt, warn);
+  if (numFmt && isNumericNumFmt(numFmt)) return coerceNumberValue(value, numFmt, warn);
   return preserveValue(value);
 }
 
@@ -1177,7 +1314,11 @@ function preserveValue(v: unknown): ExcelJS.CellValue {
   return String(v) as ExcelJS.CellValue;
 }
 
-function coerceNumberValue(v: unknown, numFmt: string): ExcelJS.CellValue {
+function coerceNumberValue(
+  v: unknown,
+  numFmt: string,
+  warn: (message: string) => void,
+): ExcelJS.CellValue {
   if (v === null || v === undefined || v === '') return '' as ExcelJS.CellValue;
   if (typeof v === 'number') return v as ExcelJS.CellValue;
   if (v instanceof Date) return v as ExcelJS.CellValue;
@@ -1186,13 +1327,15 @@ function coerceNumberValue(v: unknown, numFmt: string): ExcelJS.CellValue {
   const raw = String(v).trim();
   const parsed = parseNumber(raw);
   if (parsed !== null) return parsed as ExcelJS.CellValue;
-  throw xtlError(
-    'xl3/cell/numfmt-coercion',
-    `Value cannot be coerced to a number for cell format "${numFmt}": ${raw}`,
-  );
+  warn(`Value cannot be coerced to a number for cell format "${numFmt}": ${raw}`);
+  return preserveValue(v);
 }
 
-function coerceDateValue(v: unknown, numFmt: string): ExcelJS.CellValue {
+function coerceDateValue(
+  v: unknown,
+  numFmt: string,
+  warn: (message: string) => void,
+): ExcelJS.CellValue {
   if (v === null || v === undefined || v === '') return '' as ExcelJS.CellValue;
   if (v instanceof Date) return v as ExcelJS.CellValue;
   if (typeof v === 'number') return excelSerialToDate(v) as ExcelJS.CellValue;
@@ -1200,10 +1343,8 @@ function coerceDateValue(v: unknown, numFmt: string): ExcelJS.CellValue {
   const raw = String(v).trim();
   const parsed = parseStrictDate(raw);
   if (parsed) return parsed as ExcelJS.CellValue;
-  throw xtlError(
-    'xl3/cell/numfmt-coercion',
-    `Value cannot be coerced to a date for cell format "${numFmt}": ${raw}`,
-  );
+  warn(`Value cannot be coerced to a date for cell format "${numFmt}": ${raw}`);
+  return preserveValue(v);
 }
 
 function parseNumber(s: string): number | null {

@@ -743,7 +743,7 @@ function Standard() {
               // and the corpus size in conformance/DASHBOARD.md. Refresh both
               // on every release cut.
               adrCount: <strong>80 ADRs</strong>,
-              fixtureCount: <strong>179 conformance fixtures</strong>,
+              fixtureCount: <strong>180 conformance fixtures</strong>,
               npmLink: <a href="https://www.npmjs.com/package/@xl3-lang/xl3">@xl3-lang/xl3</a>,
               portersGuideLink: (
                 <Link to="/porters-guide">
