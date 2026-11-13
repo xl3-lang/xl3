@@ -101,6 +101,12 @@ A date or numeric template cell containing non-convertible text such as
 the sheet, final cell address, and source column when known. These warnings
 are produced during rendering, so they are absent from preview.
 
+This change implements the warning contract in the JavaScript backend.
+Use `convert(template, data, { engine: 'js' })` or `convertJson` when these
+diagnostics are required. The optional `xl3-wasm` backend must implement
+ADR-0072 separately; selecting it through `auto` does not establish warning
+parity with the JavaScript backend.
+
 Hosts that previously caught `xl3/cell/numfmt-coercion` must now inspect
 the returned warnings; that error code has been removed.
 

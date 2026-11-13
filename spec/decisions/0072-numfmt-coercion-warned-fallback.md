@@ -130,6 +130,11 @@ longer conformant" is upheld — the fallback is **warned**, never silent.
 
 ## Consequences
 
+- The implementation here covers the JavaScript reference backend. The
+  optional `xl3-wasm` backend is a separate implementation and needs its
+  own ADR-0072 conformance work. Hosts requiring these diagnostics should
+  select `engine: 'js'` or use `convertJson` until parity is verified.
+
 - **Impl** (`renderer.ts`): `coerceDateValue` / `coerceNumberValue` no
   longer `throw`; on parse failure they push an `XtlWarning` to a
   per-file sink and return `preserveValue(v)`. `renderCellValue` and its

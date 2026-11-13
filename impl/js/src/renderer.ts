@@ -42,6 +42,7 @@ class CellWarnings {
   constructor(private sheet: ExcelJS.Worksheet) {}
 
   add(cell: ExcelJS.Cell, template: string, message: string): void {
+    if (cell.isMerged && cell.master.address !== cell.address) return;
     // Direct row references after normalization; compound expressions have
     // no single source column to name in the diagnostic.
     const ref = template.match(/^\{\{\s*(?:index\s+\.|sourceCell\s+"[^"]+")\s+"([^"]+)"\s*\}\}$/);
@@ -67,12 +68,6 @@ class CellWarnings {
     // by record. Publish a stable row/column order regardless of that path.
     return this.entries
       .sort((a, b) => a.row - b.row || a.col - b.col)
-      .filter((entry) => {
-        // Repeated merges are restored after cell evaluation. Only their
-        // anchor is an independent output value; omit duplicate slave warnings.
-        const cell = this.sheet.getCell(`${entry.letters}${entry.row}`);
-        return !cell.isMerged || cell.master.address === cell.address;
-      })
       .map((entry) => ({
         code: 'xl3w/cell/numfmt-coercion',
         message: entry.message,
@@ -595,7 +590,12 @@ export class Renderer {
       outlineLevel?: number;
       cells: Map<
         number,
-        { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }
+        {
+          template: string;
+          rawValue: ExcelJS.CellValue;
+          style: Partial<ExcelJS.Style>;
+          mergedSlave: boolean;
+        }
       >;
     }[] = [];
 
@@ -603,7 +603,12 @@ export class Renderer {
       const row = sheet.getRow(st.dataStartRow + i);
       const cells = new Map<
         number,
-        { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }
+        {
+          template: string;
+          rawValue: ExcelJS.CellValue;
+          style: Partial<ExcelJS.Style>;
+          mergedSlave: boolean;
+        }
       >();
 
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
@@ -619,7 +624,14 @@ export class Renderer {
           // expanded row gets a standalone `{formula}` instead of N
           // duplicate "owners" of the same OOXML shared range.
           const rawValue = unshareFormula(cell.value, sheet);
-          cells.set(colNumber, { template: val, rawValue, style: style || {} });
+          // A merge slave repeats its anchor's value, but is not another
+          // source expression. Keep that identity when expansion unmerges it.
+          cells.set(colNumber, {
+            template: val,
+            rawValue,
+            style: style || {},
+            mergedSlave: cell.isMerged && cell.master.address !== cell.address,
+          });
         }
       });
       templateRows.push({ height: row.height, outlineLevel: row.outlineLevel, cells });
@@ -718,7 +730,10 @@ export class Renderer {
         // clears whatever the splice left on a reused row object.
         targetRow.outlineLevel = templateRowInfo.outlineLevel ?? 0;
 
-        for (const [colNumber, { template, rawValue, style }] of templateRowInfo.cells) {
+        for (const [
+          colNumber,
+          { template, rawValue, style, mergedSlave },
+        ] of templateRowInfo.cells) {
           const cell = targetRow.getCell(colNumber);
 
           // Copy style before writing the value so the template's intended
@@ -734,7 +749,7 @@ export class Renderer {
               evalCellAt(sheet.name, cell.address, normalized, rowData),
               style,
               cell,
-              warnings,
+              mergedSlave ? undefined : warnings,
             );
           } else if (template) {
             // ADR-0046: re-emit the ORIGINAL CellValue (preserves
@@ -824,14 +839,24 @@ export class Renderer {
       outlineLevel?: number;
       cells: Map<
         number,
-        { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }
+        {
+          template: string;
+          rawValue: ExcelJS.CellValue;
+          style: Partial<ExcelJS.Style>;
+          mergedSlave: boolean;
+        }
       >;
     }[] = [];
     for (let i = 0; i < templateRowCount; i++) {
       const row = sheet.getRow(st.dataStartRow + i);
       const cells = new Map<
         number,
-        { template: string; rawValue: ExcelJS.CellValue; style: Partial<ExcelJS.Style> }
+        {
+          template: string;
+          rawValue: ExcelJS.CellValue;
+          style: Partial<ExcelJS.Style>;
+          mergedSlave: boolean;
+        }
       >();
       row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
         if (!isInsideCol(colNumber)) return;
@@ -843,7 +868,12 @@ export class Renderer {
           // applies to the grouped path so subtotal rows don't duplicate
           // shared-formula owners either.
           const rawValue = unshareFormula(cell.value, sheet);
-          cells.set(colNumber, { template: val, rawValue, style: style || {} });
+          cells.set(colNumber, {
+            template: val,
+            rawValue,
+            style: style || {},
+            mergedSlave: cell.isMerged && cell.master.address !== cell.address,
+          });
         }
       });
       templateRows.push({ height: row.height, outlineLevel: row.outlineLevel, cells });
@@ -947,7 +977,7 @@ export class Renderer {
       if (tmpl.height) targetRow.height = tmpl.height;
       // ADR-0040 § "Outline level" — same replication on the grouped path.
       targetRow.outlineLevel = tmpl.outlineLevel ?? 0;
-      for (const [colNumber, { template, rawValue, style }] of tmpl.cells) {
+      for (const [colNumber, { template, rawValue, style, mergedSlave }] of tmpl.cells) {
         const cell = targetRow.getCell(colNumber);
         if (style && Object.keys(style).length > 0) cell.style = { ...style };
         if (VAR_PATTERN.test(template)) {
@@ -957,7 +987,7 @@ export class Renderer {
             evalCellAt(sheet.name, cell.address, normalized, ctx),
             style,
             cell,
-            warnings,
+            mergedSlave ? undefined : warnings,
           );
         } else if (template) {
           cell.value = rawValue;
@@ -1049,17 +1079,24 @@ export class Renderer {
     // Read template cells: for each row in block, read the template column range
     const templateData: Map<
       number,
-      Map<number, { template: string; style: Partial<ExcelJS.Style> }>
+      Map<number, { template: string; style: Partial<ExcelJS.Style>; mergedSlave: boolean }>
     > = new Map();
     const colWidths: Map<number, number | undefined> = new Map();
 
     for (let r = startRow; r <= endRow; r++) {
       const row = sheet.getRow(r);
-      const rowCells = new Map<number, { template: string; style: Partial<ExcelJS.Style> }>();
+      const rowCells = new Map<
+        number,
+        { template: string; style: Partial<ExcelJS.Style>; mergedSlave: boolean }
+      >();
       for (let c = tColStart; c <= tColEnd; c++) {
         const cell = row.getCell(c);
         const val = cellString(cell.value);
-        rowCells.set(c, { template: val, style: cell.style ? { ...cell.style } : {} });
+        rowCells.set(c, {
+          template: val,
+          style: cell.style ? { ...cell.style } : {},
+          mergedSlave: cell.isMerged && cell.master.address !== cell.address,
+        });
       }
       templateData.set(r, rowCells);
     }
@@ -1093,7 +1130,7 @@ export class Renderer {
               evalCellAt(sheet.name, cell.address, normalized, ctx),
               tmpl.style,
               cell,
-              warnings,
+              tmpl.mergedSlave ? undefined : warnings,
             );
           } else if (tmpl.template) {
             cell.value = tmpl.template as ExcelJS.CellValue;
@@ -1231,7 +1268,7 @@ function renderCellValue(
   value: unknown,
   style: Partial<ExcelJS.Style> | undefined,
   cell: ExcelJS.Cell,
-  warnings: CellWarnings,
+  warnings: CellWarnings | undefined,
 ): ExcelJS.CellValue {
   // ADR-0025: an XtlErrorCell marker (e.g., from division by zero)
   // becomes a real ExcelJS error cell value regardless of cell
@@ -1259,7 +1296,7 @@ function renderCellValue(
   // cells stringify via canonical form (Booleans uppercase, etc.).
   if (!singleExpression) return canonicalString(value) as ExcelJS.CellValue;
   if (numFmt === '@') return canonicalString(value) as ExcelJS.CellValue;
-  const warn = (message: string) => warnings.add(cell, normalizedTemplate, message);
+  const warn = (message: string) => warnings?.add(cell, normalizedTemplate, message);
   if (numFmt && isDateNumFmt(numFmt)) return coerceDateValue(value, numFmt, warn);
   if (numFmt && isNumericNumFmt(numFmt)) return coerceNumberValue(value, numFmt, warn);
   return preserveValue(value);

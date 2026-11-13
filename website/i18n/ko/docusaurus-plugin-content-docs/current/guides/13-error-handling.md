@@ -43,7 +43,7 @@ try {
 
 안정적이고 append-only 입니다. 이름 변경은 ADR-0015 기준으로 breaking change로 취급합니다. 현재 카탈로그는 다음과 같습니다:
 
-- **`xl3/cell/*`** — 셀 단위 실패 (`formula-no-cache`, `numfmt-coercion`, `row-outside-repeat`)
+- **`xl3/cell/*`** — 셀 단위 실패 (`formula-no-cache`, `row-outside-repeat`)
 - **`xl3/eval/*`** — 표현식 평가 (`arity-mismatch`, `operand-coercion`, `unsupported-syntax`)
 - **`xl3/config/*`** — `__config__` 관련 문제
 - **`xl3/inputs/*`** — 런타임 입력 실패
@@ -80,6 +80,12 @@ try {
 
 **XLOOKUP 매칭 실패** (`xl3/xlookup/no-match`):
 조회값이 조회 컬럼에 없는 경우입니다. 운영자의 데이터가 불완전하거나, 혹은 템플릿에서 `@join`을 쓰는 편이 나을 수도 있습니다 (매칭 안 된 행은 자동으로 떨어집니다).
+
+## 셀 서식 경고
+
+날짜·숫자 서식 셀의 `-`, `N/A` 같은 값을 변환할 수 없으면 원문과 서식을 보존하고 변환을 계속합니다(ADR-0072). 각 셀은 `OutputFile.warnings`에 `xl3w/cell/numfmt-coercion`을 남기며, 위치에는 출력 시트·최종 셀 주소·알 수 있는 직접 참조 컬럼이 포함됩니다. 렌더링 시 발생하는 경고이므로 preview에는 나타나지 않습니다.
+
+기존 `xl3/cell/numfmt-coercion` 오류 코드는 제거됐습니다. 이 오류를 catch하던 호스트는 반환된 경고를 확인해야 합니다. 이 변경은 JavaScript 백엔드에 적용되므로 경고가 필요한 경우 `convert(template, data, { engine: 'js' })` 또는 `convertJson`을 사용하세요. 선택형 `xl3-wasm` 백엔드의 ADR-0072 지원은 별도 검증이 필요합니다.
 
 ## 로케일
 

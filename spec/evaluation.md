@@ -704,7 +704,8 @@ Its `location` names the output sheet and final cell address as
 `sheet "<name>" cell <address>`, followed by ` column "<column>"` for a
 direct data-block column reference. Warnings are returned per output file,
 after filename warnings, in sheet render order and then row/column order
-within each sheet. A merged cell contributes one warning at its anchor.
+within each sheet. A merged template cell contributes one warning per
+rendered record at its anchor, without duplicates from its slave cells.
 Preview does not render cells and does not emit these warnings.
 
 The minimum set of supported date formats and numeric format tokens is not normatively defined by XTL 0.1 and is left to each implementation. Implementations that support fewer formats than another implementation may declare partial conformance.

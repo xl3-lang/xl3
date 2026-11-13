@@ -290,18 +290,48 @@ describe('numFmt warned fallback (ADR-0072 / #56)', () => {
     expect(file!.warnings).toEqual([]);
   });
 
-  it('reports only the anchor of a merged cell', async () => {
-    const template = new ExcelJS.Workbook();
-    const sheet = template.addWorksheet('Report');
-    sheet.mergeCells('A1:B1');
-    sheet.getCell('A1').value = '{{ [Value] }}';
-    sheet.getCell('A1').numFmt = 'yyyy-mm-dd';
-    const [file] = await convertJson(await template.xlsx.writeBuffer(), source(['Value'], [['-']]));
-    const output = (await load(file!)).getWorksheet('Report')!;
-    expect(output.model.merges).toEqual(['A1:B1']);
-    expect(output.getCell('A1').value).toBe('-');
-    expect(file!.warnings?.map((w) => w.location)).toEqual([
-      'sheet "Report" cell A1 column "Value"',
-    ]);
-  });
+  it.each(['down', 'right', 'grouped'])(
+    'reports only the template merge anchor for every record in a %s block',
+    async (direction) => {
+      const template = new ExcelJS.Workbook();
+      const sheet = template.addWorksheet('Report');
+      const row = direction === 'down' ? 1 : 2;
+      if (direction === 'right') sheet.getCell('A1').value = '{{ @repeat right 2 }}';
+      if (direction === 'grouped') {
+        sheet.getCell('A1').value = '{{ @group [Group] }}';
+        sheet.getCell('A3').value = 'Total';
+        sheet.getCell('C3').value = '{{ @subtotal SUM([Amount]) }}';
+      }
+      sheet.mergeCells(`A${row}:B${row}`);
+      sheet.getCell(`A${row}`).value = '{{ [Value] }}';
+      sheet.getCell(`A${row}`).numFmt = 'yyyy-mm-dd';
+      const [file] = await convertJson(
+        await template.xlsx.writeBuffer(),
+        source(
+          ['Group', 'Value', 'Amount'],
+          [
+            ['A', '-', 1],
+            ['A', 'N/A', 2],
+            ['B', 'unknown', 3],
+          ],
+        ),
+      );
+      const output = (await load(file!)).getWorksheet('Report')!;
+      const anchors =
+        direction === 'right'
+          ? ['A1', 'C1', 'E1']
+          : direction === 'grouped'
+            ? ['A1', 'A2', 'A4']
+            : ['A1', 'A2', 'A3'];
+      expect(output.model.merges).toContain('A1:B1');
+      expect(anchors.map((address) => output.getCell(address).value)).toEqual([
+        '-',
+        'N/A',
+        'unknown',
+      ]);
+      expect(file!.warnings?.map((w) => w.location)).toEqual(
+        anchors.map((address) => `sheet "Report" cell ${address} column "Value"`),
+      );
+    },
+  );
 });
