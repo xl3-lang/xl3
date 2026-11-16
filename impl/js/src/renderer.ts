@@ -29,6 +29,7 @@ import {
   deleteBlockRows,
   detachOutsideMerges,
   extendRangesForExpansion,
+  removeRowsFromRanges,
   sanitizeFilename,
   sanitizeSheetName,
   type WorkbookDocument,
@@ -274,6 +275,9 @@ export class Renderer {
     for (const rowNum of sortedDirectiveRows) {
       document.spliceRowsPreservingMerges(sheet, rowNum, 1);
     }
+    // #124: the splice moves cells, not CF / DV coordinates. Move those too,
+    // so they stay on the cells they were written for.
+    removeRowsFromRanges(sheet, uniqueDirectiveRows);
 
     // Adjust row positions after directive row removal
     const adjustRow = (row: number) => {

@@ -1,7 +1,12 @@
 import ExcelJS from 'exceljs';
 import JSZip from 'jszip';
 import { xtlError } from './error-codes.js';
-import { extendSqref, replicatedRowsFor } from './range-extension.js';
+import {
+  extendSqref,
+  removeRowsFromSqref,
+  replicatedRowsFor,
+  rowAfterRemoval,
+} from './range-extension.js';
 import type { DataBlock, XtlWarning } from './types.js';
 
 /**
@@ -663,5 +668,45 @@ export function extendRangesForExpansion(
         }
       }
     }
+  }
+}
+
+/**
+ * Directive rows are deleted from the sheet before any block renders. The
+ * splice moves cells but not CF / DV coordinates, so without this the
+ * ranges stay below the cells they were written for and the ADR-0040
+ * sweep, which compares them with the block's rows, no longer finds them
+ * inside the block (#124).
+ */
+export function removeRowsFromRanges(sheet: ExcelJS.Worksheet, removedRows: number[]): void {
+  if (removedRows.length === 0) return;
+  const collections = sheet as unknown as RangeCollections;
+
+  const cfs = collections.conditionalFormattings;
+  if (Array.isArray(cfs)) {
+    for (let i = cfs.length - 1; i >= 0; i--) {
+      const cf = cfs[i];
+      if (!cf || typeof cf.ref !== 'string') continue;
+      const ref = removeRowsFromSqref(cf.ref, removedRows);
+      if (ref === '') cfs.splice(i, 1);
+      else cf.ref = ref;
+    }
+  }
+
+  const dvModel = collections.dataValidations?.model;
+  if (dvModel) {
+    const moved: Record<string, unknown> = {};
+    for (const [address, validation] of Object.entries(dvModel)) {
+      const m = /^\$?([A-Z]{1,3})\$?(\d+)$/i.exec(address);
+      if (!m) {
+        moved[address] = validation; // range-keyed or unparseable — leave it alone
+        continue;
+      }
+      const row = rowAfterRemoval(Number(m[2]), removedRows);
+      if (row !== null) moved[`${m[1]!.toUpperCase()}${row}`] = validation;
+    }
+    // Swap the contents in place: ExcelJS holds this object.
+    for (const key of Object.keys(dvModel)) delete dvModel[key];
+    Object.assign(dvModel, moved);
   }
 }

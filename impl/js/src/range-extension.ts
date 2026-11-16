@@ -172,3 +172,63 @@ export function replicatedRowsFor(
   }
   return rows;
 }
+
+/**
+ * Rewrite the row numbers of one sub-range, keeping its columns and `$`
+ * markers. `startRow` goes to the lower endpoint and `endRow` to the upper,
+ * whichever order the reference wrote them in.
+ */
+function withRows(raw: string, startRow: number, endRow: number): string {
+  const parsed = raw.split(':').map((e) => /^(\$?[A-Z]{1,3})?(\$?)(\d+)$/i.exec(e.trim()));
+  if (parsed.some((m) => !m)) return raw;
+  const [a, b] = parsed as RegExpExecArray[];
+  const write = (m: RegExpExecArray, row: number) => `${m[1] ?? ''}${m[2] ?? ''}${row}`;
+  if (!b) return write(a!, startRow);
+  const aIsStart = Number(a![3]) <= Number(b[3]);
+  return `${write(a!, aIsStart ? startRow : endRow)}:${write(b, aIsStart ? endRow : startRow)}`;
+}
+
+/**
+ * Where `row` lands after `removedRows` are deleted from the sheet, or
+ * `null` when `row` is itself one of them (#124).
+ */
+export function rowAfterRemoval(row: number, removedRows: readonly number[]): number | null {
+  let above = 0;
+  for (const removed of removedRows) {
+    if (removed === row) return null;
+    if (removed < row) above++;
+  }
+  return row - above;
+}
+
+/**
+ * Rewrite an `sqref` after `removedRows` are deleted from the sheet (#124).
+ * A sub-range below a removed row moves up, one that spans a removed row
+ * shrinks, and one that lies entirely on removed rows is dropped. Returns
+ * an empty string when no sub-range is left.
+ *
+ * This is for directive rows only. They are template machinery, removed
+ * before anything renders, so a range written below one was written for
+ * the cells that move up. It is not the ADR-0040 extension, and it does
+ * not make ranges follow a block that grows (ADR-0036 row 1).
+ */
+export function removeRowsFromSqref(sqref: string, removedRows: readonly number[]): string {
+  if (removedRows.length === 0) return sqref;
+  const parts: string[] = [];
+  for (const sub of parseSqref(sqref)) {
+    if (sub.coversAllRows || sub.startRow === undefined || sub.endRow === undefined) {
+      parts.push(sub.raw);
+      continue;
+    }
+    const start = sub.startRow;
+    const end = sub.endRow;
+    // The first surviving row at or after `start`, the last at or before `end`.
+    const newStart = start - removedRows.filter((r) => r < start).length;
+    const newEnd = end - removedRows.filter((r) => r <= end).length;
+    if (newStart > newEnd) continue;
+    parts.push(
+      newStart === start && newEnd === end ? sub.raw : withRows(sub.raw, newStart, newEnd),
+    );
+  }
+  return parts.join(' ');
+}

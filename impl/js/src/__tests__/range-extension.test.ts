@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { extendSqref, parseSqref, replicatedRowsFor } from '../range-extension.js';
+import {
+  extendSqref,
+  parseSqref,
+  removeRowsFromSqref,
+  replicatedRowsFor,
+  rowAfterRemoval,
+} from '../range-extension.js';
 
 // ADR-0040 § "Extension rule for CF and DV `sqref` ranges", clause by clause.
 // ROADMAP gate G5.
@@ -159,5 +165,40 @@ describe('replicatedRowsFor — ExcelJS models data validations per cell', () =>
 
   it('returns nothing when the block did not grow', () => {
     expect(replicatedRowsFor(2, 2, 2, 0)).toEqual([]);
+  });
+});
+
+// #124 — directive rows deleted above a range. Not part of the ADR-0040
+// extension rule: the rows are removed before any block renders.
+describe('removeRowsFromSqref (#124)', () => {
+  it.each([
+    ['A2:A2', [1], 'A1:A1'],
+    ['A2', [1], 'A1'],
+    ['$A$4:$B$6', [1, 2], '$A$2:$B$4'],
+    ['A1:A1', [2], 'A1:A1'], // above the removed row
+    ['A1:A5', [3], 'A1:A4'], // spans it — shrinks
+    ['A1:A3', [1], 'A1:A2'], // starts on it
+    ['A1:A3', [3], 'A1:A2'], // ends on it
+    ['A2:A2', [2], ''], // lies on it — dropped
+    ['A2:A3', [2, 3], ''],
+    ['A2:A2 C5:C6', [2], 'C4:C5'], // per sub-range
+    ['A5:A2', [1], 'A4:A1'], // reversed endpoints keep their order
+    ['D:D', [1], 'D:D'], // whole column
+    ['A2:A1048576', [1], 'A2:A1048576'], // runs to the last row
+    ['A2:A2', [], 'A2:A2'],
+  ])('%s minus rows %j -> %j', (sqref, removed, expected) => {
+    expect(removeRowsFromSqref(sqref, removed)).toBe(expected);
+  });
+});
+
+describe('rowAfterRemoval (#124)', () => {
+  it('moves a row up by the removed rows above it', () => {
+    expect(rowAfterRemoval(5, [1, 3])).toBe(3);
+    expect(rowAfterRemoval(2, [5])).toBe(2);
+    expect(rowAfterRemoval(4, [])).toBe(4);
+  });
+
+  it('returns null for a removed row', () => {
+    expect(rowAfterRemoval(3, [1, 3])).toBeNull();
   });
 });
