@@ -67,6 +67,12 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   row values are now both compared in canonical string form, as
   evaluation.md specifies.
 
+- **Arithmetic no longer reads `0x10`, `0b10`, `0o17`, or `+5` as a
+  number** (#125, ADR-0064). A source string in one of these forms was
+  computed as 16, 2, 15, or 5. It now raises `xl3/eval/operand-coercion`.
+  Decimals, a leading `-`, thousands separators, and scientific notation
+  such as `1e3` are accepted as before.
+
 ## [1.0.0-rc.3] - 2026-11-03
 
 The third 1.0 release candidate settles what empty data produces and fixes
