@@ -17,6 +17,19 @@ describe('isDataExpression', () => {
     expect(isDataExpression('"text"')).toBe(false);
     expect(isDataExpression('123')).toBe(false);
   });
+
+  it('does not count an aggregate argument as a current-row reference (#128)', () => {
+    expect(isDataExpression('ROUND(SUM([Amount]), 2)')).toBe(false);
+    expect(isDataExpression('TEXT(SUM(Orders[Amount]), "0.00")')).toBe(false);
+    expect(isDataExpression('SUM([Amount]) / COUNT([Amount])')).toBe(false);
+    expect(isDataExpression('IF(COUNT() > 0, MAX([Amount]), 0)')).toBe(false);
+  });
+
+  it('still counts a current-row reference beside an aggregate (#128)', () => {
+    expect(isDataExpression('[Amount] / SUM([Amount])')).toBe(true);
+    expect(isDataExpression('IF([Amount] > 1, SUM([Amount]), 0)')).toBe(true);
+    expect(isDataExpression('ROUND(Orders[Amount] / SUM(Orders[Amount]), 2)')).toBe(true);
+  });
 });
 
 describe('isAggregateExpression', () => {
@@ -202,6 +215,24 @@ describe('normalizeTemplate', () => {
 
   it('rewrites SUM aggregates to sumRows', () => {
     expect(normalizeTemplate('{{ SUM([price]) }}', cols)).toBe('{{ sumRows .Rows "price" }}');
+  });
+
+  it('rewrites a nested aggregate like a top-level one (#128)', () => {
+    expect(normalizeTemplate('{{ ROUND(SUM([price]), 2) }}', cols)).toBe(
+      '{{ ROUND (sumRows .Rows "price") 2 }}',
+    );
+    expect(normalizeTemplate('{{ SUM([price]) / COUNT() }}', cols)).toBe(
+      '{{ div (sumRows .Rows "price") (len .Rows) }}',
+    );
+  });
+
+  it('splits an IF condition at the top-level comparison operator (#130)', () => {
+    expect(normalizeTemplate('{{ IF("a=b" = "a=b", "yes", "no") }}', cols)).toBe(
+      '{{ IF (eq "a=b" "a=b") "yes" "no" }}',
+    );
+    expect(normalizeTemplate('{{ IF([a] + 1 > 2, "yes", "no") }}', cols)).toBe(
+      '{{ IF (gt (add (index . "a") 1) 2) "yes" "no" }}',
+    );
   });
 
   it('rewrites COUNT() to len .Rows', () => {

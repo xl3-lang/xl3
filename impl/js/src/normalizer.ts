@@ -22,6 +22,13 @@ const EXCEL_AGGREGATE_NAMES = new Set(['SUM', 'AVERAGE', 'AVG', 'MIN', 'MAX']);
 // references.
 const STATIC_CONTEXT_CALLS = new Set(['SUM', 'AVERAGE', 'AVG', 'MIN', 'MAX', 'COUNT', 'XLOOKUP']);
 
+// #128: an aggregate call wherever it sits in an expression. Per ADR-0059
+// its argument is exactly one column reference, so the call has a fixed
+// shape. The reference feeds the aggregate's row set — it is not a
+// current-row reference.
+const AGGREGATE_CALL_RE =
+  /(?<!\w)(?:SUM|AVERAGE|AVG|MIN|MAX|COUNT)\(\s*(?:[A-Za-z][A-Za-z0-9_]*)?\[[^\]\r\n]+\]\s*\)/gi;
+
 export function isDataExpression(expr: string): boolean {
   // ADR-0038: a `@subtotal <agg>` cell is row-set scoped at render
   // time, not per-row. Reject it from the "data expression" classifier
@@ -34,7 +41,10 @@ export function isDataExpression(expr: string): boolean {
   // misclassified as a data expression (which, on a @subtotal row, would
   // otherwise demote the row / raise a spurious xl3/subtotal/mixed-row).
   // ADR-0028: literals have no escapes, so `"[^"]*"` matches each pair.
-  const bare = expr.replace(/"[^"]*"/g, '');
+  // #128: column references that are aggregate arguments are masked too —
+  // `ROUND(SUM([Amount]), 2)` reads the whole row set, so it is as static
+  // as a top-level `SUM([Amount])`.
+  const bare = expr.replace(/"[^"]*"/g, '').replace(AGGREGATE_CALL_RE, '');
   // A "data expression" is one whose value depends on the current
   // iterating row of a data block. Two shapes qualify:
   //
@@ -95,6 +105,15 @@ export function normalizeTemplate(tmpl: string, columns: Set<string>): string {
         `Template block contains an unbalanced string literal; \`}}\` inside \`"..."\` does not close the block. Got: {{ ${trimmed} }}`,
       );
     }
+    // An unpaired parenthesis outside a string literal or a column name
+    // has no reading in the grammar. Raise instead of letting the block
+    // fall through and render as its own source text.
+    if (!scanStructure(trimmed).balanced) {
+      throw xtlError(
+        'xl3/eval/unsupported-syntax',
+        `Unbalanced parentheses in expression: {{ ${trimmed} }}`,
+      );
+    }
     // ADR-0057: __lists__[name] is a list array and only valid as
     // the RHS of `@filter ... in` / `@filter ... !in`. Any other
     // shape (cell expression, function arg, non-filter directive)
@@ -140,7 +159,7 @@ function normalizeInner(expr: string, columns: Set<string>): string {
   if (call) return normalizeFunctionCall(call.name, call.args, columns);
 
   // String concatenation with &
-  if (expr.includes('&')) return normalizeConcatenation(expr, columns);
+  if (hasTopLevelConcat(expr)) return normalizeConcatenation(expr, columns);
 
   // Arithmetic. normalizeArith returns a fully-parenthesized node; the
   // cell body is the whole expression, so strip the redundant outer pair.
@@ -167,8 +186,12 @@ function normalizeAggregate(expr: string): string {
     if (name === 'COUNT' && call.args.length === 0) return 'len .Rows';
     if (name === 'COUNT' && call.args.length === 1) {
       const ref = parseFieldRef(call.args[0]);
-      const rowsExpr = ref?.source ? `(sourceRows "${ref.source}")` : '.Rows';
-      return `countRows ${rowsExpr} "${ref?.field ?? fieldNameFromOperand(call.args[0])}"`;
+      // ADR-0059 (#137): COUNT's argument is a column reference like every
+      // other aggregate's. `COUNT("Amount")` used to count the column of
+      // that name, and `COUNT(1)` failed later as an unknown column.
+      if (!ref) throw badAggregateArg(name, call.args[0]);
+      const rowsExpr = ref.source ? `(sourceRows "${ref.source}")` : '.Rows';
+      return `countRows ${rowsExpr} "${ref.field}"`;
     }
     const rowsFn: Record<string, string> = {
       SUM: 'sumRows',
@@ -182,25 +205,27 @@ function normalizeAggregate(expr: string): string {
       // ADR-0059: SUM/AVERAGE/MIN/MAX (and 1-arg COUNT) arguments
       // MUST be column references — `[Column]` or `Source[Column]`.
       // Literals, expressions, and function calls are rejected.
-      if (!ref) {
-        // ADR-0059: the leading sentence is the stable diagnostic
-        // substring that fixtures match on; the remediation block
-        // after it is informational and may evolve.
-        throw xtlError(
-          'xl3/eval/bad-aggregate-arg',
-          `${name} requires a column reference as its argument (\`[Column]\` or \`Source[Column]\`); got \`${call.args[0]}\`. ` +
-            `Aggregates over per-row arithmetic / expressions are out of scope in XTL 0.x (ADR-0059). ` +
-            `Fix options: (1) add a helper column in the source (e.g., \`Amount = Qty * Price\`) and use \`${name}([Amount])\`; ` +
-            `(2) put a native Excel formula in the cell — xl3 preserves it verbatim per ADR-0046 (e.g., \`=SUMPRODUCT(E2:E10000, F2:F10000)\`); ` +
-            `(3) compute the per-row value in a non-aggregate cell first. ` +
-            `See docs/guides/03-aggregates.md "What doesn't work".`,
-        );
-      }
+      if (!ref) throw badAggregateArg(name, call.args[0]);
       const rowsExpr = ref.source ? `(sourceRows "${ref.source}")` : '.Rows';
       return `${rowsFn[name]} ${rowsExpr} "${ref.field}"`;
     }
   }
   return e;
+}
+
+// ADR-0059: the leading sentence is the stable diagnostic substring that
+// fixtures match on; the remediation block after it is informational and
+// may evolve.
+function badAggregateArg(name: string, arg: string): Error {
+  return xtlError(
+    'xl3/eval/bad-aggregate-arg',
+    `${name} requires a column reference as its argument (\`[Column]\` or \`Source[Column]\`); got \`${arg}\`. ` +
+      `Aggregates over per-row arithmetic / expressions are out of scope in XTL 0.x (ADR-0059). ` +
+      `Fix options: (1) add a helper column in the source (e.g., \`Amount = Qty * Price\`) and use \`${name}([Amount])\`; ` +
+      `(2) put a native Excel formula in the cell — xl3 preserves it verbatim per ADR-0046 (e.g., \`=SUMPRODUCT(E2:E10000, F2:F10000)\`); ` +
+      `(3) compute the per-row value in a non-aggregate cell first. ` +
+      `See docs/guides/03-aggregates.md "What doesn't work".`,
+  );
 }
 
 // ADR-0012: extract (source?, field) from `[Field]` or `Source[Field]`.
@@ -246,18 +271,52 @@ function normalizeXlookup(args: string[], columns: Set<string>): string {
 }
 
 function normalizeConcatenation(expr: string, columns: Set<string>): string {
-  const parts = expr
-    .split('&')
+  // #131: split only at a top-level `&`. One inside a string literal
+  // (`" & "`), a reference (`[R&D]`), or a nested call is text.
+  const parts = splitTopLevelConcat(expr)
     .map((p) => p.trim())
     .filter(Boolean);
   const args = parts.map((p) => {
-    const bracket = p.match(BRACKET_OPERAND_RE);
-    if (bracket) return `(index . "${bracket[1].trim()}")`;
-    if ((p.startsWith('"') && p.endsWith('"')) || (p.startsWith("'") && p.endsWith("'"))) return p;
+    // One string literal — not `"a" - "b"`, which also starts and ends
+    // with a quote but is arithmetic.
+    if (/^"[^"]*"$/.test(p) || (p.startsWith("'") && p.endsWith("'"))) return p;
     if (columns.has(p)) return `(index . "${p}")`;
+    // #131: an operand that is an expression is evaluated, not written out
+    // as its own source text.
+    if (isConcatExpressionOperand(p, columns)) return normalizeValueArg(p, columns);
     return `"${p}"`;
   });
   return 'concat ' + args.join(' ');
+}
+
+// The `&` operands that are expressions: a reference, a parenthesized
+// group, a call to a known function, or an arithmetic chain. Anything else
+// — a bare number or bare text — keeps its long-standing reading as
+// literal text.
+function isConcatExpressionOperand(p: string, columns: Set<string>): boolean {
+  if (BRACKET_OPERAND_RE.test(p) || SOURCE_BRACKET_RE.test(p) || RESERVED_REF_RE.test(p)) {
+    return true;
+  }
+  // `(draft)` is bare text in parentheses, not a group to evaluate.
+  if (isSingleWrapped(p)) return isEvaluable(p.slice(1, -1).trim(), columns);
+  const call = parseFunctionCall(p);
+  if (call) return call.name.toUpperCase() in FUNCTION_ARITY;
+  return normalizeArith(p, columns) !== null;
+}
+
+// True when `p` is made only of things the grammar evaluates: a literal, a
+// reference, a call to a known function, an arithmetic chain, a group of
+// those, or a `&` join of those. Bare text is not — XTL has long rendered
+// an unquoted word as itself, and that reading is kept wherever text and
+// expressions can be told apart.
+function isEvaluable(p: string, columns: Set<string>): boolean {
+  if (/^"[^"]*"$/.test(p) || NUMERIC_OPERAND_RE.test(p)) return true;
+  if (isConcatExpressionOperand(p, columns)) return true;
+  if (!hasTopLevelConcat(p)) return false;
+  return splitTopLevelConcat(p)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .every((part) => isEvaluable(part, columns));
 }
 
 const OP_FUNCS: Record<string, string> = {
@@ -278,37 +337,17 @@ const RESERVED_REF_RE = /^__([a-z]+)__\[([^\]\r\n]+)\]$/;
 // authored space-delimited (the XTL convention), so a well-formed chain
 // yields a token stream alternating operand / operator / operand.
 function splitTopLevelTokens(expr: string): string[] {
+  const depths = structuralDepths(expr);
   const tokens: string[] = [];
   let current = '';
-  let quote: string | null = null;
-  let parenDepth = 0;
-  let bracketDepth = 0;
   for (let i = 0; i < expr.length; i++) {
-    const ch = expr[i];
-    if ((ch === '"' || ch === "'") && expr[i - 1] !== '\\') {
-      quote = quote === ch ? null : (quote ?? ch);
-      current += ch;
-    } else if (quote) {
-      current += ch;
-    } else if (ch === '(') {
-      parenDepth++;
-      current += ch;
-    } else if (ch === ')') {
-      parenDepth--;
-      current += ch;
-    } else if (ch === '[') {
-      bracketDepth++;
-      current += ch;
-    } else if (ch === ']') {
-      bracketDepth--;
-      current += ch;
-    } else if (ch === ' ' && parenDepth === 0 && bracketDepth === 0) {
+    if (expr[i] === ' ' && depths[i] === 0) {
       if (current) {
         tokens.push(current);
         current = '';
       }
     } else {
-      current += ch;
+      current += expr[i];
     }
   }
   if (current) tokens.push(current);
@@ -333,26 +372,81 @@ function isArithOperand(tok: string): boolean {
   return false;
 }
 
+// The structure of an expression, per grammar.ebnf: for each character,
+// its parenthesis depth, or -1 when the character is text rather than
+// structure — inside a `"..."` string literal or a `[...]` reference
+// (delimiters included). A string literal has no escape sequences and a
+// reference name runs to the next `]`, so an operator, quote, apostrophe,
+// or parenthesis inside either one is part of that literal or name:
+// `"a=b"`, `[R&D]`, `[Owner's Balance]`, `[1) Qty]`. A `(` reports the
+// depth outside it and a `)` the depth it returns to, so a pair shares one
+// depth.
+function structuralDepths(s: string): number[] {
+  return scanStructure(s).depths;
+}
+
+// The scan behind `structuralDepths`, plus whether every parenthesis has
+// its pair. An unmatched `)` is reported at depth 0 rather than a negative
+// one, so the characters after it are still read as top level.
+function scanStructure(s: string): { depths: number[]; balanced: boolean } {
+  const depths: number[] = new Array<number>(s.length);
+  let depth = 0;
+  let balanced = true;
+  let closer: string | null = null;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i]!;
+    if (closer) {
+      depths[i] = -1;
+      if (ch === closer) closer = null;
+    } else if (ch === '"' || ch === '[') {
+      depths[i] = -1;
+      closer = ch === '"' ? '"' : ']';
+    } else if (ch === '(') {
+      depths[i] = depth++;
+    } else if (ch === ')') {
+      if (depth === 0) {
+        balanced = false;
+        depths[i] = 0;
+      } else {
+        depths[i] = --depth;
+      }
+    } else {
+      depths[i] = depth;
+    }
+  }
+  return { depths, balanced: balanced && depth === 0 };
+}
+
 // True when `s` is a single parenthesized group — its opening `(` is
 // closed only by the final `)`. `(a)+(b)` is NOT single-wrapped (depth
 // hits 0 mid-string); `(a + b)` is.
 function isSingleWrapped(s: string): boolean {
   if (!(s.startsWith('(') && s.endsWith(')'))) return false;
-  let depth = 0;
-  let quote: string | null = null;
-  for (let i = 0; i < s.length; i++) {
-    const ch = s[i];
-    if ((ch === '"' || ch === "'") && s[i - 1] !== '\\') {
-      quote = quote === ch ? null : (quote ?? ch);
-    } else if (!quote) {
-      if (ch === '(') depth++;
-      else if (ch === ')') {
-        depth--;
-        if (depth === 0 && i < s.length - 1) return false;
-      }
+  const depths = structuralDepths(s);
+  for (let i = 1; i < s.length; i++) {
+    if (s[i] === ')' && depths[i] === 0) return i === s.length - 1;
+  }
+  return false;
+}
+
+// Split `expr` at each top-level `&` — one outside string literals,
+// references, and parentheses. Returns a single part when there is none.
+function splitTopLevelConcat(expr: string): string[] {
+  const depths = structuralDepths(expr);
+  const parts: string[] = [];
+  let start = 0;
+  for (let i = 0; i < expr.length; i++) {
+    if (expr[i] === '&' && depths[i] === 0) {
+      parts.push(expr.slice(start, i));
+      start = i + 1;
     }
   }
-  return depth === 0;
+  parts.push(expr.slice(start));
+  return parts;
+}
+
+function hasTopLevelConcat(expr: string): boolean {
+  return expr.includes('&') && splitTopLevelConcat(expr).length > 1;
 }
 
 // Normalize a single arithmetic operand. normalizeValueArg strips a
@@ -425,34 +519,66 @@ function normalizeCondition(cond: string, columns: Set<string>): string {
   // path first so nested calls get recursively normalized. Without
   // this, the raw token would fall through as a literal and the
   // runtime would treat the non-empty string as truthy.
+  // #128: a condition that is an aggregate (`IF(SUM([Amount]), ...)`) takes
+  // the row-set normalization, not the generic call path.
+  if (isAggregateExpression(cond)) return normalizeAggregate(cond);
   const call = parseFunctionCall(cond.trim());
   if (call) return normalizeFunctionCall(call.name, call.args, columns);
 
-  // Order is significant: indexOf picks the first matching op. Compound
-  // operators (`!=`, `>=`, `<=`, `==`) MUST appear before any single
-  // character that overlaps (`=`, `>`, `<`), so a string like `[a] >= 0`
-  // matches `>=` rather than `>` or `=`. The single-char `=` is the
-  // spec equality operator (per language.md "Operators"); `==` is kept
-  // as an impl-only tolerance so existing TS-impl-flavored templates
-  // continue working, but ports MAY accept `=` only.
-  const ops: [string, string][] = [
-    ['!=', 'ne'],
-    ['>=', 'ge'],
-    ['<=', 'le'],
-    ['==', 'eq'],
-    ['>', 'gt'],
-    ['<', 'lt'],
-    ['=', 'eq'],
-  ];
-  for (const [infix, fn] of ops) {
-    const idx = cond.indexOf(infix);
-    if (idx >= 0) {
-      const left = normalizeOperand(cond.slice(0, idx).trim(), columns);
-      const right = normalizeOperand(cond.slice(idx + infix.length).trim(), columns);
-      return `${fn} ${left} ${right}`;
-    }
+  // #130: a redundant outer paren pair around the whole condition.
+  if (isSingleWrapped(cond.trim())) {
+    return normalizeCondition(cond.trim().slice(1, -1), columns);
   }
-  return normalizeOperand(cond, columns);
+
+  const cmp = findTopLevelComparison(cond);
+  if (cmp) {
+    const left = normalizeConditionOperand(cond.slice(0, cmp.index), columns);
+    const right = normalizeConditionOperand(cond.slice(cmp.index + cmp.infix.length), columns);
+    return `${cmp.fn} ${left} ${right}`;
+  }
+  return normalizeConditionOperand(cond, columns);
+}
+
+// Compound operators MUST precede any single character they overlap
+// (`=`, `>`, `<`), so `[a] >= 0` matches `>=` rather than `>`. The
+// single-char `=` is the spec equality operator (per language.md
+// "Operators"); `==` is kept as an impl-only tolerance so existing
+// TS-impl-flavored templates continue working, but ports MAY accept `=`
+// only.
+const COMPARISON_OPS: [string, string][] = [
+  ['!=', 'ne'],
+  ['>=', 'ge'],
+  ['<=', 'le'],
+  ['==', 'eq'],
+  ['>', 'gt'],
+  ['<', 'lt'],
+  ['=', 'eq'],
+];
+
+// #130: locate the comparison operator of `compare_expr` (grammar.ebnf) —
+// the first one outside string literals, parentheses, and brackets. An
+// operator character inside `"a=b"`, a nested call, or a `[Column]` name
+// is not the condition's operator.
+function findTopLevelComparison(cond: string): { index: number; infix: string; fn: string } | null {
+  const depths = structuralDepths(cond);
+  for (let i = 0; i < cond.length; i++) {
+    if (depths[i] !== 0) continue;
+    const op = COMPARISON_OPS.find(([infix]) => cond.startsWith(infix, i));
+    if (op) return { index: i, infix: op[0], fn: op[1] };
+  }
+  return null;
+}
+
+// #130: a comparison operand is an `arith_expr` — arithmetic, a function
+// call, or a single value — so it takes the same normalization as any
+// other value argument.
+function normalizeConditionOperand(operand: string, columns: Set<string>): string {
+  const o = operand.trim();
+  // Unquoted text and bare column names (`[Unit] = Rate(USD)`, `R&D > 1`)
+  // are compared as written, as they always were: only an operand that is
+  // unmistakably an expression is evaluated.
+  if (!isEvaluable(o, columns)) return normalizeOperand(o, columns);
+  return normalizeValueArg(o, columns);
 }
 
 /** Extract column names referenced in an expression. */
@@ -581,9 +707,12 @@ function normalizeValueArg(arg: string, columns: Set<string>): string {
   // 0)`) — strip one outer pair and normalize the interior, then it flows
   // back as a properly wrapped node.
   if (isSingleWrapped(a)) return normalizeValueArg(a.slice(1, -1).trim(), columns);
+  // #128: an aggregate nested in another call or an arithmetic chain takes
+  // the same row-set normalization as a top-level aggregate.
+  if (isAggregateExpression(a)) return `(${normalizeAggregate(a)})`;
   const call = parseFunctionCall(a);
   if (call) return `(${normalizeFunctionCall(call.name, call.args, columns)})`;
-  if (a.includes('&')) return `(${normalizeConcatenation(a, columns)})`;
+  if (hasTopLevelConcat(a)) return `(${normalizeConcatenation(a, columns)})`;
   // normalizeArith already returns a parenthesized node, suitable as an
   // argument verbatim.
   const arith = normalizeArith(a, columns);
@@ -591,48 +720,26 @@ function normalizeValueArg(arg: string, columns: Set<string>): string {
   return normalizeOperand(a, columns);
 }
 
-function fieldNameFromOperand(arg: string): string {
-  const a = arg.trim();
-  const bracket = a.match(BRACKET_OPERAND_RE);
-  if (bracket) return bracket[1].trim();
-  return a.replace(/^"|"$/g, '');
-}
-
 function parseFunctionCall(expr: string): { name: string; args: string[] } | null {
   const m = expr.match(/^([A-Za-z_][A-Za-z0-9_]*)\((.*)\)$/s);
   if (!m) return null;
+  // The final `)` must close the call's own `(`. `ABS([a]) + ABS([b])`
+  // starts with a name and ends with `)`, but it is an arithmetic chain,
+  // not one call whose argument is `[a]) + ABS([b]`.
+  if (!isSingleWrapped(expr.slice(m[1].length))) return null;
   return { name: m[1], args: splitCommaArgs(m[2]) };
 }
 
 function splitCommaArgs(s: string): string[] {
+  const depths = structuralDepths(s);
   const args: string[] = [];
   let current = '';
-  let quote: string | null = null;
-  let parenDepth = 0;
-  let bracketDepth = 0;
-
   for (let i = 0; i < s.length; i++) {
-    const ch = s[i];
-    if ((ch === '"' || ch === "'") && s[i - 1] !== '\\') {
-      quote = quote === ch ? null : (quote ?? ch);
-      current += ch;
-    } else if (!quote && ch === '(') {
-      parenDepth++;
-      current += ch;
-    } else if (!quote && ch === ')') {
-      parenDepth--;
-      current += ch;
-    } else if (!quote && ch === '[') {
-      bracketDepth++;
-      current += ch;
-    } else if (!quote && ch === ']') {
-      bracketDepth--;
-      current += ch;
-    } else if (!quote && ch === ',' && parenDepth === 0 && bracketDepth === 0) {
+    if (s[i] === ',' && depths[i] === 0) {
       args.push(current.trim());
       current = '';
     } else {
-      current += ch;
+      current += s[i];
     }
   }
   if (current.trim() || s.trim()) args.push(current.trim());

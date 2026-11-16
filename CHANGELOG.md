@@ -6,6 +6,47 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- **An aggregate inside another function or an arithmetic expression now
+  returns the aggregate** (#128). `{{ ROUND(SUM([Amount]), 2) }}` and
+  `{{ TEXT(SUM([Amount]), "0.00") }}` rendered `0`, with no error, and the
+  cell was repeated once per source row because the aggregate's `[Amount]`
+  was read as a current-row reference. A nested aggregate now uses the same
+  row set as a top-level one and its cell stays static. Expressions that
+  combine calls with an operator, such as `{{ SUM([Amount]) / COUNT() }}`
+  or `{{ ABS([a]) + ABS([b]) }}`, were parsed as one malformed call; they
+  now evaluate.
+
+- **`IF` and `IFS` conditions compare what the template says** (#130). An
+  operator character inside a string literal was taken as the comparison
+  operator, so `IF("a=b" = "a=b", "yes", "no")` returned `no`. An
+  arithmetic or function-call operand was not evaluated, so
+  `IF([Amount] + 1 > 2, "yes", "no")` returned `yes` for every row. The
+  comparison operator is now the one outside string literals, parentheses,
+  and brackets, and both operands are evaluated first.
+
+- **`&` joins what the template says** (#131). An `&` inside a string
+  literal or a column name was taken as the operator, so `{{ "A&B" }}` and
+  `{{ [R&D] }}` lost their text and `{{ [Name] & " & " & [Amount] }}`
+  rendered `Alpha1`. A function call, arithmetic, or `__config__[key]`
+  operand was written out as its own source text, so
+  `{{ TEXT([Amount], "0.00") & " USD" }}` rendered
+  `TEXT([Amount], "0.00") USD`. `&` now splits only outside string
+  literals, column names, and parentheses, and its operands are evaluated.
+
+- **`COUNT` accepts only a column reference** (#137, ADR-0059).
+  `{{ COUNT("Amount") }}` counted the column named `Amount`, and
+  `{{ COUNT(1) }}` failed as `xl3/source/unknown-column`. Both now raise
+  `xl3/eval/bad-aggregate-arg`, like `SUM`, `AVERAGE`, `MIN`, and `MAX`.
+  `COUNT()`, `COUNT([Column])`, and `COUNT(Source[Column])` are unchanged.
+
+- **Column names with an apostrophe or an unbalanced parenthesis work as
+  function arguments.** `{{ IFEMPTY([Owner's Name], [Code]) }}` raised an
+  arity error and `{{ IF([Owner's A] > 1, "y", "n") }}` could split in the
+  wrong place, because the apostrophe was read as a quote. A column name
+  now runs to its closing `]` wherever it appears in an expression.
+
 ## [1.0.0-rc.3] - 2026-11-03
 
 The third 1.0 release candidate settles what empty data produces and fixes

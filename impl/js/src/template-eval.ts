@@ -298,9 +298,13 @@ function stripOuterParens(expr: string): string {
   while (s.startsWith('(') && s.endsWith(')')) {
     let depth = 0;
     let outer = true;
+    let inQuote = false;
     for (let i = 0; i < s.length - 1; i++) {
       const ch = s[i];
-      if (ch === '(') depth++;
+      // A parenthesis inside a quoted name or literal is text.
+      if (ch === '"') inQuote = !inQuote;
+      else if (inQuote) continue;
+      else if (ch === '(') depth++;
       else if (ch === ')') {
         depth--;
         if (depth === 0) {
@@ -324,7 +328,9 @@ function splitFunctionArgs(expr: string): string[] {
 
   for (let i = 0; i < expr.length; i++) {
     const ch = expr[i];
-    if (ch === '"' && parenDepth === 0 && bracketDepth === 0) {
+    // A quote opens a name or literal at any nesting depth; a parenthesis
+    // or bracket inside it is text (`(index . "Amount (KRW")`, `"a)"`).
+    if (ch === '"' && bracketDepth === 0) {
       inQuote = !inQuote;
       current += ch;
     } else if (ch === '(' && !inQuote) {
