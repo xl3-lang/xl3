@@ -215,6 +215,28 @@ describe('validateSource', () => {
 });
 
 describe('validateSourceJson', () => {
+  it('reports every invalid row of a large source instead of overflowing (#136)', async () => {
+    const count = 300_000;
+    const sourceJson = {
+      version: 'xl3-source-json/0.1',
+      sources: {
+        default: {
+          headers: ['Customer', 'Amount', 'Status'],
+          rows: Array.from({ length: count }, () => 'not-a-row'),
+        },
+      },
+    } as unknown as Xl3SourceJson;
+
+    const validation = await validateSourceJson(await basicTemplate(), sourceJson, {
+      depth: 'full',
+    });
+
+    expect(validation.ok).toBe(false);
+    expect(validation.diagnostics.filter((d) => d.code === 'xl3/source-json/invalid')).toHaveLength(
+      count,
+    );
+  });
+
   async function multiSourceTemplate(cellValues: string | string[]): Promise<ArrayBuffer> {
     const workbook = new ExcelJS.Workbook();
     writeConfigSheet(workbook, {

@@ -493,7 +493,11 @@ function buildJsonSourceSchema(
     normHeaders.push(header);
   }
 
-  if (scanRows) diagnostics.push(...validateJsonSourceRows(name, raw, normHeaders));
+  if (scanRows) {
+    // #136: one diagnostic per bad row — no spread, the count scales with
+    // the data.
+    for (const d of validateJsonSourceRows(name, raw, normHeaders)) diagnostics.push(d);
+  }
   return { sheetName: name, headerRow: 1, headers: normHeaders };
 }
 

@@ -120,7 +120,10 @@ function walkAndEmit(
     // node; depth=0 is the outermost. So `level = keyCount - depth`.
     const level = keyCount - depth;
     events.push({ kind: 'subtotal', level, groupRows });
-    outRows?.push(...groupRows);
+    // #136: append row by row. `push(...groupRows)` passes every row as a
+    // call argument and overflows the engine's argument limit on a large
+    // group.
+    if (outRows) for (const row of groupRows) outRows.push(row);
   }
 }
 
@@ -168,7 +171,11 @@ export function groupRows(
       if (st.groupKeys.length === 0) {
         sheetGroups.push({ template: st.originalName, key: { values: {} }, rows: fileRows });
       } else {
-        sheetGroups.push(...groupByKeysOrdered(fileRows, st.groupKeys, st.originalName));
+        // #136: one sheet group per distinct key — no spread, the count
+        // scales with the data.
+        for (const sg of groupByKeysOrdered(fileRows, st.groupKeys, st.originalName)) {
+          sheetGroups.push(sg);
+        }
       }
     }
 

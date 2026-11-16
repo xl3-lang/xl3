@@ -47,6 +47,14 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   wrong place, because the apostrophe was read as a quote. A column name
   now runs to its closing `]` wherever it appears in an expression.
 
+- **A large nested `@group` no longer fails with `RangeError`** (#136). A
+  two-level `@group` over 150,000 rows in one child group stopped with
+  `Maximum call stack size exceeded`: the rows were handed to one call as
+  separate arguments, and the engine limits how many a call takes. Rows
+  are now collected one at a time. The same pattern is removed where one
+  sheet is rendered per group and where `validateSourceJson` collects
+  per-row diagnostics.
+
 ## [1.0.0-rc.3] - 2026-11-03
 
 The third 1.0 release candidate settles what empty data produces and fixes
