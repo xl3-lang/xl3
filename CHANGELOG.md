@@ -87,6 +87,16 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   inside it — for example a nested `XLOOKUP` with no match — failed a
   lookup that had found its row.
 
+- **`@repeat right` keeps the type of cells that have no `{{ }}`** (#122,
+  ADR-0046). Inside a right-repeat block a number was written as the text
+  `"42"`, a Boolean as `"true"`, a date as its JavaScript text, and a
+  formula as the text `[object Object]`, in every record. These cells now
+  keep their original value, as they already did in a down-repeat block.
+
+- **`ROW()` works in a `@repeat right` block** (#134). It raised
+  `xl3/cell/row-outside-repeat`; it now returns the 1-based record index,
+  as in a down-repeat block.
+
 ## [1.0.0-rc.3] - 2026-11-03
 
 The third 1.0 release candidate settles what empty data produces and fixes

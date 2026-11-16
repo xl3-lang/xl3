@@ -955,19 +955,28 @@ export class Renderer {
     }
 
     // Read template cells: for each row in block, read the template column range
-    const templateData: Map<
-      number,
-      Map<number, { template: string; style: Partial<ExcelJS.Style> }>
-    > = new Map();
+    type TemplateCell = {
+      template: string;
+      rawValue: ExcelJS.CellValue;
+      style: Partial<ExcelJS.Style>;
+    };
+    const templateData: Map<number, Map<number, TemplateCell>> = new Map();
     const colWidths: Map<number, number | undefined> = new Map();
 
     for (let r = startRow; r <= endRow; r++) {
       const row = sheet.getRow(r);
-      const rowCells = new Map<number, { template: string; style: Partial<ExcelJS.Style> }>();
+      const rowCells = new Map<number, TemplateCell>();
       for (let c = tColStart; c <= tColEnd; c++) {
         const cell = row.getCell(c);
         const val = cellString(cell.value);
-        rowCells.set(c, { template: val, style: cell.style ? { ...cell.style } : {} });
+        rowCells.set(c, {
+          template: val,
+          // #122: keep the original CellValue for cells without a marker,
+          // as the down-repeat path does. Issue #46: a shared formula is
+          // made standalone before it is cloned across records.
+          rawValue: unshareFormula(cell.value, sheet),
+          style: cell.style ? { ...cell.style } : {},
+        });
       }
       templateData.set(r, rowCells);
     }
@@ -995,14 +1004,19 @@ export class Renderer {
           if (VAR_PATTERN.test(tmpl.template)) {
             const normalized = normalizeTemplate(tmpl.template, this.columns);
             // Use row data for [field], static context for aggregates.
-            const ctx = { ...staticCtx, ...rowData };
+            // #134: `__rownum` is the 1-based record index ROW() reads,
+            // the same value the down-repeat path provides.
+            const ctx = { ...staticCtx, ...rowData, __rownum: i + 1 };
             cell.value = renderCellValue(
               normalized,
               evalCellAt(sheet.name, cell.address, normalized, ctx),
               tmpl.style,
             );
           } else if (tmpl.template) {
-            cell.value = tmpl.template as ExcelJS.CellValue;
+            // ADR-0046 (#122): re-emit the ORIGINAL CellValue, so a number,
+            // Boolean, date, formula, or rich-text cell keeps its type in
+            // every record instead of becoming `String(value)`.
+            cell.value = tmpl.rawValue;
           }
 
           if (Object.keys(tmpl.style).length > 0) {
