@@ -12,7 +12,13 @@ import type {
 import { normalizeTemplate } from './normalizer.js';
 import { evalCell, evalCellAt } from './template-eval.js';
 import { applyDirectives } from './data-transform.js';
-import { canonicalString, isErrorCellMarker, isHyperlinkMarker } from './functions.js';
+import {
+  buildEqualityIndex,
+  canonicalString,
+  isEmpty,
+  isErrorCellMarker,
+  isHyperlinkMarker,
+} from './functions.js';
 import { xtlError } from './error-codes.js';
 import { configReadValues } from './parser.js';
 import type { FileGroup } from './grouper.js';
@@ -1057,20 +1063,15 @@ export class Renderer {
     const join = block?.join;
     if (!join) return rows;
     const joinedRows = this.sources[join.joinedSource]?.rows ?? [];
-    // Build an index by the joined-source key for O(1) match lookup.
-    const index = new Map<string, Row>();
-    for (const r of joinedRows) {
-      const v = r[join.joinedKey];
-      if (v === null || v === undefined) continue;
-      const key = canonicalString(v);
-      if (!index.has(key)) index.set(key, r);
-    }
+    // ADR-0014 (#129): pair each primary row with the FIRST joined row
+    // whose key compares equal under ADR-0009 — `"01"` and `1` are the
+    // same key. An empty key never matches.
+    const index = buildEqualityIndex(joinedRows, join.joinedKey);
     const matched: Row[] = [];
     for (const primary of rows) {
       const v = primary[join.primaryKey];
-      if (v === null || v === undefined) continue;
-      const key = canonicalString(v);
-      const joined = index.get(key);
+      if (isEmpty(v)) continue;
+      const joined = index.find(v);
       if (!joined) continue; // inner: drop unmatched
       matched.push({
         ...primary,

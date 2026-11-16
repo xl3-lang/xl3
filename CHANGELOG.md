@@ -97,6 +97,13 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   `xl3/cell/row-outside-repeat`; it now returns the 1-based record index,
   as in a down-repeat block.
 
+- **`XLOOKUP` and `@join` match keys the way `=` compares them** (#129,
+  ADR-0009). Keys were matched as strings, so with rows `"01"` then `"1"`
+  a lookup for `"1"` skipped the first row and returned the second, and a
+  numeric `7` never matched the text `" 7 "` or `"7.0"`. Both now return
+  the first row whose key compares equal. `@join` also stops pairing rows
+  whose keys are both empty: an empty key never matches (ADR-0014).
+
 ## [1.0.0-rc.3] - 2026-11-03
 
 The third 1.0 release candidate settles what empty data produces and fixes
