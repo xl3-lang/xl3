@@ -24,9 +24,10 @@ import {
   isSubtotalExpression,
   parseSubtotalAggregate,
 } from './directive-parser.js';
-import { xtlError } from './error-codes.js';
+import { isXtlError, xtlError } from './error-codes.js';
 import { evalCell } from './template-eval.js';
 import { canonicalString } from './functions.js';
+import { parseCellValue } from './reader.js';
 
 const CONFIG_SHEET = '__config__';
 const INPUTS_SHEET = '__inputs__';
@@ -78,7 +79,8 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
   // XTL templates evaluated against a constrained context that exposes
   // only __config__ + pure functions (no source data, no forward refs).
   const inputs = readInputsSheet(workbook, configVars);
-  const listSheets = readListsSheet(workbook);
+  const unreadableLists = new Map<string, Error>();
+  const listSheets = readListsSheet(workbook, unreadableLists);
   const sources = readSourcesSheet(workbook);
 
   // ADR-0011: input names MUST NOT collide with __config__ author-defined values.
@@ -700,6 +702,16 @@ export async function parseTemplate(buffer: ArrayBuffer): Promise<ParsedTemplate
     }
   }
 
+  // A list holding a formula cell with no cached result has no knowable
+  // value there. That is an error for a filter that uses the list, and
+  // only for one: other lists on the sheet stay usable.
+  for (const st of sheetTemplates) {
+    for (const d of [...st.directives, ...st.blocks.flatMap((b) => b.directives)]) {
+      const unreadable = d.kind === 'filter' && d.listRef && unreadableLists.get(d.listRef);
+      if (unreadable) throw unreadable;
+    }
+  }
+
   // ADR-0012: validate every @source directive references a declared source.
   const sourceNames = new Set<string>(['default', ...sources.map((s) => s.name)]);
   for (const st of sheetTemplates) {
@@ -1133,7 +1145,10 @@ export function readSourcesSheet(workbook: ExcelJS.Workbook): SourceSpec[] {
 // ADR-0011: read the __lists__ sheet. Row 1 holds list names (one per
 // column); each column below is the values of that list. Empty cells
 // are skipped per ADR-0007.
-export function readListsSheet(workbook: ExcelJS.Workbook): Record<string, string[]> {
+export function readListsSheet(
+  workbook: ExcelJS.Workbook,
+  unreadable?: Map<string, Error>,
+): Record<string, string[]> {
   const sheet = workbook.getWorksheet(LISTS_SHEET);
   if (!sheet) return {};
 
@@ -1157,9 +1172,30 @@ export function readListsSheet(workbook: ExcelJS.Workbook): Record<string, strin
   for (let r = 2; r <= totalRows; r++) {
     const row = sheet.getRow(r);
     for (const { col, name } of colNames) {
-      const raw = row.getCell(col).value;
-      if (raw === null || raw === undefined) continue;
-      const text = String(raw).trim();
+      // #135: each entry is the cell's canonical string form
+      // (evaluation.md "List Sheets"), read like a source cell — a Boolean
+      // is `TRUE`/`FALSE`, a date is `YYYY-MM-DD`, rich text is its text.
+      const cell = row.getCell(col);
+      let value: unknown;
+      try {
+        value = parseCellValue(cell);
+      } catch (e) {
+        // A formula with no cached result. Record it against its list
+        // instead of failing the whole template: the caller raises it if a
+        // filter actually uses this list.
+        if (!unreadable || !isXtlError(e) || e.code !== 'xl3/cell/formula-no-cache') throw e;
+        if (!unreadable.has(name)) {
+          unreadable.set(
+            name,
+            xtlError(
+              'xl3/cell/formula-no-cache',
+              `__lists__ cell ${cell.address} (list "${name}") is a formula with no cached result`,
+            ),
+          );
+        }
+        continue;
+      }
+      const text = canonicalString(value).trim();
       if (text === '') continue;
       lists[name]!.push(text);
     }

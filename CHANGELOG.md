@@ -55,6 +55,18 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   sheet is rendered per group and where `validateSourceJson` collects
   per-row diagnostics.
 
+- **An invalid `@filter` operator is an error instead of a filter that
+  passes every row** (#132). `==`, `=>`, `><`, `<>`, and `!` were accepted
+  and then matched every row, so a template that looked filtered rendered
+  all of its data. They now raise `xl3/directive/invalid-syntax`. The
+  operators are `=`, `!=`, `>`, `<`, `>=`, `<=`, `in`, and `!in`.
+
+- **`@filter ... in` compares canonical strings** (#135). A Boolean `true`
+  in the data did not match a list entry `TRUE`, and a date or rich-text
+  cell in `__lists__` was read as JavaScript object text. List entries and
+  row values are now both compared in canonical string form, as
+  evaluation.md specifies.
+
 ## [1.0.0-rc.3] - 2026-11-03
 
 The third 1.0 release candidate settles what empty data produces and fixes

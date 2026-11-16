@@ -1,5 +1,6 @@
 import type { Row, Directive, FilterDirective, SortDirective } from './types.js';
-import { isEmpty, compareValues } from './functions.js';
+import { isEmpty, compareValues, canonicalString } from './functions.js';
+import { xtlError } from './error-codes.js';
 
 export function applyDirectives(
   rows: Row[],
@@ -49,8 +50,10 @@ function evalFilter(
     // matches `!in`, regardless of list contents.
     if (isEmpty(rawValue)) return filter.op === '!in';
     const list = filter.listRef ? (listSheets[filter.listRef] ?? []) : [];
-    const strValue = String(rawValue);
-    const found = list.includes(strValue);
+    // #135: list entries are canonical strings (evaluation.md "List
+    // Sheets"), so the row value is compared in the same form — a Boolean
+    // `true` is `TRUE`, a date is `YYYY-MM-DD`.
+    const found = list.includes(canonicalString(rawValue));
     return filter.op === 'in' ? found : !found;
   }
 
@@ -71,6 +74,11 @@ function evalFilter(
     case '<=':
       return cmp <= 0;
     default:
-      return true;
+      // #132: the parser admits only the operators above. A directive
+      // carrying anything else must not pass every row.
+      throw xtlError(
+        'xl3/directive/invalid-syntax',
+        `Invalid @filter operator: ${String(filter.op)}`,
+      );
   }
 }

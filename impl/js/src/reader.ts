@@ -594,7 +594,7 @@ function resolveSheet(workbook: ExcelJS.Workbook, pattern: string): ExcelJS.Work
   return undefined;
 }
 
-function parseCellValue(cell: ExcelJS.Cell): unknown {
+export function parseCellValue(cell: ExcelJS.Cell): unknown {
   const v = cell.value;
   if (v === null || v === undefined) return '';
 

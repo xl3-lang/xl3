@@ -212,13 +212,30 @@ function parseJoin(body: string): Directive | null {
   };
 }
 
+// grammar.ebnf `filter_op`.
+const FILTER_OPS: ReadonlySet<string> = new Set<FilterOp>([
+  '=',
+  '!=',
+  '>',
+  '<',
+  '>=',
+  '<=',
+  'in',
+  '!in',
+]);
+
 function parseFilter(body: string): Directive | null {
   // Regex to match: [field] [op] [value]
   const filterMatch = body.match(/^\[([^\]\r\n]+)\]\s*(in|!in|[!><=]{1,2})\s*(.+)$/i);
   if (!filterMatch) return null;
 
   const field = filterMatch[1].trim();
-  const op = filterMatch[2].toLowerCase() as FilterOp;
+  // #132: the regex above captures any one or two operator characters, so
+  // `==`, `=>`, `><`, `<>`, `!` reach this point. Only the grammar's
+  // `filter_op` set is a filter operator; anything else is invalid syntax.
+  const rawOp = filterMatch[2].toLowerCase();
+  if (!FILTER_OPS.has(rawOp)) return null;
+  const op = rawOp as FilterOp;
   const rest = filterMatch[3].trim();
 
   // ADR-0011: `in` / `!in` references the consolidated `__lists__`
