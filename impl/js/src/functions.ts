@@ -144,12 +144,76 @@ export function compareValues(a: unknown, b: unknown): -1 | 0 | 1 {
   return sa < sb ? -1 : sa > sb ? 1 : 0;
 }
 
+/**
+ * An index over one column of `rows` that answers "which is the first row
+ * whose value equals `x`?" with the ADR-0009 comparison — the answer a
+ * linear scan with `compareValues(row[col], x) === 0` gives, in O(1).
+ *
+ * Equality under ADR-0009 is not string equality: two number-like values
+ * are equal when their numbers are (`"01"` = `"1"` = `1`), two dates when
+ * their timestamps are, and everything else when the canonical strings
+ * are. Each of those classes gets its own map (#129).
+ */
+export interface EqualityIndex {
+  find(value: unknown): Row | undefined;
+}
+
+interface IndexedRow {
+  row: Row;
+  order: number;
+}
+
+export function buildEqualityIndex(rows: Row[], col: string): EqualityIndex {
+  // Number-like values, by number.
+  const numbers = new Map<number, IndexedRow>();
+  // Every other non-empty value, by canonical string — what a text or
+  // Boolean lookup compares against.
+  const text = new Map<string, IndexedRow>();
+  // A date lookup compares by timestamp against dates and by canonical
+  // string against everything else, so it needs the two kept apart.
+  const dates = new Map<number, IndexedRow>();
+  const nonDateText = new Map<string, IndexedRow>();
+  let firstEmpty: IndexedRow | undefined;
+
+  const setFirst = <K>(map: Map<K, IndexedRow>, key: K, entry: IndexedRow) => {
+    if (!map.has(key)) map.set(key, entry);
+  };
+  rows.forEach((row, order) => {
+    const v = row[col];
+    const entry = { row, order };
+    if (isEmpty(v)) {
+      firstEmpty ??= entry;
+    } else if (isNumberLike(v)) {
+      setFirst(numbers, toComparableNumber(v), entry);
+    } else {
+      const canonical = canonicalString(v);
+      setFirst(text, canonical, entry);
+      if (v instanceof Date) setFirst(dates, v.getTime(), entry);
+      else setFirst(nonDateText, canonical, entry);
+    }
+  });
+
+  return {
+    find(value) {
+      if (isEmpty(value)) return firstEmpty?.row;
+      if (isNumberLike(value)) return numbers.get(toComparableNumber(value))?.row;
+      if (value instanceof Date) {
+        const byTime = dates.get(value.getTime());
+        const byText = nonDateText.get(canonicalString(value));
+        if (byTime && byText) return (byTime.order < byText.order ? byTime : byText).row;
+        return (byTime ?? byText)?.row;
+      }
+      return text.get(canonicalString(value))?.row;
+    },
+  };
+}
+
 // ADR-0013 (impl-only): cache lookup indexes per (rows-array, column).
 // The cache lives only for the duration the rows array is reachable
 // and is reused across repeat XLOOKUP calls within the same conversion.
-const xlookupIndexCache = new WeakMap<Row[], Map<string, Map<string, Row>>>();
+const xlookupIndexCache = new WeakMap<Row[], Map<string, EqualityIndex>>();
 
-function getOrBuildLookupIndex(rows: Row[], col: string): Map<string, Row> {
+function getOrBuildLookupIndex(rows: Row[], col: string): EqualityIndex {
   let perCol = xlookupIndexCache.get(rows);
   if (!perCol) {
     perCol = new Map();
@@ -157,13 +221,7 @@ function getOrBuildLookupIndex(rows: Row[], col: string): Map<string, Row> {
   }
   let idx = perCol.get(col);
   if (idx) return idx;
-  idx = new Map();
-  for (const row of rows) {
-    const v = row[col];
-    if (isEmpty(v)) continue;
-    const key = canonicalString(v);
-    if (!idx.has(key)) idx.set(key, row);
-  }
+  idx = buildEqualityIndex(rows, col);
   perCol.set(col, idx);
   return idx;
 }
@@ -363,23 +421,9 @@ export const functions: Record<string, (...args: unknown[]) => unknown> = {
     const arr = Array.isArray(rows) ? rows : [];
     assertField(arr, lookupCol);
     assertField(arr, returnCol);
-    // Empty lookup keys aren't indexed (the index drops empty rows);
-    // fall back to a linear scan so the spec's "empty equals empty"
-    // semantic still works for the rare templates that need it.
-    if (isEmpty(lookupValue)) {
-      for (const row of arr) {
-        if (compareValues(row[lookupCol], lookupValue) === 0) {
-          return row[returnCol] ?? '';
-        }
-      }
-      if (hasFallback) return fallback;
-      throw xtlError(
-        'xl3/xlookup/no-match',
-        `XLOOKUP found no row where [${lookupCol}] equals "${canonicalString(lookupValue)}"`,
-      );
-    }
-    const idx = getOrBuildLookupIndex(arr, lookupCol);
-    const matched = idx.get(canonicalString(lookupValue));
+    // ADR-0009: the first row whose lookup column compares equal — an
+    // empty lookup value matches the first empty cell.
+    const matched = getOrBuildLookupIndex(arr, lookupCol).find(lookupValue);
     if (matched) return matched[returnCol] ?? '';
     if (hasFallback) return fallback;
     throw xtlError(
