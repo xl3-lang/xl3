@@ -86,6 +86,15 @@ function loadBundleContext(): { ctx: vm.Context; xl3: Record<string, unknown> } 
 const bundleExists = existsSync(BUNDLE_PATH);
 const describeIfBuilt = bundleExists ? describe : describe.skip;
 
+// #127: the skip above is for a dev running `npm test` before a build. A
+// publish must not pass on it — `prepublishOnly` builds first and sets
+// XL3_REQUIRE_BUILD, which turns a missing artifact into a failure here.
+describe.runIf(process.env.XL3_REQUIRE_BUILD === '1')('publish gate: IIFE bundle artifact', () => {
+  it('the bundle is built', () => {
+    expect(bundleExists, `${BUNDLE_PATH} is missing; the bundle tests would be skipped`).toBe(true);
+  });
+});
+
 describeIfBuilt('IIFE bundle smoke', () => {
   it('stays under the 1.5 MB size budget', () => {
     const { size } = statSync(BUNDLE_PATH);

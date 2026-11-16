@@ -93,6 +93,13 @@ a pure impl refactor can ship as `xl3` patch with no spec change.
    1.0.0-rc.2 carried an unreferenced `dist/formula-adjustment.*` that
    way.
 
+   The hook builds before it tests (`clean`, `typecheck`, `build`,
+   `build:bundle`, `test:artifacts`, then both conformance stages). The
+   CLI and IIFE-bundle tests skip when `dist/` is absent, so testing
+   before the build skipped all of them on every publish (#127).
+   `test:artifacts` runs the full suite with `XL3_REQUIRE_BUILD=1`, which
+   fails instead of skipping when either artifact is missing.
+
 8. Create the GitHub Release **immediately after `npm publish`**.
    `npm publish` is the easy-to-forget half-step: the package goes
    live but external installers have no release notes / changelog

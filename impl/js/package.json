@@ -66,7 +66,8 @@
     "conformance": "node dist/bin/conformance.js --fixture-dir=../../conformance/fixtures",
     "conformance:stage2": "node dist/bin/conformance.js --fixture-dir=../../conformance/fixtures --comparison-stage=2",
     "docs:api": "typedoc",
-    "prepublishOnly": "npm run clean && npm run typecheck && npm run test && npm run build && npm run build:bundle && npm run conformance && npm run conformance:stage2"
+    "test:artifacts": "XL3_REQUIRE_BUILD=1 vitest run",
+    "prepublishOnly": "npm run clean && npm run typecheck && npm run build && npm run build:bundle && npm run test:artifacts && npm run conformance && npm run conformance:stage2"
   },
   "dependencies": {
     "exceljs": "^4.4.0",

@@ -41,6 +41,15 @@ const EQUIVALENT_JSON = JSON.stringify({
 
 const describeCli = existsSync(CLI) ? describe : describe.skip;
 
+// #127: the skip above is for a dev running `npm test` before a build. A
+// publish must not pass on it — `prepublishOnly` builds first and sets
+// XL3_REQUIRE_BUILD, which turns a missing artifact into a failure here.
+describe.runIf(process.env.XL3_REQUIRE_BUILD === '1')('publish gate: CLI artifact', () => {
+  it('dist/bin/xl3.js is built', () => {
+    expect(existsSync(CLI), `${CLI} is missing; the CLI tests would be skipped`).toBe(true);
+  });
+});
+
 const tempDirs: string[] = [];
 function tempDir(): string {
   const dir = mkdtempSync(join(tmpdir(), 'xl3-cli-'));
