@@ -34,9 +34,25 @@ function lookupReservedRef(trimmed: string, ctx: Record<string, unknown>): unkno
   }
   const key = m[2]!.trim();
   const obj = ctx[ns];
-  if (obj && typeof obj === 'object') {
-    const value = (obj as Record<string, unknown>)[key];
-    return value ?? '';
+  // #126: only a declared key resolves. An own-property check keeps names
+  // the JavaScript prototype defines (`constructor`, `toString`) from
+  // reading as declared values.
+  if (obj && typeof obj === 'object' && Object.prototype.hasOwnProperty.call(obj, key)) {
+    return (obj as Record<string, unknown>)[key] ?? '';
+  }
+  // ADR-0056: an undeclared `__config__` / `__inputs__` key is an error,
+  // not an empty value — a typo must not render as a blank cell.
+  if (ns === '__config__') {
+    throw xtlError(
+      'xl3/expression/unknown-name',
+      `Unknown \`__config__\` key \`${key}\`; not a system key and not declared as an author-defined row.`,
+    );
+  }
+  if (ns === '__inputs__') {
+    throw xtlError(
+      'xl3/expression/unknown-name',
+      `Unknown \`__inputs__\` reference \`${key}\`; no input is declared with that name.`,
+    );
   }
   return '';
 }

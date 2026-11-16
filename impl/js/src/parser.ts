@@ -842,6 +842,25 @@ function assertInputExpressionAllowed(
   }
 }
 
+/**
+ * The values `{{ __config__[key] }}` can read (ADR-0056): every system key
+ * — empty when the template leaves it out — plus the author-defined rows.
+ */
+export function configReadValues(
+  meta: TemplateMeta,
+  configVars: Record<string, string>,
+): Record<string, string> {
+  return {
+    name: meta.name,
+    description: meta.description,
+    source_sheet: meta.source_sheet,
+    source_table: meta.source_table ?? '',
+    output_file_pattern: meta.output_file_pattern,
+    match_pattern: meta.match_pattern,
+    ...configVars,
+  };
+}
+
 function evalInputCellTemplate(
   raw: string,
   configVars: Record<string, string>,
@@ -888,10 +907,20 @@ function evalInputCellTemplate(
  */
 export function readInputsSheet(
   workbook: ExcelJS.Workbook,
-  configVars: Record<string, string> = {},
+  authorConfigVars?: Record<string, string>,
 ): InputSpec[] {
   const sheet = workbook.getWorksheet(INPUTS_SHEET);
   if (!sheet) return [];
+
+  // ADR-0056 (#126): an input cell reads `__config__[key]` under the same
+  // rule as a report cell — system keys resolve, an undeclared key is an
+  // error. The system keys and the author-defined rows come from the
+  // workbook; a value the caller passes for a key takes precedence.
+  const config = readConfigSheet(workbook);
+  const configVars = configReadValues(config.meta, {
+    ...config.configVars,
+    ...authorConfigVars,
+  });
 
   const header = sheet.getRow(1);
   const headerMap: Record<string, number> = {};
