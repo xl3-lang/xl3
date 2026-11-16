@@ -104,6 +104,15 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   the first row whose key compares equal. `@join` also stops pairing rows
   whose keys are both empty: an empty key never matches (ADR-0014).
 
+- **Conditional formatting and data validation stay on the data rows when
+  a directive row is removed** (#124). With `@filter` on row 1 and the data
+  row on row 2, the output had its data on rows 1–3 but the formatting and
+  validation on row 2 only: removing the directive row moved the cells up
+  and left the ranges behind, so the ADR-0040 extension no longer found
+  them inside the block. The ranges now move up with the cells, and the
+  result matches the same template without a directive row. A range below
+  a block still does not follow the block as it grows (ADR-0036).
+
 ## [1.0.0-rc.3] - 2026-11-03
 
 The third 1.0 release candidate settles what empty data produces and fixes
