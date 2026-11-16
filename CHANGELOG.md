@@ -113,6 +113,15 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   result matches the same template without a directive row. A range below
   a block still does not follow the block as it grows (ADR-0036).
 
+- **The CLI no longer overwrites one output with another whose name
+  differs only by case** (#123). On a case-insensitive filesystem — the
+  macOS and Windows defaults — `Report.xlsx` and `report.xlsx` are the same
+  file. `xl3 render` wrote both, the second replaced the first, and the run
+  still reported `count: 2` with exit code 0. It now checks all names
+  before writing, exits 1 with `xl3/filename/collision`, and writes
+  nothing. On a case-sensitive filesystem both files are written as
+  before. The library API is unchanged.
+
 ## [1.0.0-rc.3] - 2026-11-03
 
 The third 1.0 release candidate settles what empty data produces and fixes

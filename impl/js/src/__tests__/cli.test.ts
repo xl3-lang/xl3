@@ -1,10 +1,11 @@
 import { execFile } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { afterAll, describe, expect, it } from 'vitest';
+import ExcelJS from 'exceljs';
 import { canonicalizeXlsx } from '../conformance-runner.js';
 
 const run = promisify(execFile);
@@ -248,6 +249,91 @@ describeCli('xl3 CLI', () => {
     expect(code).toBe(1);
     // The stable `code` is what a host dispatches on (ADR-0015).
     expect(JSON.parse(stderr).error.code).toBe('xl3/source-json/invalid');
+  });
+
+  // #123 — two outputs whose names differ only by letter case are one
+  // file on a case-insensitive filesystem (macOS, Windows defaults). The
+  // second write used to replace the first while the report said 2 files.
+  describe('output names that differ only by case', () => {
+    /** Whether `dir` treats the two names as one file. */
+    function sameFileIn(dir: string, a: string, b: string): boolean {
+      writeFileSync(join(dir, a), '');
+      const same = existsSync(join(dir, b));
+      rmSync(join(dir, a));
+      return same;
+    }
+
+    async function renderByName(names: string[], dir: string) {
+      const template = new ExcelJS.Workbook();
+      template.addWorksheet('__config__').addRow(['output_file_pattern', '{{Name}}.xlsx']);
+      template.addWorksheet('Report').getCell('A1').value = '{{ [Value] }}';
+      const templatePath = join(dir, 'template.xlsx');
+      writeFileSync(templatePath, Buffer.from(await template.xlsx.writeBuffer()));
+      const source = JSON.stringify({
+        version: 'xl3-source-json/0.1',
+        sources: { default: { headers: ['Name', 'Value'], rows: names.map((n, i) => [n, i + 1]) } },
+      });
+      const out = join(dir, 'out');
+      const result = await cli(
+        ['render', templatePath, '--data=-', `--out=${out}`, '--json'],
+        source,
+      );
+      const written = existsSync(out) ? readdirSync(out).sort() : [];
+      return { ...result, out, written };
+    }
+
+    async function cellA1(path: string): Promise<unknown> {
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.load(toArrayBuffer(readFileSync(path)));
+      return wb.getWorksheet('Report')!.getCell('A1').value;
+    }
+
+    // Pairs a filesystem may fold: letter case, case folding that changes
+    // length (ß / SS), and Unicode normalization (composed vs decomposed
+    // Hangul). Each is checked against what THIS filesystem does.
+    it.each([
+      ['Report', 'report'],
+      ['Straße', 'STRASSE'],
+      ['한글'.normalize('NFC'), '한글'.normalize('NFD')],
+    ])('never reports more files than it kept: %j / %j', async (first, second) => {
+      const dir = tempDir();
+      const collide = sameFileIn(dir, `${first}.xlsx`, `${second}.xlsx`);
+      const r = await renderByName([first, second], dir);
+
+      if (collide) {
+        // Refused before anything is written: no partial output.
+        expect(r.code).toBe(1);
+        const error = JSON.parse(r.stderr).error;
+        expect(error.code).toBe('xl3/filename/collision');
+        expect(error.message).toContain(`${first}.xlsx`);
+        expect(error.message).toContain(`${second}.xlsx`);
+        expect(r.stdout).toBe('');
+        expect(r.written).toEqual([]);
+      } else {
+        // Two distinct files on this filesystem: both kept.
+        expect(r.code).toBe(0);
+        expect(JSON.parse(r.stdout).count).toBe(2);
+        expect(r.written).toHaveLength(2);
+        expect(await cellA1(join(r.out, `${first}.xlsx`))).toBe(1);
+        expect(await cellA1(join(r.out, `${second}.xlsx`))).toBe(2);
+      }
+    });
+
+    it('writes names that differ by more than case', async () => {
+      const r = await renderByName(['Report', 'Reports'], tempDir());
+      expect(r.code).toBe(0);
+      expect(JSON.parse(r.stdout).count).toBe(2);
+      expect(r.written).toEqual(['Report.xlsx', 'Reports.xlsx']);
+      expect(await cellA1(join(r.out, 'Report.xlsx'))).toBe(1);
+      expect(await cellA1(join(r.out, 'Reports.xlsx'))).toBe(2);
+    });
+
+    it('leaves no scratch folder in the output directory', async () => {
+      const ok = await renderByName(['Report', 'Reports'], tempDir());
+      expect(ok.written).toEqual(['Report.xlsx', 'Reports.xlsx']);
+      const refused = await renderByName(['Report', 'report'], tempDir());
+      expect(refused.written.filter((name) => name.startsWith('.'))).toEqual([]);
+    });
   });
 
   it('prints the package version on --version and exits 0', async () => {
