@@ -14,6 +14,7 @@ import { evalCell, evalCellAt } from './template-eval.js';
 import { applyDirectives } from './data-transform.js';
 import { canonicalString, isErrorCellMarker, isHyperlinkMarker } from './functions.js';
 import { xtlError } from './error-codes.js';
+import { configReadValues } from './parser.js';
 import type { FileGroup } from './grouper.js';
 import { partitionByGroupKeys, planEmissionEvents } from './grouper.js';
 import type { SourceData } from './reader.js';
@@ -110,6 +111,7 @@ export class Renderer {
   private columns: Set<string>;
   private listSheets: Record<string, string[]>;
   private sources: Record<string, SourceData>;
+  private configValues: Record<string, string>;
 
   constructor(
     parsed: ParsedTemplate,
@@ -120,6 +122,7 @@ export class Renderer {
     this.columns = columns;
     this.listSheets = parsed.listSheets;
     this.sources = sources;
+    this.configValues = configReadValues(parsed.meta, parsed.configVars);
   }
 
   /** Generate a preview-safe filename for a file group (no full render). */
@@ -1024,7 +1027,8 @@ export class Renderer {
   // aggregates like `SUM(Customers[Amount])` can resolve at eval time.
   private reservedSheetCtx(): Record<string, unknown> {
     return {
-      __config__: this.parsed.configVars,
+      // ADR-0056: system keys are readable alongside author-defined rows.
+      __config__: this.configValues,
       __inputs__: this.parsed.resolvedInputs ?? {},
       __lists__: this.parsed.listSheets,
       __sources__: this.sources,

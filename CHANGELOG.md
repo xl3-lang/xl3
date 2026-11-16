@@ -73,6 +73,15 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   Decimals, a leading `-`, thousands separators, and scientific notation
   such as `1e3` are accepted as before.
 
+- **Reading an undeclared `__config__` or `__inputs__` key is an error**
+  (#126, ADR-0056). `{{ __config__[titel] }}` rendered an empty cell, and
+  `{{ __config__[constructor] }}` rendered JavaScript function text. Both
+  now raise `xl3/expression/unknown-name`; a declared key with an empty
+  value still reads as empty. System keys are readable, as ADR-0056
+  specifies: `{{ __config__[name] }}` used to render an empty cell and now
+  renders the template name. `readInputsSheet(workbook)` without its
+  second argument reads the workbook's own `__config__` rows.
+
 ## [1.0.0-rc.3] - 2026-11-03
 
 The third 1.0 release candidate settles what empty data produces and fixes
