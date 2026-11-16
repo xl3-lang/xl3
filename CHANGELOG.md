@@ -82,6 +82,11 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   renders the template name. `readInputsSheet(workbook)` without its
   second argument reads the workbook's own `__config__` rows.
 
+- **`XLOOKUP` evaluates its fallback only when no row matches** (#133,
+  ADR-0060). The fallback was evaluated before the search, so an error
+  inside it — for example a nested `XLOOKUP` with no match — failed a
+  lookup that had found its row.
+
 ## [1.0.0-rc.3] - 2026-11-03
 
 The third 1.0 release candidate settles what empty data produces and fixes

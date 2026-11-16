@@ -1,5 +1,5 @@
 import { functions, canonicalString } from './functions.js';
-import { xtlError } from './error-codes.js';
+import { isXtlError, xtlError } from './error-codes.js';
 
 /**
  * Evaluate a normalized template expression against a data context.
@@ -161,6 +161,18 @@ export function evalExpression(normalized: string, ctx: Record<string, unknown>)
   const parts = splitFunctionArgs(trimmed);
   const fn = getFunction(parts[0]);
   if (parts.length >= 1 && fn) {
+    // ADR-0060 (#133): the XLOOKUP fallback is evaluated only when no row
+    // matches. Search without it first; an error inside the fallback must
+    // not fail a lookup that found its row.
+    if (parts[0] === 'xlookupRows' && parts.length === 6) {
+      const search = parts.slice(1, 5).map((arg) => resolveArg(arg, ctx));
+      try {
+        return fn(...search);
+      } catch (e) {
+        if (!isXtlError(e) || e.code !== 'xl3/xlookup/no-match') throw e;
+      }
+      return resolveArg(parts[5]!, ctx);
+    }
     const args = parts.slice(1).map((arg) => resolveArg(arg, ctx));
     return fn(...args);
   }
