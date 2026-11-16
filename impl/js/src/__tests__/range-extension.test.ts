@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   extendSqref,
+  hasRelativeRowReference,
   parseSqref,
   removeRowsFromSqref,
   replicatedRowsFor,
@@ -200,5 +201,39 @@ describe('rowAfterRemoval (#124)', () => {
 
   it('returns null for a removed row', () => {
     expect(rowAfterRemoval(3, [1, 3])).toBeNull();
+  });
+});
+
+describe('hasRelativeRowReference (#124)', () => {
+  it.each([
+    'B2>100',
+    '$B2>100',
+    'A2="Alpha"',
+    'AND($A2<>"", B$1>0, C3=1)',
+    'Sheet1!B2>0',
+    "'My Sheet'!$B2>0",
+    'SUM(B2:B5)>0',
+    'SUM(2:2)>0',
+    'COUNTIF($A:$A, A2)>1',
+  ])('%s names a relative row', (formula) => {
+    expect(hasRelativeRowReference(formula)).toBe(true);
+  });
+
+  it.each([
+    'TRUE',
+    '100',
+    '"A,B"',
+    '"see B2"',
+    '$D$1="on"',
+    'B$1>0',
+    '$F$1:$F$5',
+    'SUM($B$2:$B$5)>0',
+    'COUNTIF($A:$A, "x")>1',
+    'LOG10(100)>1',
+    'ATAN2(1, 1)>0',
+    '1E5>0',
+    'SUM($2:$2)>0',
+  ])('%s does not', (formula) => {
+    expect(hasRelativeRowReference(formula)).toBe(false);
   });
 });
