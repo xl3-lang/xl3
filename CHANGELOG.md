@@ -41,11 +41,18 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   `xl3/eval/bad-aggregate-arg`, like `SUM`, `AVERAGE`, `MIN`, and `MAX`.
   `COUNT()`, `COUNT([Column])`, and `COUNT(Source[Column])` are unchanged.
 
-- **Column names with an apostrophe or an unbalanced parenthesis work as
-  function arguments.** `{{ IFEMPTY([Owner's Name], [Code]) }}` raised an
-  arity error and `{{ IF([Owner's A] > 1, "y", "n") }}` could split in the
-  wrong place, because the apostrophe was read as a quote. A column name
-  now runs to its closing `]` wherever it appears in an expression.
+- **Column names with an apostrophe or an unpaired parenthesis work as
+  function arguments.** `{{ IFEMPTY([Owner's Name], [Code]) }}` and
+  `{{ ROUND([Amount (KRW], 0) }}` raised an arity error, and
+  `{{ IF([Owner's A] > 1, "y", "n") }}` could split in the wrong place,
+  because the apostrophe was read as a quote and the parenthesis as
+  structure. A column name now runs to its closing `]`, and a string
+  literal to its closing `"`, wherever they appear in an expression.
+
+- **An expression with an unpaired parenthesis is an error.**
+  `{{ SUM([Amount])) }}` and `{{ ROUND([Amount], 2 }}` now raise
+  `xl3/eval/unsupported-syntax`. A parenthesis inside a string literal or
+  a column name is text and is not counted.
 
 - **A large nested `@group` no longer fails with `RangeError`** (#136). A
   two-level `@group` over 150,000 rows in one child group stopped with
@@ -65,7 +72,9 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   in the data did not match a list entry `TRUE`, and a date or rich-text
   cell in `__lists__` was read as JavaScript object text. List entries and
   row values are now both compared in canonical string form, as
-  evaluation.md specifies.
+  evaluation.md specifies. A `__lists__` cell holding a formula with no
+  cached result raises `xl3/cell/formula-no-cache` when a filter uses its
+  list; it used to become the entry `[object Object]`.
 
 - **Arithmetic no longer reads `0x10`, `0b10`, `0o17`, or `+5` as a
   number** (#125, ADR-0064). A source string in one of these forms was
@@ -79,8 +88,9 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   now raise `xl3/expression/unknown-name`; a declared key with an empty
   value still reads as empty. System keys are readable, as ADR-0056
   specifies: `{{ __config__[name] }}` used to render an empty cell and now
-  renders the template name. `readInputsSheet(workbook)` without its
-  second argument reads the workbook's own `__config__` rows.
+  renders the template name. `readInputsSheet(workbook)` now reads the
+  workbook's own `__config__` rows; a value passed in its second argument
+  takes precedence for that key.
 
 - **`XLOOKUP` evaluates its fallback only when no row matches** (#133,
   ADR-0060). The fallback was evaluated before the search, so an error
@@ -92,6 +102,9 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   `"42"`, a Boolean as `"true"`, a date as its JavaScript text, and a
   formula as the text `[object Object]`, in every record. These cells now
   keep their original value, as they already did in a down-repeat block.
+  A shared-formula cell that points at another cell is not carried over
+  when a directive row sits above it; that holds for both directions and
+  is not changed here.
 
 - **`ROW()` works in a `@repeat right` block** (#134). It raised
   `xl3/cell/row-outside-repeat`; it now returns the 1-based record index,
@@ -109,18 +122,22 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   row on row 2, the output had its data on rows 1–3 but the formatting and
   validation on row 2 only: removing the directive row moved the cells up
   and left the ranges behind, so the ADR-0040 extension no longer found
-  them inside the block. The ranges now move up with the cells, and the
-  result matches the same template without a directive row. A range below
-  a block still does not follow the block as it grows (ADR-0036).
+  them inside the block. The ranges now move up with the cells. A rule's
+  formula text is not rewritten (ADR-0046): a formula with a relative
+  reference, such as `$B2>100`, still names the row it named in the
+  template, one row below the range's new first row for each directive row
+  removed. A range below a block still does not follow the block as it
+  grows (ADR-0036).
 
-- **The CLI no longer overwrites one output with another whose name
-  differs only by case** (#123). On a case-insensitive filesystem — the
-  macOS and Windows defaults — `Report.xlsx` and `report.xlsx` are the same
-  file. `xl3 render` wrote both, the second replaced the first, and the run
-  still reported `count: 2` with exit code 0. It now checks all names
-  before writing, exits 1 with `xl3/filename/collision`, and writes
-  nothing. On a case-sensitive filesystem both files are written as
-  before. The library API is unchanged.
+- **The CLI no longer overwrites one output with another whose name the
+  filesystem treats as the same** (#123). On the macOS and Windows
+  defaults `Report.xlsx` and `report.xlsx` are one file, as are the
+  composed and decomposed forms of `한글.xlsx`. `xl3 render` wrote both,
+  the second replaced the first, and the run still reported `count: 2`
+  with exit code 0. It now asks the output directory whether any two names
+  collide before writing, exits 1 with `xl3/filename/collision`, and
+  writes nothing. Where the filesystem keeps the names apart, both files
+  are written as before. The library API is unchanged.
 
 ## [1.0.0-rc.3] - 2026-11-03
 
