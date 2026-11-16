@@ -3,6 +3,7 @@ import JSZip from 'jszip';
 import { xtlError } from './error-codes.js';
 import {
   extendSqref,
+  hasRelativeRowReference,
   removeRowsFromSqref,
   replicatedRowsFor,
   rowAfterRemoval,
@@ -628,8 +629,16 @@ function mergeWithoutOverwriting(sheet: ExcelJS.Worksheet, merge: DetachedMerge)
  * no-op and only a Stage 2 fixture diff would notice.
  */
 interface RangeCollections {
-  conditionalFormattings?: { ref?: string }[];
+  conditionalFormattings?: { ref?: string; rules?: { formulae?: unknown[] }[] }[];
   dataValidations?: { model?: Record<string, unknown> };
+}
+
+/** True when any of a rule's formulas is anchored to its range by a relative row. */
+function isRowAnchored(formulae: unknown): boolean {
+  return (
+    Array.isArray(formulae) &&
+    formulae.some((f) => typeof f === 'string' && hasRelativeRowReference(f))
+  );
 }
 
 export function extendRangesForExpansion(
@@ -677,6 +686,11 @@ export function extendRangesForExpansion(
  * ranges stay below the cells they were written for and the ADR-0040
  * sweep, which compares them with the block's rows, no longer finds them
  * inside the block (#124).
+ *
+ * A rule whose formula names a relative row is left where it is. Its
+ * formula is anchored to the range's first cell and is never rewritten
+ * (ADR-0046), so moving the range alone would make each cell test the row
+ * below it. Leaving it keeps the rule exactly as it behaved before.
  */
 export function removeRowsFromRanges(sheet: ExcelJS.Worksheet, removedRows: number[]): void {
   if (removedRows.length === 0) return;
@@ -687,6 +701,7 @@ export function removeRowsFromRanges(sheet: ExcelJS.Worksheet, removedRows: numb
     for (let i = cfs.length - 1; i >= 0; i--) {
       const cf = cfs[i];
       if (!cf || typeof cf.ref !== 'string') continue;
+      if (cf.rules?.some((rule) => isRowAnchored(rule?.formulae))) continue;
       const ref = removeRowsFromSqref(cf.ref, removedRows);
       if (ref === '') cfs.splice(i, 1);
       else cf.ref = ref;
@@ -696,14 +711,20 @@ export function removeRowsFromRanges(sheet: ExcelJS.Worksheet, removedRows: numb
   const dvModel = collections.dataValidations?.model;
   if (dvModel) {
     const moved: Record<string, unknown> = {};
+    const toMove: [string, number, unknown][] = [];
     for (const [address, validation] of Object.entries(dvModel)) {
       const m = /^\$?([A-Z]{1,3})\$?(\d+)$/i.exec(address);
-      if (!m) {
-        moved[address] = validation; // range-keyed or unparseable — leave it alone
+      const anchored = isRowAnchored((validation as { formulae?: unknown } | null)?.formulae);
+      if (!m || anchored) {
+        moved[address] = validation; // stays: range-keyed, unparseable, or row-anchored
         continue;
       }
-      const row = rowAfterRemoval(Number(m[2]), removedRows);
-      if (row !== null) moved[`${m[1]!.toUpperCase()}${row}`] = validation;
+      toMove.push([m[1]!.toUpperCase(), Number(m[2]), validation]);
+    }
+    for (const [col, templateRow, validation] of toMove) {
+      const row = rowAfterRemoval(templateRow, removedRows);
+      // A validation that stayed in place keeps its cell.
+      if (row !== null && moved[`${col}${row}`] === undefined) moved[`${col}${row}`] = validation;
     }
     // Swap the contents in place: ExcelJS holds this object.
     for (const key of Object.keys(dvModel)) delete dvModel[key];

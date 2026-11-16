@@ -122,12 +122,15 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   row on row 2, the output had its data on rows 1–3 but the formatting and
   validation on row 2 only: removing the directive row moved the cells up
   and left the ranges behind, so the ADR-0040 extension no longer found
-  them inside the block. The ranges now move up with the cells. A rule's
-  formula text is not rewritten (ADR-0046): a formula with a relative
-  reference, such as `$B2>100`, still names the row it named in the
-  template, one row below the range's new first row for each directive row
-  removed. A range below a block still does not follow the block as it
-  grows (ADR-0036).
+  them inside the block. The ranges now move up with the cells. This
+  covers rules whose formulas do not depend on the range's position: list
+  validations, comparisons with a constant, and formulas with absolute
+  references. A rule whose formula names a relative row, such as
+  `$B2>100`, is left where the template put it, as before: its formula is
+  anchored to the range's first cell and is never rewritten (ADR-0046), so
+  moving the range alone would make each record test the row below it. A
+  range below a block still does not follow the block as it grows
+  (ADR-0036).
 
 - **The CLI no longer overwrites one output with another whose name the
   filesystem treats as the same** (#123). On the macOS and Windows

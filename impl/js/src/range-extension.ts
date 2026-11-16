@@ -232,3 +232,25 @@ export function removeRowsFromSqref(sqref: string, removedRows: readonly number[
   }
   return parts.join(' ');
 }
+
+/**
+ * True when an A1-style formula names a cell or a row by a relative row
+ * number — `B2`, `$B2`, `Sheet1!B2`, `2:2` — outside string literals.
+ *
+ * A CF or DV rule formula is anchored to the first cell of its range: a
+ * relative row in it means "this many rows from the range's first row".
+ * Moving such a range without rewriting the formula would change which
+ * row every cell tests, and formula text is never rewritten (ADR-0046).
+ * So `removeRowsFromRanges` leaves a rule like that where the template put
+ * it (#124). Errs toward true: a defined name shaped like a cell address
+ * (`TAX2024`) counts as a reference.
+ */
+export function hasRelativeRowReference(formula: string): boolean {
+  const bare = formula.replace(/"[^"]*"/g, '""');
+  const cell = /(?<![A-Za-z0-9_.$])\$?[A-Za-z]{1,3}(\$?)\d+(?![A-Za-z0-9_(])/g;
+  for (const m of bare.matchAll(cell)) {
+    if (m[1] === '') return true;
+  }
+  // Whole-row reference: `2:2`, `2:$5`.
+  return /(?<![A-Za-z0-9_.$:])\d+:\$?\d+(?![A-Za-z0-9_.])/.test(bare);
+}

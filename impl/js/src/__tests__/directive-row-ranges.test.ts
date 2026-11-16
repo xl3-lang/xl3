@@ -140,14 +140,34 @@ describe('#124 CF / DV ranges follow directive-row removal', () => {
     expect(out.cf).toEqual(['A1:A2', 'C:C']);
   });
 
-  it('moves the range, not the rule formula text', async () => {
+  // A rule formula is anchored to the first cell of its range and is never
+  // rewritten (ADR-0046). Moving the range of a rule with a relative row
+  // would make every cell test the row below it, so such a rule stays
+  // where the template put it — exactly as before this fix.
+  it('leaves a rule whose formula names a relative row where it was', async () => {
     const out = await render((s) => {
       s.getCell('A1').value = '{{ @filter [Name] != "omit" }}';
       s.getCell('A2').value = '{{ [Name] }}';
       s.addConditionalFormatting({ ref: 'A2:A2', rules: [cfRule('A2="Alpha"')] });
+      s.getCell('A2').dataValidation = { type: 'custom', allowBlank: true, formulae: ['A2<>""'] };
     });
-    expect(out.cf).toEqual(['A1:A3']);
-    // The formula string is preserved verbatim; only the range moves.
+    expect(out.cf).toEqual(['A2:A2']);
     expect(out.cfFormulae).toEqual(['A2="Alpha"']);
+    expect(out.dv).toEqual(['A2']);
+  });
+
+  it('moves a rule whose formula has no relative row', async () => {
+    const out = await render((s) => {
+      s.getCell('A1').value = '{{ @filter [Name] != "omit" }}';
+      s.getCell('A2').value = '{{ [Name] }}';
+      // An absolute reference and a constant: neither depends on the
+      // range's first row.
+      s.addConditionalFormatting({ ref: 'A2:A2', rules: [cfRule('$D$1="on"')] });
+      s.addConditionalFormatting({ ref: 'B2:B2', rules: [cfRule('TRUE')] });
+      s.getCell('A2').dataValidation = DV;
+    });
+    expect(out.cf).toEqual(['A1:A3', 'B1:B3']);
+    expect(out.cfFormulae.sort()).toEqual(['$D$1="on"', 'TRUE']);
+    expect(out.dv).toEqual(['A1', 'A2', 'A3']);
   });
 });
