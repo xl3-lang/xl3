@@ -226,6 +226,11 @@ function toNumber(v: unknown): number {
   return 0;
 }
 
+// ADR-0064: the string shapes arithmetic coerces to a number — a decimal
+// with an optional leading `-`, optional fraction, and optional exponent.
+// Thousands-separator commas are removed before this test.
+const COERCIBLE_NUMBER_RE = /^-?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
+
 // ADR-0023: strict numeric coercion for arithmetic operators. Unlike
 // `toNumber` (which silently returns 0 for non-numeric input — used
 // by aggregates), this helper throws when an operand cannot be
@@ -236,7 +241,10 @@ function toNumberOrThrow(v: unknown, op: string): number {
   if (isEmpty(v)) return 0;
   if (typeof v === 'string') {
     const cleaned = v.trim().replace(/,/g, '');
-    if (cleaned !== '') {
+    // ADR-0064 (#125): `Number()` also parses `+5`, `0x10`, `0b10`, `0o17`,
+    // which the coercion rule excludes. Admit only the decimal and
+    // scientific shapes before handing the string to `Number()`.
+    if (COERCIBLE_NUMBER_RE.test(cleaned)) {
       const n = Number(cleaned);
       if (Number.isFinite(n)) return n;
     }

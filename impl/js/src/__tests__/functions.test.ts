@@ -448,3 +448,64 @@ describe('DATE (ADR-0044)', () => {
     expect(d.getUTCDate()).toBe(18);
   });
 });
+
+describe('arithmetic string coercion (ADR-0064, #125)', () => {
+  const ops = ['add', 'sub', 'mul', 'div'] as const;
+
+  it.each([
+    ['42', 42],
+    ['-42', -42],
+    ['3.14', 3.14],
+    ['-3.14', -3.14],
+    ['1,234', 1234],
+    ['-1,234.56', -1234.56],
+    ['1e3', 1000],
+    ['-1.5e-3', -0.0015],
+    ['1.5E10', 15000000000],
+    ['  7  ', 7],
+    ['.5', 0.5],
+    ['5.', 5],
+    ['', 0],
+    ['   ', 0],
+  ])('accepts %j', (text, expected) => {
+    expect(functions.add(text, 0)).toBe(expected);
+    expect(functions.sub(text, 0)).toBe(expected);
+    expect(functions.mul(text, 1)).toBe(expected);
+    expect(functions.div(text, 1)).toBe(expected);
+    expect(functions.add(0, text)).toBe(expected);
+  });
+
+  it.each([
+    '+5',
+    '\u22125',
+    '0x10',
+    '0X10',
+    '0b10',
+    '0o17',
+    'Infinity',
+    '-Infinity',
+    '1e999',
+    '5px',
+    '5 abc',
+    '1\n2',
+    '1e',
+    '--5',
+    '.',
+    'e5',
+  ])('rejects %j with operand-coercion', (text) => {
+    for (const op of ops) {
+      for (const args of [
+        [text, 1],
+        [1, text],
+      ]) {
+        let code: unknown;
+        try {
+          functions[op]!(...args);
+        } catch (e) {
+          code = (e as { code?: unknown }).code;
+        }
+        expect(code, `${op}(${JSON.stringify(args)})`).toBe('xl3/eval/operand-coercion');
+      }
+    }
+  });
+});
