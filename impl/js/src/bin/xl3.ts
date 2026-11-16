@@ -15,8 +15,8 @@
 //      error, or an I/O failure)
 //   2  usage error (bad flags, missing file)
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { basename, isAbsolute, resolve } from 'node:path';
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { basename, isAbsolute, join, resolve } from 'node:path';
 import {
   VERSION,
   convert,
@@ -28,7 +28,7 @@ import {
   validateSource,
   validateSourceJson,
 } from '../index.js';
-import { isXtlError } from '../error-codes.js';
+import { isXtlError, xtlError } from '../error-codes.js';
 import type {
   ConvertOptions,
   OutputFile,
@@ -247,6 +247,52 @@ function safeOutputName(filename: string): string {
   return filename;
 }
 
+/**
+ * The library guarantees distinct output filenames (ADR-0031), compared as
+ * strings. A filesystem may be coarser. On the macOS and Windows defaults
+ * `Report.xlsx` and `report.xlsx` are one file, as are the composed and
+ * decomposed forms of `한글.xlsx`; the second write would replace the first
+ * while the run still reported two files (#123).
+ *
+ * Which names collide is a property of the directory being written to —
+ * case folding and Unicode normalization differ by filesystem — so the
+ * directory is asked: each name is created, empty, in a scratch folder
+ * inside it, and a name that already exists there is a collision.
+ */
+async function assertDistinctOnDisk(dir: string, names: string[]): Promise<void> {
+  if (names.length < 2) return;
+  const scratch = await mkdtemp(join(dir, '.xl3-names-'));
+  try {
+    for (const [i, name] of names.entries()) {
+      try {
+        await writeFile(join(scratch, name), '', { flag: 'wx' });
+      } catch (e) {
+        if ((e as NodeJS.ErrnoException).code !== 'EEXIST') throw e;
+        const other = await sameFileAmong(scratch, names.slice(0, i), name);
+        throw xtlError(
+          'xl3/filename/collision',
+          `Output filenames ${other ? `"${other}" and ` : ''}"${name}" name the same file in ${dir}: this filesystem does not distinguish them (letter case or Unicode form). Nothing was written. Make the group key values distinct upstream.`,
+        );
+      }
+    }
+  } finally {
+    await rm(scratch, { recursive: true, force: true });
+  }
+}
+
+/** The earlier name that resolves to the same file as `name`, if it can be told. */
+async function sameFileAmong(
+  scratch: string,
+  earlier: string[],
+  name: string,
+): Promise<string | undefined> {
+  const { ino } = await stat(join(scratch, name));
+  for (const candidate of earlier) {
+    if ((await stat(join(scratch, candidate))).ino === ino) return candidate;
+  }
+  return undefined;
+}
+
 async function writeOutputs(files: OutputFile[], cli: Cli): Promise<string[]> {
   if (cli.zip) {
     const blob = await packageZip(files);
@@ -256,9 +302,13 @@ async function writeOutputs(files: OutputFile[], cli: Cli): Promise<string[]> {
   }
   const dir = resolve(cli.out);
   await mkdir(dir, { recursive: true });
+  // Check every name before the first write, so a refused run leaves no
+  // partial output behind.
+  const names = files.map((f) => safeOutputName(f.filename));
+  await assertDistinctOnDisk(dir, names);
   const written: string[] = [];
-  for (const f of files) {
-    const target = resolve(dir, safeOutputName(f.filename));
+  for (const [i, f] of files.entries()) {
+    const target = resolve(dir, names[i]!);
     await writeFile(target, Buffer.from(f.data));
     written.push(target);
   }
