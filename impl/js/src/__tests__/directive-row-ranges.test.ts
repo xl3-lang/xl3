@@ -60,6 +60,8 @@ async function render(build: (sheet: ExcelJS.Worksheet) => void) {
     a: column(1),
     column,
     dv: Object.keys(ranges.dataValidations.model).sort(),
+    dvType: (address: string) =>
+      (ranges.dataValidations.model[address] as { type?: string } | undefined)?.type,
     cf: ranges.conditionalFormattings.map((c) => c.ref).sort(),
     cfFormulae: ranges.conditionalFormattings.flatMap((c) => c.rules.flatMap((r) => r.formulae)),
   };
@@ -169,5 +171,87 @@ describe('#124 CF / DV ranges follow directive-row removal', () => {
     expect(out.cf).toEqual(['A1:A3', 'B1:B3']);
     expect(out.cfFormulae.sort()).toEqual(['$D$1="on"', 'TRUE']);
     expect(out.dv).toEqual(['A1', 'A2', 'A3']);
+  });
+
+  // A cell holds one validation. A row-anchored one stays on its template
+  // address, so the validation that would move onto that address has no
+  // cell to take. It used to be dropped from the output; it now keeps its
+  // template address too, and so does each one below it that would land on
+  // an address kept this way.
+  it('keeps a validation whose destination holds one that stayed', async () => {
+    const out = await render((s) => {
+      s.getCell('A1').value = '{{ @sort [Name] }}';
+      s.getCell('A2').value = '{{ [Name] }}';
+      s.getCell('A3').value = 'Approve?';
+      s.getCell('A4').value = 'Reviewed?';
+      s.getCell('B2').dataValidation = { type: 'custom', allowBlank: true, formulae: ['B2<>""'] };
+      s.getCell('B3').dataValidation = DV;
+      s.getCell('B4').dataValidation = { type: 'whole', allowBlank: true, formulae: [0, 9] };
+      // Nothing stays in column C, so its validation moves with its cell.
+      s.getCell('C3').dataValidation = DV;
+    });
+    expect(out.a).toEqual({ 1: 'Alpha', 2: 'Beta', 3: 'Gamma', 4: 'Approve?', 5: 'Reviewed?' });
+    expect(out.dv).toEqual(['B2', 'B3', 'B4', 'C2']);
+    expect([out.dvType('B2'), out.dvType('B3'), out.dvType('B4')]).toEqual([
+      'custom',
+      'list',
+      'whole',
+    ]);
+  });
+});
+
+/**
+ * Two blocks side by side share their template rows, so "inside the
+ * block's row span" (ADR-0040) is true of both blocks for every range on
+ * those rows. Each block grew the other's ranges by its own record count.
+ * On a sheet with several blocks a range belongs to the block whose
+ * columns hold it (ADR-0066, ADR-0068).
+ */
+describe('CF / DV ranges of side-by-side blocks', () => {
+  const sideBySide = (leftFilter: string, rightFilter: string) => (s: ExcelJS.Worksheet) => {
+    s.getCell('A1').value = '{{ @block A3:A3 }}';
+    s.getCell('C1').value = '{{ @block C3:C3 }}';
+    s.getCell('A2').value = `{{ @filter ${leftFilter} }}`;
+    s.getCell('C2').value = `{{ @filter ${rightFilter} }}`;
+    s.getCell('A3').value = '{{ [Name] }}';
+    s.getCell('C3').value = '{{ default[Name] }}';
+    mark(s, 'A3');
+    mark(s, 'C3');
+  };
+
+  it('extends each range by its own block: fewer records on the left', async () => {
+    const out = await render(sideBySide('[Kind] = "x"', '[Name] != "omit"'));
+    expect(out.a).toEqual({ 1: 'Alpha', 2: 'Gamma' });
+    expect(out.column(3)).toEqual({ 1: 'Alpha', 2: 'Beta', 3: 'Gamma' });
+    expect(out.cf).toEqual(['A1:A2', 'C1:C3']);
+    expect(out.dv).toEqual(['A1', 'A2', 'C1', 'C2', 'C3']);
+  });
+
+  it('extends each range by its own block: fewer records on the right', async () => {
+    const out = await render(sideBySide('[Name] != "omit"', '[Kind] = "y"'));
+    expect(out.a).toEqual({ 1: 'Alpha', 2: 'Beta', 3: 'Gamma' });
+    expect(out.column(3)).toEqual({ 1: 'Beta' });
+    expect(out.cf).toEqual(['A1:A3', 'C1:C1']);
+    expect(out.dv).toEqual(['A1', 'A2', 'A3', 'C1']);
+  });
+
+  it('tests each sub-range of a multi-range rule against its own block', async () => {
+    const out = await render((s) => {
+      sideBySide('[Kind] = "x"', '[Name] != "omit"')(s);
+      s.addConditionalFormatting({ ref: 'A3:A3 C3:C3', rules: [cfRule('$E$1="on"')] });
+    });
+    expect(out.cf).toEqual(['A1:A2', 'A1:A2 C1:C3', 'C1:C3']);
+  });
+
+  it('leaves a range that is in no single block as authored', async () => {
+    const out = await render((s) => {
+      sideBySide('[Name] != "omit"', '[Kind] = "x"')(s);
+      // Across both blocks, and beside them: neither is one block's range.
+      s.addConditionalFormatting({ ref: 'A3:C3', rules: [cfRule('TRUE')] });
+      s.addConditionalFormatting({ ref: 'E3:E3', rules: [cfRule('TRUE')] });
+      s.getCell('E3').dataValidation = DV;
+    });
+    expect(out.cf).toEqual(['A1:A3', 'A1:C1', 'C1:C2', 'E1:E1']);
+    expect(out.dv).toEqual(['A1', 'A2', 'A3', 'C1', 'C2', 'E1']);
   });
 });

@@ -641,11 +641,30 @@ function isRowAnchored(formulae: unknown): boolean {
   );
 }
 
+/** True when every cell of one sub-range (`B2`, `$B$2:$C$4`) is in `cols`. */
+function insideColumns(subRange: string, cols: { start: number; end: number }): boolean {
+  return subRange.split(':').every((endpoint) => {
+    const cell = decodeCell(endpoint.replace(/\$/g, '').toUpperCase());
+    return cell !== null && cell.col >= cols.start && cell.col <= cols.end;
+  });
+}
+
+/**
+ * `blockCols` is the block's column span, given only on a sheet with
+ * several blocks. Blocks side by side share their template rows, so the
+ * row rule alone is true of each of them for every range on those rows,
+ * and each block would extend the other's ranges by its own growth. There
+ * a range belongs to the block whose columns hold all of it (ADR-0066,
+ * ADR-0068); one that spans blocks, or sits beside them, is in no block
+ * and stays as authored, like a partial row overlap (rule 1.2). On a
+ * sheet with one block the rule is ADR-0040's as written: rows only.
+ */
 export function extendRangesForExpansion(
   sheet: ExcelJS.Worksheet,
   blockStartRow: number,
   blockEndRow: number,
   delta: number,
+  blockCols?: { start: number; end: number },
 ): void {
   if (delta <= 0) return;
   const collections = sheet as unknown as RangeCollections;
@@ -655,8 +674,16 @@ export function extendRangesForExpansion(
   if (Array.isArray(cfs)) {
     for (const cf of cfs) {
       if (!cf || typeof cf.ref !== 'string') continue;
-      const { ref, changed } = extendSqref(cf.ref, blockStartRow, blockEndRow, delta);
-      if (changed) cf.ref = ref;
+      // Sub-ranges are independent (rule 4), so each is tested on its own.
+      const subRanges = blockCols ? cf.ref.trim().split(/\s+/) : [cf.ref];
+      let anyChanged = false;
+      const parts = subRanges.map((sub) => {
+        if (blockCols && !insideColumns(sub, blockCols)) return sub;
+        const { ref, changed } = extendSqref(sub, blockStartRow, blockEndRow, delta);
+        anyChanged ||= changed;
+        return ref;
+      });
+      if (anyChanged) cf.ref = parts.join(' ');
     }
   }
 
@@ -669,6 +696,7 @@ export function extendRangesForExpansion(
       if (!m) continue; // range-keyed or unparseable — leave it alone
       const col = m[1]!.toUpperCase();
       const row = Number(m[2]);
+      if (blockCols && !insideColumns(`${col}${row}`, blockCols)) continue;
       for (const target of replicatedRowsFor(row, blockStartRow, blockEndRow, delta)) {
         const key = `${col}${target}`;
         // Never overwrite a validation the template already put there.
@@ -721,10 +749,18 @@ export function removeRowsFromRanges(sheet: ExcelJS.Worksheet, removedRows: numb
       }
       toMove.push([m[1]!.toUpperCase(), Number(m[2]), validation]);
     }
+    // Top to bottom, so that an address kept below is seen by the
+    // validation under it.
+    toMove.sort((a, b) => a[1] - b[1]);
     for (const [col, templateRow, validation] of toMove) {
       const row = rowAfterRemoval(templateRow, removedRows);
-      // A validation that stayed in place keeps its cell.
-      if (row !== null && moved[`${col}${row}`] === undefined) moved[`${col}${row}`] = validation;
+      if (row === null) continue; // it sat on a removed row
+      // A cell holds one validation, and one that stayed in place keeps
+      // its cell. The validation that would move there keeps its template
+      // address instead of being dropped; nothing moved onto that address,
+      // because everything above it went to a row above it.
+      const taken = moved[`${col}${row}`] !== undefined;
+      moved[`${col}${taken ? templateRow : row}`] = validation;
     }
     // Swap the contents in place: ExcelJS holds this object.
     for (const key of Object.keys(dvModel)) delete dvModel[key];
