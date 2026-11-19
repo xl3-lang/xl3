@@ -702,7 +702,11 @@ export class Renderer {
     // Runs last, and reads template coordinates directly: the splice
     // moves cells but leaves both collections addressed as authored, so
     // there is no shift to compensate for here.
-    extendRangesForExpansion(sheet, st.dataStartRow, st.dataEndRow, insertCount);
+    // With several blocks on the sheet, only the ranges in this block's
+    // columns are this block's to extend.
+    const rangeCols =
+      st.blocks.length > 1 && hasColScope ? { start: colStart, end: colEnd } : undefined;
+    extendRangesForExpansion(sheet, st.dataStartRow, st.dataEndRow, insertCount, rangeCols);
     return insertCount;
   }
 
@@ -934,7 +938,9 @@ export class Renderer {
     // ADR-0040 (ROADMAP G5), grouped path. The delta here counts the
     // subtotal and repeated group rows too, which is correct: the rule is
     // stated over rows the block grew by, not over data records.
-    extendRangesForExpansion(sheet, st.dataStartRow, st.dataEndRow, insertDelta);
+    const rangeCols =
+      st.blocks.length > 1 && hasColScope ? { start: colStart, end: colEnd } : undefined;
+    extendRangesForExpansion(sheet, st.dataStartRow, st.dataEndRow, insertDelta, rangeCols);
     return insertDelta;
   }
 

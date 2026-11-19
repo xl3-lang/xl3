@@ -140,8 +140,12 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   `$B2>100`, is left where the template put it, as before: its formula is
   anchored to the range's first cell and is never rewritten (ADR-0046), so
   moving the range alone would make each record test the row below it. A
-  range below a block still does not follow the block as it grows
-  (ADR-0036).
+  validation that would move onto a cell still holding such a rule keeps
+  its template address too, since a cell holds one validation. On a sheet
+  with several blocks a range is extended by the block whose columns hold
+  it, so two blocks side by side each cover their own records; a range
+  that spans blocks or sits beside them is left as authored. A range below
+  a block still does not follow the block as it grows (ADR-0036).
 
 - **The CLI no longer overwrites one output with another whose name the
   filesystem treats as the same** (#123). On the macOS and Windows
