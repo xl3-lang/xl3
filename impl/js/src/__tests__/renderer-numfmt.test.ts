@@ -334,4 +334,29 @@ describe('numFmt warned fallback (ADR-0072 / #56)', () => {
       );
     },
   );
+
+  // A sheet's warnings were appended to the file's with `push(...warnings)`.
+  // One call takes every warning as an argument, so a sheet with enough
+  // placeholder cells exceeded the engine's argument limit and the whole
+  // conversion failed with a bare RangeError (130,000 warnings on Node 22).
+  // The limit depends on the runtime, so this uses a count well above it.
+  it('returns every warning from a sheet with very many placeholder cells', async () => {
+    const count = 300_000;
+    const template = new ExcelJS.Workbook();
+    const sheet = template.addWorksheet('Report');
+    sheet.getCell('A1').value = '{{ [Amount] }}';
+    sheet.getCell('A1').numFmt = '0.00';
+    const [file] = await convertJson(
+      await template.xlsx.writeBuffer(),
+      source(
+        ['Amount'],
+        Array.from({ length: count }, () => ['-']),
+      ),
+    );
+    expect(file!.warnings).toHaveLength(count);
+    expect(file!.warnings![0]!.location).toBe('sheet "Report" cell A1 column "Amount"');
+    expect(file!.warnings![count - 1]!.location).toBe(
+      `sheet "Report" cell A${count} column "Amount"`,
+    );
+  }, 120_000);
 });

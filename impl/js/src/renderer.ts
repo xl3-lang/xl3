@@ -279,7 +279,9 @@ export class Renderer {
       if (sheet) {
         const warnings = new CellWarnings(sheet);
         this.renderSheet(document, sheet, st, sg, fileGroup.key, warnings);
-        cellWarnings.push(...warnings.collect());
+        // One at a time: `push(...list)` passes every warning as an
+        // argument, and a sheet can hold more than a call accepts.
+        for (const warning of warnings.collect()) cellWarnings.push(warning);
       }
     }
 
