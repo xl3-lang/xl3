@@ -44,7 +44,7 @@ match.
 Stable. Append-only. Renames are breaking changes per ADR-0015. The
 current set:
 
-- **`xl3/cell/*`** — cell-level failures (`formula-no-cache`, `numfmt-coercion`, `row-outside-repeat`)
+- **`xl3/cell/*`** — cell-level failures (`formula-no-cache`, `row-outside-repeat`)
 - **`xl3/eval/*`** — expression evaluation (`arity-mismatch`, `operand-coercion`, `unsupported-syntax`)
 - **`xl3/config/*`** — `__config__` issues
 - **`xl3/inputs/*`** — runtime input failures
@@ -91,6 +91,24 @@ are different sources. Template needs fixing — not an operator issue.
 The lookup value isn't in the lookup column. Either the operator's
 data is incomplete, or the template should use `@join` instead (drops
 unmatched rows).
+
+## Cell-format warnings
+
+A date or numeric template cell containing non-convertible text such as
+`-` or `N/A` preserves that text and its format, then continues rendering
+(ADR-0072, #56). Each affected cell contributes an
+`xl3w/cell/numfmt-coercion` entry to its `OutputFile.warnings`, including
+the sheet, final cell address, and source column when known. These warnings
+are produced during rendering, so they are absent from preview.
+
+This change implements the warning contract in the JavaScript backend.
+Use `convert(template, data, { engine: 'js' })` or `convertJson` when these
+diagnostics are required. The optional `xl3-wasm` backend must implement
+ADR-0072 separately; selecting it through `auto` does not establish warning
+parity with the JavaScript backend.
+
+Hosts that previously caught `xl3/cell/numfmt-coercion` must now inspect
+the returned warnings; that error code has been removed.
 
 ## Locale
 

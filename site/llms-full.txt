@@ -3,7 +3,7 @@
 > xl3 is an open-source declarative Excel template engine. It is not a workbook API: the layout and transformation rules live in an ordinary `.xlsx` template, and `convertJson(template, sourceObject)` binds application-owned data to produce deterministic `.xlsx` output. The reference implementation is published on npm as `@xl3-lang/xl3`.
 
 Version: 1.0.0-rc.3 (release candidate). Final 1.0 earliest target: November 28, 2026.
-Spec: 80 ADRs, 179 conformance fixtures, MIT license.
+Spec: 80 ADRs, 180 conformance fixtures, MIT license.
 Repository: https://github.com/xl3-lang/xl3
 Website: https://xl3.io
 
@@ -301,7 +301,12 @@ Two `@block` rectangles on the same sheet MUST NOT overlap.
 | `xl3/subtotal/bad-aggregate` | `@subtotal` body is not a supported aggregate form |
 | `xl3/block/overlap` | Two `@block` rectangles overlap on the same sheet |
 | `xl3/block/empty-table` | `@block` rectangle contains no `{{ ... }}` marker cells |
-| `xl3/cell/numfmt-coercion` | Source-side Excel error sentinel in a number/date-format single-expression cell |
+
+Date/number coercion failures emit the warning `xl3w/cell/numfmt-coercion`
+in `OutputFile.warnings`, preserve the original text and format, and continue
+rendering (ADR-0072). The warning location includes the output sheet, final
+cell address, and direct source column when known. Empty values, including
+source error sentinels normalized to empty, render as `""` without a warning.
 
 ---
 

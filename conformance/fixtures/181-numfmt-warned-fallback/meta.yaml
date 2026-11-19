@@ -1,0 +1,7 @@
+description: Non-coercible placeholders warn in row/column order while valid values coerce and all cell formats survive.
+spec_section: evaluation.md "Single-Expression Cells"; ADR-0072
+spec_version: "0.1"
+tags: [numfmt, coercion, warning, style-preservation]
+comparison_stage: 2
+verified_by: [manual-script]
+expected_warnings: ['Value cannot be coerced to a date for cell format "yyyy-mm-dd": -', 'Value cannot be coerced to a number for cell format "0.00": N/A', 'Value cannot be coerced to a date for cell format "yyyy-mm-dd": -', 'Value cannot be coerced to a number for cell format "0.00": N/A']

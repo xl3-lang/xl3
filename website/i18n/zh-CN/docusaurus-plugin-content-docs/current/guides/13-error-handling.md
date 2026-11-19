@@ -43,7 +43,7 @@ try {
 
 稳定，只追加。重命名按 ADR-0015 是破坏性变更。当前集合：
 
-- **`xl3/cell/*`** ——单元格级失败（`formula-no-cache`、`numfmt-coercion`、`row-outside-repeat`）
+- **`xl3/cell/*`** ——单元格级失败（`formula-no-cache`、`row-outside-repeat`）
 - **`xl3/eval/*`** ——表达式求值（`arity-mismatch`、`operand-coercion`、`unsupported-syntax`）
 - **`xl3/config/*`** ——`__config__` 相关
 - **`xl3/inputs/*`** ——运行时输入相关
@@ -80,6 +80,12 @@ try {
 
 **XLOOKUP 无匹配**（`xl3/xlookup/no-match`）：
 要查找的值不在查找列里。要么是操作员的数据不完整，要么是模板应改用 `@join`（会丢弃未匹配的行）。
+
+## 单元格格式警告
+
+日期或数字格式单元格中的 `-`、`N/A` 等值无法转换时，会保留原值和格式并继续转换（ADR-0072）。每个受影响的单元格在 `OutputFile.warnings` 中产生一条 `xl3w/cell/numfmt-coercion`，位置包含输出工作表、最终单元格地址及已知的直接引用列。警告在渲染时产生，因此不会出现在 preview 中。
+
+原错误码 `xl3/cell/numfmt-coercion` 已移除。此前捕获该错误的宿主应检查返回的警告。本次实现适用于 JavaScript 后端；需要这些诊断时，请使用 `convert(template, data, { engine: 'js' })` 或 `convertJson`。可选的 `xl3-wasm` 后端需要单独验证 ADR-0072 支持。
 
 ## 本地化
 

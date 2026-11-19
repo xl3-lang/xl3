@@ -361,7 +361,8 @@ export interface TemplateModel {
 // "__inputs__ row 3", filename) — present when known, omitted when
 // the warning is global.
 /** @stable */
-export type XtlWarningCode = 'xl3w/parser/missing-column' | 'xl3w/filename/sanitized';
+export type XtlWarningCode =
+  'xl3w/parser/missing-column' | 'xl3w/filename/sanitized' | 'xl3w/cell/numfmt-coercion';
 
 export interface XtlWarning {
   code: XtlWarningCode;

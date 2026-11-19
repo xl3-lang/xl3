@@ -33,10 +33,11 @@ What is missing is the *write* side: if an author writes
 `"missing"` (good, defined by ADR-0017). But if they write
 `{{ [cell-that-is-N/A] }}` in a numeric-formatted single-expression
 cell, what is the rendered output? The empty-on-read rule says it
-flows as empty; ADR-0007 says empty stringifies to `""`; numFmt
-coercion of `""` to a number is `xl3/cell/numfmt-coercion` per
-ADR-0026. That is the *current* impl behavior, but it is not
-explicitly stated.
+flows as empty, and ADR-0007 says empty stringifies to `""`.
+The original text incorrectly claimed that numeric coercion of `""`
+raised `xl3/cell/numfmt-coercion`; ADR-0026 and the implementation
+preserve the empty string. The Decision below clarifies this alongside
+ADR-0072's warned fallback for non-empty values.
 
 The mixed-text case is even less clear. `Order date: {{ [cell-N/A] }}`
 — is the empty value rendered as `""` (so the cell reads
@@ -51,7 +52,7 @@ matrix for the other six.
 **A. Treat all seven sentinels uniformly via the empty-value rule.**
 A source-side error reads as empty (ADR-0017). In mixed-text it
 contributes `""` to the rendered string. In a numeric single-
-expression cell it raises `xl3/cell/numfmt-coercion`. Most
+expression cell it also renders as `""` (clarified with ADR-0072). Most
 consistent with ADR-0017.
 
 **B. Pass through the sentinel string in mixed-text only.** A
@@ -80,13 +81,12 @@ and ADR-0007. This is unchanged from ADR-0017.
 
 For the write side:
 
-1. **Single-expression cells.** When the cell value is empty and
-   the template cell has a number/date numFmt, coercion fails per
-   ADR-0026 with `xl3/cell/numfmt-coercion`. When the template cell
-   has the text format `@` or no format, the cell renders as the
-   empty string `""`. (No change from current ADR-0026 contract;
-   this ADR makes it explicit that the contract covers all seven
-   sentinels.)
+1. **Single-expression cells (clarified with ADR-0072).** An empty
+   value renders as `""`, including under a number/date numFmt,
+   without a warning, per ADR-0026. The earlier claim that empty
+   coercion raised `xl3/cell/numfmt-coercion` was incorrect. Only
+   non-empty values that fail date/number coercion take ADR-0072's
+   warned fallback path.
 2. **Mixed-text cells.** An empty value (including any of the seven
    sentinels read from source) contributes the empty string `""` at
    its position in the rendered string. `Order date: {{ [na] }}`
@@ -149,18 +149,17 @@ spec picks the predictable rule and gives authors the
 - The rendering behavior of all seven Excel error sentinels in
   every cell shape (single-expression numeric, single-expression
   text, mixed-text, `&` concat) is now fully specified.
-- No new error code. `xl3/cell/numfmt-coercion` (ADR-0026) already
-  covers the single-expression-numeric path; ADR-0025 already
-  covers `#DIV/0!`.
+- Empty single-expression values need no diagnostic; ADR-0072 removes
+  `xl3/cell/numfmt-coercion`. ADR-0025 covers engine-produced `#DIV/0!`.
 - Conformance fixture additions:
   - `146-source-error-sentinel-mixed-text` — a source cell with
     `#N/A` rendered in a `Status: {{ [val] }}` mixed-text cell
     produces `Status: `.
   - `147-source-error-sentinel-ifempty-marker` — same source cell
     with `{{ IFEMPTY([val], "missing") }}` renders `missing`.
-  - `148-source-error-sentinel-numfmt-coercion-error` — same source
-    cell in a `{{ [val] }}` single-expression with `numFmt =
-    "#,##0"` raises `xl3/cell/numfmt-coercion`.
+  - The originally proposed `148-source-error-sentinel-numfmt-coercion-error`
+    was not authored under that name: the claimed error behavior was
+    incorrect. `renderer-numfmt.test.ts` pins the empty, warning-free path.
 - Reference impl change: none. This ADR documents and pins existing
   behavior; the rules are derived from the composition of ADR-0017
   + ADR-0026 + ADR-0009.

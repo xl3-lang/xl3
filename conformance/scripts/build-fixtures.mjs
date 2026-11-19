@@ -1072,9 +1072,8 @@ async function build020() {
 // ---------------------------------------------------------------------------
 // 021 - numfmt-number-coercion-error
 //
-// Concept: a single-expression cell with a numeric numFmt reports an error
-// when the source value cannot be coerced to a number.
-// Spec section: evaluation.md "Single-Expression Cells".
+// Concept: numeric coercion failure warns and preserves the original text.
+// Spec section: evaluation.md "Single-Expression Cells"; ADR-0072.
 // ---------------------------------------------------------------------------
 async function build021() {
   const dir = join(FIXTURES, '021-numfmt-number-coercion-error');
@@ -1103,14 +1102,23 @@ async function build021() {
     sh.getCell('A2').value = 'not-a-number';
     await writeBook(wb, join(dir, 'data.xlsx'));
   }
+
+  // ADR-0072: authored text fallback, retaining the template format.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'Amount';
+    sh.getCell('A2').value = 'not-a-number';
+    sh.getCell('A2').numFmt = '0.00';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
 }
 
 // ---------------------------------------------------------------------------
 // 022 - numfmt-date-coercion-error
 //
-// Concept: a single-expression cell with a date numFmt reports an error when
-// the source value cannot be coerced to a date.
-// Spec section: evaluation.md "Single-Expression Cells".
+// Concept: date coercion failure warns and preserves the original text.
+// Spec section: evaluation.md "Single-Expression Cells"; ADR-0072.
 // ---------------------------------------------------------------------------
 async function build022() {
   const dir = join(FIXTURES, '022-numfmt-date-coercion-error');
@@ -1138,6 +1146,16 @@ async function build022() {
     sh.getCell('A1').value = 'OrderDate';
     sh.getCell('A2').value = 'not-a-date';
     await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+
+  // ADR-0072: authored text fallback, retaining the template format.
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('R');
+    sh.getCell('A1').value = 'OrderDate';
+    sh.getCell('A2').value = 'not-a-date';
+    sh.getCell('A2').numFmt = 'yyyy-mm-dd';
+    await writeBook(wb, join(dir, 'expected.xlsx'));
   }
 }
 
@@ -8362,6 +8380,52 @@ async function build180() {
   }
 }
 
+// ADR-0072: placeholders interleaved with valid values keep their original
+// text and styles. Expected values are authored directly from the spec.
+async function build181() {
+  const dir = join(FIXTURES, '181-numfmt-warned-fallback');
+  await mkdir(dir, { recursive: true });
+  const headers = ['Date', 'Amount'];
+  {
+    const wb = new ExcelJS.Workbook();
+    addConfig(wb, [
+      ['source_sheet', 'Data'],
+      ['source_table', '1'],
+      ['output_file_pattern', 'output.xlsx'],
+    ]);
+    const sh = wb.addWorksheet('Report');
+    sh.addRows([headers, ['{{ [Date] }}', '{{ [Amount] }}']]);
+    sh.getCell('A2').numFmt = 'yyyy-mm-dd';
+    sh.getCell('B2').numFmt = '0.00';
+    await writeBook(wb, join(dir, 'template.xlsx'));
+  }
+  {
+    const wb = new ExcelJS.Workbook();
+    wb.addWorksheet('Data').addRows([
+      headers,
+      ['-', 'N/A'],
+      ['2026-11-13', '1,234.50'],
+      ['  -  ', '  N/A  '],
+    ]);
+    await writeBook(wb, join(dir, 'data.xlsx'));
+  }
+  {
+    const wb = new ExcelJS.Workbook();
+    const sh = wb.addWorksheet('Report');
+    sh.addRows([
+      headers,
+      ['-', 'N/A'],
+      [new Date('2026-11-13T00:00:00Z'), 1234.5],
+      ['  -  ', '  N/A  '],
+    ]);
+    for (let row = 2; row <= 4; row++) {
+      sh.getCell(`A${row}`).numFmt = 'yyyy-mm-dd';
+      sh.getCell(`B${row}`).numFmt = '0.00';
+    }
+    await writeBook(wb, join(dir, 'expected.xlsx'));
+  }
+}
+
 const builders = [
   ['001', build001],
   ['002', build002],
@@ -8512,6 +8576,7 @@ const builders = [
   ['178', build178],
   ['179', build179],
   ['180', build180],
+  ['181', build181],
 ];
 
 const selected = new Set(process.argv.slice(2));

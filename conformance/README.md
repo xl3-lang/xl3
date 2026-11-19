@@ -102,8 +102,8 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 018 | `source-formula-missing-cached-result-error` | Source formula cells without cached results report a stable error. |
 | 019 | `filename-empty-basename-error` | Filename sanitization reports an error for an empty basename. |
 | 020 | `filename-length-overflow-error` | Filename sanitization reports an error above the 255-byte limit. |
-| 021 | `numfmt-number-coercion-error` | Numeric template formats report an error when coercion fails. |
-| 022 | `numfmt-date-coercion-error` | Date template formats report an error when coercion fails. |
+| 021 | `numfmt-number-coercion-error` | Numeric template formats warn and preserve text when coercion fails (ADR-0072; legacy fixture name). |
+| 022 | `numfmt-date-coercion-error` | Date template formats warn and preserve text when coercion fails (ADR-0072; legacy fixture name). |
 | 023 | `today-utc-dynamic` | `TODAY()` renders the runner-start UTC date through a dynamic assertion. |
 | 024 | `stage2-merge-preservation` | Stage 2 comparison verifies merged ranges below expanded data blocks are preserved. |
 | 025 | `stage2-style-numfmt-preservation` | Stage 2 comparison verifies rendered cells preserve template style and numFmt. |
@@ -174,6 +174,11 @@ The XTL 0.1 bootstrap corpus currently contains these fixtures:
 | 090 | `percentage-numeric-flow` | Percentage-formatted cells flow as their underlying Number per ADR-0017 (50% → 0.5). |
 
 ## Status
+
+Fixture `181-numfmt-warned-fallback` covers ADR-0072's per-cell warnings,
+original text preservation, continued successful coercion, and retained
+number/date formats (Stage 2). Fixtures 021/022 retain their historical names
+but now assert warned output instead of fatal errors.
 
 XTL 0.1 corpus is **bootstrap state**. Fixtures should be added only for behavior already stated in [`spec/README.md`](../spec/README.md), following the same pattern used by standards projects such as CommonMark: prose defines the rule, fixtures make the rule executable, and implementations report which fixtures they pass.
 

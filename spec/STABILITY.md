@@ -135,6 +135,12 @@ one is 2.0-only and resets both gates.
 | 0.12.0 | `xl3/abort/cancelled` error code | ROADMAP G21 |
 | 0.13.0 | `VERSION`, `getEngineInfo` exports + `EngineInfo` type | xl3#103 |
 | 1.0.0-rc.1 | `validateSource`, `validateSourceJson` exports + validation report types | ADR-0078 |
+| Unreleased (post-1.0) | `xl3w/cell/numfmt-coercion` warning code | ADR-0072 |
+
+ADR-0072 also removes the former `xl3/cell/numfmt-coercion` error code.
+That removal is breaking and must ship on a release line permitting it;
+merging this prepared change into the current 1.0 RC line would reset
+G3/G24. The published RC calendar above does not include this change.
 
 The export count is unchanged by the G21 work — `signal` is a property on
 the already-frozen `ConvertOptions`, not a new export. It goes 15 → 17

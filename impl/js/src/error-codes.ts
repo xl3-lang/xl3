@@ -73,7 +73,6 @@ export type XtlErrorCode =
   // Directive scoping (ADR-0069)
   | 'xl3/directive/orphan'
   // Cell evaluation
-  | 'xl3/cell/numfmt-coercion'
   | 'xl3/cell/row-outside-repeat'
   | 'xl3/cell/formula-no-cache'
   // XLOOKUP (ADR-0013)

@@ -691,7 +691,22 @@ If the template cell has a number/date/text format, the implementation MUST coer
 - Number-like formats coerce numeric strings to numbers.
 - Text format `@` coerces to string.
 
-If coercion fails, the implementation MUST report an error.
+If date/number coercion fails, the implementation MUST emit
+`xl3w/cell/numfmt-coercion`, preserve the original value through the
+General/text rendering path (including string whitespace), and continue
+rendering (ADR-0072). The template's number format MUST be retained.
+Successful coercions and empty values keep their existing behavior.
+
+Each failed cell produces one warning. Its English message is
+`Value cannot be coerced to a number for cell format "<numFmt>": <value>`
+or the same message with `a date`; `<value>` is the trimmed string form.
+Its `location` names the output sheet and final cell address as
+`sheet "<name>" cell <address>`, followed by ` column "<column>"` for a
+direct data-block column reference. Warnings are returned per output file,
+after filename warnings, in sheet render order and then row/column order
+within each sheet. A merged template cell contributes one warning per
+rendered record at its anchor, without duplicates from its slave cells.
+Preview does not render cells and does not emit these warnings.
 
 The minimum set of supported date formats and numeric format tokens is not normatively defined by XTL 0.1 and is left to each implementation. Implementations that support fewer formats than another implementation may declare partial conformance.
 
@@ -816,8 +831,6 @@ The following conditions are errors:
 - Referencing the `__sources__` declaration sheet as a value
   dictionary (e.g., `__sources__[Customers]`,
   `xl3/sources/not-a-dictionary`); use the source name directly.
-- Failing to coerce a single-expression cell value to its template
-  cell format (`xl3/cell/numfmt-coercion`).
 - Producing an invalid output filename after sanitization rules are
   applied (`xl3/filename/empty`, `xl3/filename/too-long`).
 - Calling `ROW()` outside a repeat block (`xl3/cell/row-outside-repeat`).
@@ -858,6 +871,9 @@ localization and programmatic dispatch; the English `Error.message`
 remains the conformance contract.
 
 Implementations MAY provide warnings for non-fatal portability issues, but warnings MUST NOT change output semantics.
+
+The `xl3w/cell/numfmt-coercion` warning above is mandatory, not optional:
+the warned fallback is part of the conformance contract (ADR-0072).
 
 ## Resource limits
 

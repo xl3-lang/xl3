@@ -249,10 +249,12 @@ it fails to coerce to a finite number and raises
 The six **source-side** Excel error sentinels — `#N/A`, `#VALUE!`,
 `#REF!`, `#NAME?`, `#NUM!`, `#NULL!` — read from source as the
 empty value per ADR-0017. Per ADR-0053, they contribute `""` to
-mixed-text and `&`-concatenation positions and raise
-`xl3/cell/numfmt-coercion` in number/date-format single-expression
-cells. `#DIV/0!` is the only sentinel the engine itself produces
-during XTL evaluation; it follows the rules above. Authors who
+mixed-text and `&`-concatenation positions. Empty values also render
+as `""` in number/date-format single-expression cells, without a warning.
+Non-empty text that cannot be coerced to the number/date format is
+preserved with an `xl3w/cell/numfmt-coercion` warning (ADR-0072), and
+conversion continues. `#DIV/0!` is the only sentinel the engine itself
+produces during XTL evaluation; it follows the rules above. Authors who
 want a visible "missing" marker for source-side sentinels wrap the
 column reference with `IFEMPTY([col], "missing")`.
 

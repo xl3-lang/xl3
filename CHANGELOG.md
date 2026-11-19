@@ -6,6 +6,17 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
 
 ## [Unreleased]
 
+### Changed — post-1.0 (#56, ADR-0072)
+
+- Date/number cell-format coercion failures now preserve the original value
+  and format, emit `xl3w/cell/numfmt-coercion`, and continue conversion.
+  Each warning identifies the output sheet, final cell address, and direct
+  source column when known. Warnings are scoped to their output file.
+- **Breaking catalog change:** `xl3/cell/numfmt-coercion` is removed. Hosts
+  must inspect `OutputFile.warnings` instead of catching that error. This
+  change is prepared for a release line permitting the removal; merging it
+  into the 1.0 RC line resets the G3/G24 stability gates.
+
 ## [1.0.0-rc.3] - 2026-11-03
 
 The third 1.0 release candidate settles what empty data produces and fixes
