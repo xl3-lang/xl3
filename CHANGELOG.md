@@ -49,6 +49,17 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   structure. A column name now runs to its closing `]`, and a string
   literal to its closing `"`, wherever they appear in an expression.
 
+- **Arithmetic works without spaces around the operator.**
+  `{{ [Amount]*2 }}` and `{{ SUM([Amount])/COUNT([Amount]) }}` rendered as
+  their own source text, and as a function argument or a condition the
+  unspaced form gave a wrong value with no error:
+  `{{ ROUND([Amount]/3, 2) }}` rendered `0`. An operator is now recognized
+  with or without spaces, as language.md specifies, and a parenthesized
+  operand such as the `(1-0.1)` of `{{ [Amount]*(1-0.1) }}` is evaluated.
+  Unquoted text keeps its reading: an unspaced expression with no column
+  reference and no function call, such as `2024-01-01`, `1/2`, or
+  `(02)-555-0100`, is still text.
+
 - **An expression with an unpaired parenthesis is an error.**
   `{{ SUM([Amount])) }}` and `{{ ROUND([Amount], 2 }}` now raise
   `xl3/eval/unsupported-syntax`. A parenthesis inside a string literal or

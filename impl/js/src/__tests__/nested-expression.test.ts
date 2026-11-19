@@ -400,6 +400,100 @@ describe('unquoted text keeps its long-standing reading', () => {
   });
 });
 
+// language.md "Template Blocks": whitespace around an operator is
+// insignificant, so `{{ [a]+[b] }}` is `{{ [a] + [b] }}`. Operators were
+// recognized only between spaces; without them the expression rendered as
+// its own source text, or — as a function argument or a condition —
+// evaluated to a wrong value.
+describe('arithmetic operators without surrounding spaces', () => {
+  const data = {
+    headers: ['Name', 'Amount', 'Code', 'Unit-Price', 'Price(USD)'],
+    rows: [
+      ['Alpha', 1, '2024-01-01', 10, 3],
+      ['Beta', 2, 'N/A', 20, 4],
+    ] as Rows,
+  };
+
+  it.each([
+    ['[Amount]*2', [2, 4]],
+    ['2*[Amount]', [2, 4]],
+    ['[Amount]+[Amount]', [2, 4]],
+    ['[Amount]-1', [0, 1]],
+    ['[Amount] -1', [0, 1]],
+    ['[Amount]*-1', [-1, -2]],
+    ['[Amount]--1', [2, 3]],
+    ['[Amount]*1e-1', [0.1, 0.2]],
+    // Precedence and grouping are the same with and without spaces.
+    ['[Amount]+[Amount]*2', [3, 6]],
+    ['[Amount]/2+[Amount]', [1.5, 3]],
+    ['([Amount]+1)*2', [4, 6]],
+    ['[Amount]*(1-0.5)', [0.5, 1]],
+    ['[Amount] * (1-0.5)', [0.5, 1]],
+    ['[Amount]*((1-0.5)*2)', [1, 2]],
+    // Calls on both sides of the operator.
+    ['ABS([Amount])-ABS([Amount])', [0, 0]],
+    ['ROUND([Amount],0)*ROUND([Amount],0)', [1, 4]],
+    // As a function argument, a condition operand, and an `&` operand.
+    ['ROUND([Amount]/3,2)', [0.33, 0.67]],
+    ['ROUND([Amount]*1.1+0.5, 0)', [2, 3]],
+    ['IF([Amount]*2 > 2, "y", "n")', ['n', 'y']],
+    ['IF([Amount]*2>2, "y", "n")', ['n', 'y']],
+    ['[Name] & [Amount]*3', ['Alpha3', 'Beta6']],
+    ['[Name] & ([Amount]+1)', ['Alpha2', 'Beta3']],
+    // An operator character inside a column name is part of the name.
+    ['[Unit-Price]*2', [20, 40]],
+    ['[Price(USD)]*[Amount]', [3, 8]],
+  ])('%s', async (expr, expected) => {
+    expect(await renderCell(expr, data)).toEqual(expected);
+  });
+
+  it.each([
+    ['SUM([Amount])/COUNT([Amount])', 1.5],
+    ['MAX([Amount])-MIN([Amount])', 1],
+    ['SUM([Amount])/COUNT([Amount])*100', 150],
+  ])('%s is one static value below the data rows', async (expr, expected) => {
+    const out = await render({ A1: '{{ [Name] }}', A2: `{{ ${expr} }}` }, {}, data);
+    expect(out).toEqual([['Alpha'], ['Beta'], [expected]]);
+  });
+
+  // Unquoted text can contain the same characters: a date, a fraction, a
+  // phone number, a hyphenated word. Without a space around the operator
+  // and with no reference or function call in it, it stays text.
+  it.each([
+    ['2024-01-01', ['2024-01-01']],
+    ['1/2', ['1/2']],
+    ['(1+2)*3', ['(1+2)*3']],
+    ['[Name] & 2024-01-01', ['Alpha2024-01-01', 'Beta2024-01-01']],
+    ['[Name] & 1/2', ['Alpha1/2', 'Beta1/2']],
+    ['[Name] & (02)-555-0100', ['Alpha(02)-555-0100', 'Beta(02)-555-0100']],
+    ['[Name] & N/A', ['AlphaN/A', 'BetaN/A']],
+    ['[Name] & a-b', ['Alphaa-b', 'Betaa-b']],
+    ['[Name] & (1+2)', ['Alpha(1+2)', 'Beta(1+2)']],
+    ['IF([Code] = 2024-01-01, "y", "n")', ['y', 'n']],
+    ['IF([Amount] = 1, 10-20, N/A)', ['10-20', 'N/A']],
+    ['Price(USD)*2', ['Price(USD)*2']],
+    // An operator inside a string literal is text.
+    ['[Name] & "-" & [Amount]', ['Alpha-1', 'Beta-2']],
+    ['IF([Name] = "A-B", "y", "n")', ['n', 'n']],
+  ])('%s keeps its reading as text', async (expr, expected) => {
+    expect(await renderCell(expr, data)).toEqual(expected);
+  });
+
+  it('still evaluates the spaced forms as before', async () => {
+    expect(await renderCell('10 - 20', data)).toEqual([-10]);
+    expect(await renderCell('(1 + 2) * 3', data)).toEqual([9]);
+  });
+
+  it('reads & inside a group as a concatenation first, as it does outside one', async () => {
+    expect(await renderCell('[Amount] * ("1" / "2"&"5")', data)).toEqual([0.55, 1.1]);
+    expect(await renderCell('[Amount]*("1"&"0")', data)).toEqual([10, 20]);
+  });
+
+  it('still rejects a unary minus on a reference', async () => {
+    expect(await errorCode(renderCell('-[Amount]', data))).toBe('xl3/eval/unsupported-syntax');
+  });
+});
+
 describe('unbalanced parentheses are an error, not output text', () => {
   it.each([
     'SUM([Amount]))',
