@@ -334,26 +334,62 @@ const NUMERIC_OPERAND_RE = /^-?(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?$/;
 // RESERVED_REF_RE in template-eval). Valid as an arithmetic operand.
 const RESERVED_REF_RE = /^__([a-z]+)__\[([^\]\r\n]+)\]$/;
 
-// Split an expression into its top-level whitespace-delimited tokens,
-// honoring (), [], and string-literal nesting. Arithmetic operators are
-// authored space-delimited (the XTL convention), so a well-formed chain
-// yields a token stream alternating operand / operator / operand.
-function splitTopLevelTokens(expr: string): string[] {
+// A number up to its exponent marker: the `-` or `+` that follows belongs
+// to the number (`1e-5`), not to the chain.
+const EXPONENT_HEAD_RE = /^-?(\d+(\.\d+)?|\.\d+)[eE]$/;
+
+// Split an expression into its top-level tokens, honoring (), [], and
+// string-literal nesting. Tokens end at a space and at an arithmetic
+// operator: whitespace around an operator is insignificant (language.md
+// "Template Blocks"), so `[a]*2` is the chain `[a] * 2`. A well-formed
+// chain yields a token stream alternating operand / operator / operand.
+// `tight` is true when some operator had no space on one of its sides.
+function splitTopLevelTokens(expr: string): { tokens: string[]; tight: boolean } {
   const depths = structuralDepths(expr);
   const tokens: string[] = [];
+  let tight = false;
   let current = '';
+  const flush = () => {
+    if (current) tokens.push(current);
+    current = '';
+  };
   for (let i = 0; i < expr.length; i++) {
-    if (expr[i] === ' ' && depths[i] === 0) {
-      if (current) {
-        tokens.push(current);
-        current = '';
+    const ch = expr[i]!;
+    if (depths[i] !== 0) {
+      current += ch;
+    } else if (ch === ' ') {
+      flush();
+    } else if (ARITH_OPS.has(ch) && !isPartOfToken(ch, current, tokens, expr[i + 1])) {
+      flush();
+      tokens.push(ch);
+      if ((i > 0 && expr[i - 1] !== ' ') || (i < expr.length - 1 && expr[i + 1] !== ' ')) {
+        tight = true;
       }
     } else {
-      current += expr[i];
+      current += ch;
     }
   }
-  if (current) tokens.push(current);
-  return tokens;
+  flush();
+  return { tokens, tight };
+}
+
+// An operator character that does not separate two operands: the sign of a
+// negative number after another operator or at the start (`[a] * -1`), the
+// sign of an exponent (`1e-5`), or a character of a single-quoted token —
+// an impl extension outside the grammar, which never had structure.
+function isPartOfToken(
+  ch: string,
+  current: string,
+  tokens: string[],
+  next: string | undefined,
+): boolean {
+  if (current.startsWith("'")) return true;
+  const beforeDigit = next !== undefined && /[\d.]/.test(next);
+  if (current === '') {
+    const afterOperator = tokens.length === 0 || ARITH_OPS.has(tokens[tokens.length - 1]!);
+    return ch === '-' && afterOperator && beforeDigit;
+  }
+  return (ch === '-' || ch === '+') && beforeDigit && EXPONENT_HEAD_RE.test(current);
 }
 
 // A token is a valid arithmetic operand when it is a recognized value
@@ -456,15 +492,49 @@ function hasTopLevelConcat(expr: string): boolean {
 // parenthesized sub-expression operand (`(a + b)` in `(a + b) * c`) is
 // handled uniformly with every other operand shape.
 function normalizeArithOperand(tok: string, columns: Set<string>): string {
-  return normalizeValueArg(tok.trim(), columns);
+  const t = tok.trim();
+  // A parenthesized operand of an arithmetic chain is arithmetic itself:
+  // the `(1-0.1)` of `[a]*(1-0.1)` is not unquoted text. A group joined
+  // by `&` is a concatenation first, which normalizeValueArg handles.
+  if (isSingleWrapped(t)) {
+    let inner = t;
+    while (isSingleWrapped(inner)) inner = inner.slice(1, -1).trim();
+    if (!hasTopLevelConcat(inner)) {
+      const arith = normalizeArith(inner, columns, true);
+      if (arith) return arith;
+    }
+  }
+  return normalizeValueArg(t, columns);
+}
+
+// True when `expr` holds a reference (`[Column]`, `Source[Column]`,
+// `__config__[key]`) or a call to a known function outside its string
+// literals. Unquoted text has neither.
+function namesReferenceOrCall(expr: string): boolean {
+  const bare = expr.replace(/"[^"]*"/g, '""');
+  if (/\[[^\]\r\n]+\]/.test(bare)) return true;
+  for (const m of bare.matchAll(/(?<![A-Za-z0-9_])([A-Za-z_][A-Za-z0-9_]*)\(/g)) {
+    if (m[1]!.toUpperCase() in FUNCTION_ARITY) return true;
+  }
+  return false;
 }
 
 // The operands and operators of an arithmetic chain, or null when `expr` is
 // not a well-formed multi-operand one. This reads the shape only — nothing
 // is normalized — so it also answers "is this an arithmetic expression?".
-function parseArithChain(expr: string): { operands: string[]; ops: string[] } | null {
-  const tokens = splitTopLevelTokens(expr);
+//
+// Unquoted text can be written with the same characters: a date
+// (`2024-01-01`), a fraction (`1/2`), a phone number (`(02)-555-0100`). A
+// chain with no space around an operator is therefore arithmetic only when
+// it names a reference or calls a function, which such text does not — or
+// when `inArith` says it is a parenthesized operand of a chain that does.
+function parseArithChain(
+  expr: string,
+  inArith = false,
+): { operands: string[]; ops: string[] } | null {
+  const { tokens, tight } = splitTopLevelTokens(expr);
   if (tokens.length < 3 || tokens.length % 2 === 0) return null;
+  if (tight && !inArith && !namesReferenceOrCall(expr)) return null;
   const operands: string[] = [];
   const ops: string[] = [];
   for (let i = 0; i < tokens.length; i++) {
@@ -485,8 +555,8 @@ function parseArithChain(expr: string): { operands: string[]; ops: string[] } | 
 // then fall through to single-operand handling). `*`/`/` bind tighter
 // than `+`/`-`, and same-precedence operators are LEFT-associative:
 // `a / b * c` is `(a / b) * c`, not `a / (b * c)`.
-function normalizeArith(expr: string, columns: Set<string>): string | null {
-  const chain = parseArithChain(expr);
+function normalizeArith(expr: string, columns: Set<string>, inArith = false): string | null {
+  const chain = parseArithChain(expr, inArith);
   if (!chain) return null;
   const { operands, ops } = chain;
   // Pass 1: fold the tighter-binding `*` / `/` left-to-right into their
