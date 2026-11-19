@@ -301,7 +301,9 @@ function isConcatExpressionOperand(p: string, columns: Set<string>): boolean {
   if (isSingleWrapped(p)) return isEvaluable(p.slice(1, -1).trim(), columns);
   const call = parseFunctionCall(p);
   if (call) return call.name.toUpperCase() in FUNCTION_ARITY;
-  return normalizeArith(p, columns) !== null;
+  // Read the shape only. Normalizing here and again when the operand is
+  // used repeated the work of every nesting level below this one.
+  return parseArithChain(p) !== null;
 }
 
 // True when `p` is made only of things the grammar evaluates: a literal, a
@@ -457,13 +459,10 @@ function normalizeArithOperand(tok: string, columns: Set<string>): string {
   return normalizeValueArg(tok.trim(), columns);
 }
 
-// Issue #52: precedence- and associativity-correct arithmetic. Returns a
-// fully-parenthesized prefix expression `(fn left right)`, or null when
-// `expr` is not a well-formed multi-operand arithmetic chain (callers
-// then fall through to single-operand handling). `*`/`/` bind tighter
-// than `+`/`-`, and same-precedence operators are LEFT-associative:
-// `a / b * c` is `(a / b) * c`, not `a / (b * c)`.
-function normalizeArith(expr: string, columns: Set<string>): string | null {
+// The operands and operators of an arithmetic chain, or null when `expr` is
+// not a well-formed multi-operand one. This reads the shape only — nothing
+// is normalized — so it also answers "is this an arithmetic expression?".
+function parseArithChain(expr: string): { operands: string[]; ops: string[] } | null {
   const tokens = splitTopLevelTokens(expr);
   if (tokens.length < 3 || tokens.length % 2 === 0) return null;
   const operands: string[] = [];
@@ -477,6 +476,19 @@ function normalizeArith(expr: string, columns: Set<string>): string | null {
       ops.push(tokens[i]!);
     }
   }
+  return { operands, ops };
+}
+
+// Issue #52: precedence- and associativity-correct arithmetic. Returns a
+// fully-parenthesized prefix expression `(fn left right)`, or null when
+// `expr` is not a well-formed multi-operand arithmetic chain (callers
+// then fall through to single-operand handling). `*`/`/` bind tighter
+// than `+`/`-`, and same-precedence operators are LEFT-associative:
+// `a / b * c` is `(a / b) * c`, not `a / (b * c)`.
+function normalizeArith(expr: string, columns: Set<string>): string | null {
+  const chain = parseArithChain(expr);
+  if (!chain) return null;
+  const { operands, ops } = chain;
   // Pass 1: fold the tighter-binding `*` / `/` left-to-right into their
   // operands, leaving a sequence of additive terms separated by `+`/`-`.
   const terms: string[] = [];
