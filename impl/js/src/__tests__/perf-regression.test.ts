@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import ExcelJS from 'exceljs';
 import { performance } from 'node:perf_hooks';
 import { convert } from '../index.js';
+import { normalizeTemplate } from '../normalizer.js';
 
 // ROADMAP gate G9 — performance regression guard.
 //
@@ -176,4 +177,55 @@ describe('G9 performance regression guards', () => {
         `shows up here as a ratio near ${SCALE ** 2}x`,
     ).toBeLessThan(MAX_RATIO);
   }, 120_000);
+});
+
+// Normalization runs once per `{{ }}` cell per record, so what it costs per
+// level of nesting has to stay flat. Deciding whether an operand is an
+// expression by normalizing it, and then normalizing it again to use it,
+// repeated the work of every level below: twice the depth took 64 times as
+// long at the depths below, where the observed ratio is now about 3x.
+describe('normalization cost per nesting level', () => {
+  const SHALLOW = 6;
+  const DEEP = SHALLOW * 2;
+  const REPS = 100;
+  const columns = new Set(['Name', 'Amount']);
+
+  const shapes: [string, (inner: string) => string][] = [
+    ['arithmetic in an IF condition', (inner) => `IF(${inner} + 1 > 0, 1, 0)`],
+    ['arithmetic in a parenthesized & operand', (inner) => `([Name] & (${inner} + 1))`],
+  ];
+
+  function fastestOf3(expr: string): number {
+    const run = () => {
+      for (let i = 0; i < REPS; i++) normalizeTemplate(expr, columns);
+    };
+    run(); // warmup
+    let best = Infinity;
+    for (let i = 0; i < 3; i++) {
+      const t0 = performance.now();
+      run();
+      best = Math.min(best, performance.now() - t0);
+    }
+    return best;
+  }
+
+  it.each(shapes)(
+    `%s: ${DEEP / SHALLOW}x the depth stays under ${MAX_RATIO}x`,
+    (_name, wrap) => {
+      const nested = (depth: number) => {
+        let expr = '[Amount]';
+        for (let i = 0; i < depth; i++) expr = wrap(expr);
+        return `{{ ${expr} }}`;
+      };
+      const shallowMs = fastestOf3(nested(SHALLOW));
+      const deepMs = fastestOf3(nested(DEEP));
+      const ratio = deepMs / shallowMs;
+      expect(
+        ratio,
+        `depth ${SHALLOW} ${shallowMs.toFixed(2)}ms -> depth ${DEEP} ${deepMs.toFixed(2)}ms = ` +
+          `${ratio.toFixed(1)}x. Work repeated at every level shows up as ~${2 ** SHALLOW}x`,
+      ).toBeLessThan(MAX_RATIO);
+    },
+    120_000,
+  );
 });
