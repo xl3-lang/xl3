@@ -3,6 +3,8 @@
 - **Status:** accepted (fully implemented; CF/DV `sqref` extension
   landed with fixture `171-cf-dv-range-extension`, outline level with
   `172-outline-level-preservation`)
+- **Amended:** 2026-11-20 — which block a range belongs to on a sheet
+  with several blocks (see the amendment at the end)
 - **Date:** 2026-05-18
 - **Spec target:** XTL 0.1
 - **Affects:** ADR-0036 (template feature preservation matrix),
@@ -90,6 +92,8 @@ output rows (`delta = M - N`, M ≥ N):
       row is at or below the `@repeat` block's last row.
       Equivalently: the range is fully contained in the block's
       row span (column span is irrelevant — only rows extend).
+      On a sheet with several blocks the block's columns decide
+      too; see the 2026-11-20 amendment.
    2. Otherwise *R* MUST be left unchanged. In particular,
       ranges that overlap only *part* of the block are not
       extended: the rule cannot infer the author's intent in
@@ -135,7 +139,9 @@ is per-row, not per-range. The PE concept does not apply.
   multiple blocks is out of scope — the engine emits a warning
   (no error code added; see § "Consequences") and leaves the
   range as-authored. This case is rare; authors who need it
-  should split into per-block ranges.
+  should split into per-block ranges. What "contained in" a block
+  means when blocks share rows is defined by the 2026-11-20
+  amendment.
 
 ### Error catalog
 
@@ -213,3 +219,81 @@ existing warning channel; this is not normative.
 - `src/excel-document.ts` (`cloneWorksheet`,
   `spliceRowsPreservingMerges` — the paths that copy per-row
   metadata)
+
+## Amendment (2026-11-20) — which block a range belongs to on a sheet with several blocks
+
+Rule 1.1 decides containment by rows alone, and says so: "column span
+is irrelevant — only rows extend". That was complete when this ADR was
+accepted. A sheet then held one data block, and the block took the full
+width of its rows. ADR-0066 (2026-05-23) gave a block a column range,
+and ADR-0068 (2026-05-24) allowed several `@block` rectangles on one
+sheet, including rectangles placed side by side on the same template
+rows.
+
+For side-by-side blocks the row test cannot tell the blocks apart.
+Every range on the shared rows is inside the row span of each of them,
+so a range was extended by the growth of the block beside it. Measured
+on the reference implementation while xl3#138 was in review (commit
+`76baca5`, before the column test below was added), with one block in
+`A:B` and one in `D:E`, each under its own `@filter` row, and a CF rule
+on each block's data row:
+
+| Records, left / right | Left range | Right range |
+|---|---|---|
+| 3 / 4 | `B1:B3` | `E1:E3` — the fourth record is not covered |
+| 4 / 1 | `B1:B4` | `E1:E4` — three cells with no record are covered |
+
+In the 3 / 4 case a list validation on each data row came out on
+`B1:B4` and `E1:E4`, so `B4`, which holds no record, carried one.
+
+The "Multi-block templates" paragraph above already states the intent:
+"a CF range contained in block 1 extends by block 1's delta; a range
+contained in block 2 extends by block 2's delta". When blocks share
+rows, "contained in" has to mean the block's rectangle, not its rows.
+
+### Normative rules (amendment)
+
+On a sheet with **more than one data block** (explicit mode, ADR-0068):
+
+1. A range *R* MUST be extended by a block if and only if *R* satisfies
+   rule 1.1 for that block's rows AND every cell of *R* lies within
+   that block's column range (ADR-0066, ADR-0067).
+2. A range that satisfies rule 1.1 for a block's rows but is not within
+   that block's columns MUST be left unchanged by that block. This
+   covers a range that spans the columns of two blocks, and a range in
+   columns that belong to no block. Like a partial row overlap (rule
+   1.2), it is a silent no-op.
+3. Rule 4 is unchanged. A multi-range `sqref` is processed per
+   sub-range, so `"B3 E3"` extends `B3` by the left block and `E3` by
+   the right block.
+4. Data validation follows the same test, cell by cell.
+
+With these rules the two cases above come out as `B1:B3` / `E1:E4` and
+`B1:B4` / `E1`.
+
+On a sheet with **exactly one data block**, rule 1.1 applies as
+written. The column span is irrelevant there, also for a block that has
+a column range: a range on the block's rows but beside its columns is
+still extended, although the cell it was written for is an outside cell
+and is not repeated (ADR-0066). This amendment does not change that.
+It is the rule as shipped, and applying the column test there could
+move the output of existing templates. Whether a single block should
+take the column test too is left open.
+
+### Consequences (amendment)
+
+- The reference implementation passes the block's column range to the
+  post-expansion sweep on a sheet with several blocks (xl3#138). No
+  error code and no warning is added.
+- The rules are pinned by the reference implementation's own tests
+  (`directive-row-ranges.test.ts`, "CF / DV ranges of side-by-side
+  blocks"): each range extended by its own block in both orders, a
+  multi-range `sqref` tested per sub-range, and a range across both
+  blocks or beside them left as authored.
+- **No conformance fixture pins this amendment.** Fixture
+  `171-cf-dv-range-extension` covers a sheet with one block only. Until
+  a fixture with side-by-side blocks exists, a port has this text and
+  nothing to run against. It is named here as missing, so that it is
+  not later read as covered (see the numbering note above).
+- Ports MUST apply the column test on a sheet with several blocks. A
+  port that applies rule 1.1 alone there reproduces the table above.
