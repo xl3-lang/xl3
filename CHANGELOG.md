@@ -144,8 +144,9 @@ separately in [spec/STABILITY.md](./spec/STABILITY.md).
   its template address too, since a cell holds one validation. On a sheet
   with several blocks a range is extended by the block whose columns hold
   it, so two blocks side by side each cover their own records; a range
-  that spans blocks or sits beside them is left as authored. A range below
-  a block still does not follow the block as it grows (ADR-0036).
+  that spans blocks or sits beside them is left as authored (ADR-0040,
+  amended 2026-11-20). A range below a block still does not follow the
+  block as it grows (ADR-0036).
 
 - **The CLI no longer overwrites one output with another whose name the
   filesystem treats as the same** (#123). On the macOS and Windows
